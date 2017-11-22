@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<xsd:schema xmlns="http://www.springframework.org/schema/data/geode"
-			xmlns:beans="http://www.springframework.org/schema/beans"
+<xsd:schema xmlns="http://www.springframework.org/schema/data/gemfire"
 			xmlns:context="http://www.springframework.org/schema/context"
-			xmlns:gfe="http://www.springframework.org/schema/geode"
+			xmlns:gfe="http://www.springframework.org/schema/gemfire"
 			xmlns:repository="http://www.springframework.org/schema/data/repository"
 			xmlns:tool="http://www.springframework.org/schema/tool"
 			xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-			targetNamespace="http://www.springframework.org/schema/data/geode"
+			targetNamespace="http://www.springframework.org/schema/data/gemfire"
 			elementFormDefault="qualified"
 			attributeFormDefault="unqualified"
-			version="1.1">
+			version="2.1">
+
 	<xsd:import namespace="http://www.springframework.org/schema/beans"/>
 	<xsd:import namespace="http://www.springframework.org/schema/context"
 				schemaLocation="http://www.springframework.org/schema/context/spring-context.xsd" />
 	<xsd:import namespace="http://www.springframework.org/schema/data/repository"
 				schemaLocation="http://www.springframework.org/schema/data/repository/spring-repository.xsd"/>
-	<xsd:import namespace="http://www.springframework.org/schema/geode"
-				schemaLocation="http://www.springframework.org/schema/geode/spring-geode.xsd"/>
+	<xsd:import namespace="http://www.springframework.org/schema/gemfire"
+				schemaLocation="http://www.springframework.org/schema/gemfire/spring-gemfire.xsd"/>
 	<xsd:import namespace="http://www.springframework.org/schema/tool"/>
+
 	<!-- -->
 	<xsd:annotation>
 		<xsd:documentation><![CDATA[
@@ -45,7 +46,7 @@
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:attributeGroup>
-	<!-- Mapping -->
+	<!-- -->
 	<xsd:simpleType name="mappingContextRef">
 		<xsd:annotation>
 			<xsd:appinfo>
@@ -175,7 +176,7 @@ native GemFire PdxInstance type. True, by default but will incur significant ove
 			</xsd:attribute>
 		</xsd:complexType>
 	</xsd:element>
-	<!-- Snapshot Service -->
+	<!-- Snapshot Service support -->
 	<xsd:element name="snapshot-service">
 		<xsd:annotation>
 			<xsd:documentation><![CDATA[
@@ -250,4 +251,5 @@ both in the same definition) is illegal.
 		<xsd:attribute name="format" type="xsd:string" use="optional" default="GEMFIRE"/>
 		<xsd:attribute name="filter-ref" type="xsd:string" use="optional"/>
 	</xsd:complexType>
+
 </xsd:schema>
