@@ -33,6 +33,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.compression.Compressor;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.GenericRegionFactoryBean;
@@ -61,6 +62,7 @@ import org.springframework.util.StringUtils;
  * @see org.apache.geode.cache.Scope
  * @see org.apache.geode.cache.client.ClientCache
  * @see org.apache.geode.cache.client.ClientRegionShortcut
+ * @see org.apache.geode.compression.Compressor
  * @see org.springframework.data.gemfire.GenericRegionFactoryBean
  * @see org.springframework.data.gemfire.LocalRegionFactoryBean
  * @see org.springframework.data.gemfire.PartitionedRegionFactoryBean
@@ -83,6 +85,8 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFactoryBe
 	private Class<V> valueConstraint;
 
 	private ClientRegionShortcut clientRegionShortcut = ClientRegionShortcut.PROXY;
+
+	private Compressor compressor;
 
 	private DataPolicy dataPolicy = DataPolicy.DEFAULT;
 
@@ -129,6 +133,7 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFactoryBe
 		clientRegionFactory.setBeanFactory(getBeanFactory());
 		clientRegionFactory.setCache(gemfireCache);
 		clientRegionFactory.setClose(isClose());
+		clientRegionFactory.setCompressor(getCompressor());
 		clientRegionFactory.setDiskStoreName(getDiskStoreName());
 		clientRegionFactory.setKeyConstraint(getKeyConstraint());
 		clientRegionFactory.setLookupEnabled(getLookupEnabled());
@@ -178,6 +183,7 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFactoryBe
 		serverRegionFactory.setBeanFactory(getBeanFactory());
 		serverRegionFactory.setCache(gemfireCache);
 		serverRegionFactory.setClose(isClose());
+		serverRegionFactory.setCompressor(getCompressor());
 		serverRegionFactory.setDataPolicy(getDataPolicy());
 		serverRegionFactory.setDiskStoreName(getDiskStoreName());
 		serverRegionFactory.setKeyConstraint(getKeyConstraint());
@@ -254,6 +260,26 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFactoryBe
 		return Boolean.TRUE.equals(getClose());
 	}
 
+	/**
+	 * Configures the {@link Compressor} used to compress the this {@link Region Region's} data.
+	 *
+	 * @param compressor {@link Compressor} used to compress the this {@link Region Region's} data.
+	 * @see org.apache.geode.compression.Compressor
+	 */
+	public void setCompressor(Compressor compressor) {
+		this.compressor = compressor;
+	}
+
+	/**
+	 * Returns the configured {@link Compressor} used to compress the this {@link Region Region's} data.
+	 *
+	 * @return the configured {@link Compressor} used to compress the this {@link Region Region's} data.
+	 * @see org.apache.geode.compression.Compressor
+	 */
+	protected Compressor getCompressor() {
+		return this.compressor;
+	}
+
 	public void setDataPolicy(DataPolicy dataPolicy) {
 		this.dataPolicy = dataPolicy;
 	}
@@ -278,10 +304,21 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFactoryBe
 		return this.keyConstraint;
 	}
 
+	/**
+	 * Configure the {@link Region} to manage data in Off-Heap Memory.
+	 *
+	 * @param offHeap boolean value indicating whether the {@link Region Region's} data
+	 * will be managed in Off-Heap Memory.
+	 */
 	public void setOffHeap(Boolean offHeap) {
 		this.offHeap = offHeap;
 	}
 
+	/**
+	 * Return the configuration setting for whether the {@link Region Region's} data will be managed in Off-Heap Memory.
+	 *
+	 * @return a boolean value indicating whether the {@link Region Region's} data will be managed in Off-Heap Memory.
+	 */
 	protected Boolean getOffHeap() {
 		return this.offHeap;
 	}

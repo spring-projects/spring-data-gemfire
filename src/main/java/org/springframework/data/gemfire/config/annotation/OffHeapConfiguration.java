@@ -32,7 +32,6 @@ import java.util.Set;
 import org.apache.geode.cache.Region;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValue;
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -48,11 +47,15 @@ import org.springframework.data.gemfire.util.PropertiesBuilder;
 
 /**
  * The {@link OffHeapConfiguration} class is a Spring {@link ImportBeanDefinitionRegistrar} capable of
- * enabling Pivotal GemFire/Apache Geode cache {@link Region Regions} to use Off-Heap memory for data storage.
+ * enabling Pivotal GemFire/Apache Geode cache {@link Region Regions} to use Off-Heap Memory for data storage.
  *
  * @author John Blum
+ * @see java.util.Properties
+ * @see org.apache.geode.cache.Region
+ * @see org.springframework.beans.factory.config.BeanFactoryPostProcessor
  * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar
  * @see org.springframework.data.gemfire.config.annotation.EnableOffHeap
+ * @see org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport
  * @see org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport
  * @since 1.9.0
  */
@@ -121,13 +124,13 @@ public class OffHeapConfiguration extends EmbeddedServiceConfigurationSupport {
 						.addPropertyValue("offHeap", true)));
 		}
 
-		boolean isTargetedRegionBean(String beanName, BeanDefinition beanDefinition,
+		private boolean isTargetedRegionBean(String beanName, BeanDefinition beanDefinition,
 				ConfigurableListableBeanFactory beanFactory) {
 
 			return isNamedRegion(beanName, beanDefinition, beanFactory) && isRegionBean(beanDefinition, beanFactory);
 		}
 
-		boolean isRegionBean(BeanDefinition beanDefinition, ConfigurableListableBeanFactory beanFactory) {
+		private boolean isRegionBean(BeanDefinition beanDefinition, ConfigurableListableBeanFactory beanFactory) {
 
 			return Optional.ofNullable(beanDefinition)
 				.flatMap(it -> resolveBeanClass(it, beanFactory.getBeanClassLoader()))
@@ -135,13 +138,15 @@ public class OffHeapConfiguration extends EmbeddedServiceConfigurationSupport {
 				.isPresent();
 		}
 
-		boolean isNamedRegion(String beanName, BeanDefinition beanDefinition, BeanFactory beanFactory) {
+		private boolean isNamedRegion(String beanName, BeanDefinition beanDefinition,
+				ConfigurableListableBeanFactory beanFactory) {
 
 			return CollectionUtils.isEmpty(regionNames)
-				|| CollectionUtils.containsAny(regionNames, getBeanNames(beanName, beanDefinition, beanFactory));
+				|| CollectionUtils.containsAny(regionNames, resolveBeanNames(beanName, beanDefinition, beanFactory));
 		}
 
-		Collection<String> getBeanNames(String beanName, BeanDefinition beanDefinition, BeanFactory beanFactory) {
+		private Collection<String> resolveBeanNames(String beanName, BeanDefinition beanDefinition,
+				ConfigurableListableBeanFactory beanFactory) {
 
 			Collection<String> beanNames = new HashSet<>();
 

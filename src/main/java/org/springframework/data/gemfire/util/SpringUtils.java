@@ -29,6 +29,7 @@ import java.util.function.Supplier;
 
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.util.StringUtils;
 
 /**
@@ -51,6 +52,24 @@ public abstract class SpringUtils {
 		bean.setDependsOn(dependsOnList.toArray(new String[dependsOnList.size()]));
 
 		return bean;
+	}
+
+	/* (non-Javadoc) */
+	public static BeanDefinition setPropertyReference(BeanDefinition beanDefinition,
+			String propertyName, String beanName) {
+
+		beanDefinition.getPropertyValues().addPropertyValue(propertyName, new RuntimeBeanReference(beanName));
+
+		return beanDefinition;
+	}
+
+	/* (non-Javadoc) */
+	public static BeanDefinition setPropertyValue(BeanDefinition beanDefinition,
+			String propertyName, Object propertyValue) {
+
+		beanDefinition.getPropertyValues().addPropertyValue(propertyName, propertyValue);
+
+		return beanDefinition;
 	}
 
 	/* (non-Javadoc) */
