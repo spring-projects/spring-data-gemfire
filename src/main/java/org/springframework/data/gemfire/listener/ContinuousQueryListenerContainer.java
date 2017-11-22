@@ -496,7 +496,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	 * @return an {@link Optional} reference to the configured {@link ErrorHandler}.
 	 * @see org.springframework.util.ErrorHandler
 	 */
-	protected Optional<ErrorHandler> getErrorHandler() {
+	public Optional<ErrorHandler> getErrorHandler() {
 		return Optional.ofNullable(this.errorHandler);
 	}
 
@@ -534,7 +534,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	 *
 	 * @return the configured {@link String pool name}.
 	 */
-	protected String getPoolName() {
+	public String getPoolName() {
 		return this.poolName;
 	}
 
@@ -564,7 +564,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	 * @return a reference to the configured {@link QueryService}.
 	 * @see org.apache.geode.cache.query.QueryService
 	 */
-	protected QueryService getQueryService() {
+	public QueryService getQueryService() {
 		return this.queryService;
 	}
 
@@ -587,7 +587,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	 * @return a reference to the configured {@link Executor TaskExecutor}.
 	 * @see java.util.concurrent.Executor
 	 */
-	protected Executor getTaskExecutor() {
+	public Executor getTaskExecutor() {
 		return this.taskExecutor;
 	}
 

@@ -22,9 +22,11 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.data.gemfire.util.ArrayUtils.asArray;
 
 import java.lang.reflect.Proxy;
+import java.util.concurrent.Executor;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
@@ -61,8 +63,8 @@ import org.springframework.data.gemfire.test.model.Person;
 import org.springframework.data.gemfire.test.repo.PersonRepository;
 import org.springframework.data.gemfire.test.support.IOUtils;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ErrorHandler;
 
 import lombok.Data;
 
@@ -88,6 +90,40 @@ public class EnableContinuousQueriesConfigurationUnitTests {
 
 	private ConfigurableApplicationContext newApplicationContext(Class<?>... annotatedClasses) {
 		return new AnnotationConfigApplicationContext(annotatedClasses);
+	}
+
+	@Test
+	public void continuousQueryListenerContainerConfigurationIsCorrect() {
+
+		ConfigurableApplicationContext applicationContext =
+			newApplicationContext(TestContinuousQueryListenerContainerConfiguration.class);
+
+		try {
+
+			ErrorHandler mockErrorHandler = applicationContext.getBean("mockErrorHandler", ErrorHandler.class);
+
+			Pool mockPool = applicationContext.getBean("mockPool", Pool.class);
+
+			QueryService mockQueryService = applicationContext.getBean("mockQueryService", QueryService.class);
+
+			Executor mockTaskExecutor = applicationContext.getBean("mockTaskExecutor", Executor.class);
+
+			assertThat(applicationContext.containsBean("continuousQueryListenerContainer")).isTrue();
+
+			ContinuousQueryListenerContainer container =
+				applicationContext.getBean("continuousQueryListenerContainer",
+					ContinuousQueryListenerContainer.class);
+
+			assertThat(container).isNotNull();
+			assertThat(container.getErrorHandler().orElse(null)).isEqualTo(mockErrorHandler);
+			assertThat(container.getPhase()).isEqualTo(1);
+			assertThat(container.getPoolName()).isEqualTo(mockPool.getName());
+			assertThat(container.getQueryService()).isEqualTo(mockQueryService);
+			assertThat(container.getTaskExecutor()).isEqualTo(mockTaskExecutor);
+		}
+		finally {
+			IOUtils.close(applicationContext);
+		}
 	}
 
 	private void testRegisterAndExecuteContinuousQuery(Class<?>... annotatedClasses) throws Exception {
@@ -135,6 +171,38 @@ public class EnableContinuousQueriesConfigurationUnitTests {
 	}
 
 	@ClientCacheApplication
+	@EnableGemFireMockObjects
+	@EnableContinuousQueries(errorHandlerBeanName = "mockErrorHandler", phase = 1, poolName = "mockPool",
+		queryServiceBeanName = "mockQueryService", taskExecutorBeanName = "mockTaskExecutor")
+	static class TestContinuousQueryListenerContainerConfiguration {
+
+		@Bean
+		ErrorHandler mockErrorHandler() {
+			return mock(ErrorHandler.class);
+		}
+
+		@Bean
+		Pool mockPool() {
+
+			Pool mockPool = mock(Pool.class);
+
+			when(mockPool.getName()).thenReturn("mockPool");
+
+			return mockPool;
+		}
+
+		@Bean
+		QueryService mockQueryService() {
+			return mock(QueryService.class);
+		}
+
+		@Bean
+		Executor mockTaskExecutor() {
+			return mock(Executor.class);
+		}
+	}
+
+	@ClientCacheApplication
 	@EnableContinuousQueries
 	@EnableGemFireMockObjects
 	@SuppressWarnings("unused")
@@ -171,7 +239,7 @@ public class EnableContinuousQueriesConfigurationUnitTests {
 
 			return new BeanPostProcessor() {
 
-				@Nullable @Override
+				@Override
 				public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 
 					if ("continuousQueryComponent".equals(beanName)) {
