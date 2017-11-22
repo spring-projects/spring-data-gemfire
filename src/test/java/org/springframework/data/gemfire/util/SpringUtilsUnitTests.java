@@ -34,7 +34,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.RuntimeBeanReference;
 
 /**
  * Unit tests for {@link SpringUtils}.
@@ -56,6 +58,7 @@ public class SpringUtilsUnitTests {
 
 	@Test
 	public void addDependsOnToExistingDependencies() {
+
 		when(mockBeanDefinition.getDependsOn()).thenReturn(asArray("testBeanNameOne", "testBeanNameTwo"));
 
 		assertThat(SpringUtils.addDependsOn(mockBeanDefinition, "testBeanNameThree")).isSameAs(mockBeanDefinition);
@@ -67,6 +70,7 @@ public class SpringUtilsUnitTests {
 
 	@Test
 	public void addDependsOnToNonExistingDependencies() {
+
 		when(mockBeanDefinition.getDependsOn()).thenReturn(null);
 
 		assertThat(SpringUtils.addDependsOn(mockBeanDefinition, "testBeanName")).isSameAs(mockBeanDefinition);
@@ -77,6 +81,7 @@ public class SpringUtilsUnitTests {
 
 	@Test
 	public void addDependsOnWithMultipleDependenciesWithExistingDependencies() {
+
 		when(mockBeanDefinition.getDependsOn()).thenReturn(asArray("testBeanNameOne", "testBeanNameTwo"));
 
 		assertThat(SpringUtils.addDependsOn(mockBeanDefinition, "testBeanNameThree", "testBeanNameFour"))
@@ -85,6 +90,48 @@ public class SpringUtilsUnitTests {
 		verify(mockBeanDefinition, times(1)).getDependsOn();
 		verify(mockBeanDefinition, times(1))
 			.setDependsOn("testBeanNameOne", "testBeanNameTwo", "testBeanNameThree", "testBeanNameFour");
+	}
+
+	@Test
+	@SuppressWarnings("all")
+	public void setBeanDefinitionPropertyReference() {
+
+		BeanDefinition mockBeanDefinition = mock(BeanDefinition.class);
+
+		MutablePropertyValues mutablePropertyValues = new MutablePropertyValues();
+
+		when(mockBeanDefinition.getPropertyValues()).thenReturn(mutablePropertyValues);
+
+		assertThat(mutablePropertyValues.size()).isEqualTo(0);
+
+		SpringUtils.setPropertyReference(mockBeanDefinition, "testProperty", "testBean");
+
+		assertThat(mutablePropertyValues.size()).isEqualTo(1);
+		assertThat(mutablePropertyValues.getPropertyValue("testProperty")).isNotNull();
+		assertThat(mutablePropertyValues.getPropertyValue("testProperty").getValue())
+			.isInstanceOf(RuntimeBeanReference.class);
+		assertThat(((RuntimeBeanReference) mutablePropertyValues.getPropertyValue("testProperty").getValue()).getBeanName())
+			.isEqualTo("testBean");
+	}
+
+	@Test
+	@SuppressWarnings("all")
+	public void setBeanDefinitionPropertyValue() {
+
+		BeanDefinition mockBeanDefinition = mock(BeanDefinition.class);
+
+		MutablePropertyValues mutablePropertyValues = new MutablePropertyValues();
+
+		when(mockBeanDefinition.getPropertyValues()).thenReturn(mutablePropertyValues);
+
+		assertThat(mutablePropertyValues.size()).isEqualTo(0);
+
+		SpringUtils.setPropertyValue(mockBeanDefinition, "testProperty", "testValue");
+
+		assertThat(mutablePropertyValues.size()).isEqualTo(1);
+		assertThat(mutablePropertyValues.getPropertyValue("testProperty")).isNotNull();
+		assertThat(mutablePropertyValues.getPropertyValue("testProperty").getValue())
+			.isEqualTo("testValue");
 	}
 
 	@Test

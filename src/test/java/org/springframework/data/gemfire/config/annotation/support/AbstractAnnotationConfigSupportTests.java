@@ -370,7 +370,8 @@ public class AbstractAnnotationConfigSupportTests {
 		when(mockBeanDefinition.resolveBeanClass(any(ClassLoader.class)))
 			.thenThrow(new ClassNotFoundException("Class [non.existing.bean.Class] not found"));
 
-		assertThat(this.support.resolveBeanClass(mockBeanDefinition, null).orElse(null)).isNull();
+		assertThat(this.support.resolveBeanClass(mockBeanDefinition, (BeanDefinitionRegistry) null)
+			.orElse(null)).isNull();
 
 		verify(mockBeanDefinition, times(1)).getBeanClassName();
 		verify(mockBeanDefinition, never()).getFactoryMethodName();

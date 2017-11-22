@@ -256,7 +256,7 @@ public class EnableGemFirePropertiesIntegrationTests {
 	public void offHeapGemFirePropertiesConfiguration() {
 
 		MockPropertySource testPropertySource = new MockPropertySource()
-			.withProperty("spring.data.gemfire.cache.off-heap-memory-size", "1024g");
+			.withProperty("spring.data.gemfire.cache.off-heap.memory-size", "1024g");
 
 		this.applicationContext = newApplicationContext(testPropertySource, TestOffHeapGemFirePropertiesConfiguration.class);
 

@@ -41,6 +41,7 @@ import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.compression.Compressor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
@@ -94,6 +95,8 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	private Class<V> valueConstraint;
 
 	private ClientRegionShortcut shortcut;
+
+	private Compressor compressor;
 
 	private DataPolicy dataPolicy;
 
@@ -391,6 +394,8 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 
 		stream(nullSafeArray(this.cacheListeners, CacheListener.class)).forEach(clientRegionFactory::addCacheListener);
 
+		Optional.ofNullable(this.compressor).ifPresent(clientRegionFactory::setCompressor);
+
 		Optional.ofNullable(this.diskStoreName).filter(StringUtils::hasText)
 			.ifPresent(clientRegionFactory::setDiskStoreName);
 
@@ -558,6 +563,16 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	public void setClose(boolean close) {
 		this.close = close;
 		this.destroy = (this.destroy && !close); // retain previous value iff close is false.
+	}
+
+	/**
+	 * Configures the {@link Compressor} used to compress the this {@link Region Region's} data.
+	 *
+	 * @param compressor {@link Compressor} used to compress the this {@link Region Region's} data.
+	 * @see org.apache.geode.compression.Compressor
+	 */
+	public void setCompressor(Compressor compressor) {
+		this.compressor = compressor;
 	}
 
 	/**
