@@ -3,6 +3,26 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.0.2.RELEASE (2017-11-27)
+---------------------------------------------
+* SGF-697 - Allow basePackages to be configured using a property when creating Entity-defined Regions.
+* SGF-693 - Allow the QueryService to be configured as a Spring bean in the ContinuousQuery Annotation support.
+* SGF-692 - Add Annotation support for Region Compression.
+* SGF-691 - Fix Off-Heap Annotation config to properly handle Entity-defined and Java-based Region configuration.
+* SGF-690 - Do not configure ClientRegionFactory poolName when Pool is set to DEFAULT.
+* SGF-689 - Add support for JSR-107 JCache API Annotations in Caching-defined Regions.
+* SGF-688 - Add support for configuring client and server Region data management policies in Entity-defined Regions.
+* SGF-687 - Add support for configuring client and server Region data management policies in Caching-defined Regions.
+* SGF-686 - Document use of EnableGemfireRepositories.
+* SGF-683 - Release 2.0.2 (Kay SR2).
+* SGF-428 - Add HDFS Storage support.
+* SGF-401 - Add Spark Connector support.
+* SGF-243 - Support GemFire Security Features.
+* SGF-224 - Support dynamic Region creation on startup.
+* SGF-126 - Out of the box support for PDX.
+* SGF-110 - Add annotation support for CQ Listeners.
+
+
 Changes in version 1.9.9.RELEASE (2017-11-27)
 ---------------------------------------------
 * SGF-679 - Release 1.9.9 (Ingalls SR9).
