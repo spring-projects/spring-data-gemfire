@@ -723,6 +723,11 @@ public abstract class AbstractAnnotationConfigSupport
 	}
 
 	/* (non-Javadoc) */
+	protected String entitiesProperty(String propertyNameSuffix) {
+		return String.format("%1$s%2$s", propertyName("entities."), propertyNameSuffix);
+	}
+
+	/* (non-Javadoc) */
 	protected String locatorProperty(String propertyNameSuffix) {
 		return String.format("%1$s%2$s", propertyName("locator."), propertyNameSuffix);
 	}

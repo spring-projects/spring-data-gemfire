@@ -91,6 +91,8 @@ public @interface EnableEntityDefinedRegions {
 	 *
 	 * Use {@link #basePackageClasses()} for a type-safe alternative to String-based package names.
 	 *
+	 * Use the {@literal spring.data.gemfire.entities.base-packages} property in {@literal application.properties}.
+	 *
 	 * @return a {@link String} array specifying the packages to search for application persistent entities.
 	 * @see #value()
 	 */
