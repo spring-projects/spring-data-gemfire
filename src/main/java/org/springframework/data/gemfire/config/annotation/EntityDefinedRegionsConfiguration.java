@@ -188,10 +188,11 @@ public class EntityDefinedRegionsConfiguration extends AbstractAnnotationConfigS
 
 		Set<String> resolvedBasePackages = new HashSet<>();
 
-		Collections.addAll(resolvedBasePackages, nullSafeArray(defaultIfEmpty(
-			enableEntityDefinedRegionAttributes.getStringArray("basePackages"),
-				enableEntityDefinedRegionAttributes.getStringArray("value")),
-					String.class));
+		Collections.addAll(resolvedBasePackages, resolveProperty(entitiesProperty("base-packages"),
+			String[].class, nullSafeArray(defaultIfEmpty(
+					enableEntityDefinedRegionAttributes.getStringArray("basePackages"),
+					enableEntityDefinedRegionAttributes.getStringArray("value")),
+				String.class)));
 
 		stream(nullSafeArray(enableEntityDefinedRegionAttributes.getClassArray(
 			"basePackageClasses"), Class.class))
