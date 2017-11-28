@@ -39,6 +39,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.data.gemfire.IndexFactoryBean;
+import org.springframework.data.gemfire.LocalRegionFactoryBean;
 import org.springframework.data.gemfire.config.annotation.test.entities.CollocatedPartitionRegionEntity;
 import org.springframework.data.gemfire.config.annotation.test.entities.NonEntity;
 import org.springframework.data.gemfire.mapping.annotation.ClientRegion;
@@ -58,8 +59,9 @@ import org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor;
  * @see org.springframework.data.gemfire.IndexFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.IndexConfigurer
  * @see org.springframework.data.gemfire.search.lucene.LuceneIndexFactoryBean
- * @since 1.0.0
+ * @since 2.0.0
  */
+@SuppressWarnings("unused")
 public class IndexConfigurerIntegrationTests {
 
 	private static ConfigurableApplicationContext applicationContext;
@@ -118,7 +120,6 @@ public class IndexConfigurerIntegrationTests {
 
 	@PeerCacheApplication
 	@EnableIndexing
-	@SuppressWarnings("unused")
 	@EnableEntityDefinedRegions(basePackageClasses = NonEntity.class,
 		excludeFilters = {
 			@ComponentScan.Filter(type = FilterType.ANNOTATION,
@@ -128,6 +129,18 @@ public class IndexConfigurerIntegrationTests {
 		}
 	)
 	static class TestConfiguration {
+
+		@Bean("LoyalCustomers")
+		public LocalRegionFactoryBean<Object, Object> localRegion(GemFireCache gemfireCache) {
+
+			LocalRegionFactoryBean<Object, Object> localRegion = new LocalRegionFactoryBean<>();
+
+			localRegion.setCache(gemfireCache);
+			localRegion.setClose(false);
+			localRegion.setPersistent(false);
+
+			return localRegion;
+		}
 
 		@Bean
 		GemfireTestBeanPostProcessor testBeanPostProcessor() {

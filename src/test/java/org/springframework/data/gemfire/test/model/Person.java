@@ -24,6 +24,7 @@ import java.util.Date;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.gemfire.mapping.annotation.Indexed;
 import org.springframework.data.gemfire.mapping.annotation.Region;
 import org.springframework.data.gemfire.test.support.IdentifierSequence;
 import org.springframework.data.gemfire.util.SpringUtils;
@@ -40,6 +41,7 @@ import org.springframework.util.ObjectUtils;
  * @see org.springframework.data.annotation.Id
  * @see org.springframework.data.annotation.PersistenceConstructor
  * @see org.springframework.data.gemfire.mapping.annotation.Region
+ * @see org.springframework.data.gemfire.mapping.annotation.Indexed
  * @see org.springframework.data.gemfire.test.support.IdentifierSequence
  * @since 2.0.0
  */
@@ -57,6 +59,8 @@ public class Person implements Comparable<Person>, Serializable {
 	private Long id;
 
 	private final String firstName;
+
+	@Indexed
 	private final String lastName;
 
 	public static Date newBirthDate(int year, int month, int dayOfMonth) {
