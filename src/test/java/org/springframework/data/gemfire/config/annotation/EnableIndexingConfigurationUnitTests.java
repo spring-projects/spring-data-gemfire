@@ -35,6 +35,7 @@ import java.util.Set;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
@@ -72,10 +73,22 @@ import org.springframework.data.gemfire.config.annotation.test.entities.Replicat
  * @author John Blum
  * @see org.junit.Test
  * @see org.mockito.Mockito
- * @see EnableIndexing
+ * @see org.apache.geode.cache.GemFireCache
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.lucene.LuceneIndex
+ * @see org.apache.geode.cache.query.Index
+ * @see org.springframework.context.ConfigurableApplicationContext
+ * @see org.springframework.context.annotation.Bean
+ * @see org.springframework.context.annotation.Configuration
+ * @see org.springframework.data.gemfire.IndexFactoryBean
+ * @see org.springframework.data.gemfire.IndexType
+ * @see org.springframework.data.gemfire.config.annotation.EnableIndexing
  * @see org.springframework.data.gemfire.config.annotation.IndexConfiguration
+ * @see org.springframework.data.gemfire.mapping.annotation.Indexed
+ * @see org.springframework.data.gemfire.mapping.annotation.LuceneIndexed
  * @since 1.9.0
  */
+@SuppressWarnings("unused")
 public class EnableIndexingConfigurationUnitTests {
 
 	private static final Set<Index> indexes = new ConcurrentHashSet<>();
@@ -119,6 +132,7 @@ public class EnableIndexingConfigurationUnitTests {
 
 	/* (non-Javadoc) */
 	private void assertLuceneIndex(LuceneIndex index, String name, String regionPath, String... fields) {
+
 		assertThat(index).isNotNull();
 		assertThat(index.getName()).isEqualTo(name);
 		assertThat(index.getRegionPath()).isEqualTo(regionPath);
@@ -128,6 +142,7 @@ public class EnableIndexingConfigurationUnitTests {
 
 	/* (non-Javadoc) */
 	private void assertOqlIndex(Index index, String name, String expression, String from, IndexType indexType) {
+
 		assertThat(index).isNotNull();
 		assertThat(index.getName()).isEqualTo(name);
 		assertThat(index.getIndexedExpression()).isEqualTo(expression);
@@ -137,18 +152,21 @@ public class EnableIndexingConfigurationUnitTests {
 
 	/* (non-Javadoc) */
 	private ConfigurableApplicationContext newApplicationContext(Class<?>... annotatedClasses) {
+
 		ConfigurableApplicationContext applicationContext = new AnnotationConfigApplicationContext(annotatedClasses);
+
 		applicationContext.registerShutdownHook();
+
 		return applicationContext;
 	}
 
 	@Test
 	public void persistentEntityIndexesAreCreated() {
 
-		applicationContext = newApplicationContext(IndexingEnabledWithIndexedPersistentEntityConfiguration.class);
+		this.applicationContext = newApplicationContext(IndexingEnabledWithIndexedPersistentEntityConfiguration.class);
 
-		assertLuceneIndexes(applicationContext);
-		assertOqlIndexes(applicationContext);
+		assertLuceneIndexes(this.applicationContext);
+		assertOqlIndexes(this.applicationContext);
 	}
 
 	private void assertLuceneIndexes(ConfigurableApplicationContext applicationContext) {
@@ -162,7 +180,7 @@ public class EnableIndexingConfigurationUnitTests {
 
 		Index customersIdIndex = applicationContext.getBean("CustomersIdKeyIdx", Index.class);
 
-		assertOqlIndex(customersIdIndex, "CustomersIdKeyIdx", "id", "Customers", IndexType.KEY);
+		assertOqlIndex(customersIdIndex, "CustomersIdKeyIdx", "id", "/Customers", IndexType.KEY);
 
 		Index customersFirstNameIndex = applicationContext.getBean("CustomersFirstNameFunctionalIdx", Index.class);
 
@@ -171,15 +189,16 @@ public class EnableIndexingConfigurationUnitTests {
 
 		Index lastNameIndex = applicationContext.getBean("LastNameIdx", Index.class);
 
-		assertOqlIndex(lastNameIndex, "LastNameIdx", "surname", "Customers", IndexType.HASH);
+		assertOqlIndex(lastNameIndex, "LastNameIdx", "surname", "/Customers", IndexType.HASH);
 	}
 
 	@Test
 	public void persistentEntityIndexesAreNotCreated() {
 
-		applicationContext = newApplicationContext(IndexingNotEnabledWithIndexedPersistentEntityConfiguration.class);
+		this.applicationContext =
+			newApplicationContext(IndexingNotEnabledWithIndexedPersistentEntityConfiguration.class);
 
-		Map<String, Index> indexes = applicationContext.getBeansOfType(Index.class);
+		Map<String, Index> indexes = this.applicationContext.getBeansOfType(Index.class);
 
 		assertThat(indexes).isNotNull();
 		assertThat(indexes).isEmpty();
@@ -188,10 +207,10 @@ public class EnableIndexingConfigurationUnitTests {
 	@Test
 	public void indexAnnotatedEntityPropertyIsIgnoredWithExistingIndexHavingSameDefinition() {
 
-		applicationContext = newApplicationContext(
-			IndexAnnotatedEntityPropertyIsIgnoredWithExistingIndexHavingSameDefinitionConfiguration.class);
+		this.applicationContext =
+			newApplicationContext(IndexAnnotatedEntityPropertyIsIgnoredWithExistingIndexHavingSameDefinitionConfiguration.class);
 
-		Index firstNameIndex = applicationContext.getBean("LoyalCustomersFirstNameFunctionalIdx", Index.class);
+		Index firstNameIndex = this.applicationContext.getBean("LoyalCustomersFirstNameFunctionalIdx", Index.class);
 
 		assertOqlIndex(firstNameIndex, "LoyalCustomersFirstNameFunctionalIdx",
 			"first_name", "/LoyalCustomers", IndexType.FUNCTIONAL);
@@ -202,10 +221,10 @@ public class EnableIndexingConfigurationUnitTests {
 	@Test
 	public void indexAnnotatedEntityPropertyIsIgnoredWithExistingIndexHavingSameName() {
 
-		applicationContext = newApplicationContext(
-			IndexAnnotatedEntityPropertyIsIgnoredWithExistingIndexHavingSameNameConfiguration.class);
+		this.applicationContext =
+			newApplicationContext(IndexAnnotatedEntityPropertyIsIgnoredWithExistingIndexHavingSameNameConfiguration.class);
 
-		Index lastNameIndex = applicationContext.getBean("LastNameIdx", Index.class);
+		Index lastNameIndex = this.applicationContext.getBean("LastNameIdx", Index.class);
 
 		assertOqlIndex(lastNameIndex, "LastNameIdx", "last_name", "/People", IndexType.HASH);
 	}
@@ -393,6 +412,10 @@ public class EnableIndexingConfigurationUnitTests {
 			LocalRegionEntity.class, ReplicateRegionEntity.class }))
 	private static class IndexingEnabledWithIndexedPersistentEntityConfiguration extends GemFireConfiguration {
 
+		@Bean("LoyalCustomers")
+		Region mockRegion() {
+			return mock(Region.class);
+		}
 	}
 
 	@EnableEntityDefinedRegions(basePackageClasses = NonEntity.class,
@@ -410,6 +433,11 @@ public class EnableIndexingConfigurationUnitTests {
 			LocalRegionEntity.class, ReplicateRegionEntity.class }))
 	static class IndexAnnotatedEntityPropertyIsIgnoredWithExistingIndexHavingSameDefinitionConfiguration
 		extends GemFireConfiguration {
+
+		@Bean("LoyalCustomers")
+		Region mockRegion() {
+			return mock(Region.class);
+		}
 
 		@Bean
 		@SuppressWarnings("unused")
@@ -434,6 +462,11 @@ public class EnableIndexingConfigurationUnitTests {
 			LocalRegionEntity.class, ReplicateRegionEntity.class }))
 	static class IndexAnnotatedEntityPropertyIsIgnoredWithExistingIndexHavingSameNameConfiguration
 		extends GemFireConfiguration {
+
+		@Bean("LoyalCustomers")
+		Region mockRegion() {
+			return mock(Region.class);
+		}
 
 		@Bean
 		@SuppressWarnings("unused")

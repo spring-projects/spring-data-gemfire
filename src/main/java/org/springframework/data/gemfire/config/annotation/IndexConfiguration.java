@@ -18,6 +18,7 @@
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeMap;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
@@ -37,6 +38,7 @@ import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.IndexFactoryBean;
 import org.springframework.data.gemfire.IndexType;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
@@ -202,8 +204,9 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 			indexFactoryBeanBuilder.addPropertyValue("expression",
 				resolveExpression(persistentEntity, persistentProperty, indexedAttributes));
 
-			indexFactoryBeanBuilder.addPropertyValue("from",
-				resolveFrom(persistentEntity, persistentProperty, indexedAttributes));
+			String from = resolveFrom(persistentEntity, persistentProperty, indexedAttributes);
+
+			indexFactoryBeanBuilder.addPropertyValue("from", toRegionPath(from));
 
 			indexFactoryBeanBuilder.addPropertyValue("ignoreIfExists", Boolean.TRUE);
 
@@ -216,8 +219,34 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 			indexFactoryBeanBuilder.addPropertyValue("type",
 				resolveType(persistentEntity, persistentProperty, indexedAttributes, indexType).toString());
 
+			indexFactoryBeanBuilder.addDependsOn(toRegionName(from));
+
 			registry.registerBeanDefinition(indexName, indexFactoryBeanBuilder.getBeanDefinition());
 		});
+	}
+
+	/* (non-Javadoc) */
+	private String toRegionName(String from) {
+
+		return Optional.ofNullable(from)
+			.filter(StringUtils::hasText)
+			.map(it -> {
+
+				boolean isSubRegionPath = from.lastIndexOf(Region.SEPARATOR) > 0;
+
+				return (!isSubRegionPath && from.startsWith(Region.SEPARATOR) ? from.substring(1) : from);
+
+			})
+			.orElseThrow(() -> newIllegalArgumentException("From clause [%s] is required", from));
+	}
+
+	/* (non-Javadoc) */
+	private String toRegionPath(String from) {
+
+		return Optional.ofNullable(from)
+			.filter(StringUtils::hasText)
+			.map(it -> from.startsWith(Region.SEPARATOR) ? from : GemfireUtils.toRegionPath(from))
+			.orElseThrow(() -> newIllegalArgumentException("From clause [%s] is required", from));
 	}
 
 	/**
