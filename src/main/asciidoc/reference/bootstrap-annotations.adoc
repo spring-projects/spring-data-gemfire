@@ -1292,6 +1292,16 @@ TIP: Alternatively, a user may use the `spring.data.gemfire.cache.compression.co
 and `spring.data.gemfire.cache.compression.region-names` properties in the `application.properties` file
 to set and configure the values of these `@EnableCompression` annotation attributes.
 
+WARNING: To use Pivotal GemFire's Region Compression feature, you must include the `org.iq80.snappy:snappy` dependency
+in your _Maven_ `pom.xml` or `build.gradle` file when using _Gradle_.  This is only necessary if you use Pivotal GemFire's
+default, out-of-the-box support for Region Compression, which uses the
+http://gemfire-91-javadocs.docs.pivotal.io/org/apache/geode/compression/SnappyCompressor.html[`SnappyCompressor`]
+by default.  Of course, if you are using another compression library, you will need to include dependencies
+for that compression library on your application's classpath.  Additionally, you will need to implement Pivotal GemFire's
+http://gemfire-91-javadocs.docs.pivotal.io/org/apache/geode/compression/Compressor.html[`Compressors`] to adapt
+your compression library of choice, define it as a bean in the _Spring_ context, and then set the `compressorBeanName`
+to this custom bean definition.
+
 See the `@EnableCompression` annotation _Javadoc_ for more details.
 
 More details on Pivotal GemFire Compression can be found
