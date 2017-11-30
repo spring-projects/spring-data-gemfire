@@ -3,16 +3,5 @@
 = Spring Data GemFire Schema
 :resourcesDir: {basedocdir}/../resources
 
-== Spring Data GemFire Core Schema (gfe)
-
-[source,xml]
-----
-include::{resourcesDir}/org/springframework/data/gemfire/config/spring-gemfire-2.0.xsd[]
-----
-
-== Spring Data GemFire Data Access Schema (gfe-data)
-
-[source,xml]
-----
-include::{resourcesDir}/org/springframework/data/gemfire/config/spring-data-gemfire-2.0.xsd[]
-----
+- http://www.springframework.org/schema/gemfire/spring-gemfire.xsd[Spring Data GemFire Core Schema (`gfe`-namespace)]
+- http://www.springframework.org/schema/gemfire/spring-data-gemfire.xsd[Spring Data GemFire Data Access Schema (`gfe-data`-namespace)]
