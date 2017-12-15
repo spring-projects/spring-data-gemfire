@@ -19,6 +19,7 @@ package org.springframework.data.gemfire.config.annotation;
 
 import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeMap;
 
+import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -100,10 +101,12 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
                 Optional.of(this.getBeanFactory())
                     .filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
                     .map(beanFactory -> {
+
                         Map<String, PeerCacheConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)
                             .getBeansOfType(PeerCacheConfigurer.class, true, true);
 
                         return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
+
                     })
                     .orElseGet(Collections::emptyList)
             );
@@ -140,31 +143,34 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
             Map<String, Object> peerCacheApplicationAttributes =
                 importMetadata.getAnnotationAttributes(getAnnotationTypeName());
 
-            setEnableAutoReconnect(resolveProperty(cachePeerProperty("enable-auto-reconnect"),
-                Boolean.TRUE.equals(peerCacheApplicationAttributes.get("enableAutoReconnect"))));
+            if (peerCacheApplicationAttributes != null) {
 
-            setLockLease(resolveProperty(cachePeerProperty("lock-lease"),
-                (Integer) peerCacheApplicationAttributes.get("lockLease")));
+                setEnableAutoReconnect(resolveProperty(cachePeerProperty("enable-auto-reconnect"),
+					Boolean.TRUE.equals(peerCacheApplicationAttributes.get("enableAutoReconnect"))));
 
-            setLockTimeout(resolveProperty(cachePeerProperty("lock-timeout"),
-                (Integer) peerCacheApplicationAttributes.get("lockTimeout")));
+                setLockLease(resolveProperty(cachePeerProperty("lock-lease"),
+					(Integer) peerCacheApplicationAttributes.get("lockLease")));
 
-            setMessageSyncInterval(resolveProperty(cachePeerProperty("message-sync-interval"),
-                (Integer) peerCacheApplicationAttributes.get("messageSyncInterval")));
+                setLockTimeout(resolveProperty(cachePeerProperty("lock-timeout"),
+					(Integer) peerCacheApplicationAttributes.get("lockTimeout")));
 
-            setSearchTimeout(resolveProperty(cachePeerProperty("search-timeout"),
-                (Integer) peerCacheApplicationAttributes.get("searchTimeout")));
+                setMessageSyncInterval(resolveProperty(cachePeerProperty("message-sync-interval"),
+					(Integer) peerCacheApplicationAttributes.get("messageSyncInterval")));
 
-            setUseClusterConfiguration(resolveProperty(cachePeerProperty("use-cluster-configuration"),
-                Boolean.TRUE.equals(peerCacheApplicationAttributes.get("useClusterConfiguration"))));
+                setSearchTimeout(resolveProperty(cachePeerProperty("search-timeout"),
+					(Integer) peerCacheApplicationAttributes.get("searchTimeout")));
 
-            Optional.ofNullable((String) peerCacheApplicationAttributes.get("locators"))
-                .filter(PeerCacheConfiguration::hasValue)
-                .ifPresent(this::setLocators);
+                setUseClusterConfiguration(resolveProperty(cachePeerProperty("use-cluster-configuration"),
+					Boolean.TRUE.equals(peerCacheApplicationAttributes.get("useClusterConfiguration"))));
 
-            Optional.ofNullable(resolveProperty(cachePeerProperty("locators"), (String) null))
-                .filter(StringUtils::hasText)
-                .ifPresent(this::setLocators);
+                Optional.ofNullable((String) peerCacheApplicationAttributes.get("locators"))
+					.filter(PeerCacheConfiguration::hasValue)
+					.ifPresent(this::setLocators);
+
+                Optional.ofNullable(resolveProperty(cachePeerProperty("locators"), (String) null))
+					.filter(StringUtils::hasText)
+					.ifPresent(this::setLocators);
+            }
         }
     }
 
@@ -172,7 +178,7 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
      * {@inheritDoc}
      */
     @Override
-    protected Class getAnnotationType() {
+    protected Class<? extends Annotation> getAnnotationType() {
         return PeerCacheApplication.class;
     }
 

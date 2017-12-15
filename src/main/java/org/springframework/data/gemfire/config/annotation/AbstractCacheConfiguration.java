@@ -274,8 +274,9 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 			setLogLevel(resolveProperty(cacheProperty("log-level"),
 				(String) cacheMetadataAttributes.get("logLevel")));
 
-			setName(resolveProperty(cacheProperty("name"),
-				(String) cacheMetadataAttributes.get("name")));
+			setName(resolveProperty(propertyName("name"),
+				resolveProperty(cacheProperty("name"),
+					(String) cacheMetadataAttributes.get("name"))));
 
 			setUseBeanFactoryLocator(resolveProperty(propertyName("use-bean-factory-locator"),
 				Boolean.TRUE.equals(cacheMetadataAttributes.get("useBeanFactoryLocator"))));
@@ -473,7 +474,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 	 * @see org.springframework.data.gemfire.config.annotation.ClientCacheApplication
 	 * @see org.springframework.data.gemfire.config.annotation.PeerCacheApplication
 	 */
-	protected abstract Class getAnnotationType();
+	protected abstract Class<? extends Annotation> getAnnotationType();
 
 	/**
 	 * Returns the fully-qualified {@link Class#getName() class name} of the cache application
