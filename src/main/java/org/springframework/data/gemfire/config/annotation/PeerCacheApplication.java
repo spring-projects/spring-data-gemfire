@@ -142,7 +142,8 @@ public @interface PeerCacheApplication {
 	 *
 	 * Defaults to {@literal SpringBasedPeerCacheApplication}.
 	 *
-	 * Use {@literal spring.data.gemfire.cache.name} property in {@literal application.properties}.
+	 * Use either the {@literal spring.data.gemfire.name} or the {@literal spring.data.gemfire.cache.name} property
+	 * in {@literal application.properties}.
 	 */
 	String name() default PeerCacheConfiguration.DEFAULT_NAME;
 

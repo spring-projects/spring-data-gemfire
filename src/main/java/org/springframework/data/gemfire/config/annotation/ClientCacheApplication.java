@@ -195,7 +195,8 @@ public @interface ClientCacheApplication {
 	 *
 	 * Defaults to {@literal SpringBasedCacheClientApplication}.
 	 *
-	 * Use {@literal spring.data.gemfire.cache.name} property in {@literal application.properties}.
+	 * Use either the {@literal spring.data.gemfire.name} or the {@literal spring.data.gemfire.cache.name} property
+	 * in {@literal application.properties}.
 	 */
 	String name() default ClientCacheConfiguration.DEFAULT_NAME;
 
