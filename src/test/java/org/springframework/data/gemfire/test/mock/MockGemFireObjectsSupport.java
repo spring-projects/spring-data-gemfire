@@ -1326,7 +1326,8 @@ public abstract class MockGemFireObjectsSupport extends MockObjectsSupport {
 			data.get(invocation.<K>getArgument(0)));
 
 		when(mockRegion.getEntry(ArgumentMatchers.<K>any())).thenAnswer(invocation ->
-			data.entrySet().stream().filter(entry -> entry.getKey().equals(invocation.getArgument(0))).findFirst());
+			data.entrySet().stream().filter(entry -> entry.getKey().equals(invocation.getArgument(0)))
+				.findFirst().orElse(null));
 
 		when(mockRegion.put(any(), any())).thenAnswer(invocation ->
 			data.put(invocation.getArgument(0), invocation.getArgument(1)));
