@@ -18,12 +18,15 @@ package org.springframework.data.gemfire.config.annotation.support;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Optional;
 
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.ObjectUtils;
 
 /**
  * The RegionDataAccessTracingAspect class...
@@ -58,26 +61,48 @@ public class RegionDataAccessTracingAspect {
 	}
 
 	/* (non-Javadoc) */
-	@Pointcut("target(com.gemstone.gemfire.cache.Region)")
+	@Pointcut("target(org.apache.geode.cache.Region)")
 	private void regionPointcut() {}
 
 	/* (non-Javadoc) */
-	@Pointcut("execution(* com.gemstone.gemfire.cache.Region.create(..))"
-		+ " || execution(* com.gemstone.gemfire.cache.Region.get(..))"
-		+ " || execution(* com.gemstone.gemfire.cache.Region.getAll(..))"
-		+ " || execution(* com.gemstone.gemfire.cache.Region.put(..))"
-		+ " || execution(* com.gemstone.gemfire.cache.Region.putAll(..))"
-		+ " || execution(* com.gemstone.gemfire.cache.Region.putIfAbsent(..))"
-		+ " || execution(* com.gemstone.gemfire.cache.Region.remove(..))"
-		+ " || execution(* com.gemstone.gemfire.cache.Region.replace(..))"
-		+ " || execution(* com.gemstone.gemfire.cache.Region.selectValue(..))"
-		+ " || execution(* com.gemstone.gemfire.cache.Region.values(..))"
+	@Pointcut("execution(* org.apache.geode.cache.Region.create(..))"
+		+ " || execution(* org.apache.geode.cache.Region.get(..))"
+		+ " || execution(* org.apache.geode.cache.Region.getAll(..))"
+		+ " || execution(* org.apache.geode.cache.Region.getEntry(..))"
+		+ " || execution(* org.apache.geode.cache.Region.invalidate(..))"
+		+ " || execution(* org.apache.geode.cache.Region.keySet())"
+		+ " || execution(* org.apache.geode.cache.Region.keySetOnServer())"
+		+ " || execution(* org.apache.geode.cache.Region.localClear())"
+		+ " || execution(* org.apache.geode.cache.Region.localDestroy(..))"
+		+ " || execution(* org.apache.geode.cache.Region.localInvalidate(..))"
+		+ " || execution(* org.apache.geode.cache.Region.put(..))"
+		+ " || execution(* org.apache.geode.cache.Region.putAll(..))"
+		+ " || execution(* org.apache.geode.cache.Region.putIfAbsent(..))"
+		+ " || execution(* org.apache.geode.cache.Region.query(..))"
+		+ " || execution(* org.apache.geode.cache.Region.remove(..))"
+		+ " || execution(* org.apache.geode.cache.Region.removeAll(..))"
+		+ " || execution(* org.apache.geode.cache.Region.replace(..))"
+		+ " || execution(* org.apache.geode.cache.Region.selectValue(..))"
+		+ " || execution(* org.apache.geode.cache.Region.size())"
+		+ " || execution(* org.apache.geode.cache.Region.sizeOnServer())"
+		+ " || execution(* org.apache.geode.cache.Region.values(..))"
 		+ "")
 	private void regionDataAccessPointcut() {}
 
 	/* (non-Javadoc) */
 	@Before("regionPointcut() && regionDataAccessPointcut()")
-	public void regionDataAccessTracingAdvice() {
-		getLogger().trace("Region data access call [{}]", getCurrentThreadStackTrace());
+	public void regionDataAccessTracingAdvice(JoinPoint joinPoint) {
+		getLogger().trace("Region data access call [{}(..)] with stack trace [{}]",
+			toRegionMethodSignature(joinPoint), getCurrentThreadStackTrace());
+	}
+
+	/* (non-Javadoc) */
+	private String toRegionMethodSignature(JoinPoint joinPoint) {
+
+		return Optional.ofNullable(joinPoint)
+			.map(JoinPoint::getSignature)
+			.map(signature ->
+				String.format("%1$s.%2$s", ObjectUtils.nullSafeClassName(joinPoint.getTarget()), signature.getName()))
+			.orElse("");
 	}
 }
