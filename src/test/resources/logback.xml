@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration>
+<configuration debug="false">
 
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -13,14 +13,16 @@
         </encoder>
     </appender>
 
-    <logger name="org.springframework" level="${logback.log.level:-error}"/>
+    <logger name="ch.qos.logback" level="${logback.log.level:-ERROR}"/>
+
+    <logger name="org.springframework" level="${logback.log.level:-ERROR}"/>
 
     <logger name="org.springframework.data.gemfire.config.annotation.support.RegionDataAccessTracingAspect" level="trace">
         <appender-ref ref="testAppender"/>
     </logger>
 
-    <root level="${logback.log.level:-error}">
-        <appender-ref ref="console" />
+    <root level="${logback.log.level:-ERROR}">
+        <appender-ref ref="console"/>
     </root>
 
 </configuration>

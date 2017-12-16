@@ -18,6 +18,7 @@ package org.springframework.data.gemfire.config.annotation;
 
 import static java.util.stream.StreamSupport.stream;
 import static org.springframework.data.gemfire.util.CacheUtils.isClient;
+import static org.springframework.data.gemfire.util.CacheUtils.isPeer;
 
 import java.lang.annotation.Annotation;
 import java.util.Optional;
@@ -27,17 +28,12 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.query.Index;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportAware;
-import org.springframework.context.event.ApplicationContextEvent;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.core.OrderComparator;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.config.admin.GemfireAdminOperations;
 import org.springframework.data.gemfire.config.admin.remote.FunctionGemfireAdminTemplate;
 import org.springframework.data.gemfire.config.admin.remote.RestHttpGemfireAdminTemplate;
@@ -51,6 +47,9 @@ import org.springframework.data.gemfire.config.schema.support.ComposableSchemaOb
 import org.springframework.data.gemfire.config.schema.support.IndexCollector;
 import org.springframework.data.gemfire.config.schema.support.IndexDefiner;
 import org.springframework.data.gemfire.config.schema.support.RegionDefiner;
+import org.springframework.data.gemfire.config.support.AbstractSmartLifecycle;
+import org.springframework.data.gemfire.util.CacheUtils;
+import org.springframework.util.Assert;
 
 /**
  * Spring {@link Configuration @Configuration} class defining Spring beans that will record the creation of
@@ -162,70 +161,22 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 		}
 	}
 
-	@EventListener
-	public void gemfireClusterSchemaCreationHandler(ContextRefreshedEvent event) {
+	@Bean
+	public ClusterSchemaObjectInitializer gemfireClusterSchemaObjectInitializer(GemFireCache gemfireCache) {
 
-		GemFireCache gemfireCache = resolveGemFireCache(event);
+		return Optional.ofNullable(gemfireCache)
+			.filter(CacheUtils::isClient)
+			.map(clientCache -> {
 
-		if (isClient(gemfireCache)) {
+				SchemaObjectContext schemaObjectContext = SchemaObjectContext.from(gemfireCache)
+					.with(newGemfireAdminOperations((ClientCache) clientCache))
+					.with(newSchemaObjectCollector())
+					.with(newSchemaObjectDefiner());
 
-			GemfireAdminOperations gemfireAdminOperations = newGemfireAdminOperations((ClientCache) gemfireCache);
+				return new ClusterSchemaObjectInitializer(schemaObjectContext);
 
-			SchemaObjectDefiner schemaObjectDefiner = newSchemaObjectDefiner();
-
-			Iterable<?> schemaObjects = newSchemaObjectCollector().collectFrom(resolveApplicationContext(event));
-
-			stream(schemaObjects.spliterator(), false)
-				.map(schemaObjectDefiner::define)
-				.sorted(OrderComparator.INSTANCE)
-				.forEach(schemaObjectDefinition ->
-					schemaObjectDefinition.ifPresent(it -> it.create(gemfireAdminOperations)));
-		}
-		/*
-		else if (isPeer(gemfireCache)) {
-
-			GemfireFunctionUtils.registerFunctionForPojoMethod(new CreateRegionFunction(),
-				CreateRegionFunction.CREATE_REGION_FUNCTION_ID);
-
-			GemfireFunctionUtils.registerFunctionForPojoMethod(new CreateIndexFunction(),
-				CreateIndexFunction.CREATE_INDEX_FUNCTION_ID);
-		}
-		*/
-	}
-
-	/**
-	 * Resolves a reference to the Spring {@link ApplicationContext} from the given {@link ApplicationContextEvent}.
-	 *
-	 * @param event {@link ApplicationContextEvent} from which to resolve the Spring {@link ApplicationContext}.
-	 * @return the resolved Spring {@link ApplicationContext}.
-	 * @see org.springframework.context.event.ApplicationContextEvent
-	 * @see org.springframework.context.ApplicationContext
-	 */
-	private ApplicationContext resolveApplicationContext(ApplicationContextEvent event) {
-		return event.getApplicationContext();
-	}
-
-	/**
-	 * Tries to resolve the {@link GemFireCache} from the Spring {@link ApplicationContext}.
-	 * The {@link GemFireCache} will be resolvable from the Spring {@link ApplicationContext} if the cache
-	 * was registered a managed bean in the Spring container.
-	 *
-	 * If the {@link GemFireCache} cannot be resolved from the {@link ApplicationContext}, this method will attempt
-	 * to resolve the cache reference from GemFire's global context using the GemFire API.
-	 *
-	 * @param event Spring {@link ApplicationContextEvent} encapsulating the details of the Spring container event.
-	 * @return the resolved {@link GemFireCache} if available.
-	 * @see org.springframework.context.event.ApplicationContextEvent
-	 * @see org.apache.geode.cache.GemFireCache
-	 */
-	private GemFireCache resolveGemFireCache(ApplicationContextEvent event) {
-
-		try {
-			return resolveApplicationContext(event).getBean(GemFireCache.class);
-		}
-		catch (BeansException ignore) {
-			return GemfireUtils.resolveGemFireCache();
-		}
+			})
+			.orElse(null);
 	}
 
 	/**
@@ -282,5 +233,148 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 			new RegionDefiner(resolveServerRegionShortcut()),
 			new IndexDefiner()
 		);
+	}
+
+	public static class ClusterSchemaObjectInitializer extends AbstractSmartLifecycle {
+
+		private final SchemaObjectContext schemaObjectContext;
+
+		protected ClusterSchemaObjectInitializer(SchemaObjectContext schemaObjectContext) {
+			Assert.notNull(schemaObjectContext, "SchemaObjectContext is required");
+			this.schemaObjectContext = schemaObjectContext;
+		}
+
+		@Override
+		public boolean isAutoStartup() {
+			return true;
+		}
+
+		@Override
+		public int getPhase() {
+			return Integer.MIN_VALUE;
+		}
+
+		protected SchemaObjectContext getSchemaObjectContext() {
+			return this.schemaObjectContext;
+		}
+
+		@Override
+		public void start() {
+
+			SchemaObjectContext schemaObjectContext = getSchemaObjectContext();
+
+			if (schemaObjectContext.isClientCache()) {
+
+				Iterable<?> schemaObjects = schemaObjectContext.getSchemaObjectCollector()
+					.collectFrom(requireApplicationContext());
+
+				stream(schemaObjects.spliterator(), false)
+					.map(schemaObjectContext.getSchemaObjectDefiner()::define)
+					.sorted(OrderComparator.INSTANCE)
+					.forEach(schemaObjectDefinition -> schemaObjectDefinition
+						.ifPresent(it -> it.create(schemaObjectContext.getGemfireAdminOperations())));
+
+				setRunning(true);
+
+			}
+			/*
+			else if (schemaObjectContext.isPeerCache()) {
+
+				GemfireFunctionUtils.registerFunctionForPojoMethod(new CreateRegionFunction(),
+					CreateRegionFunction.CREATE_REGION_FUNCTION_ID);
+
+				GemfireFunctionUtils.registerFunctionForPojoMethod(new CreateIndexFunction(),
+					CreateIndexFunction.CREATE_INDEX_FUNCTION_ID);
+
+			}
+			*/
+		}
+
+		@Override
+		public void stop() {
+			setRunning(false);
+		}
+
+		@Override
+		public void stop(Runnable callback) {
+			setRunning(false);
+			callback.run();
+		}
+	}
+
+	public static class SchemaObjectContext {
+
+		private final GemFireCache gemfireCache;
+
+		private GemfireAdminOperations gemfireAdminOperations;
+
+		private SchemaObjectCollector<?> schemaObjectCollector;
+
+		private SchemaObjectDefiner schemaObjectDefiner;
+
+		protected static SchemaObjectContext from(GemFireCache gemfireCache) {
+			return new SchemaObjectContext(gemfireCache);
+		}
+
+		private SchemaObjectContext(GemFireCache gemfireCache) {
+			Assert.notNull(gemfireCache, "GemFireCache is required");
+			this.gemfireCache = gemfireCache;
+		}
+
+		public GemfireAdminOperations getGemfireAdminOperations() {
+
+			Assert.state(this.gemfireAdminOperations != null,
+				"GemfireAdminOperations was not initialized");
+
+			return this.gemfireAdminOperations;
+		}
+
+		public boolean isClientCache() {
+			return isClient(getGemfireCache());
+		}
+
+		public boolean isPeerCache() {
+			return isPeer(getGemfireCache());
+		}
+
+		@SuppressWarnings("unchecked")
+		public <T extends GemFireCache> T getGemfireCache() {
+			return (T) this.gemfireCache;
+		}
+
+		public SchemaObjectCollector<?> getSchemaObjectCollector() {
+
+			Assert.state(this.schemaObjectCollector != null,
+				"SchemaObjectCollector was not initialized");
+
+			return this.schemaObjectCollector;
+		}
+
+
+		public SchemaObjectDefiner getSchemaObjectDefiner() {
+
+			Assert.state(this.schemaObjectDefiner != null,
+				"SchemaObjectDefiner was not initialized");
+
+			return this.schemaObjectDefiner;
+		}
+
+		protected SchemaObjectContext with(GemfireAdminOperations gemfireAdminOperations) {
+			Assert.notNull(gemfireAdminOperations, "GemfireAdminOperations are required");
+			this.gemfireAdminOperations = gemfireAdminOperations;
+			return this;
+		}
+
+		protected SchemaObjectContext with(SchemaObjectCollector schemaObjectCollector) {
+			Assert.notNull(schemaObjectCollector, "SchemaObjectCollector is required");
+			this.schemaObjectCollector = schemaObjectCollector;
+			return this;
+		}
+
+		protected SchemaObjectContext with(SchemaObjectDefiner schemaObjectDefiner) {
+			Assert.notNull(schemaObjectDefiner, "SchemaObjectDefiner is required");
+			this.schemaObjectDefiner = schemaObjectDefiner;
+			return this;
+		}
 	}
 }
