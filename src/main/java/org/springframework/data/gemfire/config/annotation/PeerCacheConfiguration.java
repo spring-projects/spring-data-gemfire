@@ -31,6 +31,7 @@ import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.util.StringUtils;
@@ -43,10 +44,13 @@ import org.springframework.util.StringUtils;
  * @see org.apache.geode.cache.Cache
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Configuration
+ * @see org.springframework.context.annotation.Import
  * @see org.springframework.data.gemfire.config.annotation.AbstractCacheConfiguration
+ * @see org.springframework.data.gemfire.config.annotation.AdministrativeConfiguration
  * @since 1.9.0
  */
 @Configuration
+@Import(AdministrativeConfiguration.class)
 @SuppressWarnings("unused")
 public class PeerCacheConfiguration extends AbstractCacheConfiguration {
 
