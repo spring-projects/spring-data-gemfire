@@ -142,30 +142,24 @@ public class EnableContinuousQueriesConfigurationIntegrationTests extends Client
 	}
 
 	@Configuration
-	@EnableContinuousQueries(poolName = "DEFAULT")
+	@EnableContinuousQueries
 	@Import(GemFireClientConfiguration.class)
 	static class TestConfiguration {
 
-		@Bean
-		TemperatureReadingQueryListeners temperatureReadingQueryListeners() {
-			return new TemperatureReadingQueryListeners();
-		}
-	}
-
-	static class TemperatureReadingQueryListeners {
-
-		@ContinuousQuery(name = "BoilingTemperatures", query = "SELECT * FROM /TemperatureReadings r WHERE r.temperature >= 212")
+		@ContinuousQuery(name = "BoilingTemperatures",
+			query = "SELECT * FROM /TemperatureReadings r WHERE r.temperature >= 212")
 		public void boilingTemperatures(CqEvent event) {
 			boilingTemperatureReadingsCounter.incrementAndGet();
 		}
 
-		@ContinuousQuery(name = "FreezingTemperatures", query = "SELECT * FROM /TemperatureReadings r WHERE r.temperature <= 32")
+		@ContinuousQuery(name = "FreezingTemperatures",
+			query = "SELECT * FROM /TemperatureReadings r WHERE r.temperature <= 32")
 		public void freezingTemperatures(CqEvent event) {
 			freezingTemperatureReadingsCounter.incrementAndGet();
 		}
 	}
 
-	@ClientCacheApplication(logLevel = "warning", subscriptionEnabled = true)
+	@ClientCacheApplication(logLevel = "error", subscriptionEnabled = true)
 	static class GemFireClientConfiguration {
 
 		@Bean
@@ -204,7 +198,7 @@ public class EnableContinuousQueriesConfigurationIntegrationTests extends Client
 		}
 	}
 
-	@CacheServerApplication(name = "EnableContinuousQueriesConfigurationIntegrationTests", logLevel = "warning")
+	@CacheServerApplication(name = "EnableContinuousQueriesConfigurationIntegrationTests", logLevel = "error")
 	static class GemFireServerConfiguration {
 
 		public static void main(String[] args) {
@@ -213,13 +207,6 @@ public class EnableContinuousQueriesConfigurationIntegrationTests extends Client
 				new AnnotationConfigApplicationContext(GemFireServerConfiguration.class);
 
 			applicationContext.registerShutdownHook();
-		}
-
-		@Bean
-		CacheServerConfigurer cacheServerPortConfigurer(
-				@Value("${" + GEMFIRE_CACHE_SERVER_PORT_PROPERTY + ":40404}") int port) {
-
-			return (bean, cacheServerFactoryBean) -> cacheServerFactoryBean.setPort(port);
 		}
 
 		@Bean(name = "TemperatureReadings")

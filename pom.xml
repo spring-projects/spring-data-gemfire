@@ -243,6 +243,8 @@
 					<systemProperties>
 						<gemfire.disableShutdownHook>true</gemfire.disableShutdownHook>
 						<javax.net.ssl.keyStore>${basedir}/src/test/resources/trusted.keystore</javax.net.ssl.keyStore>
+						<logback.log.level>error</logback.log.level>
+						<spring.profiles.active>apache-geode</spring.profiles.active>
 					</systemProperties>
 				</configuration>
 			</plugin>
