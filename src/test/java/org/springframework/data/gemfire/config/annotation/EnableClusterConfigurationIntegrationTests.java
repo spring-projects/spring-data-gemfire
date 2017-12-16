@@ -42,11 +42,7 @@ import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
 import org.springframework.data.gemfire.ReplicatedRegionFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.config.admin.GemfireAdminOperations;
-import org.springframework.data.gemfire.config.admin.functions.CreateIndexFunction;
-import org.springframework.data.gemfire.config.admin.functions.CreateRegionFunction;
-import org.springframework.data.gemfire.config.admin.functions.ListIndexesFunction;
 import org.springframework.data.gemfire.config.admin.remote.RestHttpGemfireAdminTemplate;
-import org.springframework.data.gemfire.function.config.EnableGemfireFunctions;
 import org.springframework.data.gemfire.process.ProcessWrapper;
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
 import org.springframework.data.gemfire.test.support.ClientServerIntegrationTestsSupport;
@@ -193,7 +189,6 @@ public class EnableClusterConfigurationIntegrationTests extends ClientServerInte
 	}
 
 	@CacheServerApplication(name = "EnableClusterConfigurationIntegrationTests", logLevel = LOG_LEVEL)
-	@EnableGemfireFunctions
 	static class GemFireServerConfiguration {
 
 		public static void main(String[] args) {
@@ -202,21 +197,6 @@ public class EnableClusterConfigurationIntegrationTests extends ClientServerInte
 				EnableClusterConfigurationIntegrationTests.GemFireServerConfiguration.class);
 
 			applicationContext.registerShutdownHook();
-		}
-
-		@Bean
-		CreateIndexFunction createIndexFunction() {
-			return new CreateIndexFunction();
-		}
-
-		@Bean
-		CreateRegionFunction createRegionFunction() {
-			return new CreateRegionFunction();
-		}
-
-		@Bean
-		ListIndexesFunction listIndexesFunction() {
-			return new ListIndexesFunction();
 		}
 
 		@Bean
