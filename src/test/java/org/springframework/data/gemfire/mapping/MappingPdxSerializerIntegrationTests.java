@@ -16,14 +16,12 @@
 
 package org.springframework.data.gemfire.mapping;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.Instantiator;
@@ -35,8 +33,14 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.data.annotation.ReadOnlyProperty;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.repository.sample.Address;
 import org.springframework.data.gemfire.repository.sample.Person;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Integration tests for {@link MappingPdxSerializer}.
@@ -46,75 +50,115 @@ import org.springframework.data.gemfire.repository.sample.Person;
  */
 public class MappingPdxSerializerIntegrationTests {
 
-	static Region<Object, Object> region;
-
 	static Cache cache;
+
+	static Region<Object, Object> region;
 
 	@BeforeClass
 	public static void setUp() {
-		MappingPdxSerializer serializer = new MappingPdxSerializer(new GemfireMappingContext(),
-				new DefaultConversionService());
+
+		MappingPdxSerializer serializer =
+			new MappingPdxSerializer(new GemfireMappingContext(), new DefaultConversionService());
 
 		cache = new CacheFactory()
 			.set("name", MappingPdxSerializerIntegrationTests.class.getSimpleName())
-			.set("mcast-port", "0")
-			.set("log-level", "warning")
+			.set("log-level", "error")
 			.setPdxSerializer(serializer)
 			.setPdxPersistent(true)
 			.create();
 
 		region = cache.createRegionFactory()
-			.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE)
-			.create("foo");
+			.setDataPolicy(DataPolicy.PARTITION)
+			.create("TemporaryRegion");
 	}
 
 	@AfterClass
 	@SuppressWarnings("all")
 	public static void tearDown() {
-		try {
-			cache.close();
-		}
-		catch (Exception ignore) {
-		}
-		finally {
-			for (String name : new File(".").list(new FilenameFilter() {
-				public boolean accept(File dir, String name) {
-					return name.startsWith("BACKUP");
-				}
-			})) {
-				new File(name).delete();
-			}
-		}
+		GemfireUtils.close(cache);
 	}
 
 	@Test
-	public void serializeAndDeserializeCorrectly() {
+	public void handlesEntityWithReadOnlyProperty() {
+
+		EntityWithReadOnlyProperty entity = new EntityWithReadOnlyProperty();
+
+		entity.setName("ReadOnlyEntity");
+		entity.setTimestamp(LocalDateTime.now());
+		entity.processId = 123;
+
+		region.put(100L, entity);
+
+		Object target = region.get(100L);
+
+		assertThat(target).isInstanceOf(EntityWithReadOnlyProperty.class);
+		assertThat(target).isNotSameAs(entity);
+
+		EntityWithReadOnlyProperty deserializedEntity = (EntityWithReadOnlyProperty) target;
+
+		assertThat(deserializedEntity.getName()).isEqualTo(entity.getName());
+		assertThat(deserializedEntity.getTimestamp()).isEqualTo(entity.getTimestamp());
+		assertThat(deserializedEntity.getProcessId()).isNull();
+	}
+
+	@Test
+	public void handlesEntityWithTransientProperty() {
+
+		EntityWithTransientProperty entity = new EntityWithTransientProperty();
+
+		entity.setName("TransientEntity");
+		entity.setValueOne("testOne");
+		entity.setValueTwo("testTwo");
+
+		region.put(101L, entity);
+
+		Object target = region.get(101L);
+
+		assertThat(target).isInstanceOf(EntityWithTransientProperty.class);
+		assertThat(target).isNotSameAs(entity);
+
+		EntityWithTransientProperty deserializedEntity = (EntityWithTransientProperty) target;
+
+		assertThat(deserializedEntity.getName()).isEqualTo(entity.getName());
+		assertThat(deserializedEntity.getValueOne()).isNull();
+		assertThat(deserializedEntity.getValueTwo()).isNull();
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void serializesAndDeserializesEntityCorrectly() {
 
 		Address address = new Address();
-		address.zipCode = "01234";
+
+		address.street = "100 Main St.";
 		address.city = "London";
+		address.zipCode = "01234";
 
 		Person person = new Person(1L, "Oliver", "Gierke");
-		person.address = address;
 
+		person.address = address;
 		region.put(1L, person);
+
 		Object result = region.get(1L);
 
-		assertThat(result instanceof Person, is(true));
+		assertThat(result).isInstanceOf(Person.class);
+		assertThat(result).isNotSameAs(person);
 
-		Person reference = person;
-		assertThat(reference.getFirstname(), is(person.getFirstname()));
-		assertThat(reference.getLastname(), is(person.getLastname()));
-		assertThat(reference.address, is(person.address));
+		Person reference = (Person) result;
+
+		assertThat(reference.getFirstname()).isEqualTo(person.getFirstname());
+		assertThat(reference.getLastname()).isEqualTo(person.getLastname());
+		assertThat(reference.getAddress()).isEqualTo(person.getAddress());
 	}
 
-
 	@Test
-	public void serializeAndDeserializeCorrectlyWithDataSerializable() {
+	public void serializesAndDeserializesEntityWithDataSerializableProperty() {
 
 		Address address = new Address();
-		address.zipCode = "01234";
+
+		address.street = "100 Main St.";
 		address.city = "London";
+		address.zipCode = "01234";
 
 		PersonWithDataSerializableProperty person =
 			new PersonWithDataSerializableProperty(2L, "Oliver", "Gierke",
@@ -123,32 +167,40 @@ public class MappingPdxSerializerIntegrationTests {
 		person.address = address;
 
 		region.put(2L, person);
+
 		Object result = region.get(2L);
 
-		assertThat(result instanceof PersonWithDataSerializableProperty, is(true));
+		assertThat(result).isInstanceOf(PersonWithDataSerializableProperty.class);
+		assertThat(result).isNotSameAs(person);
 
-		PersonWithDataSerializableProperty reference = person;
-		assertThat(reference.getFirstname(), is(person.getFirstname()));
-		assertThat(reference.getLastname(), is(person.getLastname()));
-		assertThat(reference.address, is(person.address));
-		assertThat(reference.dsProperty.getValue(),is("foo"));
+		PersonWithDataSerializableProperty reference = (PersonWithDataSerializableProperty) result;
+
+		assertThat(reference.getFirstname()).isEqualTo(person.getFirstname());
+		assertThat(reference.getLastname()).isEqualTo(person.getLastname());
+		assertThat(reference.getAddress()).isEqualTo(person.getAddress());
+		assertThat(reference.property.getValue()).isEqualTo("foo");
 	}
 
-	@SuppressWarnings("serial")
+	@SuppressWarnings({ "serial", "unused" })
 	public static class PersonWithDataSerializableProperty extends Person {
 
-		private DataSerializableProperty dsProperty;
+		private DataSerializableProperty property;
 
 		public PersonWithDataSerializableProperty(Long id, String firstname,
-				String lastname, DataSerializableProperty dsProperty) {
+				String lastname, DataSerializableProperty property) {
+
 			super(id, firstname, lastname);
-			this.dsProperty = dsProperty;
+
+			this.property = property;
 		}
 
 		public DataSerializableProperty getDataSerializableProperty() {
-			return this.dsProperty;
+			return this.property;
 		}
 
+		public void setDataSerializableProperty(DataSerializableProperty property) {
+			this.property = property;
+		}
 	}
 
 	@SuppressWarnings("serial")
@@ -170,20 +222,44 @@ public class MappingPdxSerializerIntegrationTests {
 
 
 		@Override
-		public void fromData(DataInput dataInput) throws IOException,
-				ClassNotFoundException {
-			value = dataInput.readUTF();
+		public void fromData(DataInput dataInput) throws IOException, ClassNotFoundException {
+			this.value = dataInput.readUTF();
 
 		}
 
 		@Override
 		public void toData(DataOutput dataOutput) throws IOException {
-			dataOutput.writeUTF(value);
+			dataOutput.writeUTF(this.value);
 		}
 
 		public String getValue() {
 			return this.value;
 		}
+	}
 
+	@Getter
+	static class EntityWithReadOnlyProperty {
+
+		@Setter
+		LocalDateTime timestamp;
+
+		@Setter
+		String name;
+
+		// TODO: if there is not setter, then effectively this field/property is read-only
+		// and should not require the @ReadOnlyProperty
+		@ReadOnlyProperty
+		Object processId;
+	}
+
+	@Getter @Setter
+	static class EntityWithTransientProperty {
+
+		private String name;
+
+		private transient Object valueOne;
+
+		@Transient
+		private Object valueTwo;
 	}
 }

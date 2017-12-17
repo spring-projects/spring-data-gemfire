@@ -92,6 +92,31 @@ public abstract class CacheUtils extends DistributedSystemUtils {
 	}
 
 	/* (non-Javadoc) */
+	public static boolean close() {
+		return close(resolveGemFireCache());
+	}
+
+	/* (non-Javadoc) */
+	public static boolean close(GemFireCache gemfireCache) {
+		return close(gemfireCache, () -> {});
+	}
+
+	/* (non-Javadoc) */
+	public static boolean close(GemFireCache gemfireCache, Runnable shutdownHook) {
+
+		try {
+			gemfireCache.close();
+			return true;
+		}
+		catch (Exception ignore) {
+			return false;
+		}
+		finally {
+			Optional.ofNullable(shutdownHook).ifPresent(Runnable::run);
+		}
+	}
+
+	/* (non-Javadoc) */
 	public static boolean closeCache() {
 
 		try {
