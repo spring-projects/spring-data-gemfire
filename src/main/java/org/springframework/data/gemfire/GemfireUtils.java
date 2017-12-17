@@ -44,6 +44,7 @@ public abstract class GemfireUtils extends RegionUtils {
 
 	/* (non-Javadoc) */
 	public static String apacheGeodeProductName() {
+
 		try {
 			return GemFireVersion.getProductName();
 		}
@@ -54,6 +55,7 @@ public abstract class GemfireUtils extends RegionUtils {
 
 	/* (non-Javadoc) */
 	public static String apacheGeodeVersion() {
+
 		try {
 			return CacheFactory.getVersion();
 		}
@@ -95,6 +97,7 @@ public abstract class GemfireUtils extends RegionUtils {
 
 	/* (non-Javadoc) */
 	public static boolean isGemfireVersion8OrAbove() {
+
 		try {
 			return isGemfireVersionGreaterThanEqualTo(8.0);
 		}

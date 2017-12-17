@@ -18,6 +18,7 @@ package org.springframework.data.gemfire.mapping;
 
 import static org.springframework.data.gemfire.util.CollectionUtils.*;
 
+import java.lang.reflect.Modifier;
 import java.util.Set;
 
 import org.springframework.data.annotation.Id;
@@ -86,11 +87,17 @@ public class GemfirePersistentProperty extends AnnotationBasedPersistentProperty
 		return (super.isIdProperty() || SUPPORTED_IDENTIFIER_NAMES.contains(getName()));
 	}
 
+	@Override
+	public boolean isTransient() {
+		return super.isTransient()
+			|| getProperty().getField().filter(field -> Modifier.isTransient(field.getModifiers())).isPresent();
+	}
+
 	/**
 	 * @inheritDoc
 	 */
 	@Override
 	public boolean usePropertyAccess() {
-		return (super.usePropertyAccess() || !getProperty().isFieldBacked());
+		return super.usePropertyAccess() || !getProperty().isFieldBacked();
 	}
 }
