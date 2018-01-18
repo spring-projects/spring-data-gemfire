@@ -626,8 +626,8 @@ public class EntityDefinedRegionsConfiguration extends AbstractAnnotationConfigS
 		private String poolName;
 
 		protected RegionBeanDefinitionMetadata(GemfirePersistentEntity<?> persistentEntity) {
-			this.persistentEntity = Optional.ofNullable(persistentEntity)
-				.orElseThrow(() -> newIllegalArgumentException("GemfirePeristentEntity is required"));
+			Assert.notNull(persistentEntity, "GemfirePersistentEntity is required");
+			this.persistentEntity = persistentEntity;
 		}
 
 		protected boolean isStrict() {

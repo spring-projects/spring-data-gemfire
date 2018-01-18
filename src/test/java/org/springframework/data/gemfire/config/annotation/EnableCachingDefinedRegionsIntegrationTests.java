@@ -25,11 +25,11 @@ import javax.cache.annotation.CacheRemoveAll;
 import javax.cache.annotation.CacheResult;
 
 import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
@@ -107,8 +107,8 @@ public class EnableCachingDefinedRegionsIntegrationTests {
 		assertThat(springEchoService.isCacheMiss()).isFalse();
 	}
 
-	@PeerCacheApplication(name = "EnableCachingDefinedRegionsIntegrationTests", logLevel = "warning")
-	@EnableCachingDefinedRegions
+	@ClientCacheApplication(name = "EnableCachingDefinedRegionsIntegrationTests", logLevel = "error")
+	@EnableCachingDefinedRegions(clientRegionShortcut = ClientRegionShortcut.LOCAL)
 	static class TestConfiguration {
 
 		@Bean
@@ -117,7 +117,6 @@ public class EnableCachingDefinedRegionsIntegrationTests {
 		}
 
 		@Bean
-		@Qualifier("Spring")
 		SpringCacheableEchoService springEchoService() {
 			return new SpringCacheableEchoService();
 		}
