@@ -47,12 +47,8 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -64,9 +60,7 @@ import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport;
-import org.springframework.data.gemfire.config.annotation.support.BeanDefinitionRegistryPostProcessorSupport;
 import org.springframework.data.gemfire.config.annotation.support.CacheTypeAwareRegionFactoryBean;
-import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
@@ -280,55 +274,6 @@ public class CachingDefinedRegionsConfiguration extends AbstractAnnotationConfig
 
 	@Bean
 	@SuppressWarnings("all")
-	public BeanDefinitionRegistryPostProcessor cachingAnnotationsRegionBeanDefinitionRegistrar() {
-
-		return new BeanDefinitionRegistryPostProcessorSupport() {
-
-			@Override
-			public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
-				registerBeanDefinitions(registry);
-			}
-		};
-	}
-
-	void registerBeanDefinitions(BeanDefinitionRegistry registry) {
-
-		for (String beanName : registry.getBeanDefinitionNames()) {
-
-			BeanDefinition beanDefinition = registry.getBeanDefinition(beanName);
-
-			if (isNotInfrastructureBean(beanDefinition)) {
-				resolveBeanClass(beanDefinition, registry).ifPresent(beanClass ->
-					registerRegionBeanDefinitions(getCacheNameResolver().resolveCacheNames(beanClass), registry));
-			}
-		}
-	}
-
-	private BeanDefinitionRegistry registerRegionBeanDefinitions(Set<String> cacheNames,
-			BeanDefinitionRegistry registry) {
-
-		cacheNames.forEach(cacheName -> {
-
-			if (!registry.containsBeanDefinition(cacheName)) {
-
-				BeanDefinitionBuilder builder =
-					BeanDefinitionBuilder.genericBeanDefinition(CacheTypeAwareRegionFactoryBean.class);
-
-				builder.addPropertyReference("cache", GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
-				builder.addPropertyValue("clientRegionShortcut", resolveClientRegionShortcut());
-				builder.addPropertyValue("poolName", resolvePoolName());
-				builder.addPropertyValue("regionName", cacheName);
-				builder.addPropertyValue("serverRegionShortcut", resolveServerRegionShortcut());
-
-				registry.registerBeanDefinition(cacheName, builder.getBeanDefinition());
-			}
-		});
-
-		return registry;
-	}
-
-	@Bean
-	@SuppressWarnings("all")
 	public BeanPostProcessor cachingAnnotationsRegionBeanRegistrar(ConfigurableBeanFactory beanFactory) {
 
 		return new BeanPostProcessor() {
@@ -352,17 +297,21 @@ public class CachingDefinedRegionsConfiguration extends AbstractAnnotationConfig
 			if (!beanFactory.containsBean(cacheName)) {
 				try {
 
-					CacheTypeAwareRegionFactoryBean<?, ?> regionFactoryBean =
-						new CacheTypeAwareRegionFactoryBean<>();
+					CacheTypeAwareRegionFactoryBean<?, ?> regionFactoryBean = new CacheTypeAwareRegionFactoryBean<>();
 
-					GemFireCache gemfireCache =
-						beanFactory.getBean(GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME, GemFireCache.class);
+					GemFireCache gemfireCache = beanFactory.getBean(GemFireCache.class);
 
 					regionFactoryBean.setCache(gemfireCache);
 					regionFactoryBean.setClientRegionShortcut(resolveClientRegionShortcut());
-					regionFactoryBean.setPoolName(resolvePoolName());
 					regionFactoryBean.setRegionName(cacheName);
 					regionFactoryBean.setServerRegionShortcut(resolveServerRegionShortcut());
+
+					String poolName = resolvePoolName();
+
+					if (!ClientRegionFactoryBean.DEFAULT_POOL_NAME.equalsIgnoreCase(poolName)) {
+						regionFactoryBean.setPoolName(poolName);
+					}
+
 					regionFactoryBean.afterPropertiesSet();
 
 					Optional.ofNullable(regionFactoryBean.getObject())

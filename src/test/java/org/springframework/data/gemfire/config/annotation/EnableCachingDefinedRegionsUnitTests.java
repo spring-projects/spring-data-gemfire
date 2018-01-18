@@ -22,14 +22,13 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.data.gemfire.util.CollectionUtils.asSet;
-import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newRuntimeException;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,19 +37,21 @@ import javax.cache.annotation.CacheRemove;
 import javax.cache.annotation.CacheRemoveAll;
 import javax.cache.annotation.CacheResult;
 
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
+import org.springframework.data.gemfire.test.mock.MockGemFireObjectsSupport;
 import org.springframework.data.gemfire.test.support.MapBuilder;
 import org.springframework.stereotype.Service;
 
@@ -77,43 +78,7 @@ public class EnableCachingDefinedRegionsUnitTests {
 	@Before
 	public void setup() {
 		this.configuration = new CachingDefinedRegionsConfiguration();
-	}
-
-	@SuppressWarnings("unchecked")
-	private BeanDefinition mockBeanDefinition(Class<?> beanClass) {
-
-		try {
-
-			AbstractBeanDefinition mockBeanDefinition = mock(AbstractBeanDefinition.class, beanClass.getSimpleName());
-
-			when(mockBeanDefinition.getBeanClassName()).thenReturn(beanClass.getName());
-			when(mockBeanDefinition.resolveBeanClass(any(ClassLoader.class))).thenReturn((Class) beanClass);
-			when(mockBeanDefinition.getRole()).thenReturn(BeanDefinition.ROLE_APPLICATION);
-
-			return mockBeanDefinition;
-		}
-		catch (ClassNotFoundException cause) {
-			throw newRuntimeException(cause, "Creating a mock for class [%s] failed", beanClass.getName());
-		}
-	}
-
-	private BeanDefinitionRegistry mockBeanDefinitionRegistry(Map<String, BeanDefinition> registeredBeanDefinitions) {
-
-		BeanDefinitionRegistry mockBeanDefinitionRegistry = mock(BeanDefinitionRegistry.class);
-
-		when(mockBeanDefinitionRegistry.getBeanDefinitionNames())
-			.thenReturn(registeredBeanDefinitions.keySet().toArray(new String[registeredBeanDefinitions.size()]));
-
-		when(mockBeanDefinitionRegistry.getBeanDefinition(anyString()))
-			.thenAnswer(invocation -> registeredBeanDefinitions.get(invocation.<String>getArgument(0)));
-
-		when(mockBeanDefinitionRegistry.containsBeanDefinition(anyString()))
-			.thenAnswer(invocation -> registeredBeanDefinitions.containsKey(invocation.<String>getArgument(0)));
-
-		doAnswer(invocation -> registeredBeanDefinitions.put(invocation.getArgument(0), invocation.getArgument(1)))
-			.when(mockBeanDefinitionRegistry).registerBeanDefinition(anyString(), any(BeanDefinition.class));
-
-		return mockBeanDefinitionRegistry;
+		MockGemFireObjectsSupport.destroy();
 	}
 
 	@Test
@@ -222,100 +187,116 @@ public class EnableCachingDefinedRegionsUnitTests {
 	@Test
 	public void cacheableServiceOneRegistersRegionsOneAndTwo() {
 
-		Map<String, BeanDefinition> registeredBeanDefinitions = MapBuilder.<String, BeanDefinition>newMapBuilder()
-			.put("cacheableServiceOne", mockBeanDefinition(CacheableServiceOne.class))
-			.build();
+		ConfigurableBeanFactory mockBeanFactory = mock(ConfigurableBeanFactory.class);
 
-		BeanDefinitionRegistry mockBeanDefinitionRegistry = mockBeanDefinitionRegistry(registeredBeanDefinitions);
+		GemFireCache mockGemFireCache = MockGemFireObjectsSupport.mockClientCache();
 
-		this.configuration.registerBeanDefinitions(mockBeanDefinitionRegistry);
+		when(mockBeanFactory.containsBean(anyString())).thenReturn(false);
+		when(mockBeanFactory.getBean(eq(GemFireCache.class))).thenReturn(mockGemFireCache);
 
-		verify(mockBeanDefinitionRegistry, times(1)).getBeanDefinitionNames();
+		BeanPostProcessor cachingAnnotationsRegionBeanRegistrar =
+			this.configuration.cachingAnnotationsRegionBeanRegistrar(mockBeanFactory);
 
-		verify(mockBeanDefinitionRegistry, times(1))
-			.getBeanDefinition(eq("cacheableServiceOne"));
-
-		verify(mockBeanDefinitionRegistry, times(2))
-			.registerBeanDefinition(anyString(), any(BeanDefinition.class));
+		cachingAnnotationsRegionBeanRegistrar
+			.postProcessBeforeInitialization(new CacheableServiceOne(), "cacheableServiceOne");
 
 		Arrays.asList("RegionOne", "RegionTwo").forEach(beanName -> {
-			verify(mockBeanDefinitionRegistry, times(1)).containsBeanDefinition(eq(beanName));
-			verify(mockBeanDefinitionRegistry, times(1))
-				.registerBeanDefinition(eq(beanName), any(BeanDefinition.class));
+			verify(mockBeanFactory, times(1)).containsBean(eq(beanName));
+			verify(mockBeanFactory, times(2)).getBean(eq(GemFireCache.class));
+			verify(mockBeanFactory, times(1))
+				.registerSingleton(eq(beanName), any(Region.class));
 		});
 	}
 
 	@Test
 	public void cacheableServiceTwoRegistersRegionsTwoThreeFourFiveAndSix() {
 
-		Map<String, BeanDefinition> registeredBeanDefinitions = MapBuilder.<String, BeanDefinition>newMapBuilder()
-			.put("cacheableServiceTwo", mockBeanDefinition(CacheableServiceTwo.class))
-			.build();
+		ConfigurableBeanFactory mockBeanFactory = mock(ConfigurableBeanFactory.class);
 
-		BeanDefinitionRegistry mockBeanDefinitionRegistry = mockBeanDefinitionRegistry(registeredBeanDefinitions);
+		GemFireCache mockGemFireCache = MockGemFireObjectsSupport.mockClientCache();
 
-		this.configuration.registerBeanDefinitions(mockBeanDefinitionRegistry);
+		Set<String> registeredBeanNames = new HashSet<>();
 
-		Set<String> registeredRegionBeanNames =
-			asSet("RegionTwo", "RegionThree", "RegionFour", "RegionFive", "RegionSix");
+		when(mockBeanFactory.containsBean(anyString())).thenAnswer(invocation ->
+			registeredBeanNames.contains(invocation.<String>getArgument(0)));
 
-		verify(mockBeanDefinitionRegistry, times(1)).getBeanDefinitionNames();
+		when(mockBeanFactory.getBean(eq(GemFireCache.class))).thenReturn(mockGemFireCache);
 
-		verify(mockBeanDefinitionRegistry, times(1))
-			.getBeanDefinition(eq("cacheableServiceTwo"));
+		doAnswer(invocation -> registeredBeanNames.add(invocation.getArgument(0))).when(mockBeanFactory)
+			.registerSingleton(anyString(), any());
 
-		verify(mockBeanDefinitionRegistry, times(registeredRegionBeanNames.size()))
-			.registerBeanDefinition(anyString(), any(BeanDefinition.class));
+		BeanPostProcessor cachingAnnotationsRegionBeanRegistrar =
+			this.configuration.cachingAnnotationsRegionBeanRegistrar(mockBeanFactory);
 
-		registeredRegionBeanNames.forEach(beanName -> {
-			verify(mockBeanDefinitionRegistry, times(1)).containsBeanDefinition(eq(beanName));
-			verify(mockBeanDefinitionRegistry, times(1))
-				.registerBeanDefinition(eq(beanName), any(BeanDefinition.class));
+		cachingAnnotationsRegionBeanRegistrar
+			.postProcessBeforeInitialization(new CacheableServiceTwo(), "cacheableServiceTwo");
+
+		Arrays.asList("RegionTwo", "RegionThree", "RegionFour", "RegionFive", "RegionSix").forEach(beanName -> {
+			verify(mockBeanFactory, times(1)).containsBean(eq(beanName));
+			verify(mockBeanFactory, times(5)).getBean(eq(GemFireCache.class));
+			verify(mockBeanFactory, times(1))
+				.registerSingleton(eq(beanName), any(Region.class));
 		});
-
 	}
 
 	@Test
 	public void cacheableServiceThreeRegistersSeventeenRegionBeans() {
 
-		Map<String, BeanDefinition> registeredBeanDefinitions = MapBuilder.<String, BeanDefinition>newMapBuilder()
-			.put("cacheableServiceThree", mockBeanDefinition(CacheableServiceThree.class))
-			.build();
+		ConfigurableBeanFactory mockBeanFactory = mock(ConfigurableBeanFactory.class);
 
-		BeanDefinitionRegistry mockBeanDefinitionRegistry = mockBeanDefinitionRegistry(registeredBeanDefinitions);
+		GemFireCache mockGemFireCache = MockGemFireObjectsSupport.mockClientCache();
 
-		this.configuration.registerBeanDefinitions(mockBeanDefinitionRegistry);
+		Set<String> registeredBeanNames = new HashSet<>();
+
+		when(mockBeanFactory.containsBean(anyString())).thenAnswer(invocation ->
+			registeredBeanNames.contains(invocation.<String>getArgument(0)));
+
+		when(mockBeanFactory.getBean(eq(GemFireCache.class))).thenReturn(mockGemFireCache);
+
+		doAnswer(invocation -> registeredBeanNames.add(invocation.getArgument(0))).when(mockBeanFactory)
+			.registerSingleton(anyString(), any());
+
+		BeanPostProcessor cachingAnnotationsRegionBeanRegistrar =
+			this.configuration.cachingAnnotationsRegionBeanRegistrar(mockBeanFactory);
+
+		cachingAnnotationsRegionBeanRegistrar
+			.postProcessBeforeInitialization(new CacheableServiceThree(), "cacheableServiceThree");
 
 		Set<String> registeredRegionBeanNames =
 			asSet("RegionSix", "RegionSeven", "RegionEight", "RegionNine", "RegionTen", "RegionEleven",
 				"RegionTwelve", "RegionThirteen", "RegionFourteen", "RegionFifteen", "RegionSixteen", "RegionSeventeen",
 				"RegionEighteen", "RegionNineteen", "RegionTwenty", "RegionTwentyOne", "RegionTwentyFive");
 
-		verify(mockBeanDefinitionRegistry, times(1)).getBeanDefinitionNames();
-
-		verify(mockBeanDefinitionRegistry, times(1))
-			.getBeanDefinition(eq("cacheableServiceThree"));
-
-		verify(mockBeanDefinitionRegistry, times(registeredRegionBeanNames.size()))
-			.registerBeanDefinition(anyString(), any(BeanDefinition.class));
-
 		registeredRegionBeanNames.forEach(beanName -> {
-			verify(mockBeanDefinitionRegistry, times(1)).containsBeanDefinition(eq(beanName));
-			verify(mockBeanDefinitionRegistry, times(1))
-				.registerBeanDefinition(eq(beanName), any(BeanDefinition.class));
+			verify(mockBeanFactory, times(1)).containsBean(eq(beanName));
+			verify(mockBeanFactory, times(registeredBeanNames.size())).getBean(eq(GemFireCache.class));
+			verify(mockBeanFactory, times(1))
+				.registerSingleton(eq(beanName), any(Region.class));
 		});
 	}
 
 	@Test
 	public void cacheableServiceFourRegistersNineteenRegionBeans() {
 
-		Map<String, BeanDefinition> registeredBeanDefinitions = MapBuilder.<String, BeanDefinition>newMapBuilder()
-			.put("cacheableServiceFour", mockBeanDefinition(CacheableServiceFour.class))
-			.build();
+		ConfigurableBeanFactory mockBeanFactory = mock(ConfigurableBeanFactory.class);
 
-		BeanDefinitionRegistry mockBeanDefinitionRegistry = mockBeanDefinitionRegistry(registeredBeanDefinitions);
+		GemFireCache mockGemFireCache = MockGemFireObjectsSupport.mockClientCache();
 
-		this.configuration.registerBeanDefinitions(mockBeanDefinitionRegistry);
+		Set<String> registeredBeanNames = new HashSet<>();
+
+		when(mockBeanFactory.containsBean(anyString())).thenAnswer(invocation ->
+			registeredBeanNames.contains(invocation.<String>getArgument(0)));
+
+		when(mockBeanFactory.getBean(eq(GemFireCache.class))).thenReturn(mockGemFireCache);
+
+		doAnswer(invocation -> registeredBeanNames.add(invocation.getArgument(0))).when(mockBeanFactory)
+			.registerSingleton(anyString(), any());
+
+		BeanPostProcessor cachingAnnotationsRegionBeanRegistrar =
+			this.configuration.cachingAnnotationsRegionBeanRegistrar(mockBeanFactory);
+
+		cachingAnnotationsRegionBeanRegistrar
+			.postProcessBeforeInitialization(new CacheableServiceFour(), "cacheableServiceFour");
 
 		Set<String> registeredRegionBeanNames =
 			asSet("RegionSix", "RegionSeven", "RegionEight", "RegionNine", "RegionTen", "RegionEleven",
@@ -323,36 +304,42 @@ public class EnableCachingDefinedRegionsUnitTests {
 				"RegionEighteen", "RegionNineteen", "RegionTwenty", "RegionTwentyOne", "RegionTwentyTwo",
 				"RegionTwentyThree", "RegionTwentyFour");
 
-		verify(mockBeanDefinitionRegistry, times(1)).getBeanDefinitionNames();
-
-		verify(mockBeanDefinitionRegistry, times(1))
-			.getBeanDefinition(eq("cacheableServiceFour"));
-
-		verify(mockBeanDefinitionRegistry, never())
-			.registerBeanDefinition(eq("RegionTwentyFive"), any(BeanDefinition.class));
-
-		verify(mockBeanDefinitionRegistry, times(registeredRegionBeanNames.size()))
-			.registerBeanDefinition(anyString(), any(BeanDefinition.class));
-
 		registeredRegionBeanNames.forEach(beanName -> {
-			verify(mockBeanDefinitionRegistry, times(1)).containsBeanDefinition(eq(beanName));
-			verify(mockBeanDefinitionRegistry, times(1))
-				.registerBeanDefinition(eq(beanName), any(BeanDefinition.class));
+			verify(mockBeanFactory, times(1)).containsBean(eq(beanName));
+			verify(mockBeanFactory, times(registeredBeanNames.size())).getBean(eq(GemFireCache.class));
+			verify(mockBeanFactory, times(1))
+				.registerSingleton(eq(beanName), any(Region.class));
 		});
 	}
 
 	@Test
 	public void cacheableServiceOneTwoAndThreeRegistersTwentyTwoRegionBeans() {
 
-		Map<String, BeanDefinition> registeredBeanDefinitions = MapBuilder.<String, BeanDefinition>newMapBuilder()
-			.put("cacheableServiceOne", mockBeanDefinition(CacheableServiceOne.class))
-			.put("cacheableServiceTwo", mockBeanDefinition(CacheableServiceTwo.class))
-			.put("cacheableServiceThree", mockBeanDefinition(CacheableServiceThree.class))
-			.build();
+		ConfigurableBeanFactory mockBeanFactory = mock(ConfigurableBeanFactory.class);
 
-		BeanDefinitionRegistry mockBeanDefinitionRegistry = mockBeanDefinitionRegistry(registeredBeanDefinitions);
+		GemFireCache mockGemFireCache = MockGemFireObjectsSupport.mockClientCache();
 
-		this.configuration.registerBeanDefinitions(mockBeanDefinitionRegistry);
+		Set<String> registeredBeanNames = new HashSet<>();
+
+		when(mockBeanFactory.containsBean(anyString())).thenAnswer(invocation ->
+			registeredBeanNames.contains(invocation.<String>getArgument(0)));
+
+		when(mockBeanFactory.getBean(eq(GemFireCache.class))).thenReturn(mockGemFireCache);
+
+		doAnswer(invocation -> registeredBeanNames.add(invocation.getArgument(0))).when(mockBeanFactory)
+			.registerSingleton(anyString(), any());
+
+		BeanPostProcessor cachingAnnotationsRegionBeanRegistrar =
+			this.configuration.cachingAnnotationsRegionBeanRegistrar(mockBeanFactory);
+
+		cachingAnnotationsRegionBeanRegistrar
+			.postProcessBeforeInitialization(new CacheableServiceOne(), "cacheableServiceOne");
+
+		cachingAnnotationsRegionBeanRegistrar
+			.postProcessBeforeInitialization(new CacheableServiceTwo(), "cacheableServiceTwo");
+
+		cachingAnnotationsRegionBeanRegistrar
+			.postProcessBeforeInitialization(new CacheableServiceThree(), "cacheableServiceThree");
 
 		Set<String> registeredRegionBeanNames =
 			asSet("RegionOne", "RegionTwo", "RegionThree", "RegionFour", "RegionFive", "RegionSix",
@@ -360,111 +347,118 @@ public class EnableCachingDefinedRegionsUnitTests {
 				"RegionThirteen", "RegionFourteen", "RegionFifteen", "RegionSixteen", "RegionSeventeen",
 				"RegionEighteen", "RegionNineteen", "RegionTwenty", "RegionTwentyOne", "RegionTwentyFive");
 
-		verify(mockBeanDefinitionRegistry, times(1)).getBeanDefinitionNames();
-
-		Arrays.asList("cacheableServiceOne", "cacheableServiceTwo", "cacheableServiceThree").forEach(beanName ->
-			verify(mockBeanDefinitionRegistry, times(1)).getBeanDefinition(eq(beanName)));
-
-		verify(mockBeanDefinitionRegistry, times(registeredRegionBeanNames.size()))
-			.registerBeanDefinition(anyString(), any(BeanDefinition.class));
-
 		registeredRegionBeanNames.forEach(beanName -> {
 
-			int wantedNumberOfInvocations = "RegionSix".equals(beanName) || "RegionTwo".equals(beanName) ? 2 : 1;
+			int wantedNumberOfInvocations = asSet("RegionTwo", "RegionSix").contains(beanName) ? 2 : 1;
 
-			verify(mockBeanDefinitionRegistry, times(wantedNumberOfInvocations)).containsBeanDefinition(eq(beanName));
-
-			verify(mockBeanDefinitionRegistry, times(1))
-				.registerBeanDefinition(eq(beanName), any(BeanDefinition.class));
+			verify(mockBeanFactory, times(wantedNumberOfInvocations)).containsBean(eq(beanName));
+			verify(mockBeanFactory, times(registeredBeanNames.size())).getBean(eq(GemFireCache.class));
+			verify(mockBeanFactory, times(1))
+				.registerSingleton(eq(beanName), any(Region.class));
 		});
 	}
 
 	@Test
 	public void cacheableServiceFiveRegistersRegionOneTwoThreeFourFiveSixAndSeven() {
 
-		Map<String, BeanDefinition> registeredBeanDefinitions = MapBuilder.<String, BeanDefinition>newMapBuilder()
-			.put("cacheableServiceFive", mockBeanDefinition(CacheableServiceFive.class))
-			.build();
+		ConfigurableBeanFactory mockBeanFactory = mock(ConfigurableBeanFactory.class);
 
-		BeanDefinitionRegistry mockBeanDefinitionRegistry = mockBeanDefinitionRegistry(registeredBeanDefinitions);
+		GemFireCache mockGemFireCache = MockGemFireObjectsSupport.mockClientCache();
 
-		this.configuration.registerBeanDefinitions(mockBeanDefinitionRegistry);
+		Set<String> registeredBeanNames = new HashSet<>();
+
+		when(mockBeanFactory.containsBean(anyString())).thenAnswer(invocation ->
+			registeredBeanNames.contains(invocation.<String>getArgument(0)));
+
+		when(mockBeanFactory.getBean(eq(GemFireCache.class))).thenReturn(mockGemFireCache);
+
+		doAnswer(invocation -> registeredBeanNames.add(invocation.getArgument(0))).when(mockBeanFactory)
+			.registerSingleton(anyString(), any());
+
+		BeanPostProcessor cachingAnnotationsRegionBeanRegistrar =
+			this.configuration.cachingAnnotationsRegionBeanRegistrar(mockBeanFactory);
+
+		cachingAnnotationsRegionBeanRegistrar
+			.postProcessBeforeInitialization(new CacheableServiceFive(), "cacheableServiceFive");
 
 		Set<String> registeredRegionBeanNames =
 			asSet("RegionOne", "RegionTwo", "RegionThree", "RegionFour", "RegionFive",
 				"RegionSix", "RegionSeven");
 
-		verify(mockBeanDefinitionRegistry, times(1)).getBeanDefinitionNames();
-
-		verify(mockBeanDefinitionRegistry, times(1))
-			.getBeanDefinition(eq("cacheableServiceFive"));
-
-		verify(mockBeanDefinitionRegistry, times(registeredRegionBeanNames.size()))
-			.registerBeanDefinition(anyString(), any(BeanDefinition.class));
-
 		registeredRegionBeanNames.forEach(beanName -> {
-			verify(mockBeanDefinitionRegistry, times(1)).containsBeanDefinition(eq(beanName));
-			verify(mockBeanDefinitionRegistry, times(1))
-				.registerBeanDefinition(eq(beanName), any(BeanDefinition.class));
+			verify(mockBeanFactory, times(1)).containsBean(eq(beanName));
+			verify(mockBeanFactory, times(registeredBeanNames.size())).getBean(eq(GemFireCache.class));
+			verify(mockBeanFactory, times(1))
+				.registerSingleton(eq(beanName), any(Region.class));
 		});
 	}
 
 	@Test
 	public void cacheableServiceSixRegistersRegionOneTwoThreeFourAndFive() {
 
-		Map<String, BeanDefinition> registeredBeanDefinitions = MapBuilder.<String, BeanDefinition>newMapBuilder()
-			.put("cacheableServiceSix", mockBeanDefinition(CacheableServiceSix.class))
-			.build();
+		ConfigurableBeanFactory mockBeanFactory = mock(ConfigurableBeanFactory.class);
 
-		BeanDefinitionRegistry mockBeanDefinitionRegistry = mockBeanDefinitionRegistry(registeredBeanDefinitions);
+		GemFireCache mockGemFireCache = MockGemFireObjectsSupport.mockClientCache();
 
-		this.configuration.registerBeanDefinitions(mockBeanDefinitionRegistry);
+		Set<String> registeredBeanNames = new HashSet<>();
+
+		when(mockBeanFactory.containsBean(anyString())).thenAnswer(invocation ->
+			registeredBeanNames.contains(invocation.<String>getArgument(0)));
+
+		when(mockBeanFactory.getBean(eq(GemFireCache.class))).thenReturn(mockGemFireCache);
+
+		doAnswer(invocation -> registeredBeanNames.add(invocation.getArgument(0))).when(mockBeanFactory)
+			.registerSingleton(anyString(), any());
+
+		BeanPostProcessor cachingAnnotationsRegionBeanRegistrar =
+			this.configuration.cachingAnnotationsRegionBeanRegistrar(mockBeanFactory);
+
+		cachingAnnotationsRegionBeanRegistrar
+			.postProcessBeforeInitialization(new CacheableServiceSix(), "cacheableServiceSix");
 
 		Set<String> registeredRegionBeanNames =
 			asSet("RegionOne", "RegionTwo", "RegionThree", "RegionFour", "RegionFive");
 
-		verify(mockBeanDefinitionRegistry, times(1)).getBeanDefinitionNames();
-
-		verify(mockBeanDefinitionRegistry, times(1))
-			.getBeanDefinition(eq("cacheableServiceSix"));
-
-		verify(mockBeanDefinitionRegistry, times(registeredRegionBeanNames.size()))
-			.registerBeanDefinition(anyString(), any(BeanDefinition.class));
-
 		registeredRegionBeanNames.forEach(beanName -> {
-			verify(mockBeanDefinitionRegistry, times(1)).containsBeanDefinition(eq(beanName));
-			verify(mockBeanDefinitionRegistry, times(1))
-				.registerBeanDefinition(eq(beanName), any(BeanDefinition.class));
+			verify(mockBeanFactory, times(1)).containsBean(eq(beanName));
+			verify(mockBeanFactory, times(registeredBeanNames.size())).getBean(eq(GemFireCache.class));
+			verify(mockBeanFactory, times(1))
+				.registerSingleton(eq(beanName), any(Region.class));
 		});
 	}
 
 	@Test
 	public void cacheableServiceSevenRegistersRegionOneThroughEleven() {
 
-		Map<String, BeanDefinition> registeredBeanDefinitions = MapBuilder.<String, BeanDefinition>newMapBuilder()
-			.put("cacheableServiceSeven", mockBeanDefinition(CacheableServiceSeven.class))
-			.build();
+		ConfigurableBeanFactory mockBeanFactory = mock(ConfigurableBeanFactory.class);
 
-		BeanDefinitionRegistry mockBeanDefinitionRegistry = mockBeanDefinitionRegistry(registeredBeanDefinitions);
+		GemFireCache mockGemFireCache = MockGemFireObjectsSupport.mockClientCache();
 
-		this.configuration.registerBeanDefinitions(mockBeanDefinitionRegistry);
+		Set<String> registeredBeanNames = new HashSet<>();
+
+		when(mockBeanFactory.containsBean(anyString())).thenAnswer(invocation ->
+			registeredBeanNames.contains(invocation.<String>getArgument(0)));
+
+		when(mockBeanFactory.getBean(eq(GemFireCache.class))).thenReturn(mockGemFireCache);
+
+		doAnswer(invocation -> registeredBeanNames.add(invocation.getArgument(0))).when(mockBeanFactory)
+			.registerSingleton(anyString(), any());
+
+		BeanPostProcessor cachingAnnotationsRegionBeanRegistrar =
+			this.configuration.cachingAnnotationsRegionBeanRegistrar(mockBeanFactory);
+
+		cachingAnnotationsRegionBeanRegistrar
+			.postProcessBeforeInitialization(new CacheableServiceSeven(), "cacheableServiceSeven");
 
 		Set<String> registeredRegionBeanNames =
 			asSet("RegionOne", "RegionTwo", "RegionThree", "RegionFour", "RegionFive", "RegionSix",
 				"RegionSeven", "RegionEight", "RegionNine", "RegionTen", "RegionEleven");
 
-		verify(mockBeanDefinitionRegistry, times(1)).getBeanDefinitionNames();
-
-		verify(mockBeanDefinitionRegistry, times(1))
-			.getBeanDefinition(eq("cacheableServiceSeven"));
-
-		verify(mockBeanDefinitionRegistry, times(registeredRegionBeanNames.size()))
-			.registerBeanDefinition(anyString(), any(BeanDefinition.class));
-
 		registeredRegionBeanNames.forEach(beanName -> {
-			verify(mockBeanDefinitionRegistry, times(1)).containsBeanDefinition(eq(beanName));
-			verify(mockBeanDefinitionRegistry, times(1))
-				.registerBeanDefinition(eq(beanName), any(BeanDefinition.class));
+			verify(mockBeanFactory, times(1)).containsBean(eq(beanName));
+			verify(mockBeanFactory, times(registeredBeanNames.size())).getBean(eq(GemFireCache.class));
+			verify(mockBeanFactory, times(1))
+				.registerSingleton(eq(beanName), any(Region.class));
 		});
 	}
 
@@ -580,6 +574,7 @@ public class EnableCachingDefinedRegionsUnitTests {
 		put = @CachePut("RegionTwo")
 	)
 	@CacheDefaults(cacheName = "RegionOne")
+	@SuppressWarnings("unused")
 	static class CacheableServiceSeven extends CacheableServiceSix {
 
 		@CachePut("RegionTen")

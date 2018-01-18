@@ -1077,7 +1077,7 @@ public abstract class AbstractAnnotationConfigSupport
 		try {
 			return typeResolver.resolve();
 		}
-		catch (ClassNotFoundException cause) {
+		catch (ClassNotFoundException | NoClassDefFoundError cause) {
 			return null;
 		}
 	}
