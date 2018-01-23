@@ -210,6 +210,7 @@
 			<groupId>edu.umd.cs.mtc</groupId>
 			<artifactId>multithreadedtc</artifactId>
 			<version>${multithreadedtc.version}</version>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>
