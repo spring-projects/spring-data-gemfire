@@ -3,6 +3,12 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.9.10.RELEASE (2018-01-24)
+----------------------------------------------
+* SGF-703 - Upgrade to Pivotal GemFire 8.2.8.
+* SGF-698 - Release 1.9.10 (Ingalls SR10).
+
+
 Changes in version 2.0.2.RELEASE (2017-11-27)
 ---------------------------------------------
 * SGF-697 - Allow basePackages to be configured using a property when creating Entity-defined Regions.
