@@ -3,6 +3,22 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.0.3.RELEASE (2018-01-24)
+---------------------------------------------
+* SGF-714 - edu.umd.cs.mtc:multithreadedtc is no longer test-scoped.
+* SGF-712 - Fix incorrect server proxying behavior when registering local, client Regions using EnableCachingDefinedRegions.
+* SGF-709 - When SDG Annotation config is used to configure and bootstrap an Apache Geode server, automatically register the Administrative Functions.
+* SGF-708 - Enable the spring.data.gemfire.name property to be used in addition to spring.data.gemfire.cache.name for naming members of the cluster.
+* SGF-707 - Extend SDG's GemfireSimpleTypeHolder to handle Java 8 Time types.
+* SGF-706 - Fix race condition between ContinuousQuery registration and EnableClusterConfiguration Region creation.
+* SGF-705 - Fix MappingPdxSerializer to ignore transient, non-writable and non-entity-based (simple type) properties and fields.
+* SGF-704 - Change all com.gemstone.gemfire package references in the RegionDataAccessTracingAspect Pointcuts to org.apache.geode.
+* SGF-702 - Investigate long documentation build times.
+* SGF-701 - Dependency on org.iq80.snappy:snappy breaks the IO Platform build and appears to be a candidate for being test scoped.
+* SGF-700 - From clause Region path error occurs when creating Indexes from application domain object fields annotated with @Indexed or @Id.
+* SGF-699 - Release 2.0.3 (Kay SR3).
+
+
 Changes in version 1.9.10.RELEASE (2018-01-24)
 ----------------------------------------------
 * SGF-703 - Upgrade to Pivotal GemFire 8.2.8.
