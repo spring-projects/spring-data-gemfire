@@ -31,9 +31,11 @@ import com.gemstone.gemfire.cache.query.SelectResults;
 /**
  * {@link GemfireRepositoryQuery} using plain {@link String} based OQL queries.
  * <p>
+ * 
  * @author Oliver Gierke
  * @author David Turanski
  * @author John Blum
+ * @author jebuselwyn.martin
  */
 public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 
@@ -74,7 +76,7 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	 * @param template must not be {@literal null}.
 	 */
 	public StringBasedGemfireRepositoryQuery(GemfireQueryMethod queryMethod, GemfireTemplate template,
-											 QueryCustomizer queryCustomizer) {
+			QueryCustomizer queryCustomizer) {
 		this(queryMethod.getAnnotatedQuery(), queryMethod, template, queryCustomizer);
 	}
 
@@ -87,8 +89,8 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	 * @param template must not be {@literal null}.
 	 * @param queryCustomizer Optional query customizer implementation.
 	 */
-	public StringBasedGemfireRepositoryQuery(String query, GemfireQueryMethod queryMethod,
-											 GemfireTemplate template, QueryCustomizer queryCustomizer) {
+	public StringBasedGemfireRepositoryQuery(String query, GemfireQueryMethod queryMethod, GemfireTemplate template,
+			QueryCustomizer queryCustomizer) {
 		super(queryMethod);
 
 		Assert.notNull(template);
@@ -138,11 +140,11 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	public Object execute(Object[] parameters) {
 		QueryMethod localQueryMethod = getQueryMethod();
 
-		QueryString query = (isUserDefinedQuery() ? this.query : this.query.forRegion(
-			localQueryMethod.getEntityInformation().getJavaType(), template.getRegion()));
+		QueryString query = (isUserDefinedQuery() ? this.query
+				: this.query.forRegion(localQueryMethod.getEntityInformation().getJavaType(), template.getRegion()));
 
-		ParametersParameterAccessor parameterAccessor = new ParametersParameterAccessor(
-			localQueryMethod.getParameters(), parameters);
+		ParametersParameterAccessor parameterAccessor = new ParametersParameterAccessor(localQueryMethod.getParameters(),
+				parameters);
 
 		for (Integer index : query.getInParameterIndexes()) {
 			query = query.bindIn(toCollection(parameterAccessor.getBindableValue(index - 1)));
@@ -151,10 +153,10 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 		query = applyQueryAnnotationExtensions(localQueryMethod, query);
 
 		/**
-		 * Invoke the queryCustomizer if configured to customize the query
-		 * An extension point to allow implementations tweak generated query.
+		 * Invoke the queryCustomizer if configured to customize the query An extension point to allow implementations tweak
+		 * generated query.
 		 */
-		if(null != queryCustomizer){
+		if (null != queryCustomizer) {
 			query = queryCustomizer.customizeQuery(query);
 		}
 
@@ -162,22 +164,17 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 
 		if (localQueryMethod.isCollectionQuery()) {
 			return result;
-		}
-		else if (localQueryMethod.isQueryForEntity()) {
+		} else if (localQueryMethod.isQueryForEntity()) {
 			if (result.isEmpty()) {
 				return null;
-			}
-			else if (result.size() == 1) {
+			} else if (result.size() == 1) {
 				return result.iterator().next();
-			}
-			else {
+			} else {
 				throw new IncorrectResultSizeDataAccessException(1, result.size());
 			}
-		}
-		else if (isSingleResultNonEntityQuery(localQueryMethod, result)) {
+		} else if (isSingleResultNonEntityQuery(localQueryMethod, result)) {
 			return result.iterator().next();
-		}
-		else {
+		} else {
 			throw new IllegalStateException("Unsupported query: " + query.toString());
 		}
 	}
@@ -208,7 +205,7 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 
 	boolean isSingleResultNonEntityQuery(QueryMethod method, Collection<?> result) {
 		return (!method.isCollectionQuery() && method.getReturnedObjectType() != null
-			&& !Void.TYPE.equals(method.getReturnedObjectType()) && result != null && result.size() == 1);
+				&& !Void.TYPE.equals(method.getReturnedObjectType()) && result != null && result.size() == 1);
 	}
 
 	/**

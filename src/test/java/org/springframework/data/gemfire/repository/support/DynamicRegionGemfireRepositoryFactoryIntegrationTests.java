@@ -18,6 +18,7 @@ package org.springframework.data.gemfire.repository.support;
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.util.Collections;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -47,6 +48,7 @@ import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.test.context.ContextConfiguration;
+
 import com.gemstone.gemfire.cache.CacheFactory;
 import com.gemstone.gemfire.cache.Region;
 
@@ -54,16 +56,14 @@ import com.gemstone.gemfire.cache.Region;
  * Integration test for Custom Gemfire repository with a Query Customizer implementation.
  *
  * @see SGF-713
- * 
  * @author Jebuselwyn Martin
  */
 @ContextConfiguration("../config/repo-context.xml")
-public class DynamicRegionGemfireRepositoryFactoryIntegrationTests extends AbstractGemfireRepositoryFactoryIntegrationTests {
+public class DynamicRegionGemfireRepositoryFactoryIntegrationTests
+		extends AbstractGemfireRepositoryFactoryIntegrationTests {
 
-	@Autowired
-	ApplicationContext context;
-	@Autowired
-	GemfireMappingContext mappingContext;
+	@Autowired ApplicationContext context;
+	@Autowired GemfireMappingContext mappingContext;
 
 	private static final ThreadLocal<Integer> regionPrefix = new ThreadLocal<Integer>();
 
@@ -112,10 +112,11 @@ public class DynamicRegionGemfireRepositoryFactoryIntegrationTests extends Abstr
 	}
 
 	@Test(expected = IllegalStateException.class)
-	@SuppressWarnings({"unchecked", "rawtypes"})
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void throwsExceptionIfReferencedRegionIsNotConfigured() {
 
-		GemfireRepositoryFactory factory = new DynamicRegionNameGemfireFactory((Iterable) Collections.emptySet(), mappingContext);
+		GemfireRepositoryFactory factory = new DynamicRegionNameGemfireFactory((Iterable) Collections.emptySet(),
+				mappingContext);
 		factory.getRepository(PersonRepository.class);
 	}
 
@@ -143,20 +144,17 @@ public class DynamicRegionGemfireRepositoryFactoryIntegrationTests extends Abstr
 	 *
 	 * @param currRegionName
 	 * @return
-     */
+	 */
 	private String getDynamicRegionName(String currRegionName) {
 		return MessageFormat.format("user{0}_{1}", regionPrefix.get(), currRegionName);
 	}
 
-
 	/**
 	 * Custom Gemfire factory to invoke the StringRepsotiory with queryCustomizer constructor
-	 *
 	 */
 	class DynamicRegionNameGemfireFactory extends GemfireRepositoryFactory {
 
 		Logger logger = LoggerFactory.getLogger(DynamicRegionNameGemfireFactory.class);
-
 
 		private final MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> mappingContext;
 
@@ -165,12 +163,12 @@ public class DynamicRegionGemfireRepositoryFactoryIntegrationTests extends Abstr
 		/**
 		 * Creates a new {@link GemfireRepositoryFactory}.
 		 *
-		 * @param regions        must not be {@literal null}.
-		 * @param mappingContext the {@link MappingContext} used by the constructed Repository for mapping entities
-		 *                       to the underlying data store, must not be {@literal null}.
+		 * @param regions must not be {@literal null}.
+		 * @param mappingContext the {@link MappingContext} used by the constructed Repository for mapping entities to the
+		 *          underlying data store, must not be {@literal null}.
 		 */
 		public DynamicRegionNameGemfireFactory(Iterable<Region<?, ?>> regions,
-											   MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> mappingContext) {
+				MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> mappingContext) {
 
 			super(regions, mappingContext);
 			this.mappingContext = mappingContext;
@@ -178,20 +176,21 @@ public class DynamicRegionGemfireRepositoryFactoryIntegrationTests extends Abstr
 		}
 
 		/*
-         * (non-Javadoc)
-         *
-         * @see org.springframework.data.repository.core.support.RepositoryFactorySupport
-         * 	#getQueryLookupStrategy(Key, EvaluationContextProvider)
-         */
+		     * (non-Javadoc)
+		     *
+		     * @see org.springframework.data.repository.core.support.RepositoryFactorySupport
+		     * 	#getQueryLookupStrategy(Key, EvaluationContextProvider)
+		     */
 		@Override
-		protected QueryLookupStrategy getQueryLookupStrategy(QueryLookupStrategy.Key key, EvaluationContextProvider evaluationContextProvider) {
+		protected QueryLookupStrategy getQueryLookupStrategy(QueryLookupStrategy.Key key,
+				EvaluationContextProvider evaluationContextProvider) {
 			logger.info("SimulationGemfireFactory getQueryLookupStrategy {}", key);
 
 			return new QueryLookupStrategy() {
 
 				@Override
 				public RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata, ProjectionFactory factory,
-													NamedQueries namedQueries) {
+						NamedQueries namedQueries) {
 
 					GemfireQueryMethod queryMethod = new GemfireQueryMethod(method, metadata, factory, mappingContext);
 					GemfireTemplate template = getTemplate(metadata);
@@ -203,7 +202,7 @@ public class DynamicRegionGemfireRepositoryFactoryIntegrationTests extends Abstr
 
 					if (namedQueries.hasQuery(queryMethod.getNamedQueryName())) {
 						return new StringBasedGemfireRepositoryQuery(namedQueries.getQuery(queryMethod.getNamedQueryName()),
-							queryMethod, template, queryCustomizer).asUserDefinedQuery();
+								queryMethod, template, queryCustomizer).asUserDefinedQuery();
 					}
 
 					return new PartTreeGemfireRepositoryQuery(queryMethod, template, queryCustomizer);
@@ -215,9 +214,10 @@ public class DynamicRegionGemfireRepositoryFactoryIntegrationTests extends Abstr
 
 	/**
 	 * Custom Gemfire template which overrides the region-name
+	 * 
 	 * @param <T>
 	 * @param <ID>
-     */
+	 */
 	class DynamicRegionGemfireTemplate<T, ID> extends GemfireTemplate {
 
 		private EntityInformation entityInformation = null;
@@ -244,8 +244,7 @@ public class DynamicRegionGemfireRepositoryFactoryIntegrationTests extends Abstr
 			}
 		}
 
-		public LookupRegionFactoryBean<?, ?> getSnapshotRegion(String regionName)
-			throws Exception {
+		public LookupRegionFactoryBean<?, ?> getSnapshotRegion(String regionName) throws Exception {
 			System.out.println("LookupRegionFactoryBean Called");
 			LookupRegionFactoryBean<?, ?> region = new LookupRegionFactoryBean<Person, Long>();
 			region.setCache(CacheFactory.getAnyInstance());

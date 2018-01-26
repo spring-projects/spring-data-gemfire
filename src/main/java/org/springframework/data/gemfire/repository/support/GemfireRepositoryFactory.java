@@ -19,8 +19,6 @@ package org.springframework.data.gemfire.repository.support;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 
-import com.gemstone.gemfire.cache.Region;
-
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.mapping.GemfirePersistentEntity;
 import org.springframework.data.gemfire.mapping.GemfirePersistentProperty;
@@ -43,13 +41,15 @@ import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import com.gemstone.gemfire.cache.Region;
+
 /**
- * {@link RepositoryFactorySupport} implementation creating repository proxies
- * for Gemfire.
+ * {@link RepositoryFactorySupport} implementation creating repository proxies for Gemfire.
  *
  * @author Oliver Gierke
  * @author David Turanski
  * @author John Blum
+ * @author jebuselwyn.martin
  */
 public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 
@@ -61,8 +61,8 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 	 * Creates a new {@link GemfireRepositoryFactory}.
 	 *
 	 * @param regions must not be {@literal null}.
-	 * @param mappingContext the {@link MappingContext} used by the constructed Repository for mapping entities
-	 * to the underlying data store, must not be {@literal null}.
+	 * @param mappingContext the {@link MappingContext} used by the constructed Repository for mapping entities to the
+	 *          underlying data store, must not be {@literal null}.
 	 */
 	public GemfireRepositoryFactory(Iterable<Region<?, ?>> regions,
 			MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> mappingContext) {
@@ -92,7 +92,7 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 	@Override
 	protected Object getTargetRepository(RepositoryInformation repositoryInformation) {
 		GemfireEntityInformation<?, Serializable> entityInformation = getEntityInformation(
-			repositoryInformation.getDomainType());
+				repositoryInformation.getDomainType());
 
 		GemfireTemplate gemfireTemplate = getTemplate(repositoryInformation);
 
@@ -109,8 +109,9 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 		Region<?, ?> region = regions.getRegion(regionName);
 
 		if (region == null) {
-			throw new IllegalStateException(String.format("No Region '%1$s' found for domain class %2$s;"
-				+ " Make sure you have configured a GemFire Region of that name in your application context",
+			throw new IllegalStateException(String.format(
+					"No Region '%1$s' found for domain class %2$s;"
+							+ " Make sure you have configured a GemFire Region of that name in your application context",
 					regionName, metadata.getDomainType().getName()));
 		}
 
@@ -119,7 +120,7 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 
 		if (regionKeyType != null && entity.getIdProperty() != null) {
 			Assert.isTrue(regionKeyType.isAssignableFrom(entityIdType), String.format(
-				"The Region referenced only supports keys of type %1$s, but the entity to be stored has an id of type %2$s",
+					"The Region referenced only supports keys of type %1$s, but the entity to be stored has an id of type %2$s",
 					regionKeyType.getName(), entityIdType.getName()));
 		}
 
@@ -127,8 +128,9 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 	}
 
 	String getRepositoryRegionName(Class<?> repositoryInterface) {
-		return (repositoryInterface.isAnnotationPresent(org.springframework.data.gemfire.mapping.Region.class) ?
-			repositoryInterface.getAnnotation(org.springframework.data.gemfire.mapping.Region.class).value() : null);
+		return (repositoryInterface.isAnnotationPresent(org.springframework.data.gemfire.mapping.Region.class)
+				? repositoryInterface.getAnnotation(org.springframework.data.gemfire.mapping.Region.class).value()
+				: null);
 	}
 
 	/*
@@ -166,7 +168,7 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 
 				if (namedQueries.hasQuery(queryMethod.getNamedQueryName())) {
 					return new StringBasedGemfireRepositoryQuery(namedQueries.getQuery(queryMethod.getNamedQueryName()),
-						queryMethod, template).asUserDefinedQuery();
+							queryMethod, template).asUserDefinedQuery();
 				}
 
 				return new PartTreeGemfireRepositoryQuery(queryMethod, template);
