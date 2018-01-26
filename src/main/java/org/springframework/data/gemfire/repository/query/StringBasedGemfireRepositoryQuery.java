@@ -43,6 +43,7 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 
 	private final GemfireTemplate template;
 	private final QueryString query;
+	private final QueryCustomizer queryCustomizer;
 
 	/*
 	 * (non-Javadoc)
@@ -51,6 +52,7 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	StringBasedGemfireRepositoryQuery() {
 		query = null;
 		template = null;
+		queryCustomizer = null;
 	}
 
 	/**
@@ -65,17 +67,32 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	}
 
 	/**
+	 * Creates a new {@link StringBasedGemfireRepositoryQuery} using the given {@link GemfireQueryMethod} and
+	 * {@link GemfireTemplate}. The actual query {@link String} will be looked up from the query method.
+	 *
+	 * @param queryMethod must not be {@literal null}.
+	 * @param template must not be {@literal null}.
+	 */
+	public StringBasedGemfireRepositoryQuery(GemfireQueryMethod queryMethod, GemfireTemplate template,
+											 QueryCustomizer queryCustomizer) {
+		this(queryMethod.getAnnotatedQuery(), queryMethod, template, queryCustomizer);
+	}
+
+	/**
 	 * Creates a new {@link StringBasedGemfireRepositoryQuery} using the given query {@link String},
 	 * {@link GemfireQueryMethod} and {@link GemfireTemplate}.
 	 *
 	 * @param query will fall back to the query annotated to the given {@link GemfireQueryMethod} if {@literal null}.
 	 * @param queryMethod must not be {@literal null}.
 	 * @param template must not be {@literal null}.
+	 * @param queryCustomizer Optional query customizer implementation.
 	 */
-	public StringBasedGemfireRepositoryQuery(String query, GemfireQueryMethod queryMethod, GemfireTemplate template) {
+	public StringBasedGemfireRepositoryQuery(String query, GemfireQueryMethod queryMethod,
+											 GemfireTemplate template, QueryCustomizer queryCustomizer) {
 		super(queryMethod);
 
 		Assert.notNull(template);
+		this.queryCustomizer = queryCustomizer;
 
 		this.userDefinedQuery |= !StringUtils.hasText(query);
 		this.query = new QueryString(StringUtils.hasText(query) ? query : queryMethod.getAnnotatedQuery());
@@ -84,6 +101,18 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 		if (queryMethod.isModifyingQuery() || queryMethod.isPageQuery()) {
 			throw new IllegalStateException(INVALID_QUERY);
 		}
+	}
+
+	/**
+	 * Creates a new {@link StringBasedGemfireRepositoryQuery} using the given query {@link String},
+	 * {@link GemfireQueryMethod} and {@link GemfireTemplate}.
+	 *
+	 * @param query will fall back to the query annotated to the given {@link GemfireQueryMethod} if {@literal null}.
+	 * @param queryMethod must not be {@literal null}.
+	 * @param template must not be {@literal null}.
+	 */
+	public StringBasedGemfireRepositoryQuery(String query, GemfireQueryMethod queryMethod, GemfireTemplate template) {
+		this(queryMethod.getAnnotatedQuery(), queryMethod, template, null);
 	}
 
 	/*
@@ -120,6 +149,14 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 		}
 
 		query = applyQueryAnnotationExtensions(localQueryMethod, query);
+
+		/**
+		 * Invoke the queryCustomizer if configured to customize the query
+		 * An extension point to allow implementations tweak generated query.
+		 */
+		if(null != queryCustomizer){
+			query = queryCustomizer.customizeQuery(query);
+		}
 
 		Collection<?> result = toCollection(template.find(query.toString(), parameters));
 

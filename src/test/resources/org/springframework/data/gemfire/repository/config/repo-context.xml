@@ -24,6 +24,7 @@
 	<gfe:replicated-region id="simple"/>
     <gfe:replicated-region id="person"/>
     <gfe:replicated-region id="address"/>
+	<gfe:replicated-region id="user1_simple"/>
 
 	<gfe-data:repositories base-package="org.springframework.data.gemfire.repository.sample">
 		<repo:include-filter type="assignable" expression="org.springframework.data.gemfire.repository.sample.PersonRepository"/>

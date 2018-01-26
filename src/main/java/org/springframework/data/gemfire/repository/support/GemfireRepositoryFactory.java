@@ -99,7 +99,7 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 		return getTargetRepositoryViaReflection(repositoryInformation, gemfireTemplate, entityInformation);
 	}
 
-	GemfireTemplate getTemplate(RepositoryMetadata metadata) {
+	protected GemfireTemplate getTemplate(RepositoryMetadata metadata) {
 		GemfirePersistentEntity<?> entity = mappingContext.getPersistentEntity(metadata.getDomainType());
 
 		String entityRegionName = entity.getRegionName();
