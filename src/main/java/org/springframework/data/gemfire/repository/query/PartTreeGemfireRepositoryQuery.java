@@ -31,12 +31,14 @@ import org.springframework.data.repository.query.parser.PartTree;
  * method's name.
  * 
  * @author Oliver Gierke
+ * @author jebuselwyn.martin
  */
 public class PartTreeGemfireRepositoryQuery extends GemfireRepositoryQuery {
 
 	private final GemfireQueryMethod method;
 	private final PartTree tree;
 	private final GemfireTemplate template;
+	private final QueryCustomizer queryCustomizer;
 
 	/**
 	 * Creates a new {@link PartTreeGemfireRepositoryQuery} using the given {@link GemfireQueryMethod} and
@@ -44,8 +46,10 @@ public class PartTreeGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	 * 
 	 * @param method must not be {@literal null}.
 	 * @param template must not be {@literal null}.
+	 * @param queryCustomizer Optional query customizer implementation.
 	 */
-	public PartTreeGemfireRepositoryQuery(GemfireQueryMethod method, GemfireTemplate template) {
+	public PartTreeGemfireRepositoryQuery(GemfireQueryMethod method, GemfireTemplate template,
+			QueryCustomizer queryCustomizer) {
 
 		super(method);
 
@@ -54,9 +58,22 @@ public class PartTreeGemfireRepositoryQuery extends GemfireRepositoryQuery {
 		this.tree = new PartTree(method.getName(), domainClass);
 		this.method = method;
 		this.template = template;
+		this.queryCustomizer = queryCustomizer;
 	}
 
-	/* 
+	/**
+	 * Creates a new {@link PartTreeGemfireRepositoryQuery} using the given {@link GemfireQueryMethod} and
+	 * {@link GemfireTemplate}.
+	 *
+	 * @param method must not be {@literal null}.
+	 * @param template must not be {@literal null}.
+	 */
+	public PartTreeGemfireRepositoryQuery(GemfireQueryMethod method, GemfireTemplate template) {
+
+		this(method, template, null);
+	}
+
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.query.RepositoryQuery#execute(java.lang.Object[])
 	 */
@@ -65,9 +82,14 @@ public class PartTreeGemfireRepositoryQuery extends GemfireRepositoryQuery {
 		ParametersParameterAccessor parameterAccessor = new ParametersParameterAccessor(method.getParameters(), parameters);
 
 		QueryString query = new GemfireQueryCreator(tree, method.getPersistentEntity())
-			.createQuery(parameterAccessor.getSort());
+				.createQuery(parameterAccessor.getSort());
 
-		RepositoryQuery repositoryQuery = new StringBasedGemfireRepositoryQuery(query.toString(), method, template);
+		RepositoryQuery repositoryQuery = null;
+		if (null != queryCustomizer) {
+			repositoryQuery = new StringBasedGemfireRepositoryQuery(query.toString(), method, template, queryCustomizer);
+		} else {
+			repositoryQuery = new StringBasedGemfireRepositoryQuery(query.toString(), method, template);
+		}
 
 		return repositoryQuery.execute(prepareStringParameters(parameters));
 	}
@@ -79,8 +101,7 @@ public class PartTreeGemfireRepositoryQuery extends GemfireRepositoryQuery {
 		for (Object parameter : parameters) {
 			if (parameter == null || parameter instanceof Sort) {
 				stringParameters.add(parameter);
-			}
-			else {
+			} else {
 				switch (partsIterator.next().getType()) {
 					case CONTAINING:
 						stringParameters.add(String.format("%%%s%%", parameter.toString()));
