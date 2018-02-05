@@ -19,8 +19,6 @@ package org.springframework.data.gemfire.eviction;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.util.ObjectSizer;
-import org.apache.geode.internal.cache.lru.LRUCapacityController;
-import org.apache.geode.internal.cache.lru.MemLRUCapacityController;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -37,10 +35,9 @@ import org.springframework.beans.factory.InitializingBean;
 @SuppressWarnings("unused")
 public class EvictionAttributesFactoryBean implements FactoryBean<EvictionAttributes>, InitializingBean {
 
-	// TODO remove this reference to the GemFire internal class when the Gem team fixes the EvictionAttributes bug!!!
-	protected static final int DEFAULT_LRU_MAXIMUM_ENTRIES = LRUCapacityController.DEFAULT_MAXIMUM_ENTRIES;
+	protected static final int DEFAULT_LRU_MAXIMUM_ENTRIES = EvictionAttributes.DEFAULT_ENTRIES_MAXIMUM;
 
-	protected static final int DEFAULT_MEMORY_MAXIMUM_SIZE = MemLRUCapacityController.DEFAULT_MAXIMUM_MEGABYTES;
+	protected static final int DEFAULT_MEMORY_MAXIMUM_SIZE = EvictionAttributes.DEFAULT_MEMORY_MAXIMUM;
 
 	private EvictionAction action = null;
 

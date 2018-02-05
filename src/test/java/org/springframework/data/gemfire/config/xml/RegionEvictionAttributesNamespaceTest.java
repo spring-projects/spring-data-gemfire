@@ -24,8 +24,8 @@ import javax.annotation.Resource;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
+import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.cache.lru.LRUCapacityController;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
@@ -84,7 +84,7 @@ public class RegionEvictionAttributesNamespaceTest {
 		assertEquals(EvictionAction.LOCAL_DESTROY, two.getAttributes().getEvictionAttributes().getAction());
 		assertEquals(EvictionAlgorithm.LRU_ENTRY, two.getAttributes().getEvictionAttributes().getAlgorithm());
 
-		assertEquals(LRUCapacityController.DEFAULT_MAXIMUM_ENTRIES,
+		assertEquals(EvictionAttributes.DEFAULT_ENTRIES_MAXIMUM,
 			two.getAttributes().getEvictionAttributes().getMaximum());
 	}
 
@@ -135,5 +135,4 @@ public class RegionEvictionAttributesNamespaceTest {
 
 		assertEquals(expectedMaximum, six.getAttributes().getEvictionAttributes().getMaximum());
 	}
-
 }

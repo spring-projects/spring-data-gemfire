@@ -90,8 +90,8 @@ public class LocatorProcess {
 		distributedSystemProperties.setProperty(DistributionConfig.LOG_LEVEL_NAME,
 			System.getProperty("spring.data.gemfire.log-level", GEMFIRE_LOG_LEVEL));
 
-		return InternalLocator.startLocator(locatorPort, null, null, null, null, null, distributedSystemProperties,
-			true, true, hostnameForClients, loadClusterConfigurationFromDirectory);
+		return InternalLocator.startLocator(locatorPort, null, null, null, null,
+			true, distributedSystemProperties, hostnameForClients);
 	}
 
 	@SuppressWarnings("unused")
