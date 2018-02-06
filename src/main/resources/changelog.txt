@@ -3,6 +3,47 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.1.0.M1 (2018-02-06)
+----------------------------------------
+* SGF-717 - Upgrade to Pivotal GemFire 9.3.0.
+* SGF-714 - edu.umd.cs.mtc:multithreadedtc is no longer test-scoped.
+* SGF-712 - Fix incorrect server proxying behavior when registering local, client Regions using EnableCachingDefinedRegions.
+* SGF-711 - Upgrade to Pivotal GemFire 9.2.2.
+* SGF-710 - Update copyright years to 2018.
+* SGF-709 - When SDG Annotation config is used to configure and bootstrap an Apache Geode server, automatically register the Administrative Functions.
+* SGF-708 - Enable the spring.data.gemfire.name property to be used in addition to spring.data.gemfire.cache.name for naming members of the cluster.
+* SGF-707 - Extend SDG's GemfireSimpleTypeHolder to handle Java 8 Time types.
+* SGF-706 - Fix race condition between ContinuousQuery registration and EnableClusterConfiguration Region creation.
+* SGF-705 - Fix MappingPdxSerializer to ignore transient, non-writable and non-entity-based (simple type) properties and fields.
+* SGF-704 - Change all com.gemstone.gemfire package references in the RegionDataAccessTracingAspect Pointcuts to org.apache.geode.
+* SGF-702 - Investigate long documentation build times.
+* SGF-701 - Dependency on org.iq80.snappy:snappy breaks the IO Platform build and appears to be a candidate for being test scoped.
+* SGF-700 - From clause Region path error occurs when creating Indexes from application domain object fields annotated with @Indexed or @Id.
+* SGF-697 - Allow basePackages to be configured using a property when creating Entity-defined Regions.
+* SGF-696 - Add support for invoking callbacks when loading snapshots.
+* SGF-695 - Add support for parallel snapshots.
+* SGF-694 - Upgrade to Pivotal GemFire 9.2.0.
+* SGF-693 - Allow the QueryService to be configured as a Spring bean in the ContinuousQuery Annotation support.
+* SGF-692 - Add Annotation support for Region Compression.
+* SGF-691 - Fix Off-Heap Annotation config to properly handle Entity-defined and Java-based Region configuration.
+* SGF-690 - Do not configure ClientRegionFactory poolName when Pool is set to DEFAULT.
+* SGF-689 - Add support for JSR-107 JCache API Annotations in Caching-defined Regions.
+* SGF-688 - Add support for configuring client and server Region data management policies in Entity-defined Regions.
+* SGF-687 - Add support for configuring client and server Region data management policies in Caching-defined Regions.
+* SGF-686 - Document use of EnableGemfireRepositories.
+* SGF-682 - Beans proxied by the Spring container with declared CQs are not registered and triggered.
+* SGF-681 - EnableClusterConfiguration annotation attributes are silently ignored.
+* SGF-680 - Using SD Repositories and @EnableContinuousQueries causes errors with Spring container initialization.
+* SGF-677 - Release 2.1 M1 (Lovelace).
+* SGF-660 - Spring Cache Abstraction annotations do not trigger CQ.
+* SGF-428 - Add HDFS Storage support.
+* SGF-401 - Add Spark Connector support.
+* SGF-243 - Support GemFire Security Features.
+* SGF-224 - Support dynamic Region creation on startup.
+* SGF-126 - Out of the box support for PDX.
+* SGF-110 - Add annotation support for CQ Listeners.
+
+
 Changes in version 2.0.3.RELEASE (2018-01-24)
 ---------------------------------------------
 * SGF-714 - edu.umd.cs.mtc:multithreadedtc is no longer test-scoped.
