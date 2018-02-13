@@ -15,20 +15,15 @@
 	<util:properties id="gemfireProperties">
 		<prop key="name">JSONRegionAdviceTest</prop>
 		<prop key="mcast-port">0</prop>
-		<prop key="log-level">warning</prop>
+		<prop key="log-level">error</prop>
 	</util:properties>
 
 	<gfe:cache properties-ref="gemfireProperties"/>
 
-	<gfe:replicated-region id="jsonRegion"/>
+	<gfe:replicated-region id="JsonRegion" persistent="false"/>
 
-	<gfe-data:json-region-autoproxy pretty-print="false" convert-returned-collections="true" region-refs="jsonRegion"/>
-	<!-- gfe-data:json-region-autoproxy replaces... -->
-	<!--
-	<aop:aspectj-autoproxy/>
-	<bean class="org.springframework.data.gemfire.serialization.json.JSONRegionAdvice"/>
-	-->
+	<gfe-data:json-region-autoproxy convert-returned-collections="true" pretty-print="false" region-refs="JsonRegion"/>
 
-	<bean class="org.springframework.data.gemfire.GemfireTemplate" p:region-ref="jsonRegion"/>
+	<bean class="org.springframework.data.gemfire.GemfireTemplate" p:region-ref="JsonRegion"/>
 
 </beans>
