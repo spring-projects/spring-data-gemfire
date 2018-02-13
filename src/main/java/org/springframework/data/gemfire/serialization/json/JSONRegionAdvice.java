@@ -17,6 +17,11 @@
 
 package org.springframework.data.gemfire.serialization.json;
 
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeList;
+import static org.springframework.data.gemfire.util.RegionUtils.toRegionName;
+import static org.springframework.data.gemfire.util.RegionUtils.toRegionPath;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -24,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -41,7 +47,7 @@ import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.util.CollectionUtils;
 
 /**
- * Spring/AspectJ AOP Aspect to adapt a GemFire {@link Region} to handle JSON data.
+ * Spring/AspectJ AOP Aspect adapting a {@link Region} to handle JSON data.
  *
  * @author David Turanski
  * @author John Blum
@@ -58,7 +64,7 @@ public class JSONRegionAdvice {
 	private boolean convertReturnedCollections = true;
 	private boolean prettyPrint = false;
 
-	private List<String> includedRegions;
+	private List<String> includedRegions = new ArrayList<>();
 
 	protected final Log log = LogFactory.getLog(JSONRegionAdvice.class);
 
@@ -79,10 +85,7 @@ public class JSONRegionAdvice {
 	 * @param regions a List of region names to include
 	 */
 	public void setIncludedRegions(List<Region<?, ?>> regions) {
-		this.includedRegions = new ArrayList<String>();
-		for (Region<?, ?> region : regions) {
-			includedRegions.add(region.getName());
-		}
+		nullSafeList(regions).forEach(region -> this.includedRegions.add(toRegionName(region)));
 	}
 
 	/**
@@ -91,7 +94,7 @@ public class JSONRegionAdvice {
 	 * @param regionNames a List of region names to include
 	 */
 	public void setIncludedRegionNames(List<String> regionNames) {
-		this.includedRegions = regionNames;
+		this.includedRegions = nullSafeList(regionNames);
 	}
 
 	/**
@@ -103,79 +106,25 @@ public class JSONRegionAdvice {
 		this.prettyPrint = prettyPrint;
 	}
 
-	@Around("execution(* org.apache.geode.cache.Region.put(..)) || "
-		+ "execution(* org.apache.geode.cache.Region.create(..)) ||"
-		+ "execution(* org.apache.geode.cache.Region.putIfAbsent(..)) ||"
-		+ "execution(* org.apache.geode.cache.Region.replace(..))")
-	public Object put(ProceedingJoinPoint pjp) {
-		boolean JSONRegion = isIncludedSONRegion(pjp.getTarget());
-		Object returnValue = null;
-
-		try {
-			if (JSONRegion) {
-				Object[] newArgs = Arrays.copyOf(pjp.getArgs(), pjp.getArgs().length);
-				Object val = newArgs[1];
-				newArgs[1] = convertArgumentToPdxInstance(val);
-				returnValue = pjp.proceed(newArgs);
-				log.debug("converting " + returnValue + " to JSON string");
-				returnValue = convertPdxInstanceToJSONString(returnValue);
-			}
-			else {
-				returnValue = pjp.proceed();
-			}
-		}
-		catch (Throwable t) {
-			handleThrowable(t);
-		}
-
-		return returnValue;
-	}
-
-	@Around("execution(* org.apache.geode.cache.Region.putAll(..))")
-	public Object putAll(ProceedingJoinPoint pjp) {
-		boolean JSONRegion = isIncludedSONRegion(pjp.getTarget());
-		Object returnValue = null;
-
-		try {
-			if (JSONRegion) {
-				Object[] newArgs = Arrays.copyOf(pjp.getArgs(), pjp.getArgs().length);
-				Map<?, ?> val = (Map<?, ?>) newArgs[0];
-				Map<Object, Object> newArg = new HashMap<Object, Object>();
-				for (Entry<?, ?> entry : val.entrySet()) {
-					newArg.put(entry.getKey(), convertArgumentToPdxInstance(entry.getValue()));
-				}
-				newArgs[0] = newArg;
-				returnValue = pjp.proceed(newArgs);
-			}
-			else {
-				returnValue = pjp.proceed();
-			}
-		}
-		catch (Throwable t) {
-			handleThrowable(t);
-		}
-
-		return returnValue;
-	}
-
-	@Around("execution(* org.apache.geode.cache.Region.get(..)) "
-		+ "|| execution(* org.apache.geode.cache.Region.selectValue(..))"
-		+ "|| execution(* org.apache.geode.cache.Region.remove(..))")
+	@Around("execution(* org.apache.geode.cache.Region.get(..))"
+		+ " || execution(* org.apache.geode.cache.Region.remove(..))"
+		+ " || execution(* org.apache.geode.cache.Region.selectValue(..))")
 	public Object get(ProceedingJoinPoint pjp) {
+
 		Object returnValue = null;
 
 		try {
-			if (isIncludedSONRegion(pjp.getTarget())) {
+			if (isIncludedJsonRegion(pjp.getTarget())) {
 				returnValue = pjp.proceed();
 				log.debug("converting " + returnValue + " to JSON string");
-				returnValue = convertPdxInstanceToJSONString(returnValue);
+				returnValue = convertToJson(returnValue);
 			}
 			else {
 				returnValue = pjp.proceed();
 			}
 		}
-		catch (Throwable t) {
-			handleThrowable(t);
+		catch (Throwable cause) {
+			handleThrowable(cause);
 		}
 
 		return returnValue;
@@ -184,19 +133,21 @@ public class JSONRegionAdvice {
 	@SuppressWarnings("unchecked")
 	@Around("execution(* org.apache.geode.cache.Region.getAll(..))")
 	public Map<Object, Object> getAll(ProceedingJoinPoint pjp) {
+
 		Map<Object, Object> result = null;
 
 		try {
-			Map<Object, Object> retVal = (Map<Object, Object>) pjp.proceed();
-			if (!convertReturnedCollections || CollectionUtils.isEmpty(retVal) || !isIncludedSONRegion(
-				pjp.getTarget())) {
-				result = retVal;
+
+			Map<Object, Object> returnValue = (Map<Object, Object>) pjp.proceed();
+
+			if (!this.convertReturnedCollections || CollectionUtils.isEmpty(returnValue)
+				|| !isIncludedJsonRegion(pjp.getTarget())) {
+
+				result = returnValue;
 			}
 			else {
-				result = new HashMap<Object, Object>();
-				for (Entry<Object, Object> entry : retVal.entrySet()) {
-					result.put(entry.getKey(), convertPdxInstanceToJSONString(entry.getValue()));
-				}
+				result = returnValue.entrySet().stream()
+					.collect(Collectors.toMap(Map.Entry::getKey, entry -> convertToJson(entry.getValue())));
 			}
 		}
 		catch (Throwable t) {
@@ -206,26 +157,88 @@ public class JSONRegionAdvice {
 		return result;
 	}
 
+	@Around("execution(* org.apache.geode.cache.Region.create(..))"
+		+ " || execution(* org.apache.geode.cache.Region.put(..))"
+		+ " || execution(* org.apache.geode.cache.Region.putIfAbsent(..))"
+		+ " || execution(* org.apache.geode.cache.Region.replace(..))")
+	public Object put(ProceedingJoinPoint pjp) {
+
+		Object returnValue = null;
+
+		try {
+			if (isIncludedJsonRegion(pjp.getTarget())) {
+
+				Object[] newArgs = Arrays.copyOf(pjp.getArgs(), pjp.getArgs().length);
+				Object val = newArgs[1];
+
+				newArgs[1] = convertToPdx(val);
+				returnValue = pjp.proceed(newArgs);
+				log.debug(String.format("Converting [%s] to JSON", returnValue));
+				returnValue = convertToJson(returnValue);
+			}
+			else {
+				returnValue = pjp.proceed();
+			}
+		}
+		catch (Throwable cause) {
+			handleThrowable(cause);
+		}
+
+		return returnValue;
+	}
+
+	@Around("execution(* org.apache.geode.cache.Region.putAll(..))")
+	public Object putAll(ProceedingJoinPoint pjp) {
+
+		Object returnValue = null;
+
+		try {
+			if (isIncludedJsonRegion(pjp.getTarget())) {
+
+				Object[] newArgs = Arrays.copyOf(pjp.getArgs(), pjp.getArgs().length);
+
+				Map<?, ?> map = (Map<?, ?>) newArgs[0];
+				Map<Object, Object> newArg = new HashMap<>();
+
+				for (Entry<?, ?> entry : map.entrySet()) {
+					newArg.put(entry.getKey(), convertToPdx(entry.getValue()));
+				}
+
+				newArgs[0] = newArg;
+				returnValue = pjp.proceed(newArgs);
+			}
+			else {
+				returnValue = pjp.proceed();
+			}
+		}
+		catch (Throwable cause) {
+			handleThrowable(cause);
+		}
+
+		return returnValue;
+	}
+
 	@SuppressWarnings("unchecked")
 	@Around("execution(* org.apache.geode.cache.Region.values(..))")
 	public Collection<Object> values(ProceedingJoinPoint pjp) {
+
 		Collection<Object> result = null;
 
 		try {
-			Collection<Object> retVal = (Collection<Object>) pjp.proceed();
-			if (!convertReturnedCollections || CollectionUtils.isEmpty(retVal) || !isIncludedSONRegion(
-				pjp.getTarget())) {
-				result = retVal;
+
+			Collection<Object> returnValue = (Collection<Object>) pjp.proceed();
+
+			if (!this.convertReturnedCollections || CollectionUtils.isEmpty(returnValue)
+					|| !isIncludedJsonRegion(pjp.getTarget())) {
+
+				result = returnValue;
 			}
 			else {
-				result = new ArrayList<Object>();
-				for (Object obj : retVal) {
-					result.add(convertArgumentToPdxInstance(obj));
-				}
+				result = returnValue.stream().map(this::convertToPdx).collect(Collectors.toList());
 			}
 		}
-		catch (Throwable t) {
-			handleThrowable(t);
+		catch (Throwable cause) {
+			handleThrowable(cause);
 		}
 
 		return result;
@@ -235,36 +248,89 @@ public class JSONRegionAdvice {
 		"|| execution(* org.springframework.data.gemfire.GemfireOperations.findUnique(..)) " +
 		"|| execution(* org.springframework.data.gemfire.GemfireOperations.query(..))")
 	public Object templateQuery(ProceedingJoinPoint pjp) {
+
 		GemfireTemplate template = (GemfireTemplate) pjp.getTarget();
-		boolean jsonRegion = isIncludedSONRegion(template.getRegion());
+
+		boolean jsonRegion = isIncludedJsonRegion(template.getRegion());
+
 		Object returnValue = null;
 
 		try {
 			if (jsonRegion) {
+
 				returnValue = pjp.proceed();
-				if (returnValue instanceof SelectResults && convertReturnedCollections) {
+
+				if (returnValue instanceof SelectResults && this.convertReturnedCollections) {
+
 					ResultsBag resultsBag = new ResultsBag();
+
 					for (Object obj : (SelectResults<?>) returnValue) {
-						resultsBag.add(convertPdxInstanceToJSONString(obj));
+						resultsBag.add(convertToJson(obj));
 					}
+
 					returnValue = resultsBag;
 				}
 				else {
-					returnValue = convertPdxInstanceToJSONString(returnValue);
+					returnValue = convertToJson(returnValue);
 				}
 			}
 			else {
 				returnValue = pjp.proceed();
 			}
 		}
-		catch (Throwable t) {
-			handleThrowable(t);
+		catch (Throwable cause) {
+			handleThrowable(cause);
 		}
 		return returnValue;
 	}
 
 
-	private PdxInstance convertArgumentToPdxInstance(Object value) {
+	private boolean isIncludedJsonRegion(Object target) {
+		return target instanceof Region && isIncludedJsonRegion((Region) target);
+	}
+
+	private boolean isIncludedJsonRegion(Region region) {
+
+		boolean result = false;
+
+		if (isIncludedJsonRegion(toRegionName(region), toRegionPath(region))) {
+
+			if (log.isDebugEnabled()) {
+				log.debug(String.format("Region [%s] is included for JSON conversion", region.getName()));
+			}
+
+			result = true;
+		}
+
+		return result;
+	}
+
+	private boolean isIncludedJsonRegion(String... regionReferences) {
+
+		List<String> regionReferencesList = Arrays.asList(nullSafeArray(regionReferences, String.class));
+
+		return CollectionUtils.isEmpty(this.includedRegions) || this.includedRegions.stream()
+			.anyMatch(includeRegion -> regionReferencesList.contains(includeRegion));
+	}
+
+	private Object convertToJson(Object returnValue) {
+
+		Object result = returnValue;
+
+		if (returnValue instanceof PdxInstance) {
+
+			result = JSONFormatter.toJSON((PdxInstance) returnValue);
+
+			if (!this.prettyPrint) {
+				result = flattenString(result);
+			}
+		}
+
+		return result;
+	}
+
+	private PdxInstance convertToPdx(Object value) {
+
 		PdxInstance pdx = null;
 
 		if (value instanceof PdxInstance) {
@@ -274,62 +340,32 @@ public class JSONRegionAdvice {
 			pdx = JSONFormatter.fromJSON((String) value);
 		}
 		else {
+
 			ObjectMapper mapper = new ObjectMapper();
+
 			try {
 				String json = mapper.writeValueAsString(value);
 				pdx = JSONFormatter.fromJSON(json);
 			}
-			catch (Throwable t) {
-				handleThrowable(t);
+			catch (Throwable cause) {
+				handleThrowable(cause);
 			}
 		}
 
 		return pdx;
 	}
 
-	private boolean isIncludedSONRegion(Object target) {
-		Region<?, ?> region = (Region<?, ?>) target;
-		boolean result = false;
-
-		if (includedRegions == null || includedRegions.contains(region.getName())) {
-			if (log.isDebugEnabled()) {
-				log.debug(region.getName() + " is included for JSON conversion");
-			}
-			result = true;
-		}
-
-		return result;
-	}
-
-	private Object convertPdxInstanceToJSONString(Object returnValue) {
-		Object result = returnValue;
-
-		if (returnValue != null && returnValue instanceof PdxInstance) {
-			result = JSONFormatter.toJSON((PdxInstance) returnValue);
-			if (!prettyPrint) {
-				result = flattenString(result);
-			}
-		}
-
-		return result;
-	}
-
 	private Object flattenString(Object result) {
-		if (result instanceof String) {
-			String json = (String) result;
-			return json.replaceAll("\\s*", "");
-		}
-
-		return result;
+		return result instanceof String ? ((String) result).replaceAll("\\s*", "") : result;
 	}
 
-	private void handleThrowable(Throwable t) {
-		if (t instanceof RuntimeException) {
-			throw (RuntimeException) t;
+	private void handleThrowable(Throwable cause) {
+
+		if (cause instanceof RuntimeException) {
+			throw (RuntimeException) cause;
 		}
 		else {
-			throw new RuntimeException(t);
+			throw new RuntimeException(cause);
 		}
-
 	}
 }

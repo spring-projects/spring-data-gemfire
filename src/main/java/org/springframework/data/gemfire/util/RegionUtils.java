@@ -20,6 +20,8 @@ import java.util.Optional;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 
 /**
@@ -30,6 +32,7 @@ import org.springframework.util.StringUtils;
  * @see org.apache.geode.cache.RegionAttributes
  * @since 2.0.0
  */
+@SuppressWarnings("unused")
 public abstract class RegionUtils extends CacheUtils {
 
 	public static boolean isClient(Region region) {
@@ -42,6 +45,32 @@ public abstract class RegionUtils extends CacheUtils {
 	}
 
 	/* (non-Javadoc) */
+	@Nullable
+	public static String toRegionName(@Nullable Region<?, ?> region) {
+		return Optional.ofNullable(region).map(Region::getName).orElse(null);
+	}
+
+	/* (non-Javadoc) */
+	@Nullable
+	public static String toRegionName(String regionPath) {
+
+		return Optional.ofNullable(regionPath)
+			.filter(StringUtils::hasText)
+			.map(StringUtils::trimWhitespace)
+			.map(it -> it.lastIndexOf(Region.SEPARATOR))
+			.filter(index -> index > -1)
+			.map(index -> regionPath.substring(index + 1))
+			.orElse(regionPath);
+	}
+
+	/* (non-Javadoc) */
+	@Nullable
+	public static String toRegionPath(@Nullable Region<?, ?> region) {
+		return Optional.ofNullable(region).map(Region::getFullPath).orElse(null);
+	}
+
+	/* (non-Javadoc) */
+	@NonNull
 	public static String toRegionPath(String regionName) {
 		return String.format("%1$s%2$s", Region.SEPARATOR, regionName);
 	}
