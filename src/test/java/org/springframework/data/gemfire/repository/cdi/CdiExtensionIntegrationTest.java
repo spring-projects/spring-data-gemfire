@@ -24,15 +24,15 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
+import com.gemstone.gemfire.cache.CacheClosedException;
+import com.gemstone.gemfire.cache.CacheFactory;
+
 import org.apache.webbeans.cditest.CdiTestContainer;
 import org.apache.webbeans.cditest.CdiTestContainerLoader;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.data.gemfire.repository.sample.Person;
-
-import com.gemstone.gemfire.cache.CacheClosedException;
-import com.gemstone.gemfire.cache.CacheFactory;
 
 /**
  * The CdiExtensionIntegrationTest class...
@@ -62,6 +62,7 @@ public class CdiExtensionIntegrationTest {
 	}
 
 	private static void closeGemfireCache() {
+
 		try {
 			CacheFactory.getAnyInstance().close();
 		}
@@ -69,7 +70,8 @@ public class CdiExtensionIntegrationTest {
 		}
 	}
 
-	protected void assertIsExpectedPerson(Person actual, Person expected) {
+	private void assertIsExpectedPerson(Person actual, Person expected) {
+
 		assertThat(actual.getId(), is(equalTo(expected.getId())));
 		assertThat(actual.getFirstname(), is(equalTo(expected.getFirstname())));
 		assertThat(actual.getLastname(), is(equalTo(expected.getLastname())));
@@ -77,6 +79,7 @@ public class CdiExtensionIntegrationTest {
 
 	@Test
 	public void bootstrapsRepositoryCorrectly() {
+
 		RepositoryClient repositoryClient = container.getInstance(RepositoryClient.class);
 
 		assertThat(repositoryClient.getPersonRepository(), is(notNullValue()));
@@ -84,7 +87,7 @@ public class CdiExtensionIntegrationTest {
 		Person expectedJonDoe = repositoryClient.newPerson("Jon", "Doe");
 
 		assertThat(expectedJonDoe, is(notNullValue()));
-		assertThat(expectedJonDoe.getId(), is(greaterThan(0l)));
+		assertThat(expectedJonDoe.getId(), is(greaterThan(0L)));
 		assertThat(expectedJonDoe.getName(), is(equalTo("Jon Doe")));
 
 		Person savedJonDoe = repositoryClient.save(expectedJonDoe);
@@ -101,9 +104,9 @@ public class CdiExtensionIntegrationTest {
 
 	@Test
 	public void returnOneFromCustomImplementation() {
+
 		RepositoryClient repositoryClient = container.getInstance(RepositoryClient.class);
 
 		assertThat(repositoryClient.getPersonRepository().returnOne(), is(equalTo(1)));
 	}
-
 }
