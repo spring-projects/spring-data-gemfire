@@ -17,23 +17,18 @@
 package org.springframework.data.gemfire.repository.query;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.springframework.data.gemfire.mapping.GemfirePersistentEntity;
 import org.springframework.data.repository.query.parser.PartTree;
 
 /**
- * Test suite of test cases testing the contract and functionality of the {@link QueryBuilder} class.
+ * Unit tests for {@link QueryBuilder} class.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -43,12 +38,11 @@ import org.springframework.data.repository.query.parser.PartTree;
  */
 public class QueryBuilderUnitTests {
 
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
-
 	@Test
 	public void createQueryBuilderWithDistinctQuery() {
+
 		GemfirePersistentEntity<?> mockPersistentEntity = mock(GemfirePersistentEntity.class);
+
 		PartTree mockPartTree = mock(PartTree.class);
 
 		when(mockPersistentEntity.getRegionName()).thenReturn("Example");
@@ -64,7 +58,9 @@ public class QueryBuilderUnitTests {
 
 	@Test
 	public void createQueryBuilderWithNonDistinctQuery() {
+
 		GemfirePersistentEntity<?> mockPersistentEntity = mock(GemfirePersistentEntity.class);
+
 		PartTree mockPartTree = mock(PartTree.class);
 
 		when(mockPersistentEntity.getRegionName()).thenReturn("Example");
@@ -78,24 +74,31 @@ public class QueryBuilderUnitTests {
 		verify(mockPartTree, times(1)).isDistinct();
 	}
 
-	@Test
+	@Test(expected = IllegalArgumentException.class)
 	public void createQueryBuilderWithNullQueryString() {
-		exception.expect(IllegalArgumentException.class);
-		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage(is(equalTo("An OQL Query must be specified")));
 
-		new QueryBuilder(null);
+		try {
+			new QueryBuilder(null);
+		}
+		catch (IllegalArgumentException expected) {
+
+			assertThat(expected).hasMessage("Query is required");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
 	}
 
 	@Test
 	@SuppressWarnings("all")
 	public void createWithPredicate() {
+
 		Predicate mockPredicate = mock(Predicate.class);
 
 		when(mockPredicate.toString(eq(QueryBuilder.DEFAULT_ALIAS))).thenReturn("x.id = 1");
 
-		QueryBuilder queryBuilder = new QueryBuilder(
-			String.format("SELECT * FROM /Example %s", QueryBuilder.DEFAULT_ALIAS));
+		QueryBuilder queryBuilder =
+			new QueryBuilder(String.format("SELECT * FROM /Example %s", QueryBuilder.DEFAULT_ALIAS));
 
 		QueryString queryString = queryBuilder.create(mockPredicate);
 
@@ -107,6 +110,7 @@ public class QueryBuilderUnitTests {
 
 	@Test
 	public void createWithNullPredicate() {
+
 		QueryBuilder queryBuilder = new QueryBuilder("SELECT * FROM /Example");
 
 		QueryString queryString = queryBuilder.create(null);

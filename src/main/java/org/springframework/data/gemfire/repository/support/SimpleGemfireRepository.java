@@ -66,6 +66,7 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 	 * @param entityInformation must not be {@literal null}.
 	 */
 	public SimpleGemfireRepository(GemfireTemplate template, EntityInformation<T, ID> entityInformation) {
+
 		Assert.notNull(template, "Template must not be null");
 		Assert.notNull(entityInformation, "EntityInformation must not be null");
 
@@ -79,9 +80,10 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 	 */
 	@Override
 	public <U extends T> U save(U entity) {
-		ID id = entityInformation.getRequiredId(entity);
 
-		template.put(id, entity);
+		ID id = this.entityInformation.getRequiredId(entity);
+
+		this.template.put(id, entity);
 
 		return entity;
 	}
@@ -92,11 +94,12 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 	 */
 	@Override
 	public <U extends T> Iterable<U> saveAll(Iterable<U> entities) {
+
 		Map<ID, U> entitiesToSave = new HashMap<>();
 
-		entities.forEach(entity -> entitiesToSave.put(entityInformation.getRequiredId(entity), entity));
+		entities.forEach(entity -> entitiesToSave.put(this.entityInformation.getRequiredId(entity), entity));
 
-		template.putAll(entitiesToSave);
+		this.template.putAll(entitiesToSave);
 
 		return entitiesToSave.values();
 	}
@@ -107,9 +110,10 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 	 */
 	@Override
 	public T save(Wrapper<T, ID> wrapper) {
+
 		T entity = wrapper.getEntity();
 
-		template.put(wrapper.getKey(), entity);
+		this.template.put(wrapper.getKey(), entity);
 
 		return entity;
 	}
@@ -120,8 +124,9 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 	 */
 	@Override
 	public long count() {
+
 		SelectResults<Integer> results =
-			template.find(String.format("SELECT count(*) FROM %s", template.getRegion().getFullPath()));
+			this.template.find(String.format("SELECT count(*) FROM %s", this.template.getRegion().getFullPath()));
 
 		return Long.valueOf(results.iterator().next());
 	}
@@ -141,7 +146,7 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 	 */
 	@Override
 	public Optional<T> findById(ID id) {
-		return Optional.ofNullable(template.get(id));
+		return Optional.ofNullable(this.template.get(id));
 	}
 
 	/*
@@ -150,8 +155,9 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 	 */
 	@Override
 	public Collection<T> findAll() {
+
 		SelectResults<T> results =
-			template.find(String.format("SELECT * FROM %s", template.getRegion().getFullPath()));
+			this.template.find(String.format("SELECT * FROM %s", this.template.getRegion().getFullPath()));
 
 		return results.asList();
 	}
@@ -162,11 +168,12 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 	 */
 	@Override
 	public Iterable<T> findAll(Sort sort) {
-		QueryString query = new QueryString("SELECT * FROM /RegionPlaceholder")
-			.forRegion(entityInformation.getJavaType(), template.getRegion())
+
+		QueryString query = QueryString.of("SELECT * FROM /RegionPlaceholder")
+			.fromRegion(this.entityInformation.getJavaType(), this.template.getRegion())
 			.orderBy(sort);
 
-		SelectResults<T> selectResults = template.find(query.toString());
+		SelectResults<T> selectResults = this.template.find(query.toString());
 
 		return selectResults.asList();
 	}
@@ -177,9 +184,10 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 	 */
 	@Override
 	public Collection<T> findAllById(Iterable<ID> ids) {
+
 		List<ID> keys = Streamable.of(ids).stream().collect(StreamUtils.toUnmodifiableList());
 
-		return CollectionUtils.<ID, T>nullSafeMap(template.getAll(keys)).values().stream()
+		return CollectionUtils.<ID, T>nullSafeMap(this.template.getAll(keys)).values().stream()
 			.filter(Objects::nonNull).collect(Collectors.toList());
 	}
 
@@ -189,7 +197,7 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 	 */
 	@Override
 	public void deleteById(ID id) {
-		template.remove(id);
+		this.template.remove(id);
 	}
 
 	/*
@@ -198,7 +206,7 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 	 */
 	@Override
 	public void delete(T entity) {
-		deleteById(entityInformation.getRequiredId(entity));
+		deleteById(this.entityInformation.getRequiredId(entity));
 	}
 
 	/*
@@ -216,8 +224,9 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 	 * @see org.apache.geode.cache.RegionAttributes#getDataPolicy()
 	 */
 	boolean isPartitioned(Region<?, ?> region) {
-		return (region != null && region.getAttributes() != null
-			&& isPartitioned(region.getAttributes().getDataPolicy()));
+
+		return region != null && region.getAttributes() != null
+			&& isPartitioned(region.getAttributes().getDataPolicy());
 	}
 
 	/*
@@ -225,7 +234,7 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 	 * @see org.apache.geode.cache.DataPolicy#withPartitioning()
 	 */
 	boolean isPartitioned(DataPolicy dataPolicy) {
-		return (dataPolicy != null && dataPolicy.withPartitioning());
+		return dataPolicy != null && dataPolicy.withPartitioning();
 	}
 
 	/*
@@ -234,8 +243,9 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 	 * @see org.apache.geode.cache.Cache#getCacheTransactionManager()
 	 */
 	boolean isTransactionPresent(Region<?, ?> region) {
-		return (region.getRegionService() instanceof Cache
-			&& isTransactionPresent(((Cache) region.getRegionService()).getCacheTransactionManager()));
+
+		return region.getRegionService() instanceof Cache
+			&& isTransactionPresent(((Cache) region.getRegionService()).getCacheTransactionManager());
 	}
 
 	/*
@@ -243,7 +253,7 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 	 * @see org.apache.geode.cache.CacheTransactionManager#exists()
 	 */
 	boolean isTransactionPresent(CacheTransactionManager cacheTransactionManager) {
-		return (cacheTransactionManager != null && cacheTransactionManager.exists());
+		return cacheTransactionManager != null && cacheTransactionManager.exists();
 	}
 
 	/* (non-Javadoc) */
@@ -257,7 +267,8 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 	 */
 	@Override
 	public void deleteAll() {
-		template.execute((GemfireCallback<Void>) region -> {
+		this.template.execute((GemfireCallback<Void>) region -> {
+
 			if (isPartitioned(region) || isTransactionPresent(region)) {
 				doRegionClear(region);
 			}

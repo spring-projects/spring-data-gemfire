@@ -28,6 +28,7 @@ import org.springframework.util.StringUtils;
  * @since 1.0.0
  */
 public enum OqlKeyword {
+
 	AND,
 	AS,
 	COUNT,

@@ -21,6 +21,8 @@ import org.springframework.data.gemfire.mapping.annotation.Region;
 import org.springframework.data.gemfire.mapping.annotation.ReplicateRegion;
 import org.springframework.util.ObjectUtils;
 
+import lombok.Data;
+
 /**
  * The Customer class is a class abstraction modeling a Customer.
  *
@@ -29,6 +31,7 @@ import org.springframework.util.ObjectUtils;
  * @see Region
  * @since 1.0.0
  */
+@Data
 @ReplicateRegion("Customers")
 @SuppressWarnings("unused")
 public class Customer {
@@ -42,36 +45,12 @@ public class Customer {
 	public Customer() {
 	}
 
-	public Customer(final Long id) {
+	public Customer(Long id) {
 		this.id = id;
 	}
 
-	public Customer(final String firstName, final String lastName) {
+	public Customer(String firstName, String lastName) {
 		this.firstName = firstName;
-		this.lastName = lastName;
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(final Long id) {
-		this.id = id;
-	}
-
-	public String getFirstName() {
-		return firstName;
-	}
-
-	public void setFirstName(final String firstName) {
-		this.firstName = firstName;
-	}
-
-	public String getLastName() {
-		return lastName;
-	}
-
-	public void setLastName(final String lastName) {
 		this.lastName = lastName;
 	}
 
@@ -85,7 +64,8 @@ public class Customer {
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (obj == this) {
+
+		if (this == obj) {
 			return true;
 		}
 
@@ -100,7 +80,7 @@ public class Customer {
 			&& ObjectUtils.nullSafeEquals(this.getLastName(), that.getLastName());
 	}
 
-	protected static int hashCodeIgnoreNull(final Object obj) {
+	protected static int hashCodeIgnoreNull(Object obj) {
 		return (obj != null ? obj.hashCode() : 0);
 	}
 
@@ -115,7 +95,6 @@ public class Customer {
 
 	@Override
 	public String toString() {
-		return String.format("%1$s %2$s", getFirstName(), getLastName());
+		return getName();
 	}
-
 }

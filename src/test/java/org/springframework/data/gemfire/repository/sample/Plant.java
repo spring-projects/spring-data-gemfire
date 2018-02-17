@@ -33,20 +33,20 @@ import org.springframework.util.ObjectUtils;
 public class Plant {
 
 	@Id
-	private String id;
+	private Long id;
 
 	private String name;
 
-	public String getId() {
-		return id;
+	public Long getId() {
+		return this.id;
 	}
 
-	public void setId(String id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
 	public String getName() {
-		return name;
+		return this.name;
 	}
 
 	public void setName(String name) {
@@ -55,7 +55,8 @@ public class Plant {
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (obj == this) {
+
+		if (this == obj) {
 			return true;
 		}
 
@@ -71,9 +72,12 @@ public class Plant {
 
 	@Override
 	public int hashCode() {
+
 		int hashValue = 17;
+
 		hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(getId());
 		hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(getName());
+
 		return hashValue;
 	}
 
@@ -81,5 +85,4 @@ public class Plant {
 	public String toString() {
 		return String.format("{ @type = %1$s, id = %2$s, name = %3$s }", getClass().getSimpleName(), getId(), getName());
 	}
-
 }

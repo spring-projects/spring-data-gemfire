@@ -16,6 +16,7 @@
 
 package org.springframework.data.gemfire.repository.query;
 
+import org.apache.geode.cache.Region;
 import org.springframework.data.gemfire.mapping.GemfirePersistentEntity;
 import org.springframework.data.gemfire.repository.query.support.OqlKeyword;
 import org.springframework.data.repository.query.parser.PartTree;
@@ -39,20 +40,21 @@ class QueryBuilder {
 
 	/* (non-Javadoc) */
 	static String asQuery(GemfirePersistentEntity<?> entity, PartTree tree) {
-		return String.format(SELECT_OQL_TEMPLATE, (tree.isDistinct() ? OqlKeyword.DISTINCT : ""),
+
+		return String.format(SELECT_OQL_TEMPLATE, tree.isDistinct() ? OqlKeyword.DISTINCT : "",
 			entity.getRegionName(), DEFAULT_ALIAS).replaceAll("\\s{2,}", " ");
 	}
 
 	/* (non-Javadoc) */
 	static String validateQuery(String query) {
-		Assert.hasText(query, "An OQL Query must be specified");
+		Assert.hasText(query, "Query is required");
 		return query;
 	}
 
 	/**
-	 * Constructs an instance of {@link QueryBuilder} initialized with the given query {@link String}.
+	 * Constructs a new instance of {@link QueryBuilder} initialized with the given {@link String query}.
 	 *
-	 * @param query {@link String} containing the base OQL query.
+	 * @param query {@link String} containing the base {@link String OQL query}.
 	 * @see #validateQuery(String)
 	 */
 	public QueryBuilder(String query) {
@@ -60,16 +62,15 @@ class QueryBuilder {
 	}
 
 	/**
-	 * Constructs an instance of {@link QueryBuilder} with the given {@link GemfirePersistentEntity}
-	 * and {@link PartTree} that determines the GemFire {@link org.apache.geode.cache.Region}
-	 * to query and whether the query should capture unique results.
+	 * Constructs a new instance of {@link QueryBuilder} initialized with the given {@link GemfirePersistentEntity}
+	 * and {@link PartTree} used to determine the {@link Region} to query and whether the query
+	 * should capture unique results.
 	 *
-	 * @param entity {@link GemfirePersistentEntity} used to determine the GemFire
-	 * {@link org.apache.geode.cache.Region} to query.
-	 * @param tree {@link PartTree} containing parts of the OQL Query for determining things
-	 * like uniqueness.
+	 * @param entity {@link GemfirePersistentEntity} used to determine the {@link Region} to query.
+	 * @param tree {@link PartTree} containing parts of the OQL Query for determining things like uniqueness.
 	 * @see org.springframework.data.gemfire.mapping.GemfirePersistentEntity
 	 * @see org.springframework.data.repository.query.parser.PartTree
+	 * @see #QueryBuilder(String)
 	 */
 	public QueryBuilder(GemfirePersistentEntity<?> entity, PartTree tree) {
 		this(asQuery(entity, tree));
@@ -97,8 +98,10 @@ class QueryBuilder {
 	 * @see org.springframework.data.gemfire.repository.query.Predicate
 	 */
 	protected String withPredicate(String query, Predicate predicate) {
-		return (predicate == null ? query
-			: String.format(WHERE_CLAUSE_TEMPLATE, query, predicate.toString(DEFAULT_ALIAS)));
+
+		return predicate != null
+			? String.format(WHERE_CLAUSE_TEMPLATE, query, predicate.toString(DEFAULT_ALIAS))
+			: query;
 	}
 
 	/*

@@ -93,7 +93,8 @@ public class User implements Comparable<User> {
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (obj == this) {
+
+		if (this == obj) {
 			return true;
 		}
 
@@ -113,9 +114,12 @@ public class User implements Comparable<User> {
 
 	@Override
 	public int hashCode() {
+
 		int hashValue = 17;
+
 		hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(getEmail());
 		hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(getUsername());
+
 		return hashValue;
 	}
 
@@ -123,5 +127,4 @@ public class User implements Comparable<User> {
 	public String toString() {
 		return getUsername();
 	}
-
 }
