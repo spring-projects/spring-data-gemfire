@@ -27,10 +27,14 @@ import org.springframework.data.repository.query.parser.Part;
 import org.springframework.data.repository.query.parser.PartTree;
 
 /**
- * Query creator to create {@link QueryString} instances.
+ * {@link AbstractQueryCreator} to create {@link QueryString} instances.
  *
  * @author Oliver Gierke
  * @author John Blum
+ * @see org.springframework.data.gemfire.repository.query.QueryBuilder
+ * @see org.springframework.data.repository.query.parser.AbstractQueryCreator
+ * @see org.springframework.data.repository.query.parser.Part
+ * @see org.springframework.data.repository.query.parser.PartTree
  */
 class GemfireQueryCreator extends AbstractQueryCreator<QueryString, Predicates> {
 
@@ -47,6 +51,7 @@ class GemfireQueryCreator extends AbstractQueryCreator<QueryString, Predicates> 
 	 * @param entity must not be {@literal null}.
 	 */
 	public GemfireQueryCreator(PartTree tree, GemfirePersistentEntity<?> entity) {
+
 		super(tree);
 
 		this.queryBuilder = new QueryBuilder(entity, tree);
@@ -59,7 +64,9 @@ class GemfireQueryCreator extends AbstractQueryCreator<QueryString, Predicates> 
 	 */
 	@Override
 	public QueryString createQuery(Sort dynamicSort) {
+
 		this.indexes = new IndexProvider();
+
 		return super.createQuery(dynamicSort);
 	}
 
@@ -96,7 +103,8 @@ class GemfireQueryCreator extends AbstractQueryCreator<QueryString, Predicates> 
 	 */
 	@Override
 	protected QueryString complete(Predicates criteria, Sort sort) {
-		QueryString query = queryBuilder.create(criteria).orderBy(sort);
+
+		QueryString query = this.queryBuilder.create(criteria).orderBy(sort);
 
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(String.format("Created Query [%s]", query.toString()));

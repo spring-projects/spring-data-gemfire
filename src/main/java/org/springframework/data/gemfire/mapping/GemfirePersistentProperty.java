@@ -18,10 +18,13 @@ package org.springframework.data.gemfire.mapping;
 
 import static org.springframework.data.gemfire.util.CollectionUtils.*;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Set;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -66,11 +69,13 @@ public class GemfirePersistentProperty extends AnnotationBasedPersistentProperty
 	}
 
 	/**
-	 * Determines whether this {@link GemfirePersistentProperty} explicitly identifies an entity property identifier,
-	 * one in which the user explicitly annotated a entity class member (field or getter/setter).
+	 * Determines whether this {@link GemfirePersistentProperty} explicitly identifies
+	 * an {@link GemfirePersistentEntity entity} identifier, one in which the user explicitly annotated
+	 * the {@link GemfirePersistentEntity owning entity} class member ({@link Field} or property,
+	 * i.e. {@link Method getter/setter}).
 	 *
 	 * @return a boolean value indicating whether this {@link GemfirePersistentProperty} explicitly identifies
-	 * an entity property identifier.
+	 * an {@link GemfirePersistentEntity entity} identifier.
 	 * @see org.springframework.data.annotation.Id
 	 * @see #isAnnotationPresent(Class)
 	 */
@@ -84,13 +89,35 @@ public class GemfirePersistentProperty extends AnnotationBasedPersistentProperty
 	 */
 	@Override
 	public boolean isIdProperty() {
-		return (super.isIdProperty() || SUPPORTED_IDENTIFIER_NAMES.contains(getName()));
+		return super.isIdProperty() || SUPPORTED_IDENTIFIER_NAMES.contains(getName());
 	}
 
+	/**
+	 * Determines whether this {@link GemfirePersistentProperty persistent property} is {@literal transient}
+	 * and thus impervious to persistent operations.
+	 *
+	 * A {@link GemfirePersistentProperty persistent property} is considered {@literal transient}
+	 * if the {@link GemfirePersistentEntity owning entity's} field/property is annotated with
+	 * {@link Transient} or the field/property is modified with {@link Modifier#TRANSIENT transient}.
+	 *
+	 * @return a boolean value indicating whether this {@link GemfirePersistentProperty persistent property}
+	 * is {@literal transient} and thus impervious to persistent operations.
+	 */
 	@Override
 	public boolean isTransient() {
 		return super.isTransient()
 			|| getProperty().getField().filter(field -> Modifier.isTransient(field.getModifiers())).isPresent();
+	}
+
+	/**
+	 * Returns the {@link String name} of this {@link GemfirePersistentProperty's} {@link Class type}.
+	 *
+	 * @return the {@link String name} of this {@link GemfirePersistentProperty's} {@link Class type}.
+	 * @see java.lang.Class#getName()
+	 * @see #getType()
+	 */
+	public String getTypeName() {
+		return getType().getName();
 	}
 
 	/**

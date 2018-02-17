@@ -28,6 +28,7 @@ import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.NonNull;
 import org.springframework.util.StringUtils;
 
 /**
@@ -67,9 +68,10 @@ public class GemfirePersistentEntity<T> extends BasicPersistentEntity<T, Gemfire
 	protected static String resolveRegionName(Class<?> persistentEntityType, Annotation regionAnnotation) {
 
 		Optional<String> regionName = Optional.ofNullable(regionAnnotation)
-			.map((annotation) ->  getAnnotationAttributeStringValue(annotation, "value"));
+			.map(annotation ->  getAnnotationAttributeStringValue(annotation, "value"))
+			.filter(StringUtils::hasText);
 
-		return regionName.filter(StringUtils::hasText).orElse(persistentEntityType.getSimpleName());
+		return regionName.orElse(persistentEntityType.getSimpleName());
 	}
 
 	/* (non-Javadoc) */
@@ -131,13 +133,14 @@ public class GemfirePersistentEntity<T> extends BasicPersistentEntity<T, Gemfire
 	}
 
 	/**
-	 * Returns the name of the {@link org.apache.geode.cache.Region} in which this {@link PersistentEntity}
-	 * will be stored.
+	 * Returns the {@link String name} of the {@link org.apache.geode.cache.Region}
+	 * in which this {@link PersistentEntity} will be stored.
 	 *
-	 * @return the name of the {@link org.apache.geode.cache.Region} in which this {@link PersistentEntity}
-	 * will be stored.
+	 * @return the {@link String name} of the {@link org.apache.geode.cache.Region}
+	 * in which this {@link PersistentEntity} will be stored.
 	 * @see org.apache.geode.cache.Region#getName()
 	 */
+	@NonNull
 	public String getRegionName() {
 		return this.regionName;
 	}
@@ -166,7 +169,7 @@ public class GemfirePersistentEntity<T> extends BasicPersistentEntity<T, Gemfire
 					return null;
 				}
 
-				return (property.isExplicitIdProperty() ? property : null);
+				return property.isExplicitIdProperty() ? property : null;
 			}
 			else  {
 				return property;

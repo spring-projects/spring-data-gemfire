@@ -21,13 +21,16 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.data.annotation.QueryAnnotation;
+
 /**
  * 
  * @author Oliver Gierke
  */
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+@QueryAnnotation
+@Documented
 public @interface Query {
 
 	String value() default "";

@@ -45,7 +45,7 @@ https://docs.spring.io/spring/docs/current/spring-framework-reference/core.html#
 Using this approach, it is a simple matter to bootstrap _Spring Data Repositories_ using the SDG `@EnableGemfireRepositories`
 annotation:
 
-.Bootstrap _Spring Data Geode Repositories_ with `@EnableGemfireRepositories`
+.Bootstrap _Spring Data GemFire Repositories_ with `@EnableGemfireRepositories`
 ====
 [source, java]
 ----
@@ -93,7 +93,7 @@ Many other aspects of the SDG's _Repository_ infrastructure extension maybe cust
 https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/repository/config/EnableGemfireRepositories.html[`@EnableGemfireRepositories` _Javadoc_]
 for more details on all configuration settings.
 
-[[gemfire-repositories.executing-queries]]
+[[gemfire-repositories.queries.executing]]
 == Executing OQL Queries
 
 _Spring Data GemFire Repositories_ enable the definition of query methods to easily execute GemFire OQL Queries
@@ -195,7 +195,7 @@ becomes too verbose, you can annotate the query methods with `@Query` as seen fo
 | `x.active = false`
 |===
 
-[[gemfire-repositories:oql-extensions]]
+[[gemfire-repositories.queries.oql-extensions]]
 == OQL Query Extensions using Annotations
 
 Many query languages, such as Pivotal GemFire's OQL (Object Query Language), have extensions that are not directly
@@ -334,3 +334,197 @@ indexes and other optimizations wisely as an improper or poorly choosen index ca
 performance given the overhead in maintaining the index.  The "ReputationIdx" was only used to serve the purpose
 of the example.
 ====
+
+[[gemfire-repositories.queries.post-processing]]
+== Query Post Processing
+
+Using the Spring Data _Repository_ abstraction, query method convention for defining data store specific queries
+(e.g. OQL) is easy and convenient.  However, it is sometimes desirable to still want to inspect or even possibly
+modify the query "generated" from the _Repository_ query method.
+
+Since 2.0.x, _Spring Data GemFire_ introduces the `o.s.d.gemfire.repository.query.QueryPostProcessor`
+functional interface.  The interface is loosely defined as follows...
+
+.QueryPostProcessor
+====
+[source,java]
+----
+package org.springframework.data.gemfire.repository.query;
+
+import org.springframework.core.Ordered;
+import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.query.QueryMethod;
+import ...;
+
+@FunctionalInterface
+interface QueryPostProcessor<T extends Repository, QUERY> extends Ordered {
+
+  QUERY postProcess(QueryMethod queryMethod, QUERY query, Object... arguments);
+
+}
+----
+====
+
+There are additional default methods provided to allow users to compose instances of `QueryPostProcessor` very similar
+to how https://docs.oracle.com/javase/8/docs/api/java/util/function/Function.html#compose-java.util.function.Function-[java.util.function.Function.andThen(:Function)]
+and https://docs.oracle.com/javase/8/docs/api/java/util/function/Function.html#compose-java.util.function.Function-[java.util.function.Function.compose(:Function)]
+work.
+
+Additionally, you will notice that the `QueryPostProcessor` interface implements the
+https://docs.spring.io/spring/docs/5.0.2.RELEASE/javadoc-api/org/springframework/core/Ordered.html[`org.springframework.core.Ordered`]
+interface, which is useful when multiple `QueryPostProcessors` are declared and registered in the Spring context
+and used to create a pipeline of processing for a group of generated query method queries.
+
+Finally, the `QueryPostProcessor` accepts type arguments corresponding to the type parameters, `T` and `QUERY`,
+respectively.  Type of `T` extends the _Spring Data Commons_ marker interface,
+https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/Repository.html[`org.springframework.data.repository.Repository`].
+We will discuss this further below.  All `QUERY` type parameter arguments in _Spring Data GemFire's_ case
+will be of type `java.lang.String`.
+
+NOTE: It is useful to define the query as type `QUERY` since this `QueryPostProcessor` interface maybe ported to
+_Spring Data Commons_ and therefore must handle all forms of queries by different data stores (e.g. JPA, MongoDB,
+or Redis).
+
+As user may implement this interface to receive a callback with the query that was generated from the application
+`Repository` interface method when the method is called.
+
+For example, I might want to log all queries from all application _Repository_ interface definitions.  I could do so
+using the following `QueryPostProcessor` implementation...
+
+.LoggingQueryPostProcessor
+====
+[source,java]
+----
+package example;
+
+import ...;
+
+class LoggingQueryPostProcessor implements QueryPostProcessor<Repository, String> {
+
+  private Logger logger = Logger.getLogger("someLoggerName");
+
+  @Override
+  public String postProcess(QueryMethod queryMethod, String query, Object... arguments) {
+
+      String message = String.format("Executing query [%s] with arguments [%s]", query, Arrays.toString(arguments));
+
+      this.logger.info(message);
+  }
+}
+----
+====
+
+The `LoggingQueryPostProcessor` was typed to the Spring Data `org.springframework.data.repository.Repository`
+marker interface, and therefore, will log all application _Repository_ interface query method "generated" queries.
+
+You could limit the scope of this logging to queries only from certain types of application _Repository_ interfaces,
+such as, say, an `CustomerRepository`...
+
+.CustomerRepository
+====
+[source,java]
+----
+interface CustomerRepository extends CrudRepository<Customer, Long> {
+
+  Customer findByAccountNumber(String accountNumber);
+
+  List<Customer> findByLastNameLike(String lastName);
+
+}
+----
+====
+
+Then, I could have typed the `LoggingQueryPostProcessor` specifically to the `CustomerRepository`, like so...
+
+.CustomerLoggingQueryPostProcessor
+====
+[source,java]
+----
+class LoggingQueryPostProcessor implements QueryPostProcessor<CustomerRepository, String> { .. }
+----
+====
+
+As result, only queries defined in the `CustomerRepository` interface (e.g. `findByAccountNumber`) would be logged.
+
+I might want to create a `QueryPostProcessor` for a specific query defined by a _Repository_ query method.  For example,
+say I want to "`LIMIT`" the OQL query generated from the `CustomerRepository.findByLastNameLike(:String)` query method
+to only return 5 results and I want to order the `Customers` by `firstName`, ascending.  Well, then, I can define
+a custom `QueryPostProcessor` like so...
+
+.OrderedLimitedCustomerByLastNameQueryPostProcessor
+====
+[source,java]
+----
+class OrderedLimitedCustomerByLastNameQueryPostProcessor implements QueryPostProcessor<CustomerRepository, String> {
+
+  private final int limit;
+
+  public OrderedLimitedCustomerByLastNameQueryPostProcessor(int limit) {
+    this.limit = limit;
+  }
+
+  @Override
+  public String postProcess(QueryMethod queryMethod, String query, Object... arguments) {
+
+    return "findByLastNameLike".equals(queryMethod.getName())
+      ? query.trim()
+          .replace("SELECT", "SELECT DISTINCT")
+          .concat(" ORDER BY firstName ASC")
+          .concat(String.format(" LIMIT %d", this.limit))
+      : query;
+  }
+}
+----
+====
+
+While this works, it possible to achieve the same affect just using the Spring Data _Repository_ convention and extensions
+provided by _Spring Data GemFire_.  For instance, the same query could be defined as...
+
+.CustomerRepository using the convention
+====
+[source,java]
+----
+interface CustomerRepository extends CrudRepository<Customer, Long> {
+
+  @Limit(5)
+  List<Customer> findDistinctByLastNameLikeOrderByFirstNameDesc(String lastName);
+
+}
+----
+====
+
+However, if you do not have control over the application `CustomerRepository` interface definition,
+then the `QueryPostProcessor` (i.e. `OrderedLimitedCustomerByLastNameQueryPostProcessor`) is convenient.
+
+If I want to ensure the `LoggingQueryPostProcessor` always comes after the other application-defined `QueryPostProcessors`
+that I may have declared and registered in the Spring `ApplicationContext`, then I can set the `order` property
+by overriding the `o.s.core.Ordered.getOrder()` method.
+
+.Defining the `order` property
+====
+[source,java]
+----
+class LoggingQueryPostProcessor implements QueryPostProcessor<Repository, String> {
+
+  @Override
+  int getOrder() {
+    return 1;
+  }
+}
+
+class CustomerQueryPostProcessor implements QueryPostProcessor<CustomerRepository, String> {
+
+  @Override
+  int getOrder() {
+    return 0;
+  }
+}
+----
+====
+
+This ensures that I will always see the affects of the post processing applied by my other `QueryPostProcessors`
+before my `LoggingQueryPostProcessor` logs the query.
+
+You can define as many `QueryPostProcessors` in the Spring `ApplicationContext` as you like and apply them in any
+order, to all or specific application _Repository_ interfaces, and be a granular as yuo like using the provided
+arguments to the `postProcess(..)` method callback.

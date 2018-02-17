@@ -44,8 +44,8 @@ import org.springframework.core.annotation.AliasFor;
 public @interface Region {
 
 	@SuppressWarnings("unchecked")
-	List<Class<? extends Annotation>> REGION_ANNOTATION_TYPES = Arrays.asList(
-		ClientRegion.class, LocalRegion.class, PartitionRegion.class, ReplicateRegion.class, Region.class);
+	List<Class<? extends Annotation>> REGION_ANNOTATION_TYPES =
+		Arrays.asList(ClientRegion.class, LocalRegion.class, PartitionRegion.class, ReplicateRegion.class, Region.class);
 
 	/**
 	 * Name, or fully-qualified bean name of the {@link org.apache.geode.cache.Region}

@@ -16,22 +16,40 @@
 
 package org.springframework.data.gemfire.repository.support;
 
-import java.io.Serializable;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.WeakHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.apache.geode.cache.Region;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.OrderComparator;
 import org.springframework.data.gemfire.mapping.GemfirePersistentEntity;
 import org.springframework.data.gemfire.mapping.GemfirePersistentProperty;
+import org.springframework.data.gemfire.repository.query.GemfireRepositoryQuery;
+import org.springframework.data.gemfire.repository.query.QueryPostProcessor;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.RepositoryDefinition;
+import org.springframework.data.repository.core.support.QueryCreationListener;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
+
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
  * {@link FactoryBean} adapter for {@link GemfireRepositoryFactory}.
@@ -50,8 +68,10 @@ import org.springframework.util.Assert;
  * @see org.springframework.data.repository.core.support.RepositoryFactorySupport
  * @see org.apache.geode.cache.Region
  */
-public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID extends Serializable>
+public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID>
 		extends RepositoryFactoryBeanSupport<T, S, ID> implements ApplicationContextAware {
+
+	private ApplicationContext applicationContext;
 
 	private Iterable<Region<?, ?>> regions;
 
@@ -67,33 +87,49 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ext
 	}
 	
 	/**
-	 * Sets a reference to the Spring {@link ApplicationContext} in which this object runs.
+	 * Sets a reference to the Spring {@link ApplicationContext}.
 	 *
-	 * @param applicationContext the Spring {@link ApplicationContext} reference.
+	 * @param applicationContext reference to the Spring {@link ApplicationContext}.
 	 * @see org.springframework.context.ApplicationContextAware#setApplicationContext(ApplicationContext)
 	 * @see org.springframework.context.ApplicationContext
 	 */
 	@Override
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		Collection<Region> regions = applicationContext.getBeansOfType(Region.class).values();
-		this.regions = (Iterable) Collections.unmodifiableCollection(regions);
+
+		this.applicationContext = applicationContext;
+
+		this.regions = Collections.unmodifiableSet(applicationContext.getBeansOfType(Region.class).entrySet().stream()
+			.<Region<?, ?>>map(Map.Entry::getValue)
+			.collect(Collectors.toSet()));
 	}
 
 	/**
-	 * Configures the {@link MappingContext} used to perform domain object type to store mappings.
+	 * Returns an {@link Optional} reference to the configured Spring {@link ApplicationContext}.
 	 *
-	 * @param mappingContext the {@link MappingContext} to set.
+	 * @return an {@link Optional} reference to the configured Spring {@link ApplicationContext}.
+	 * @see org.springframework.context.ApplicationContext
+	 * @see java.util.Optional
+	 */
+	protected Optional<ApplicationContext> getApplicationContext() {
+		return Optional.ofNullable(this.applicationContext);
+	}
+
+	/**
+	 * Configures the {@link MappingContext} used to perform application domain object type to data store mappings.
+	 *
+	 * @param mappingContext {@link MappingContext} to configure.
 	 * @see org.springframework.data.gemfire.mapping.GemfireMappingContext
 	 * @see org.springframework.data.mapping.context.MappingContext
 	 */
+	@Autowired(required = false)
 	public void setGemfireMappingContext(MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> mappingContext) {
 		setMappingContext(mappingContext);
 		this.mappingContext = mappingContext;
 	}
 
 	/**
-	 * Returns a reference to the Spring Data {@link MappingContext} used to perform domain object type
+	 * Returns a reference to the Spring Data {@link MappingContext} used to perform application domain object type
 	 * to data store mappings.
 	 *
 	 * @return a reference to the {@link MappingContext}.
@@ -106,10 +142,31 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ext
 	}
 
 	/**
-	 * Returns an {@link Iterable} reference to the GemFire {@link Region}s defined
-	 * in the Spring {@link ApplicationContext}.
+	 * Attempts to resolve the {@link MappingContext} used to map {@link GemfirePersistentEntity entities}
+	 * to Pivotal GemFire.
 	 *
-	 * @return a reference to all GemFire {@link Region}s defined in the Spring {@link ApplicationContext}.
+	 * @return a reference to the resolved {@link MappingContext}.
+	 * @throws IllegalStateException if the {@link MappingContext} cannot be resolved.
+	 * @see org.springframework.data.gemfire.mapping.GemfireMappingContext
+	 * @see org.springframework.data.mapping.context.MappingContext
+	 */
+	private MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> resolveGemfireMappingContext() {
+
+		MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> mappingContext =
+			getGemfireMappingContext();
+
+		Assert.state(mappingContext != null, "GemfireMappingContext must not be null");
+
+		return mappingContext;
+	}
+
+	/**
+	 * Returns an {@link Iterable} reference to the {@link Region Regions}
+	 * defined in the Spring {@link ApplicationContext}.
+	 *
+	 * @return a reference to all {@link Region Regions} defined in the Spring {@link ApplicationContext}.
+	 * @see org.apache.geode.cache.Region
+	 * @see java.lang.Iterable
 	 */
 	protected Iterable<Region<?, ?>> getRegions() {
 		return this.regions;
@@ -123,7 +180,15 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ext
 	 */
 	@Override
 	protected RepositoryFactorySupport createRepositoryFactory() {
-		return new GemfireRepositoryFactory(getRegions(), getGemfireMappingContext());
+
+		GemfireRepositoryFactory repositoryFactory =
+			new GemfireRepositoryFactory(getRegions(), getGemfireMappingContext());
+
+		getApplicationContext()
+			.map(applicationContext -> new QueryPostProcessorRegistrationOnQueryCreationListener(applicationContext))
+			.ifPresent(repositoryFactory::addQueryCreationListener);
+
+		return repositoryFactory;
 	}
 
 	/*
@@ -132,7 +197,108 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID ext
 	 */
 	@Override
 	public void afterPropertiesSet() {
-		Assert.state(getGemfireMappingContext() != null, "GemfireMappingContext must not be null");
+		resolveGemfireMappingContext();
 		super.afterPropertiesSet();
+	}
+
+	protected class QueryPostProcessorRegistrationOnQueryCreationListener
+			implements QueryCreationListener<GemfireRepositoryQuery> {
+
+		private Iterable<QueryPostProcessorMetadata> queryPostProcessorsMetadata;
+
+		public QueryPostProcessorRegistrationOnQueryCreationListener(ApplicationContext applicationContext) {
+
+			Assert.notNull(applicationContext, "ApplicationContext must not be null");
+
+			List<QueryPostProcessor> queryPostProcessors =
+				new ArrayList<>(applicationContext.getBeansOfType(QueryPostProcessor.class).values());
+
+			queryPostProcessors.sort(OrderComparator.INSTANCE);
+
+			this.queryPostProcessorsMetadata = queryPostProcessors.stream()
+				.map(QueryPostProcessorMetadata::from)
+				.collect(Collectors.toList());
+		}
+
+		protected Iterable<QueryPostProcessorMetadata> getQueryPostProcessorsMetadata() {
+			return this.queryPostProcessorsMetadata;
+		}
+
+		@Override
+		public void onCreation(GemfireRepositoryQuery repositoryQuery) {
+
+			Class<?> repositoryInterface = getRepositoryInformation().getRepositoryInterface();
+
+			StreamSupport.stream(getQueryPostProcessorsMetadata().spliterator(), false)
+				.filter(queryPostProcessorMetadata -> queryPostProcessorMetadata.isMatch(repositoryInterface))
+				.forEach(queryPostProcessorMetadata -> queryPostProcessorMetadata.register(repositoryQuery));
+		}
+	}
+
+	static class QueryPostProcessorMetadata {
+
+		private static final Map<QueryPostProcessorKey, QueryPostProcessorMetadata> cache = new WeakHashMap<>();
+
+		private final Class<?> declaredRepositoryType;
+
+		private final QueryPostProcessor<?, ?> queryPostProcessor;
+
+		static QueryPostProcessorMetadata from(@NonNull QueryPostProcessor<?, ?> queryPostProcessor) {
+
+			return cache.computeIfAbsent(QueryPostProcessorKey.of(queryPostProcessor),
+				key -> new QueryPostProcessorMetadata(key.getQueryPostProcessor()));
+		}
+
+		@SuppressWarnings("unchecked")
+		QueryPostProcessorMetadata(@NonNull QueryPostProcessor<?, ?> queryPostProcessor) {
+
+			Assert.notNull(queryPostProcessor, "QueryPostProcessor must not be null");
+
+			this.queryPostProcessor = queryPostProcessor;
+
+			List<TypeInformation<?>> typeArguments = ClassTypeInformation.from(queryPostProcessor.getClass())
+				.getRequiredSuperTypeInformation(QueryPostProcessor.class)
+				.getTypeArguments();
+
+			this.declaredRepositoryType = Optional.of(typeArguments)
+				.filter(list -> !list.isEmpty())
+				.map(list -> list.get(0))
+				.map(typeInfo -> typeInfo.getType())
+				.orElse((Class) Repository.class);
+		}
+
+		@NonNull
+		Class<?> getDeclaredRepositoryType() {
+			return this.declaredRepositoryType;
+		}
+
+		@NonNull
+		@SuppressWarnings("unchecked")
+		QueryPostProcessor<?, String> getQueryPostProcessor() {
+			return (QueryPostProcessor<?, String>) this.queryPostProcessor;
+		}
+
+		boolean isMatch(Class<?> repositoryInterface) {
+
+			return repositoryInterface != null
+				&& (getDeclaredRepositoryType().isAssignableFrom(repositoryInterface)
+					|| repositoryInterface.isAnnotationPresent(RepositoryDefinition.class));
+		}
+
+		GemfireRepositoryQuery register(GemfireRepositoryQuery repositoryQuery) {
+
+			repositoryQuery.register(getQueryPostProcessor());
+
+			return repositoryQuery;
+		}
+
+		@EqualsAndHashCode
+		@RequiredArgsConstructor(staticName = "of")
+		private static class QueryPostProcessorKey {
+
+			@lombok.NonNull @Getter
+			QueryPostProcessor<?, ?> queryPostProcessor;
+
+		}
 	}
 }

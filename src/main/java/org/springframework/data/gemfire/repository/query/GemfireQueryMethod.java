@@ -67,7 +67,6 @@ public class GemfireQueryMethod extends QueryMethod {
 		assertNonPagingQueryMethod(method);
 
 		this.method = method;
-
 		this.entity = mappingContext.getPersistentEntity(getDomainClass());
 	}
 
@@ -81,6 +80,7 @@ public class GemfireQueryMethod extends QueryMethod {
 	 * @see java.lang.reflect.Method#getParameterTypes()
 	 */
 	private void assertNonPagingQueryMethod(Method method) {
+
 		for (Class<?> type : method.getParameterTypes()) {
 			if (Pageable.class.isAssignableFrom(type)) {
 				throw new IllegalStateException(String.format("Pagination is not supported by GemFire Repositories;"
@@ -95,7 +95,7 @@ public class GemfireQueryMethod extends QueryMethod {
 	 * @return the {@link GemfirePersistentEntity} the method deals with.
 	 */
 	public GemfirePersistentEntity<?> getPersistentEntity() {
-		return entity;
+		return this.entity;
 	}
 
 	/**
@@ -117,9 +117,12 @@ public class GemfireQueryMethod extends QueryMethod {
 	 * @see java.lang.reflect.Method#getAnnotation(Class)
 	 */
 	String getAnnotatedQuery() {
-		Query query = method.getAnnotation(Query.class);
-		String queryString = (query != null ? (String) AnnotationUtils.getValue(query) : null);
-		return (StringUtils.hasText(queryString) ? queryString : null);
+
+		Query query = this.method.getAnnotation(Query.class);
+
+		String queryString = query != null ? (String) AnnotationUtils.getValue(query) : null;
+
+		return StringUtils.hasText(queryString) ? queryString : null;
 	}
 
 	/**
@@ -131,7 +134,7 @@ public class GemfireQueryMethod extends QueryMethod {
 	 * @see java.lang.reflect.Method#isAnnotationPresent(Class)
 	 */
 	public boolean hasHint() {
-		return method.isAnnotationPresent(Hint.class);
+		return this.method.isAnnotationPresent(Hint.class);
 	}
 
 	/**
@@ -142,8 +145,10 @@ public class GemfireQueryMethod extends QueryMethod {
 	 * @see java.lang.reflect.Method#getAnnotation(Class)
 	 */
 	public String[] getHints() {
+
 		Hint hint = method.getAnnotation(Hint.class);
-		return (hint != null ? hint.value() : EMPTY_STRING_ARRAY);
+
+		return hint != null ? hint.value() : EMPTY_STRING_ARRAY;
 	}
 
 	/**
@@ -155,7 +160,7 @@ public class GemfireQueryMethod extends QueryMethod {
 	 * @see java.lang.reflect.Method#isAnnotationPresent(Class)
 	 */
 	public boolean hasImport() {
-		return method.isAnnotationPresent(Import.class);
+		return this.method.isAnnotationPresent(Import.class);
 	}
 
 	/**
@@ -166,8 +171,10 @@ public class GemfireQueryMethod extends QueryMethod {
 	 * @see java.lang.reflect.Method#getAnnotation(Class)
 	 */
 	public String getImport() {
+
 		Import importStatement = method.getAnnotation(Import.class);
-		return (importStatement != null ? importStatement.value() : null);
+
+		return importStatement != null ? importStatement.value() : null;
 	}
 
 	/**
@@ -179,7 +186,7 @@ public class GemfireQueryMethod extends QueryMethod {
 	 * @see java.lang.reflect.Method#isAnnotationPresent(Class)
 	 */
 	public boolean hasLimit() {
-		return method.isAnnotationPresent(Limit.class);
+		return this.method.isAnnotationPresent(Limit.class);
 	}
 
 	/**
@@ -190,8 +197,10 @@ public class GemfireQueryMethod extends QueryMethod {
 	 * @see java.lang.reflect.Method#getAnnotation(Class)
 	 */
 	public int getLimit() {
+
 		Limit limit = method.getAnnotation(Limit.class);
-		return (limit != null ? limit.value() : Integer.MAX_VALUE);
+
+		return limit != null ? limit.value() : Integer.MAX_VALUE;
 	}
 
 	/**
@@ -202,7 +211,6 @@ public class GemfireQueryMethod extends QueryMethod {
 	 * @see java.lang.reflect.Method#isAnnotationPresent(Class)
 	 */
 	public boolean hasTrace() {
-		return method.isAnnotationPresent(Trace.class);
+		return this.method.isAnnotationPresent(Trace.class);
 	}
-
 }

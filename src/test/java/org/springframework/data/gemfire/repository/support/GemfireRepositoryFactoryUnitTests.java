@@ -16,18 +16,16 @@
 
 package org.springframework.data.gemfire.repository.support;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.startsWith;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newUnsupportedOperationException;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -36,285 +34,509 @@ import java.util.Collections;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 import org.springframework.aop.framework.Advised;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.mapping.GemfireMappingContext;
+import org.springframework.data.gemfire.mapping.GemfirePersistentEntity;
 import org.springframework.data.gemfire.repository.GemfireRepository;
 import org.springframework.data.gemfire.repository.sample.Person;
+import org.springframework.data.gemfire.util.RegionUtils;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
+import org.springframework.data.repository.core.support.RepositoryComposition;
 
 /**
  * Unit tests for {@link GemfireRepositoryFactory}.
  *
  * @author Oliver Gierke
  * @author John Blum
+ * @see org.junit.Test
+ * @see org.mockito.Mockito
  * @see org.springframework.data.gemfire.repository.support.GemfireRepositoryFactory
  */
 @RunWith(MockitoJUnitRunner.class)
-@SuppressWarnings("unused")
+@SuppressWarnings("rawtypes")
 public class GemfireRepositoryFactoryUnitTests {
 
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
-
-	private GemfireMappingContext gemfireMappingContext = new GemfireMappingContext();
+	private GemfireMappingContext mappingContext;
 
 	@Mock
-	private Region<Object, Object> mockRegion;
+	private Region mockRegion;
 
 	@Mock
-	@SuppressWarnings("rawtypes")
 	private RegionAttributes mockRegionAttributes;
-
-	@SuppressWarnings("unchecked")
-	protected <K, V> Region<K, V> configureMockRegion(Region<K, V> mockRegion, String name,
-			Class<K> keyType, Class<V> valueType) {
-
-		when(mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
-		when(mockRegion.getFullPath()).thenReturn(String.format("%1$s%2$s", Region.SEPARATOR, name));
-		when(mockRegion.getName()).thenReturn(name);
-		when(mockRegionAttributes.getKeyConstraint()).thenReturn(keyType);
-		when(mockRegionAttributes.getValueConstraint()).thenReturn(valueType);
-
-		return mockRegion;
-	}
-
-	@SuppressWarnings("unchecked")
-	protected <K, V> Region<K, V> mockRegion(String name, Class<K> keyType, Class<V> valueType) {
-		return configureMockRegion(mock(Region.class, name), name, keyType, valueType);
-	}
-
-	protected RepositoryMetadata mockRepositoryMetadata(final Class<?> domainType, final Class<?> idType,
-			final Class<?> repositoryInterface) {
-
-		RepositoryMetadata mockRepositoryMetadata = mock(RepositoryMetadata.class);
-
-		when(mockRepositoryMetadata.getDomainType()).then(new Answer<Class<?>>() {
-			@Override public Class<?> answer(InvocationOnMock invocation) throws Throwable {
-				return domainType;
-			}
-		});
-
-		when(mockRepositoryMetadata.getIdType()).then(new Answer<Class<?>>() {
-			@Override public Class<?> answer(InvocationOnMock invocation) throws Throwable {
-				return idType;
-			}
-		});
-
-		when(mockRepositoryMetadata.getRepositoryInterface()).then(new Answer<Class<?>>() {
-			@Override public Class<?> answer(InvocationOnMock invocation) throws Throwable {
-				return repositoryInterface;
-			}
-		});
-
-		return mockRepositoryMetadata;
-	}
 
 	@Before
 	@SuppressWarnings("unchecked")
 	public void setup() {
-		configureMockRegion(mockRegion, "simple", Object.class, Object.class);
+		this.mappingContext = new GemfireMappingContext();
+		configureMockRegion(this.mockRegion, "simple", Object.class, Object.class);
 	}
 
-	@Test
-	public void constructGemfireRepositoryFactoryWithNullMappingContextThrowsIllegalArgumentException() {
-		exception.expect(IllegalArgumentException.class);
-		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("MappingContext must not be null");
-
-		new GemfireRepositoryFactory(Collections.<Region<?, ?>>emptyList(), null);
+	@SuppressWarnings("unchecked")
+	private <K, V> Region<K, V> mockRegion(String name, Class<K> keyType, Class<V> valueType) {
+		return configureMockRegion(this.mockRegion, name, keyType, valueType);
 	}
 
-	@Test
-	public void constructGemfireRepositoryFactoryWithNullRegionsThrowsIllegalArgumentException() {
-		exception.expect(IllegalArgumentException.class);
-		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("Regions must not be null");
+	@SuppressWarnings("unchecked")
+	private <K, V> Region<K, V> configureMockRegion(Region<K, V> mockRegion, String name,
+			Class<K> keyType, Class<V> valueType) {
 
-		new GemfireRepositoryFactory(null, gemfireMappingContext);
+		when(mockRegion.getAttributes()).thenReturn(this.mockRegionAttributes);
+		when(mockRegion.getFullPath()).thenReturn(RegionUtils.toRegionPath(name));
+		when(mockRegion.getName()).thenReturn(name);
+		when(this.mockRegionAttributes.getKeyConstraint()).thenReturn(keyType);
+		when(this.mockRegionAttributes.getValueConstraint()).thenReturn(valueType);
+
+		return mockRegion;
 	}
 
-	@Test
-	public void getRepositoryRegionNameFromRepositoryInterfaceWithRegionAnnotation() {
-		GemfireRepositoryFactory gemfireRepositoryFactory = new GemfireRepositoryFactory(
-			Collections.<Region<?, ?>>emptyList(), gemfireMappingContext);
+	private RepositoryMetadata mockRepositoryMetadata(Class<?> domainType, Class<?> idType,
+			Class<?> repositoryInterface) {
 
-		assertThat(gemfireRepositoryFactory.getRepositoryRegionName(PersonRepository.class),
-			is(equalTo("People")));
-	}
+		RepositoryMetadata mockRepositoryMetadata = mock(RepositoryMetadata.class);
 
-	@Test
-	public void getRepositoryRegionNameFromRepositoryInterfaceWithoutRegionAnnotation() {
-		GemfireRepositoryFactory gemfireRepositoryFactory = new GemfireRepositoryFactory(
-			Collections.<Region<?, ?>>emptyList(), gemfireMappingContext);
+		when(mockRepositoryMetadata.getDomainType()).thenAnswer(invocation -> domainType);
+		when(mockRepositoryMetadata.getIdType()).thenAnswer(invocation -> idType);
+		when(mockRepositoryMetadata.getRepositoryInterface()).thenAnswer(invocation -> repositoryInterface);
 
-		assertThat(gemfireRepositoryFactory.getRepositoryRegionName(SampleCustomGemfireRepository.class),
-			is(nullValue(String.class)));
+		return mockRepositoryMetadata;
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void getTemplateReturnsGemfireTemplateForPeopleRegion() {
-		RepositoryMetadata mockRepositoryMetadata = mockRepositoryMetadata(Person.class, Long.class,
-			PersonRepository.class);
+	public void constructGemfireRepositoryFactorySuccessfully() {
+
+		GemfireRepositoryFactory repositoryFactory =
+			new GemfireRepositoryFactory(Collections.singletonList(this.mockRegion), this.mappingContext);
+
+		assertThat(repositoryFactory).isNotNull();
+		assertThat(repositoryFactory.getMappingContext()).isEqualTo(this.mappingContext);
+		assertThat(repositoryFactory.getRegions()).contains(this.mockRegion);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void constructGemfireRepositoryFactoryWithNullMappingContextThrowsIllegalArgumentException() {
+
+		try {
+			new GemfireRepositoryFactory(Collections.emptyList(), null);
+		}
+		catch (IllegalArgumentException expected) {
+
+			assertThat(expected).hasMessage("MappingContext is required");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void constructGemfireRepositoryFactoryWithNullRegionsThrowsIllegalArgumentException() {
+
+		try {
+			new GemfireRepositoryFactory(null, this.mappingContext);
+		}
+		catch (IllegalArgumentException expected) {
+
+			assertThat(expected).hasMessage("Regions are required");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
+	}
+
+	@Test
+	public void getEntityRegionNameFromEntityRegionName() {
+
+		GemfireRepositoryFactory repositoryFactory =
+			new GemfireRepositoryFactory(Collections.emptyList(), this.mappingContext);
+
+		GemfirePersistentEntity<?> mockPersistentEntity = mock(GemfirePersistentEntity.class);
+
+		when(mockPersistentEntity.getRegionName()).thenReturn("MockRegionName");
+
+		RepositoryMetadata mockRepositoryMetadata = mock(RepositoryMetadata.class);
+
+		assertThat(repositoryFactory.getEntityRegionName(mockRepositoryMetadata, mockPersistentEntity))
+			.isEqualTo("MockRegionName");
+
+		verify(mockPersistentEntity, times(1)).getRegionName();
+		verify(mockPersistentEntity, never()).getType();
+		verifyZeroInteractions(mockRepositoryMetadata);
+	}
+
+	@Test
+	public void getEntityRegionNameFromEntityDomainType() {
+
+		GemfireRepositoryFactory repositoryFactory =
+			new GemfireRepositoryFactory(Collections.emptyList(), this.mappingContext);
+
+		GemfirePersistentEntity<?> mockPersistentEntity = mock(GemfirePersistentEntity.class);
+
+		RepositoryMetadata mockRepositoryMetadata = mock(RepositoryMetadata.class);
+
+		when(mockPersistentEntity.getRegionName()).thenReturn("  ");
+		when(mockPersistentEntity.getType()).thenAnswer(invocation -> Person.class);
+
+		assertThat(repositoryFactory.getEntityRegionName(mockRepositoryMetadata, mockPersistentEntity))
+			.isEqualTo(Person.class.getSimpleName());
+
+		verify(mockPersistentEntity, times(1)).getRegionName();
+		verify(mockPersistentEntity, times(1)).getType();
+		verifyZeroInteractions(mockRepositoryMetadata);
+	}
+
+	@Test
+	public void getEntityRegionNameFromRepositoryMetadata() {
+
+		GemfireRepositoryFactory repositoryFactory =
+			new GemfireRepositoryFactory(Collections.emptyList(), this.mappingContext);
+
+		GemfirePersistentEntity<?> mockPersistentEntity = mock(GemfirePersistentEntity.class);
+
+		RepositoryMetadata mockRepositoryMetadata = mock(RepositoryMetadata.class);
+
+		when(mockPersistentEntity.getRegionName()).thenReturn("  ");
+		when(mockPersistentEntity.getType()).thenReturn(null);
+		when(mockRepositoryMetadata.getDomainType()).thenAnswer(invocation -> Person.class);
+
+		assertThat(repositoryFactory.getEntityRegionName(mockRepositoryMetadata, mockPersistentEntity))
+			.isEqualTo(Person.class.getSimpleName());
+
+		verify(mockPersistentEntity, times(1)).getRegionName();
+		verify(mockPersistentEntity, times(1)).getType();
+		verify(mockRepositoryMetadata, times(1)).getDomainType();
+	}
+
+	@Test
+	public void getEntityRegionNameFromRepositoryMetadataWhenEntityIsNull() {
+
+		GemfireRepositoryFactory repositoryFactory =
+			new GemfireRepositoryFactory(Collections.emptyList(), this.mappingContext);
+
+		RepositoryMetadata mockRepositoryMetadata = mock(RepositoryMetadata.class);
+
+		when(mockRepositoryMetadata.getDomainType()).thenAnswer(invocation -> Person.class);
+
+		assertThat(repositoryFactory.getEntityRegionName(mockRepositoryMetadata, null))
+			.isEqualTo(Person.class.getSimpleName());
+
+		verify(mockRepositoryMetadata, times(1)).getDomainType();
+	}
+
+	@Test
+	public void getRepositoryRegionNameFromRegionAnnotatedRepositoryInterface() {
+
+		GemfireRepositoryFactory gemfireRepositoryFactory =
+			new GemfireRepositoryFactory(Collections.emptyList(), this.mappingContext);
+
+		RepositoryMetadata mockRepositoryMetadata = mock(RepositoryMetadata.class);
+
+		when(mockRepositoryMetadata.getRepositoryInterface()).thenAnswer(invocation -> PeopleRepository.class);
+
+		assertThat(gemfireRepositoryFactory.getRepositoryRegionName(mockRepositoryMetadata).orElse(null))
+			.isEqualTo("People");
+
+		verify(mockRepositoryMetadata, times(1)).getRepositoryInterface();
+	}
+
+	@Test
+	public void getRepositoryRegionNameFromRegionAnnotatedRepositoryInterfaceHavingNoValue() {
+
+		GemfireRepositoryFactory gemfireRepositoryFactory =
+			new GemfireRepositoryFactory(Collections.emptyList(), this.mappingContext);
+
+		RepositoryMetadata mockRepositoryMetadata = mock(RepositoryMetadata.class);
+
+		when(mockRepositoryMetadata.getRepositoryInterface()).thenAnswer(invocation -> NonQualifiedRegionAnnotatedRepository.class);
+
+		assertThat(gemfireRepositoryFactory.getRepositoryRegionName(mockRepositoryMetadata).isPresent()).isFalse();
+
+		verify(mockRepositoryMetadata, times(1)).getRepositoryInterface();
+	}
+
+	@Test
+	public void getRepositoryRegionNameFromNonRegionAnnotatedRepositoryInterface() {
+
+		GemfireRepositoryFactory gemfireRepositoryFactory =
+			new GemfireRepositoryFactory(Collections.emptyList(), this.mappingContext);
+
+		RepositoryMetadata mockRepositoryMetadata = mock(RepositoryMetadata.class);
+
+		when(mockRepositoryMetadata.getRepositoryInterface())
+			.thenAnswer(invocation -> TestGemfireRepository.class);
+
+		assertThat(gemfireRepositoryFactory.getRepositoryRegionName(mockRepositoryMetadata).isPresent()).isFalse();
+
+		verify(mockRepositoryMetadata, times(1)).getRepositoryInterface();
+	}
+
+	@Test
+	public void resolveRegionWithRepositoryMetadataAndRegionNamePath() {
+
+		RepositoryMetadata mockRepositoryMetadata =
+			mockRepositoryMetadata(Person.class, Long.class, PeopleRepository.class);
+
+		Region<?, ?> mockRegionOne = mockRegion("RegionOne", Person.class, Long.class);
+		Region<?, ?> mockRegionTwo = mockRegion("RegionTwo", Object.class, Long.class);
+
+		GemfireRepositoryFactory repositoryFactory =
+			new GemfireRepositoryFactory(Arrays.asList(mockRegionOne, mockRegionTwo), this.mappingContext);
+
+		assertThat(repositoryFactory.resolveRegion(mockRepositoryMetadata, mockRegionTwo.getName()))
+			.isEqualTo(mockRegionTwo);
+
+		assertThat(repositoryFactory.resolveRegion(mockRepositoryMetadata, mockRegionOne.getFullPath()))
+			.isEqualTo(mockRegionOne);
+
+		verifyZeroInteractions(mockRepositoryMetadata);
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void resolveRegionWithRepositoryMetadataAndNonExistingRegionNamePath() {
+
+		try {
+			RepositoryMetadata mockRepositoryMetadata =
+				mockRepositoryMetadata(Person.class, Long.class, PeopleRepository.class);
+
+			GemfireRepositoryFactory repositoryFactory =
+				new GemfireRepositoryFactory(Collections.emptyList(), this.mappingContext);
+
+			repositoryFactory.resolveRegion(mockRepositoryMetadata, "Test");
+		}
+		catch (IllegalArgumentException expected) {
+
+			assertThat(expected).hasMessage(GemfireRepositoryFactory.REGION_NOT_FOUND,
+				"Test", Person.class.getName());
+
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void newTemplateReturnsGemfireTemplateForPeopleRegion() {
+
+		RepositoryMetadata mockRepositoryMetadata =
+			mockRepositoryMetadata(Person.class, Long.class, PeopleRepository.class);
 
 		Region<Long, Person> mockPeopleRegion = mockRegion("People", Long.class, Person.class);
 
-		Iterable<Region<?, ?>> regions = Arrays.asList(mockRegion, mockPeopleRegion);
+		GemfireRepositoryFactory repositoryFactory =
+			new GemfireRepositoryFactory(Arrays.asList(this.mockRegion, mockPeopleRegion), mappingContext);
 
-		GemfireRepositoryFactory gemfireRepositoryFactory = new GemfireRepositoryFactory(
-			regions, gemfireMappingContext);
+		GemfireTemplate gemfireTemplate = repositoryFactory.newTemplate(mockRepositoryMetadata);
 
-		GemfireTemplate gemfireTemplate = gemfireRepositoryFactory.getTemplate(mockRepositoryMetadata);
-
-		assertThat(gemfireTemplate, is(notNullValue(GemfireTemplate.class)));
-		assertThat(gemfireTemplate.<Long, Person>getRegion(), is(equalTo(mockPeopleRegion)));
+		assertThat(gemfireTemplate).isNotNull();
+		assertThat(gemfireTemplate.getRegion()).isEqualTo(mockPeopleRegion);
 
 		verify(mockPeopleRegion, times(1)).getAttributes();
-		verify(mockPeopleRegion, times(1)).getFullPath();
-		verify(mockPeopleRegion, times(1)).getName();
-		verify(mockRegionAttributes, times(1)).getKeyConstraint();
+		verify(this.mockRegionAttributes, times(1)).getKeyConstraint();
 		verify(mockRepositoryMetadata, times(1)).getDomainType();
 		verify(mockRepositoryMetadata, times(1)).getIdType();
+		verify(mockRepositoryMetadata, times(1)).getRepositoryInterface();
+		verifyNoMoreInteractions(mockRepositoryMetadata);
 	}
 
 	@Test
-	public void getTemplateReturnsGemfireTemplateForSimpleRegion() {
-		RepositoryMetadata mockRepositoryMetadata = mockRepositoryMetadata(Person.class, Long.class,
-			SampleCustomGemfireRepository.class);
+	@SuppressWarnings("unchecked")
+	public void newTemplateReturnsGemfireTemplateForSimpleRegion() {
 
-		Iterable<Region<?, ?>> regions = Collections.<Region<?, ?>>singleton(mockRegion);
+		RepositoryMetadata mockRepositoryMetadata =
+			mockRepositoryMetadata(Person.class, Long.class, TestGemfireRepository.class);
 
-		GemfireRepositoryFactory gemfireRepositoryFactory = new GemfireRepositoryFactory(
-			regions, gemfireMappingContext);
+		GemfireRepositoryFactory gemfireRepositoryFactory =
+			new GemfireRepositoryFactory(Collections.singleton(this.mockRegion), this.mappingContext);
 
-		GemfireTemplate gemfireTemplate = gemfireRepositoryFactory.getTemplate(mockRepositoryMetadata);
+		GemfireTemplate gemfireTemplate = gemfireRepositoryFactory.newTemplate(mockRepositoryMetadata);
 
-		assertThat(gemfireTemplate, is(notNullValue(GemfireTemplate.class)));
-		assertThat(gemfireTemplate.getRegion(), is(equalTo(mockRegion)));
+		assertThat(gemfireTemplate).isNotNull();
+		assertThat(gemfireTemplate.getRegion()).isEqualTo(this.mockRegion);
 
+		verify(this.mockRegion, times(1)).getAttributes();
+		verify(this.mockRegionAttributes, times(1)).getKeyConstraint();
 		verify(mockRepositoryMetadata, times(1)).getDomainType();
 		verify(mockRepositoryMetadata, times(1)).getIdType();
+		verify(mockRepositoryMetadata, times(1)).getRepositoryInterface();
+		verifyNoMoreInteractions(mockRepositoryMetadata);
 	}
 
-	@Test
-	public void getTemplateThrowsIllegalArgumentExceptionForIncompatibleRegionKeyTypeAndRepositoryIdType() {
-		RepositoryMetadata mockRepositoryMetadata = mockRepositoryMetadata(Person.class, Long.class,
-			PersonRepository.class);
+	@Test(expected = IllegalArgumentException.class)
+	public void newTemplateWithIncompatibleRegionKeyTypeAndRepositoryIdTypeThrowsIllegalArgumentException() {
 
-		Region<String, Person> mockPeopleRegion = mockRegion("People", String.class, Person.class);
+		RepositoryMetadata mockRepositoryMetadata =
+			mockRepositoryMetadata(Person.class, Long.class, PeopleRepository.class);
 
-		GemfireRepositoryFactory gemfireRepositoryFactory = new GemfireRepositoryFactory(
-			Collections.<Region<?, ?>>singleton(mockPeopleRegion), gemfireMappingContext);
+		Region<Integer, Person> mockPeopleRegion = mockRegion("People", Integer.class, Person.class);
+
+		GemfireRepositoryFactory gemfireRepositoryFactory =
+			new GemfireRepositoryFactory(Collections.singleton(mockPeopleRegion), this.mappingContext);
 
 		try {
-			exception.expect(IllegalArgumentException.class);
-			exception.expectCause(is(nullValue(Throwable.class)));
-			exception.expectMessage(String.format(
-				"The Region referenced only supports keys of type [%1$s], but the entity to be stored has an id of type [%2$s]",
-					String.class.getName(), Long.class.getName()));
+			gemfireRepositoryFactory.newTemplate(mockRepositoryMetadata);
+		}
+		catch (IllegalArgumentException expected) {
 
-			gemfireRepositoryFactory.getTemplate(mockRepositoryMetadata);
+			assertThat(expected).hasMessage(GemfireRepositoryFactory.REGION_REPOSITORY_ID_TYPE_MISMATCH,
+				"/People", Integer.class.getName(), PeopleRepository.class.getName(), Long.class.getName());
+
+			assertThat(expected).hasNoCause();
+
+			throw expected;
 		}
 		finally {
+			verify(mockPeopleRegion, times(1)).getAttributes();
+			verify(mockPeopleRegion, atLeastOnce()).getFullPath();
+			verify(this.mockRegionAttributes, times(1)).getKeyConstraint();
 			verify(mockRepositoryMetadata, times(1)).getDomainType();
 			verify(mockRepositoryMetadata, times(1)).getIdType();
-			verify(mockPeopleRegion, times(1)).getAttributes();
-			verify(mockPeopleRegion, times(1)).getFullPath();
-			verify(mockPeopleRegion, times(1)).getName();
-			verify(mockRegionAttributes, times(1)).getKeyConstraint();
+			verify(mockRepositoryMetadata, times(2)).getRepositoryInterface();
+			verifyNoMoreInteractions(mockRepositoryMetadata);
 		}
 	}
 
-	@Test
-	public void getTemplateThrowsIllegalStateExceptionForRegionNotFound() {
-		RepositoryMetadata mockRepositoryMetadata = mockRepositoryMetadata(Person.class, Long.class,
-			PersonRepository.class);
+	@Test(expected = IllegalArgumentException.class)
+	public void newTemplateWithIncompatibleRepositoryIdTypeAndEntityIdTypeThrowsIllegalArgumentException() {
 
-		GemfireRepositoryFactory gemfireRepositoryFactory = new GemfireRepositoryFactory(
-			Collections.<Region<?, ?>>singleton(mockRegion), gemfireMappingContext);
+		RepositoryMetadata mockRepositoryMetadata =
+			mockRepositoryMetadata(Person.class, Integer.class, PeopleIntegerRepository.class);
+
+		Region<String, Person> mockPeopleRegion = mockRegion("People", null, null);
+
+		GemfireRepositoryFactory gemfireRepositoryFactory =
+			new GemfireRepositoryFactory(Collections.singleton(mockPeopleRegion), this.mappingContext);
 
 		try {
-			exception.expect(IllegalStateException.class);
-			exception.expectCause(is(nullValue(Throwable.class)));
-			exception.expectMessage(String.format(
-				"No Region [People] was found for domain class [%s]; Make sure you have configured a GemFire Region of that name in your application context",
-					Person.class.getName()));
+			gemfireRepositoryFactory.newTemplate(mockRepositoryMetadata);
+		}
+		catch (IllegalArgumentException expected) {
 
-			gemfireRepositoryFactory.getTemplate(mockRepositoryMetadata);
+			assertThat(expected).hasMessage(GemfireRepositoryFactory.REPOSITORY_ENTITY_ID_TYPE_MISMATCH,
+				PeopleIntegerRepository.class.getName(), Integer.class.getName(), Person.class.getName(),
+					Long.class.getName());
+
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
+		finally {
+			verify(mockPeopleRegion, times(1)).getAttributes();
+			verify(this.mockRegionAttributes, times(1)).getKeyConstraint();
+			verify(mockRepositoryMetadata, times(1)).getDomainType();
+			verify(mockRepositoryMetadata, times(1)).getIdType();
+			verify(mockRepositoryMetadata, times(2)).getRepositoryInterface();
+			verifyNoMoreInteractions(mockRepositoryMetadata);
+		}
+	}
+
+	@Test(expected = IllegalStateException.class)
+	@SuppressWarnings("unchecked")
+	public void newTemplateWithNonExistingRegionThrowsIllegalStateException() {
+
+		RepositoryMetadata mockRepositoryMetadata =
+			mockRepositoryMetadata(Person.class, Long.class, PeopleRepository.class);
+
+		GemfireRepositoryFactory gemfireRepositoryFactory =
+			new GemfireRepositoryFactory(Collections.singleton(this.mockRegion), this.mappingContext);
+
+		try {
+			gemfireRepositoryFactory.newTemplate(mockRepositoryMetadata);
+		}
+		catch (IllegalStateException expected) {
+
+			assertThat(expected).hasMessage(GemfireRepositoryFactory.REGION_NOT_FOUND,
+				"People", Person.class.getName(), PeopleRepository.class.getName());
+
+			assertThat(expected).hasNoCause();
+
+			throw expected;
 		}
 		finally {
 			verify(mockRepositoryMetadata, times(2)).getDomainType();
 			verify(mockRepositoryMetadata, never()).getIdType();
-			verify(mockRegion, times(1)).getFullPath();
-			verify(mockRegion, times(1)).getName();
-			verifyZeroInteractions(mockRegionAttributes);
+			verify(mockRepositoryMetadata, times(2)).getRepositoryInterface();
 		}
 	}
 
 	/**
-	 * @link https://jira.spring.io/browse/SGF-112
+	 * @link <a href="https://jira.spring.io/browse/SGF-112">Repositories should reject PagingAndSortingRepository and Pageable parameters</a>
 	 */
-	@Test
+	@Test(expected = IllegalStateException.class)
+	@SuppressWarnings("unchecked")
 	public void rejectsInterfacesExtendingPagingAndSortingRepository() {
-		exception.expect(IllegalStateException.class);
-		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage(startsWith("Pagination is not supported by GemFire Repositories"));
 
-		GemfireRepositoryFactory repositoryFactory = new GemfireRepositoryFactory(
-			Collections.<Region<?, ?>>singletonList(mockRegion), new GemfireMappingContext());
+		GemfireRepositoryFactory repositoryFactory =
+			new GemfireRepositoryFactory(Collections.singletonList(this.mockRegion), new GemfireMappingContext());
 
-		repositoryFactory.getRepository(SamplePagingAndSortingRepository.class);
+		try {
+			repositoryFactory.getRepository(SamplePagingAndSortingRepository.class);
+		}
+		catch (IllegalStateException expected) {
+
+			assertThat(expected).hasMessageStartingWith("Pagination is not supported by GemFire Repositories");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void usesConfiguredRepositoryBaseClass() {
-		GemfireRepositoryFactory repositoryFactory = new GemfireRepositoryFactory(
-			Collections.<Region<?, ?>>singletonList(mockRegion), new GemfireMappingContext());
 
-		repositoryFactory.setRepositoryBaseClass(CustomBaseRepository.class);
+		GemfireRepositoryFactory repositoryFactory =
+			new GemfireRepositoryFactory(Collections.singletonList(this.mockRegion), this.mappingContext);
 
-		GemfireRepository<?, ?> gemfireRepository = repositoryFactory.getRepository(SampleCustomGemfireRepository.class,
-			new SampleCustomRepositoryImpl());
+		repositoryFactory.setRepositoryBaseClass(TestCustomBaseRepository.class);
 
-		assertThat(((Advised) gemfireRepository).getTargetClass(), is(equalTo((Class) CustomBaseRepository.class)));
+		GemfireRepository<?, ?> gemfireRepository =
+			repositoryFactory.getRepository(TestGemfireRepository.class,
+				RepositoryComposition.RepositoryFragments.just(new TestCustomRepositoryImpl()));
+
+		assertThat(((Advised) gemfireRepository).getTargetClass()).isEqualTo(TestCustomBaseRepository.class);
 	}
 
 	interface SamplePagingAndSortingRepository extends PagingAndSortingRepository<Person, Long> {
 	}
 
-	static class CustomBaseRepository<T, ID extends Serializable> extends SimpleGemfireRepository<T, ID> {
+	static class TestCustomBaseRepository<T, ID extends Serializable> extends SimpleGemfireRepository<T, ID> {
 
-		public CustomBaseRepository(GemfireTemplate template, EntityInformation<T, ID> entityInformation) {
+		public TestCustomBaseRepository(GemfireTemplate template, EntityInformation<T, ID> entityInformation) {
 			super(template, entityInformation);
 		}
 	}
 
-	interface SampleCustomRepository<T> {
+	interface TestCustomRepository<T> {
+
+		@SuppressWarnings("unused")
 		void doCustomUpdate(T entity);
+
 	}
 
-	class SampleCustomRepositoryImpl<T> implements SampleCustomRepository<T> {
+	class TestCustomRepositoryImpl<T> implements TestCustomRepository<T> {
+
 		@Override
-		public void doCustomUpdate(final T entity) {
-			throw new UnsupportedOperationException("Not Implemented");
+		public void doCustomUpdate(T entity) {
+			throw newUnsupportedOperationException("Not Implemented");
 		}
 	}
 
-	interface SampleCustomGemfireRepository extends GemfireRepository<Person, Long>, SampleCustomRepository<Person> {
-	}
+	interface TestGemfireRepository extends GemfireRepository<Person, Long>, TestCustomRepository<Person> { }
 
 	@org.springframework.data.gemfire.mapping.annotation.Region("People")
-	interface PersonRepository extends GemfireRepository<Person, Long> {
-	}
+	interface PeopleRepository extends GemfireRepository<Person, Long> { }
+
+	@org.springframework.data.gemfire.mapping.annotation.Region("People")
+	interface PeopleIntegerRepository extends GemfireRepository<Person, Integer> { }
+
+	@org.springframework.data.gemfire.mapping.annotation.Region
+	interface NonQualifiedRegionAnnotatedRepository extends GemfireRepository<Person, Long> { }
+
 }
