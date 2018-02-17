@@ -50,10 +50,9 @@ public class GemfireRepositoryExtension extends CdiRepositoryExtensionSupport {
 
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-	final Map<Set<Annotation>, Bean<GemfireMappingContext>> mappingContexts =
-		new HashMap<Set<Annotation>, Bean<GemfireMappingContext>>();
+	final Map<Set<Annotation>, Bean<GemfireMappingContext>> mappingContexts = new HashMap<>();
 
-	final Set<Bean<Region>> regionBeans = new HashSet<Bean<Region>>();
+	final Set<Bean<Region>> regionBeans = new HashSet<>();
 
 	/* (non-Javadoc) */
 	public GemfireRepositoryExtension() {
@@ -71,22 +70,29 @@ public class GemfireRepositoryExtension extends CdiRepositoryExtensionSupport {
 	 */
 	@SuppressWarnings("unchecked")
 	<X> void processBean(@Observes ProcessBean<X> processBean) {
+
 		Bean<X> bean = processBean.getBean();
 
 		for (Type type : bean.getTypes()) {
-			Type resolvedType = (type instanceof ParameterizedType ? ((ParameterizedType) type).getRawType() : type);
+
+			Type resolvedType = type instanceof ParameterizedType ? ((ParameterizedType) type).getRawType() : type;
 
 			if (resolvedType instanceof Class<?>) {
+
 				Class<?> classType = (Class<?>) resolvedType;
 
 				if (Region.class.isAssignableFrom(classType)) {
+
 					logger.debug("Found Region bean with name {}", bean.getName());
-					regionBeans.add((Bean<Region>) bean);
+
+					this.regionBeans.add((Bean<Region>) bean);
 				}
 				else if (GemfireMappingContext.class.isAssignableFrom(classType)) {
+
 					logger.debug("Discovered {} bean with types {} having qualifiers {}",
 						GemfireMappingContext.class.getName(), bean.getTypes(), bean.getQualifiers());
-					mappingContexts.put(bean.getQualifiers(), (Bean<GemfireMappingContext>) bean);
+
+					this.mappingContexts.put(bean.getQualifiers(), (Bean<GemfireMappingContext>) bean);
 				}
 			}
 		}
@@ -104,8 +110,11 @@ public class GemfireRepositoryExtension extends CdiRepositoryExtensionSupport {
 	 * @see javax.enterprise.event.Observes
 	 */
 	void afterBeanDiscovery(@Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager beanManager) {
+
 		for (Map.Entry<Class<?>, Set<Annotation>> entry : getRepositoryTypes()) {
+
 			Class<?> repositoryType = entry.getKey();
+
 			Set<Annotation> qualifiers = entry.getValue();
 
 			// Create the bean representing the Repository.
@@ -130,5 +139,4 @@ public class GemfireRepositoryExtension extends CdiRepositoryExtensionSupport {
 		return new GemfireRepositoryBean<T>(beanManager, repositoryType, qualifiers, getCustomImplementationDetector(),
 			gemfireMappingContextBean, regionBeans);
 	}
-
 }

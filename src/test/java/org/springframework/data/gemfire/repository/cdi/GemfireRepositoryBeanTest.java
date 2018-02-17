@@ -30,12 +30,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.data.gemfire.util.ArrayUtils.asArray;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.AbstractMap;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -56,12 +55,17 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.data.gemfire.GemfireAccessor;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.mapping.GemfireMappingContext;
 import org.springframework.data.gemfire.repository.GemfireRepository;
 import org.springframework.data.gemfire.repository.support.GemfireRepositoryFactory;
 import org.springframework.data.gemfire.repository.support.SimpleGemfireRepository;
+import org.springframework.data.gemfire.util.CollectionUtils;
+import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;
 
 /**
  * The GemfireRepositoryBeanTest class is a test suite of test cases testing the contract and functionality
@@ -88,47 +92,48 @@ public class GemfireRepositoryBeanTest {
 	@Mock
 	private BeanManager mockBeanManager;
 
-	protected <T> T[] asArray(T... array) {
-		return array;
+	private CustomRepositoryImplementationDetector newCustomRepositoryImplementationDetector() {
+
+		MetadataReaderFactory mockMetadataReaderFactory = mock(MetadataReaderFactory.class);
+
+		return new CustomRepositoryImplementationDetector(mockMetadataReaderFactory,
+			new StandardEnvironment(), new DefaultResourceLoader());
 	}
 
-	protected <T> Set<T> asSet(T... array) {
-		return new HashSet<T>(Arrays.asList(array));
-	}
-
-	protected <T> Set<T> asSet(Iterable<T> collection) {
-		Set<T> set = new HashSet<T>();
-
-		for (T element : collection) {
-			set.add(element);
-		}
-
-		return set;
+	private <T> Set<T> toSet(Iterable<T> collection) {
+		return CollectionUtils.addAll(new HashSet<>(), collection);
 	}
 
 	@Test
 	public void getDependencyInstanceGetsReference() {
+
 		Bean<Region> mockRegionBean = mock(Bean.class);
+
 		CreationalContext<Region> mockCreationalContext = mock(CreationalContext.class);
+
 		Region mockRegion = mock(Region.class);
 
 		when(mockBeanManager.createCreationalContext(eq(mockRegionBean))).thenReturn(mockCreationalContext);
 		when(mockBeanManager.getReference(eq(mockRegionBean), eq(Region.class), eq(mockCreationalContext)))
 			.thenReturn(mockRegion);
 
-		GemfireRepositoryBean<PersonRepository> repositoryBean = new GemfireRepositoryBean<PersonRepository>(
-			mockBeanManager, PersonRepository.class, Collections.<Annotation>emptySet(), null, null, null);
+		GemfireRepositoryBean<PersonRepository> repositoryBean =
+			new GemfireRepositoryBean<>(this.mockBeanManager, PersonRepository.class, Collections.emptySet(),
+				newCustomRepositoryImplementationDetector(), null, null);
 
 		assertThat(repositoryBean.getDependencyInstance(mockRegionBean, Region.class), is(equalTo(mockRegion)));
 
 		verify(mockBeanManager, times(1)).createCreationalContext(eq(mockRegionBean));
-		verify(mockBeanManager, times(1)).getReference(eq(mockRegionBean), eq(Region.class), eq(mockCreationalContext));
+		verify(mockBeanManager, times(1))
+			.getReference(eq(mockRegionBean), eq(Region.class), eq(mockCreationalContext));
 	}
 
 	@Test
 	public void resolveGemfireMappingContextUsesDefault() {
-		GemfireRepositoryBean<PersonRepository> repositoryBean = new GemfireRepositoryBean<PersonRepository>(
-			mockBeanManager, PersonRepository.class, Collections.<Annotation>emptySet(), null, null, null);
+
+		GemfireRepositoryBean<PersonRepository> repositoryBean =
+			new GemfireRepositoryBean<>(this.mockBeanManager, PersonRepository.class, Collections.emptySet(),
+				newCustomRepositoryImplementationDetector(), null, null);
 
 		assertThat(repositoryBean.resolveGemfireMappingContext(),
 			is(equalTo(GemfireRepositoryBean.DEFAULT_GEMFIRE_MAPPING_CONTEXT)));
@@ -136,17 +141,20 @@ public class GemfireRepositoryBeanTest {
 
 	@Test
 	public void resolveGemfireMappingContextUsesQualifiedMappingContext() {
+
 		Bean<GemfireMappingContext> mockMappingContextBean = mock(Bean.class);
+
 		CreationalContext<GemfireMappingContext> mockCreationalContext = mock(CreationalContext.class);
+
 		GemfireMappingContext expectedGemfireMappingContext = new GemfireMappingContext();
 
 		when(mockBeanManager.createCreationalContext(eq(mockMappingContextBean))).thenReturn(mockCreationalContext);
 		when(mockBeanManager.getReference(eq(mockMappingContextBean), eq(GemfireMappingContext.class),
 			eq(mockCreationalContext))).thenReturn(expectedGemfireMappingContext);
 
-		GemfireRepositoryBean<PersonRepository> repositoryBean = new GemfireRepositoryBean<PersonRepository>(
-			mockBeanManager, PersonRepository.class, Collections.<Annotation>emptySet(), null,
-				mockMappingContextBean, null);
+		GemfireRepositoryBean<PersonRepository> repositoryBean =
+			new GemfireRepositoryBean<>(this.mockBeanManager, PersonRepository.class, Collections.emptySet(),
+				newCustomRepositoryImplementationDetector(), mockMappingContextBean, null);
 
 		GemfireMappingContext actualGemfireMappingContext = repositoryBean.resolveGemfireMappingContext();
 
@@ -159,6 +167,7 @@ public class GemfireRepositoryBeanTest {
 
 	@Test
 	public void resolveGemfireRegions() {
+
 		Region mockRegionOne = mock(Region.class);
 		Region mockRegionTwo = mock(Region.class);
 
@@ -167,21 +176,22 @@ public class GemfireRepositoryBeanTest {
 		Bean<Region> mockRegionBeanOne = mock(Bean.class);
 		Bean<Region> mockRegionBeanTwo = mock(Bean.class);
 
-		when(mockRegionBeanOne.getTypes()).thenReturn(asSet((Type) Region.class));
-		when(mockRegionBeanTwo.getTypes()).thenReturn(asSet((Type) Region.class));
+		when(mockRegionBeanOne.getTypes()).thenReturn(CollectionUtils.asSet((Type) Region.class));
+		when(mockRegionBeanTwo.getTypes()).thenReturn(CollectionUtils.asSet((Type) Region.class));
 		when(mockBeanManager.createCreationalContext(any(Bean.class))).thenReturn(mockCreationalContext);
 		when(mockBeanManager.getReference(eq(mockRegionBeanOne), eq(Region.class), eq(mockCreationalContext)))
 			.thenReturn(mockRegionOne);
 		when(mockBeanManager.getReference(eq(mockRegionBeanTwo), eq(Region.class), eq(mockCreationalContext)))
 			.thenReturn(mockRegionTwo);
 
-		GemfireRepositoryBean repositoryBean = new GemfireRepositoryBean(mockBeanManager,
-			PersonRepository.class, Collections.emptySet(), null, null, asSet(mockRegionBeanOne, mockRegionBeanTwo));
+		GemfireRepositoryBean repositoryBean = new GemfireRepositoryBean(this.mockBeanManager, PersonRepository.class,
+			Collections.emptySet(), newCustomRepositoryImplementationDetector(), null,
+				CollectionUtils.asSet(mockRegionBeanOne, mockRegionBeanTwo));
 
 		Iterable<Region> regions = repositoryBean.resolveGemfireRegions();
 
 		assertThat(regions, is(notNullValue()));
-		assertThat(asSet(regions).containsAll(asSet(mockRegionOne, mockRegionTwo)), is(true));
+		assertThat(toSet(regions).containsAll(CollectionUtils.asSet(mockRegionOne, mockRegionTwo)), is(true));
 
 		verify(mockRegionBeanOne, times(1)).getTypes();
 		verify(mockRegionBeanTwo, times(1)).getTypes();
@@ -195,15 +205,17 @@ public class GemfireRepositoryBeanTest {
 
 	@Test
 	public void resolveTypeFindsTargetComponentType() {
+
 		Bean mockBean = mock(Bean.class);
 
-		when(mockBean.getTypes()).thenReturn(
-			asSet((Type) Object.class, Map.class, ConcurrentMap.class, Region.class));
+		when(mockBean.getTypes())
+			.thenReturn(CollectionUtils.asSet((Type) Object.class, Map.class, ConcurrentMap.class, Region.class));
 
-		GemfireRepositoryBean<PersonRepository> repositoryBean = new GemfireRepositoryBean<PersonRepository>(
-			mockBeanManager, PersonRepository.class, Collections.<Annotation>emptySet(), null, null, null);
+		GemfireRepositoryBean<PersonRepository> repositoryBean =
+			new GemfireRepositoryBean<>(this.mockBeanManager, PersonRepository.class, Collections.emptySet(),
+				newCustomRepositoryImplementationDetector(), null, null);
 
-		assertThat(repositoryBean.resolveType(mockBean, Region.class), is(equalTo((Type) Region.class)));
+		assertThat(repositoryBean.resolveType(mockBean, Region.class), is(equalTo(Region.class)));
 		assertThat(repositoryBean.resolveType(mockBean, Map.class), isIn(asArray((Type) Map.class,
 			ConcurrentMap.class, Region.class)));
 
@@ -212,21 +224,25 @@ public class GemfireRepositoryBeanTest {
 
 	@Test
 	public void resolveTypeWithParameterizedType() {
+
 		Bean<Map> mockBean = mock(Bean.class);
+
 		Map<Long, Object> parameterizedTypeMap = Collections.emptyMap();
+
 		ParameterizedType mockParameterizedType = mock(ParameterizedType.class);
 
 		assertThat(parameterizedTypeMap.getClass(), is(instanceOf(Type.class)));
 		assertThat(parameterizedTypeMap.getClass().getGenericSuperclass(), is(instanceOf(ParameterizedType.class)));
 		assertThat(parameterizedTypeMap.getClass().getTypeParameters().length, is(equalTo(2)));
 
-		when(mockBean.getTypes()).thenReturn(asSet((Type) mockParameterizedType));
+		when(mockBean.getTypes()).thenReturn(CollectionUtils.asSet((Type) mockParameterizedType));
 		when(mockParameterizedType.getRawType()).thenReturn(parameterizedTypeMap.getClass());
 
-		GemfireRepositoryBean<PersonRepository> repositoryBean = new GemfireRepositoryBean<PersonRepository>(
-			mockBeanManager, PersonRepository.class, Collections.<Annotation>emptySet(), null, null, null);
+		GemfireRepositoryBean<PersonRepository> repositoryBean =
+			new GemfireRepositoryBean<>(this.mockBeanManager, PersonRepository.class, Collections.emptySet(),
+				newCustomRepositoryImplementationDetector(), null, null);
 
-		assertThat(repositoryBean.resolveType(mockBean, Map.class), is(equalTo((Type) mockParameterizedType)));
+		assertThat(repositoryBean.resolveType(mockBean, Map.class), is(equalTo(mockParameterizedType)));
 
 		verify(mockBean, times(1)).getTypes();
 		verify(mockParameterizedType, times(1)).getRawType();
@@ -234,12 +250,14 @@ public class GemfireRepositoryBeanTest {
 
 	@Test
 	public void resolveTypeWithUnresolvableType() {
+
 		Bean mockBean = mock(Bean.class);
 
-		when(mockBean.getTypes()).thenReturn(asSet((Type) Map.class, Object.class));
+		when(mockBean.getTypes()).thenReturn(CollectionUtils.asSet((Type) Map.class, Object.class));
 
-		GemfireRepositoryBean<PersonRepository> repositoryBean = new GemfireRepositoryBean<PersonRepository>(
-			mockBeanManager, PersonRepository.class, Collections.<Annotation>emptySet(), null, null, null);
+		GemfireRepositoryBean<PersonRepository> repositoryBean =
+			new GemfireRepositoryBean<>(this.mockBeanManager, PersonRepository.class, Collections.emptySet(),
+				newCustomRepositoryImplementationDetector(), null, null);
 
 		try {
 			expectedException.expect(IllegalStateException.class);
@@ -258,6 +276,7 @@ public class GemfireRepositoryBeanTest {
 	@Test
 	// IntegrationTest
 	public void createGemfireRepositoryInstanceSuccessfully() throws Exception {
+
 		Bean<Region> mockRegionBean = mock(Bean.class);
 
 		CreationalContext<Bean<Region>> mockCreationalContext = mock(CreationalContext.class);
@@ -269,19 +288,22 @@ public class GemfireRepositoryBeanTest {
 		when(mockRegion.getName()).thenReturn("Person");
 		when(mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
 		when(mockRegionAttributes.getKeyConstraint()).thenReturn(Long.class);
-		when(mockRegionBean.getTypes()).thenReturn(asSet((Type) Region.class));
+		when(mockRegionBean.getTypes()).thenReturn(CollectionUtils.asSet((Type) Region.class));
 		when(mockBeanManager.createCreationalContext(any(Bean.class))).thenReturn(mockCreationalContext);
 		when(mockBeanManager.getReference(eq(mockRegionBean), eq(Region.class), eq(mockCreationalContext)))
 			.thenReturn(mockRegion);
 
 		final AtomicBoolean repositoryProxyPostProcessed = new AtomicBoolean(false);
 
-		GemfireRepositoryBean<PersonRepository> repositoryBean = new GemfireRepositoryBean<PersonRepository>(
-			mockBeanManager, PersonRepository.class, Collections.<Annotation>emptySet(), null, null,
-				asSet(mockRegionBean))
+		GemfireRepositoryBean<PersonRepository> repositoryBean =
+			new GemfireRepositoryBean<PersonRepository>(this.mockBeanManager, PersonRepository.class,
+				Collections.emptySet(), newCustomRepositoryImplementationDetector(), null,
+					CollectionUtils.asSet(mockRegionBean))
 		{
+
 			@Override
 			GemfireRepositoryFactory newGemfireRepositoryFactory() {
+
 				GemfireRepositoryFactory gemfireRepositoryFactory = super.newGemfireRepositoryFactory();
 
 				gemfireRepositoryFactory.addRepositoryProxyPostProcessor((factory, repositoryInformation) -> {
@@ -303,10 +325,11 @@ public class GemfireRepositoryBeanTest {
 
 						repositoryProxyPostProcessed.set(true);
 					}
-					catch (Exception e) {
-						throw new RuntimeException(e);
+					catch (Exception cause) {
+						throw new RuntimeException(cause);
 					}
 				});
+
 				return gemfireRepositoryFactory;
 			}
 		};
@@ -334,7 +357,6 @@ public class GemfireRepositoryBeanTest {
 
 	class Person {}
 
-	interface PersonRepository extends GemfireRepository<Person, Long> {
-	}
+	interface PersonRepository extends GemfireRepository<Person, Long> { }
 
 }
