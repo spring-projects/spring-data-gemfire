@@ -3,6 +3,12 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.0.4.RELEASE (2018-02-19)
+---------------------------------------------
+* SGF-719 - Extend MappingPdxSerializer to allow registering custom PdxSerializers based on fully qualified property name.
+* SGF-716 - Release 2.0.4 (Kay SR4).
+
+
 Changes in version 2.1.0.M1 (2018-02-06)
 ----------------------------------------
 * SGF-717 - Upgrade to Pivotal GemFire 9.3.0.
