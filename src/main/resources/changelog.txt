@@ -3,6 +3,12 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.0.5.RELEASE (2018-02-28)
+---------------------------------------------
+* SGF-721 - Release 2.0.5 (Kay SR5).
+* SGF-713 - Override generated OQL from Repository query methods.
+
+
 Changes in version 2.0.4.RELEASE (2018-02-19)
 ---------------------------------------------
 * SGF-719 - Extend MappingPdxSerializer to allow registering custom PdxSerializers based on fully qualified property name.
