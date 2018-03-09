@@ -23,6 +23,7 @@ import java.util.Optional;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.control.ResourceManager;
 import org.junit.After;
 import org.junit.Test;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -66,6 +67,30 @@ public class EnableOffHeapConfigurationUnitTests {
 		assertThat(region.getFullPath()).isEqualTo(GemfireUtils.toRegionPath(regionName));
 		assertThat(region.getAttributes()).isNotNull();
 		assertThat(region.getAttributes().getOffHeap()).isEqualTo(offHeapEnabled);
+	}
+
+	@Test
+	public void offHeapCriticalAndEvictionMemoryPercentagesConfiguredProperly() {
+
+		this.applicationContext = newApplicationContext(OffHeapCriticalAndEvictionMemoryPercentagesConfiguration.class);
+
+		assertThat(this.applicationContext).isNotNull();
+
+		GemFireCache gemfireCache = this.applicationContext.getBean("gemfireCache", GemFireCache.class);
+
+		assertThat(gemfireCache).isNotNull();
+		assertThat(gemfireCache.getDistributedSystem()).isNotNull();
+		assertThat(gemfireCache.getDistributedSystem().getProperties()).containsKey("off-heap-memory-size");
+		assertThat(gemfireCache.getDistributedSystem().getProperties().getProperty("off-heap-memory-size"))
+			.isEqualTo("1024g");
+
+		ResourceManager resourceManager = gemfireCache.getResourceManager();
+
+		assertThat(resourceManager).isNotNull();
+		assertThat(resourceManager.getCriticalHeapPercentage()).isEqualTo(95.55f);
+		assertThat(resourceManager.getCriticalOffHeapPercentage()).isEqualTo(90.5f);
+		assertThat(resourceManager.getEvictionHeapPercentage()).isEqualTo(85.75f);
+		assertThat(resourceManager.getEvictionOffHeapPercentage()).isEqualTo(75.25f);
 	}
 
 	@Test
@@ -160,7 +185,6 @@ public class EnableOffHeapConfigurationUnitTests {
 	@EnableEntityDefinedRegions(basePackageClasses = Person.class)
 	@EnableOffHeap(memorySize = "8192m")
 	@Import(TestRegionConfiguration.class)
-	@SuppressWarnings("unused")
 	static class EnableOffHeapForAllRegionsConfiguration {
 	}
 
@@ -169,7 +193,17 @@ public class EnableOffHeapConfigurationUnitTests {
 	@EnableEntityDefinedRegions(basePackageClasses = Person.class)
 	@EnableOffHeap(memorySize = "1024m", regionNames = { "People", "ExamplePartitionRegion" })
 	@Import(TestRegionConfiguration.class)
-	@SuppressWarnings("unused")
 	static class EnableOffHeapForSelectRegionsConfiguration {
+	}
+
+	@EnableGemFireMockObjects
+	@PeerCacheApplication(
+		criticalHeapPercentage = 95.55f,
+		criticalOffHeapPercentage = 90.5f,
+		evictionHeapPercentage = 85.75f,
+		evictionOffHeapPercentage = 75.25f
+	)
+	@EnableOffHeap(memorySize = "1024g")
+	static class OffHeapCriticalAndEvictionMemoryPercentagesConfiguration {
 	}
 }

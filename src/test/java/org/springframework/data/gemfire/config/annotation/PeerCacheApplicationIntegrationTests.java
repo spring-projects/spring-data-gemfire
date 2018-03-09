@@ -58,14 +58,12 @@ public class PeerCacheApplicationIntegrationTests {
 		assertThat(echo.get("Test")).isEqualTo("Test");
 	}
 
-	//@EnableLocator
-	//@PeerCacheApplication(name = "PeerCacheApplicationIntegrationTests",
-	//	logLevel = "warn", locators="localhost[10334]")
 	@PeerCacheApplication(name = "PeerCacheApplicationIntegrationTests", logLevel="warn")
 	static class PeerCacheApplicationConfiguration {
 
 		@Bean("Echo")
 		PartitionedRegionFactoryBean<String, String> echoRegion(Cache gemfireCache) {
+
 			PartitionedRegionFactoryBean<String, String> echoRegion =
 				new PartitionedRegionFactoryBean<String, String>();
 
@@ -78,7 +76,9 @@ public class PeerCacheApplicationIntegrationTests {
 		}
 
 		CacheLoader<String, String> echoCacheLoader() {
+
 			return new CacheLoader<String, String>() {
+
 				@Override
 				public String load(LoaderHelper<String, String> helper) throws CacheLoaderException {
 					return helper.getKey();

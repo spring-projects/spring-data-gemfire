@@ -23,7 +23,6 @@ import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeList
 
 import java.lang.annotation.Annotation;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -43,6 +42,7 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportAware;
+import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.AnnotationMetadata;
@@ -126,7 +126,9 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 	private Integer mcastPort = 0;
 
 	private Float criticalHeapPercentage;
+	private Float criticalOffHeapPercentage;
 	private Float evictionHeapPercentage;
+	private Float evictionOffHeapPercentage;
 
 	private GatewayConflictResolver gatewayConflictResolver;
 
@@ -165,7 +167,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 	 *
 	 * @return a {@link Properties} object containing Pivotal GemFire/Apache Geode properties used to configure
 	 * the Pivotal GemFire/Apache Geode cache instance.
-	 * @see <a link="http://gemfire.docs.pivotal.io/docs-gemfire/reference/topics/gemfire_properties.html">GemFire Properties</a>
+	 * @see <a href="http://gemfire.docs.pivotal.io/docs-gemfire/reference/topics/gemfire_properties.html">GemFire Properties</a>
 	 * @see java.util.Properties
 	 * @see #locators()
 	 * @see #logLevel()
@@ -192,6 +194,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 	 */
 	@Override
 	public void setImportMetadata(AnnotationMetadata importMetadata) {
+
 		configureInfrastructure(importMetadata);
 		configureCache(importMetadata);
 		configurePdx(importMetadata);
@@ -207,6 +210,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 	 * @see org.springframework.core.type.AnnotationMetadata
 	 */
 	protected void configureInfrastructure(AnnotationMetadata importMetadata) {
+
 		registerCustomEditorBeanFactoryPostProcessor(importMetadata);
 		registerDefinedIndexesApplicationListener(importMetadata);
 		registerDiskStoreDirectoryBeanPostProcessor(importMetadata);
@@ -249,8 +253,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 
 		if (isClientPeerOrServerCacheApplication(importMetadata)) {
 
-			Map<String, Object> cacheMetadataAttributes =
-				importMetadata.getAnnotationAttributes(getAnnotationTypeName());
+			AnnotationAttributes cacheMetadataAttributes = getAnnotationAttributes(importMetadata);
 
 			setCopyOnRead(resolveProperty(cacheProperty("copy-on-read"),
 				Boolean.TRUE.equals(cacheMetadataAttributes.get("copyOnRead"))));
@@ -263,6 +266,14 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 				.filter(AbstractAnnotationConfigSupport::hasValue)
 				.ifPresent(this::setCriticalHeapPercentage);
 
+			Optional.ofNullable(resolveProperty(cacheProperty("critical-off-heap-percentage"), (Float) null))
+				.ifPresent(this::setCriticalOffHeapPercentage);
+
+			Optional.ofNullable((Float) cacheMetadataAttributes.get("criticalOffHeapPercentage"))
+				.filter(it -> getCriticalOffHeapPercentage() == null)
+				.filter(AbstractAnnotationConfigSupport::hasValue)
+				.ifPresent(this::setCriticalOffHeapPercentage);
+
 			Optional.ofNullable(resolveProperty(cacheProperty("eviction-heap-percentage"), (Float) null))
 				.ifPresent(this::setEvictionHeapPercentage);
 
@@ -270,6 +281,14 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 				.filter(it -> getEvictionHeapPercentage() == null)
 				.filter(AbstractAnnotationConfigSupport::hasValue)
 				.ifPresent(this::setEvictionHeapPercentage);
+
+			Optional.ofNullable(resolveProperty(cacheProperty("eviction-off-heap-percentage"), (Float) null))
+				.ifPresent(this::setEvictionOffHeapPercentage);
+
+			Optional.ofNullable((Float) cacheMetadataAttributes.get("evictionOffHeapPercentage"))
+				.filter(it -> getEvictionOffHeapPercentage() == null)
+				.filter(AbstractAnnotationConfigSupport::hasValue)
+				.ifPresent(this::setEvictionOffHeapPercentage);
 
 			setLogLevel(resolveProperty(cacheProperty("log-level"),
 				(String) cacheMetadataAttributes.get("logLevel")));
@@ -297,7 +316,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 
 		if (importMetadata.hasAnnotation(enablePdxTypeName)) {
 
-			Map<String, Object> enablePdxAttributes = importMetadata.getAnnotationAttributes(enablePdxTypeName);
+			AnnotationAttributes enablePdxAttributes = getAnnotationAttributes(importMetadata, enablePdxTypeName);
 
 			setPdxDiskStoreName(resolveProperty(pdxProperty("disk-store-name"),
 				(String) enablePdxAttributes.get("diskStoreName")));
@@ -377,6 +396,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		Optional.ofNullable(getPdxDiskStoreName())
 			.filter(StringUtils::hasText)
 			.ifPresent(pdxDiskStoreName -> {
+
 				if (PDX_DISK_STORE_AWARE_BEAN_FACTORY_POST_PROCESSOR_REGISTERED.compareAndSet(false, true)) {
 					register(BeanDefinitionBuilder.rootBeanDefinition(PdxDiskStoreAwareBeanFactoryPostProcessor.class)
 						.setRole(BeanDefinition.ROLE_INFRASTRUCTURE)
@@ -450,8 +470,10 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		gemfireCache.setClose(isClose());
 		gemfireCache.setCopyOnRead(getCopyOnRead());
 		gemfireCache.setCriticalHeapPercentage(getCriticalHeapPercentage());
+		gemfireCache.setCriticalOffHeapPercentage(getCriticalOffHeapPercentage());
 		gemfireCache.setDynamicRegionSupport(getDynamicRegionSupport());
 		gemfireCache.setEvictionHeapPercentage(getEvictionHeapPercentage());
+		gemfireCache.setEvictionOffHeapPercentage(getEvictionOffHeapPercentage());
 		gemfireCache.setGatewayConflictResolver(getGatewayConflictResolver());
 		gemfireCache.setJndiDataSources(getJndiDataSources());
 		gemfireCache.setProperties(gemfireProperties());
@@ -464,42 +486,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		gemfireCache.setTransactionWriter(getTransactionWriter());
 
 		return gemfireCache;
-	}
-
-	/**
-	 * Returns the cache application {@link java.lang.annotation.Annotation} type pertaining to this configuration.
-	 *
-	 * @return the cache application {@link java.lang.annotation.Annotation} type used by this application.
-	 * @see org.springframework.data.gemfire.config.annotation.CacheServerApplication
-	 * @see org.springframework.data.gemfire.config.annotation.ClientCacheApplication
-	 * @see org.springframework.data.gemfire.config.annotation.PeerCacheApplication
-	 */
-	protected abstract Class<? extends Annotation> getAnnotationType();
-
-	/**
-	 * Returns the fully-qualified {@link Class#getName() class name} of the cache application
-	 * {@link java.lang.annotation.Annotation} type.
-	 *
-	 * @return the fully-qualified {@link Class#getName() class name} of the cache application
-	 * {@link java.lang.annotation.Annotation} type.
-	 * @see java.lang.Class#getName()
-	 * @see #getAnnotationType()
-	 */
-	protected String getAnnotationTypeName() {
-		return getAnnotationType().getName();
-	}
-
-	/**
-	 * Returns the simple {@link Class#getName() class name} of the cache application
-	 * {@link java.lang.annotation.Annotation} type.
-	 *
-	 * @return the simple {@link Class#getName() class name} of the cache application
-	 * {@link java.lang.annotation.Annotation} type.
-	 * @see java.lang.Class#getSimpleName()
-	 * @see #getAnnotationType()
-	 */
-	protected String getAnnotationTypeSimpleName() {
-		return getAnnotationType().getSimpleName();
 	}
 
 	// REVIEW JAVADOC FROM HERE
@@ -604,7 +590,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 			|| isPeerCacheApplication(importMetadata));
 	}
 
-	/* (non-Javadoc) */
 	void setCacheXml(Resource cacheXml) {
 		this.cacheXml = cacheXml;
 	}
@@ -613,7 +598,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		return this.cacheXml;
 	}
 
-	/* (non-Javadoc) */
 	void setClose(boolean close) {
 		this.close = close;
 	}
@@ -622,7 +606,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		return this.close;
 	}
 
-	/* (non-Javadoc) */
 	void setCopyOnRead(boolean copyOnRead) {
 		this.copyOnRead = copyOnRead;
 	}
@@ -631,7 +614,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		return this.copyOnRead;
 	}
 
-	/* (non-Javadoc) */
 	void setCriticalHeapPercentage(Float criticalHeapPercentage) {
 		this.criticalHeapPercentage = criticalHeapPercentage;
 	}
@@ -640,7 +622,14 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		return this.criticalHeapPercentage;
 	}
 
-	/* (non-Javadoc) */
+	void setCriticalOffHeapPercentage(Float criticalOffHeapPercentage) {
+		this.criticalOffHeapPercentage = criticalOffHeapPercentage;
+	}
+
+	protected Float getCriticalOffHeapPercentage() {
+		return this.criticalOffHeapPercentage;
+	}
+
 	void setDynamicRegionSupport(DynamicRegionSupport dynamicRegionSupport) {
 		this.dynamicRegionSupport = dynamicRegionSupport;
 	}
@@ -649,7 +638,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		return this.dynamicRegionSupport;
 	}
 
-	/* (non-Javadoc) */
 	void setEvictionHeapPercentage(Float evictionHeapPercentage) {
 		this.evictionHeapPercentage = evictionHeapPercentage;
 	}
@@ -658,7 +646,14 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		return this.evictionHeapPercentage;
 	}
 
-	/* (non-Javadoc) */
+	void setEvictionOffHeapPercentage(Float evictionOffHeapPercentage) {
+		this.evictionOffHeapPercentage = evictionOffHeapPercentage;
+	}
+
+	protected Float getEvictionOffHeapPercentage() {
+		return this.evictionOffHeapPercentage;
+	}
+
 	void setGatewayConflictResolver(GatewayConflictResolver gatewayConflictResolver) {
 		this.gatewayConflictResolver = gatewayConflictResolver;
 	}
@@ -667,7 +662,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		return this.gatewayConflictResolver;
 	}
 
-	/* (non-Javadoc) */
 	void setJndiDataSources(List<JndiDataSource> jndiDataSources) {
 		this.jndiDataSources = jndiDataSources;
 	}
@@ -676,7 +670,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		return nullSafeList(this.jndiDataSources);
 	}
 
-	/* (non-Javadoc) */
 	void setLocators(String locators) {
 		this.locators = locators;
 		this.mcastPort = DEFAULT_MCAST_PORT;
@@ -686,7 +679,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		return this.locators;
 	}
 
-	/* (non-Javadoc) */
 	void setLogLevel(String logLevel) {
 		this.logLevel = logLevel;
 	}
@@ -695,7 +687,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		return Optional.ofNullable(this.logLevel).orElse(DEFAULT_LOG_LEVEL);
 	}
 
-	/* (non-Javadoc) */
 	void setMappingContext(GemfireMappingContext mappingContext) {
 		this.mappingContext = mappingContext;
 	}
@@ -713,7 +704,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		return Optional.ofNullable(mcastPort).orElse(DEFAULT_MCAST_PORT);
 	}
 
-	/* (non-Javadoc) */
 	void setName(String name) {
 		this.name = name;
 	}
@@ -722,7 +712,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		return Optional.ofNullable(this.name).filter(StringUtils::hasText).orElseGet(this::toString);
 	}
 
-	/* (non-Javadoc) */
 	void setPdxDiskStoreName(String pdxDiskStoreName) {
 		this.pdxDiskStoreName = pdxDiskStoreName;
 	}
@@ -731,7 +720,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		return this.pdxDiskStoreName;
 	}
 
-	/* (non-Javadoc) */
 	void setPdxIgnoreUnreadFields(Boolean pdxIgnoreUnreadFields) {
 		this.pdxIgnoreUnreadFields = pdxIgnoreUnreadFields;
 	}
@@ -740,7 +728,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		return this.pdxIgnoreUnreadFields;
 	}
 
-	/* (non-Javadoc) */
 	void setPdxPersistent(Boolean pdxPersistent) {
 		this.pdxPersistent = pdxPersistent;
 	}
@@ -749,7 +736,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		return this.pdxPersistent;
 	}
 
-	/* (non-Javadoc) */
 	void setPdxReadSerialized(Boolean pdxReadSerialized) {
 		this.pdxReadSerialized = pdxReadSerialized;
 	}
@@ -758,7 +744,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		return this.pdxReadSerialized;
 	}
 
-	/* (non-Javadoc) */
 	void setPdxSerializer(PdxSerializer pdxSerializer) {
 		this.pdxSerializer = pdxSerializer;
 	}
@@ -767,7 +752,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		return this.pdxSerializer;
 	}
 
-	/* (non-Javadoc) */
 	void setStartLocator(String startLocator) {
 		this.startLocator = startLocator;
 	}
@@ -776,7 +760,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		return this.startLocator;
 	}
 
-	/* (non-Javadoc) */
 	void setTransactionListeners(List<TransactionListener> transactionListeners) {
 		this.transactionListeners = transactionListeners;
 	}
@@ -785,7 +768,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		return nullSafeList(this.transactionListeners);
 	}
 
-	/* (non-Javadoc) */
 	void setTransactionWriter(TransactionWriter transactionWriter) {
 		this.transactionWriter = transactionWriter;
 	}
@@ -794,7 +776,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		return this.transactionWriter;
 	}
 
-	/* (non-Javadoc) */
 	void setUseBeanFactoryLocator(boolean useBeanFactoryLocator) {
 		this.useBeanFactoryLocator = useBeanFactoryLocator;
 	}

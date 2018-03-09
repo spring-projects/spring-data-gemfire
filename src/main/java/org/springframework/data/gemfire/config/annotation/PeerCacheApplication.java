@@ -71,6 +71,16 @@ public @interface PeerCacheApplication {
 	float criticalHeapPercentage() default ResourceManager.DEFAULT_CRITICAL_PERCENTAGE;
 
 	/**
+	 * Configures the percentage of off-heap at or above which the cache is considered in danger of becoming inoperable.
+	 *
+	 * Defaults to {@literal 0.0}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.critical-off-heap-percentage} property
+	 * in {@literal application.properties}.
+	 */
+	float criticalOffHeapPercentage() default 0.0f;
+
+	/**
 	 * By default, a GemFire member (both locators and servers) will attempt to reconnect and reinitialize the cache
 	 * after it has been forced out of the distributed system by a network partition event or has otherwise been
 	 * shunned by other members. Use this property to enable the auto-reconnect behavior.
@@ -91,6 +101,17 @@ public @interface PeerCacheApplication {
 	 * Use {@literal spring.data.gemfire.cache.eviction-heap-percentage} property in {@literal application.properties}.
 	 */
 	float evictionHeapPercentage() default ResourceManager.DEFAULT_EVICTION_PERCENTAGE;
+
+	/**
+	 * Configures the percentage of off-heap at or above which the eviction should begin on Regions configured
+	 * for HeapLRU eviction.
+	 *
+	 * Defaults to {@literal 0.0}.
+	 *
+	 * Use {@literal spring.data.gemfire.cache.eviction-off-heap-percentage} property
+	 * in {@literal application.properties}.
+	 */
+	float evictionOffHeapPercentage() default 0.0f;
 
 	/**
 	 * Configures the list of Locators defining the cluster to which this Spring cache application will connect.

@@ -31,6 +31,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
+import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -235,7 +236,7 @@ public class AbstractCacheConfigurationUnitTests {
 	protected static class TestCacheConfiguration extends AbstractCacheConfiguration {
 
 		@Override
-		protected Class getAnnotationType() {
+		protected Class<? extends Annotation> getAnnotationType() {
 			throw new UnsupportedOperationException("Not Implemented");
 		}
 

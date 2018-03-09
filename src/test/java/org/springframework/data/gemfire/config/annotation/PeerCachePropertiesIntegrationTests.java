@@ -75,7 +75,9 @@ public class PeerCachePropertiesIntegrationTests {
 		MockPropertySource testPropertySource = new MockPropertySource()
 			.withProperty("spring.data.gemfire.cache.copy-on-read", true)
 			.withProperty("spring.data.gemfire.cache.critical-heap-percentage", 95.0f)
+			.withProperty("spring.data.gemfire.cache.critical-off-heap-percentage", 90.0f)
 			.withProperty("spring.data.gemfire.cache.eviction-heap-percentage", 85.0f)
+			.withProperty("spring.data.gemfire.cache.eviction-off-heap-percentage", 80.0f)
 			.withProperty("spring.data.gemfire.cache.peer.lock-lease", 180)
 			.withProperty("spring.data.gemfire.cache.peer.lock-timeout", 30)
 			.withProperty("spring.data.gemfire.cache.peer.search-timeout", 120)
@@ -107,7 +109,9 @@ public class PeerCachePropertiesIntegrationTests {
 
 		assertThat(resourceManager).isNotNull();
 		assertThat(resourceManager.getCriticalHeapPercentage()).isEqualTo(95.0f);
+		assertThat(resourceManager.getCriticalOffHeapPercentage()).isEqualTo(90.0f);
 		assertThat(resourceManager.getEvictionHeapPercentage()).isEqualTo(85.0f);
+		assertThat(resourceManager.getEvictionOffHeapPercentage()).isEqualTo(80.0f);
 	}
 
 	@Test

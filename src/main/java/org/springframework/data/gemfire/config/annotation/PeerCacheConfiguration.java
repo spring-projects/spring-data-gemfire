@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.util.StringUtils;
@@ -42,11 +43,15 @@ import org.springframework.util.StringUtils;
  *
  * @author John Blum
  * @see org.apache.geode.cache.Cache
+ * @see org.springframework.beans.factory.ListableBeanFactory
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.context.annotation.Import
+ * @see org.springframework.data.gemfire.CacheFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.AbstractCacheConfiguration
  * @see org.springframework.data.gemfire.config.annotation.AdministrativeConfiguration
+ * @see org.springframework.data.gemfire.config.annotation.PeerCacheApplication
+ * @see org.springframework.data.gemfire.config.annotation.PeerCacheConfigurer
  * @since 1.9.0
  */
 @Configuration
@@ -102,6 +107,7 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
         return Optional.ofNullable(this.peerCacheConfigurers)
             .filter(peerCacheConfigurers -> !peerCacheConfigurers.isEmpty())
             .orElseGet(() ->
+
                 Optional.of(this.getBeanFactory())
                     .filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
                     .map(beanFactory -> {
@@ -144,8 +150,7 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
 
         if (isCacheServerOrPeerCacheApplication(importMetadata)) {
 
-            Map<String, Object> peerCacheApplicationAttributes =
-                importMetadata.getAnnotationAttributes(getAnnotationTypeName());
+            AnnotationAttributes peerCacheApplicationAttributes = getAnnotationAttributes(importMetadata);
 
             if (peerCacheApplicationAttributes != null) {
 
@@ -174,6 +179,10 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
                 Optional.ofNullable(resolveProperty(cachePeerProperty("locators"), (String) null))
 					.filter(StringUtils::hasText)
 					.ifPresent(this::setLocators);
+
+                Optional.ofNullable(resolveProperty(propertyName("locators"), (String) null))
+					.filter(StringUtils::hasText)
+					.ifPresent(this::setLocators);
             }
         }
     }
@@ -186,7 +195,6 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
         return PeerCacheApplication.class;
     }
 
-    /* (non-Javadoc) */
     void setEnableAutoReconnect(boolean enableAutoReconnect) {
         this.enableAutoReconnect = enableAutoReconnect;
     }
@@ -195,7 +203,6 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
         return this.enableAutoReconnect;
     }
 
-    /* (non-Javadoc) */
     void setLockLease(Integer lockLease) {
         this.lockLease = lockLease;
     }
@@ -204,7 +211,6 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
         return this.lockLease;
     }
 
-    /* (non-Javadoc) */
     void setLockTimeout(Integer lockTimeout) {
         this.lockTimeout = lockTimeout;
     }
@@ -213,7 +219,6 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
         return this.lockTimeout;
     }
 
-    /* (non-Javadoc) */
     void setMessageSyncInterval(Integer messageSyncInterval) {
         this.messageSyncInterval = messageSyncInterval;
     }
@@ -222,7 +227,6 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
         return this.messageSyncInterval;
     }
 
-    /* (non-Javadoc) */
     void setSearchTimeout(Integer searchTimeout) {
         this.searchTimeout = searchTimeout;
     }
@@ -231,7 +235,6 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
         return this.searchTimeout;
     }
 
-    /* (non-Javadoc) */
     void setUseClusterConfiguration(boolean useClusterConfiguration) {
         this.useClusterConfiguration = useClusterConfiguration;
     }
@@ -240,6 +243,14 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
         return this.useClusterConfiguration;
     }
 
+    /**
+     * Returns a {@link String} containing the name of the Spring-configured Apache Geode peer {@link Cache} application
+     * and data node in the cluster.
+     *
+     * @return a {@link String} containing the name of the Spring-configured Apache Geode peer {@link Cache} application
+     * and data node in the cluster.
+     * @see java.lang.Object#toString()
+     */
     @Override
     public String toString() {
         return DEFAULT_NAME;
