@@ -69,8 +69,8 @@ public abstract class GemfireRepositoryQuery implements RepositoryQuery {
 	}
 
 	/**
-	 * Returns a reference to the composed {@link QueryPostProcessor QueryPostProcessors}, which gets applied
-	 * to the OQL query prior to execution.
+	 * Returns a reference to the composed {@link QueryPostProcessor QueryPostProcessors}, which are applied
+	 * to {@literal OQL queries} prior to execution.
 	 *
 	 * @return a reference to the composed {@link QueryPostProcessor QueryPostProcessors}.
 	 * @see org.springframework.data.gemfire.repository.query.QueryPostProcessor
@@ -80,12 +80,17 @@ public abstract class GemfireRepositoryQuery implements RepositoryQuery {
 	}
 
 	/**
-	 * Registers the given {@link QueryPostProcessor} used to post process OQL queries
+	 * Registers the given {@link QueryPostProcessor} to use for processing {@literal OQL queries}
 	 * generated from {@link Repository} {@link QueryMethod query methods}.
+	 *
+	 * Registration always links the given {@link QueryPostProcessor} to the end of the processing chain
+	 * of previously registered {@link QueryPostProcessor QueryPostProcessors}.  In other words, the given
+	 * {@link QueryPostProcessor} argument will process {@literal OQL queries} only after all
+	 * {@link QueryPostProcessor QueryPostProcessor} registered before it.
 	 *
 	 * @param queryPostProcessor {@link QueryPostProcessor} to register.
 	 * @return this {@link GemfireRepositoryQuery}.
-	 * @see org.springframework.data.gemfire.repository.query.QueryPostProcessor
+	 * @see org.springframework.data.gemfire.repository.query.QueryPostProcessor#processBefore(QueryPostProcessor)
 	 */
 	public GemfireRepositoryQuery register(QueryPostProcessor<?, String> queryPostProcessor) {
 		this.queryPostProcessor = this.queryPostProcessor.processBefore(queryPostProcessor);
