@@ -76,7 +76,9 @@ public class ClientCachePropertiesIntegrationTests {
 
 		MockPropertySource testPropertySource = new MockPropertySource()
 			.withProperty("spring.data.gemfire.cache.critical-heap-percentage", 90.0f)
+			.withProperty("spring.data.gemfire.cache.critical-off-heap-percentage", 95.0f)
 			.withProperty("spring.data.gemfire.cache.eviction-heap-percentage", 85.0f)
+			.withProperty("spring.data.gemfire.cache.eviction-off-heap-percentage", 80.0f)
 			.withProperty("spring.data.gemfire.pdx.ignore-unread-fields", false)
 			.withProperty("spring.data.gemfire.pdx.persistent", true)
 			.withProperty("spring.data.gemfire.pool.free-connection-timeout", 20000L)
@@ -134,7 +136,9 @@ public class ClientCachePropertiesIntegrationTests {
 
 		assertThat(resourceManager).isNotNull();
 		assertThat(resourceManager.getCriticalHeapPercentage()).isEqualTo(90.0f);
+		assertThat(resourceManager.getCriticalOffHeapPercentage()).isEqualTo(95.0f);
 		assertThat(resourceManager.getEvictionHeapPercentage()).isEqualTo(90.0f);
+		assertThat(resourceManager.getEvictionOffHeapPercentage()).isEqualTo(80.0f);
 	}
 
 	@Test
@@ -240,16 +244,17 @@ public class ClientCachePropertiesIntegrationTests {
 	// TODO add more tests!
 
 	@EnableGemFireMockObjects
-	@EnablePdx(ignoreUnreadFields = true, readSerialized = true, serializerBeanName = "mockPdxSerializer")
 	@ClientCacheApplication(name = "TestClientCache", copyOnRead = true,
 		criticalHeapPercentage = 95.0f, evictionHeapPercentage = 80.0f, idleTimeout = 15000L,
 		maxConnections = 100, minConnections = 10, pingInterval = 15000L, readTimeout = 15000, retryAttempts = 1,
 		subscriptionEnabled = true, subscriptionRedundancy = 1)
+	@EnablePdx(ignoreUnreadFields = true, readSerialized = true, serializerBeanName = "mockPdxSerializer")
 	@SuppressWarnings("unused")
 	static class TestClientCacheConfiguration {
 
 		@Bean
 		ClientCacheConfigurer testClientCacheConfigurer() {
+
 			return (beanName, factoryBean) -> {
 				factoryBean.setEvictionHeapPercentage(90.0f);
 				factoryBean.setPdxReadSerialized(false);

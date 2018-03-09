@@ -20,6 +20,7 @@ package org.springframework.data.gemfire.config.annotation;
 import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeMap;
 import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeSet;
 
+import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,7 @@ import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.server.CacheServerFactoryBean;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
@@ -145,6 +147,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		return Optional.ofNullable(this.cacheServerConfigurers)
 			.filter(cacheServerConfigurers -> !cacheServerConfigurers.isEmpty())
 			.orElseGet(() ->
+
 				Optional.of(this.getBeanFactory())
 					.filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
 					.map(beanFactory -> {
@@ -175,8 +178,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 
 		if (isCacheServerApplication(importMetadata)) {
 
-			Map<String, Object> cacheServerApplicationAttributes =
-				importMetadata.getAnnotationAttributes(getAnnotationTypeName());
+			AnnotationAttributes cacheServerApplicationAttributes = getAnnotationAttributes(importMetadata);
 
 			setAutoStartup(resolveProperty(cacheServerProperty("auto-startup"),
 				Boolean.TRUE.equals(cacheServerApplicationAttributes.get("autoStartup"))));
@@ -229,11 +231,10 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	 * {@inheritDoc}
 	 */
 	@Override
-	protected Class getAnnotationType() {
+	protected Class<? extends Annotation> getAnnotationType() {
 		return CacheServerApplication.class;
 	}
 
-	/* (non-Javadoc) */
 	void setAutoStartup(boolean autoStartup) {
 		this.autoStartup = autoStartup;
 	}
@@ -242,7 +243,6 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		return this.autoStartup;
 	}
 
-	/* (non-Javadoc) */
 	void setBindAddress(String bindAddress) {
 		this.bindAddress = bindAddress;
 	}
@@ -252,7 +252,6 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 			.orElse(CacheServer.DEFAULT_BIND_ADDRESS);
 	}
 
-	/* (non-Javadoc) */
 	void setHostnameForClients(String hostnameForClients) {
 		this.hostnameForClients = hostnameForClients;
 	}
@@ -262,7 +261,6 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 			.orElse(CacheServer.DEFAULT_HOSTNAME_FOR_CLIENTS);
 	}
 
-	/* (non-Javadoc) */
 	void setInterestRegistrationListeners(Set<InterestRegistrationListener> interestRegistrationListeners) {
 		this.interestRegistrationListeners = interestRegistrationListeners;
 	}
@@ -271,7 +269,6 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		return nullSafeSet(this.interestRegistrationListeners);
 	}
 
-	/* (non-Javadoc) */
 	void setLoadPollInterval(Long loadPollInterval) {
 		this.loadPollInterval = loadPollInterval;
 	}
@@ -280,7 +277,6 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		return Optional.ofNullable(this.loadPollInterval).orElse(CacheServer.DEFAULT_LOAD_POLL_INTERVAL);
 	}
 
-	/* (non-Javadoc) */
 	void setMaxConnections(Integer maxConnections) {
 		this.maxConnections = maxConnections;
 	}
@@ -289,7 +285,6 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		return Optional.ofNullable(this.maxConnections).orElse(CacheServer.DEFAULT_MAX_CONNECTIONS);
 	}
 
-	/* (non-Javadoc) */
 	void setMaxMessageCount(Integer maxMessageCount) {
 		this.maxMessageCount = maxMessageCount;
 	}
@@ -298,7 +293,6 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		return Optional.ofNullable(this.maxMessageCount).orElse(CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT);
 	}
 
-	/* (non-Javadoc) */
 	void setMaxThreads(Integer maxThreads) {
 		this.maxThreads = maxThreads;
 	}
@@ -307,7 +301,6 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		return Optional.ofNullable(this.maxThreads).orElse(CacheServer.DEFAULT_MAX_THREADS);
 	}
 
-	/* (non-Javadoc) */
 	void setMaxTimeBetweenPings(Integer maxTimeBetweenPings) {
 		this.maxTimeBetweenPings = maxTimeBetweenPings;
 	}
@@ -316,7 +309,6 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		return Optional.ofNullable(this.maxTimeBetweenPings).orElse(CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS);
 	}
 
-	/* (non-Javadoc) */
 	void setMessageTimeToLive(Integer messageTimeToLive) {
 		this.messageTimeToLive = messageTimeToLive;
 	}
@@ -325,7 +317,6 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		return Optional.ofNullable(this.messageTimeToLive).orElse(CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE);
 	}
 
-	/* (non-Javadoc) */
 	void setPort(Integer port) {
 		this.port = port;
 	}
@@ -334,7 +325,6 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		return Optional.ofNullable(this.port).orElse(CacheServer.DEFAULT_PORT);
 	}
 
-	/* (non-Javadoc) */
 	void setServerLoadProbe(ServerLoadProbe serverLoadProbe) {
 		this.serverLoadProbe = serverLoadProbe;
 	}
@@ -343,7 +333,6 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		return Optional.ofNullable(this.serverLoadProbe).orElse(CacheServer.DEFAULT_LOAD_PROBE);
 	}
 
-	/* (non-Javadoc) */
 	void setSocketBufferSize(Integer socketBufferSize) {
 		this.socketBufferSize = socketBufferSize;
 	}
@@ -352,7 +341,6 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		return Optional.ofNullable(this.socketBufferSize).orElse(CacheServer.DEFAULT_SOCKET_BUFFER_SIZE);
 	}
 
-	/* (non-Javadoc) */
 	void setSubscriptionCapacity(Integer subscriptionCapacity) {
 		this.subscriptionCapacity = subscriptionCapacity;
 	}
@@ -361,7 +349,6 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		return Optional.ofNullable(this.subscriptionCapacity).orElse(ClientSubscriptionConfig.DEFAULT_CAPACITY);
 	}
 
-	/* (non-Javadoc) */
 	void setSubscriptionDiskStoreName(String subscriptionDiskStoreName) {
 		this.subscriptionDiskStoreName = subscriptionDiskStoreName;
 	}
@@ -370,7 +357,6 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		return this.subscriptionDiskStoreName;
 	}
 
-	/* (non-Javadoc) */
 	void setSubscriptionEvictionPolicy(SubscriptionEvictionPolicy subscriptionEvictionPolicy) {
 		this.subscriptionEvictionPolicy = subscriptionEvictionPolicy;
 	}
@@ -379,7 +365,6 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		return Optional.ofNullable(this.subscriptionEvictionPolicy).orElse(SubscriptionEvictionPolicy.DEFAULT);
 	}
 
-	/* (non-Javadoc) */
 	void setTcpNoDelay(Boolean tcpNoDelay) {
 		this.tcpNoDelay = tcpNoDelay;
 	}
@@ -388,6 +373,14 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		return Optional.ofNullable(this.tcpNoDelay).orElse(CacheServer.DEFAULT_TCP_NO_DELAY);
 	}
 
+	/**
+	 * Returns a {@link String} containing the name of the Spring-configured Apache Geode {@link CacheServer} application
+	 * and data node in the cluster.
+	 *
+	 * @return a {@link String} containing the name of the Spring-configured Apache Geode {@link CacheServer} application
+	 * and data node in the cluster.
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		return DEFAULT_NAME;

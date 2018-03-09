@@ -1656,14 +1656,12 @@ public abstract class MockGemFireObjectsSupport extends MockObjectsSupport {
 		AtomicReference<Float> criticalHeapPercentage =
 			new AtomicReference<>(ResourceManager.DEFAULT_CRITICAL_PERCENTAGE);
 
-		AtomicReference<Float> criticalOffHeapPercentage =
-			new AtomicReference<>(ResourceManager.DEFAULT_CRITICAL_PERCENTAGE);
+		AtomicReference<Float> criticalOffHeapPercentage = new AtomicReference<>(0.0f);
 
 		AtomicReference<Float> evictionHeapPercentage =
 			new AtomicReference<>(ResourceManager.DEFAULT_EVICTION_PERCENTAGE);
 
-		AtomicReference<Float> evictionOffHeapPercentage =
-			new AtomicReference<>(ResourceManager.DEFAULT_EVICTION_PERCENTAGE);
+		AtomicReference<Float> evictionOffHeapPercentage = new AtomicReference<>(0.0f);
 
 		doAnswer(newSetter(criticalHeapPercentage, null))
 			.when(mockResourceManager).setCriticalHeapPercentage(anyFloat());

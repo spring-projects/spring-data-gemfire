@@ -48,7 +48,7 @@ import org.springframework.data.gemfire.process.ProcessWrapper;
 import org.springframework.data.gemfire.test.support.FileSystemUtils;
 import org.springframework.data.gemfire.test.support.ThreadUtils;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.Assert;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StringUtils;
@@ -64,7 +64,7 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.data.gemfire.client.GemfireDataSourcePostProcessor
  * @since 1.7.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @SuppressWarnings({ "rawtypes", "unused"})
 public class GemFireDataSourceUsingNonSpringConfiguredGemFireServerIntegrationTest {
@@ -88,7 +88,8 @@ public class GemFireDataSourceUsingNonSpringConfiguredGemFireServerIntegrationTe
 
 	@BeforeClass
 	public static void setupBeforeClass() throws IOException {
-		System.setProperty("gemfire.log-level", "warning");
+
+		System.setProperty("gemfire.log-level", "error");
 
 		String serverName = "GemFireDataSourceGemFireBasedServer";
 
@@ -123,6 +124,7 @@ public class GemFireDataSourceUsingNonSpringConfiguredGemFireServerIntegrationTe
 	}
 
 	private static String customClasspath() {
+
 		String[] classpathElements = ProcessExecutor.JAVA_CLASSPATH.split(File.pathSeparator);
 
 		List<String> customClasspath = new ArrayList<String>(classpathElements.length);
@@ -137,6 +139,7 @@ public class GemFireDataSourceUsingNonSpringConfiguredGemFireServerIntegrationTe
 	}
 
 	private static void waitForProcessStart(final long milliseconds, final ProcessWrapper process, final String processControlFilename) {
+
 		ThreadUtils.timedWait(milliseconds, TimeUnit.MILLISECONDS.toMillis(500), new ThreadUtils.WaitCondition() {
 			private File processControlFile = new File(process.getWorkingDirectory(), processControlFilename);
 
@@ -148,6 +151,7 @@ public class GemFireDataSourceUsingNonSpringConfiguredGemFireServerIntegrationTe
 
 	@AfterClass
 	public static void tearDown() {
+
 		serverProcess.shutdown();
 
 		if (Boolean.valueOf(System.getProperty("spring.gemfire.fork.clean", Boolean.TRUE.toString()))) {
@@ -156,6 +160,7 @@ public class GemFireDataSourceUsingNonSpringConfiguredGemFireServerIntegrationTe
 	}
 
 	protected void assertRegion(Region actualRegion, String expectedRegionName) {
+
 		assertThat(actualRegion, is(not(nullValue())));
 		assertThat(actualRegion.getName(), is(equalTo(expectedRegionName)));
 		assertThat(actualRegion.getFullPath(), is(equalTo(String.format("%1$s%2$s",
@@ -168,9 +173,9 @@ public class GemFireDataSourceUsingNonSpringConfiguredGemFireServerIntegrationTe
 	@Test
 	@SuppressWarnings("unchecked")
 	public void clientProxyRegionBeansExist() {
+
 		assertRegion(localRegion, "LocalRegion");
 		assertRegion(serverRegion, "ServerRegion");
 		assertRegion(anotherServerRegion, "AnotherServerRegion");
 	}
-
 }

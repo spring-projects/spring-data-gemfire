@@ -19,6 +19,7 @@ package org.springframework.data.gemfire.config.annotation;
 
 import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeMap;
 
+import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -160,6 +161,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return Optional.ofNullable(this.clientCacheConfigurers)
 			.filter(clientCacheConfigurers -> !clientCacheConfigurers.isEmpty())
 			.orElseGet(() ->
+
 				Optional.of(this.getBeanFactory())
 					.filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
 					.map(beanFactory -> {
@@ -230,8 +232,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 
 		if (isClientCacheApplication(importMetadata)) {
 
-			Map<String, Object> clientCacheApplicationAttributes =
-				importMetadata.getAnnotationAttributes(getAnnotationTypeName());
+			AnnotationAttributes clientCacheApplicationAttributes = getAnnotationAttributes(importMetadata);
 
 			setDurableClientId(resolveProperty(cacheClientProperty("durable-client-id"),
 				(String) clientCacheApplicationAttributes.get("durableClientId")));
@@ -358,10 +359,13 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 			resolveProperty(poolProperty("locators"), (String) null));
 
 		if (StringUtils.hasText(locatorsFromProperty)) {
+
 			String[] locatorHostsPorts = locatorsFromProperty.split(",");
+
 			poolLocators = ConnectionEndpointList.parse(GemfireUtils.DEFAULT_LOCATOR_PORT, locatorHostsPorts);
 		}
 		else {
+
 			poolLocators = new ConnectionEndpointList();
 
 			AnnotationAttributes[] locators = (AnnotationAttributes[]) clientCacheApplicationAttributes.get("locators");
@@ -395,7 +399,6 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		setPoolServers(poolServers);
 	}
 
-	/* (non-Javadoc) */
 	protected ConnectionEndpoint newConnectionEndpoint(String host, Integer port) {
 		return new ConnectionEndpoint(host, port);
 	}
@@ -404,11 +407,10 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 	 * {@inheritDoc}
 	 */
 	@Override
-	protected Class getAnnotationType() {
+	protected Class<? extends Annotation> getAnnotationType() {
 		return ClientCacheApplication.class;
 	}
 
-	/* (non-Javadoc) */
 	void setDurableClientId(String durableClientId) {
 		this.durableClientId = durableClientId;
 	}
@@ -417,7 +419,6 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return this.durableClientId;
 	}
 
-	/* (non-Javadoc) */
 	void setDurableClientTimeout(Integer durableClientTimeout) {
 		this.durableClientTimeout = durableClientTimeout;
 	}
@@ -426,7 +427,6 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return this.durableClientTimeout;
 	}
 
-	/* (non-Javadoc) */
 	void setFreeConnectionTimeout(Integer freeConnectionTimeout) {
 		this.freeConnectionTimeout = freeConnectionTimeout;
 	}
@@ -435,7 +435,6 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return this.freeConnectionTimeout;
 	}
 
-	/* (non-Javadoc) */
 	void setIdleTimeout(Long idleTimeout) {
 		this.idleTimeout = idleTimeout;
 	}
@@ -444,7 +443,6 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return this.idleTimeout;
 	}
 
-	/* (non-Javadoc) */
 	void setKeepAlive(Boolean keepAlive) {
 		this.keepAlive = keepAlive;
 	}
@@ -453,7 +451,6 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return this.keepAlive;
 	}
 
-	/* (non-Javadoc) */
 	void setLoadConditioningInterval(Integer loadConditioningInterval) {
 		this.loadConditioningInterval = loadConditioningInterval;
 	}
@@ -462,7 +459,6 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return this.loadConditioningInterval;
 	}
 
-	/* (non-Javadoc) */
 	void setMaxConnections(Integer maxConnections) {
 		this.maxConnections = maxConnections;
 	}
@@ -471,7 +467,6 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return this.maxConnections;
 	}
 
-	/* (non-Javadoc) */
 	void setMinConnections(Integer minConnections) {
 		this.minConnections = minConnections;
 	}
@@ -480,7 +475,6 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return this.minConnections;
 	}
 
-	/* (non-Javadoc) */
 	void setMultiUserAuthentication(Boolean multiUserAuthentication) {
 		this.multiUserAuthentication = multiUserAuthentication;
 	}
@@ -489,7 +483,6 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return this.multiUserAuthentication;
 	}
 
-	/* (non-Javadoc) */
 	void setPingInterval(Long pingInterval) {
 		this.pingInterval = pingInterval;
 	}
@@ -498,7 +491,6 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return this.pingInterval;
 	}
 
-	/* (non-Javadoc) */
 	void setPoolLocators(Iterable<ConnectionEndpoint> locators) {
 		this.locators = locators;
 	}
@@ -507,7 +499,6 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return this.locators;
 	}
 
-	/* (non-Javadoc) */
 	void setPoolServers(Iterable<ConnectionEndpoint> servers) {
 		this.servers = servers;
 	}
@@ -516,7 +507,6 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return this.servers;
 	}
 
-	/* (non-Javadoc) */
 	void setPrSingleHopEnabled(Boolean prSingleHopEnabled) {
 		this.prSingleHopEnabled = prSingleHopEnabled;
 	}
@@ -525,7 +515,6 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return this.prSingleHopEnabled;
 	}
 
-	/* (non-Javadoc) */
 	void setReadTimeout(Integer readTimeout) {
 		this.readTimeout = readTimeout;
 	}
@@ -534,7 +523,6 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return this.readTimeout;
 	}
 
-	/* (non-Javadoc) */
 	void setReadyForEvents(boolean readyForEvents) {
 		this.readyForEvents = readyForEvents;
 	}
@@ -543,7 +531,6 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return this.readyForEvents;
 	}
 
-	/* (non-Javadoc) */
 	void setRetryAttempts(Integer retryAttempts) {
 		this.retryAttempts = retryAttempts;
 	}
@@ -552,7 +539,6 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return this.retryAttempts;
 	}
 
-	/* (non-Javadoc) */
 	void setServerGroup(String serverGroup) {
 		this.serverGroup = serverGroup;
 	}
@@ -561,7 +547,6 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return this.serverGroup;
 	}
 
-	/* (non-Javadoc) */
 	void setSocketBufferSize(Integer socketBufferSize) {
 		this.socketBufferSize = socketBufferSize;
 	}
@@ -570,7 +555,6 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return this.socketBufferSize;
 	}
 
-	/* (non-Javadoc) */
 	void setStatisticsInterval(Integer statisticsInterval) {
 		this.statisticsInterval = statisticsInterval;
 	}
@@ -579,7 +563,6 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return this.statisticsInterval;
 	}
 
-	/* (non-Javadoc) */
 	void setSubscriptionAckInterval(Integer subscriptionAckInterval) {
 		this.subscriptionAckInterval = subscriptionAckInterval;
 	}
@@ -588,7 +571,6 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return this.subscriptionAckInterval;
 	}
 
-	/* (non-Javadoc) */
 	void setSubscriptionEnabled(Boolean subscriptionEnabled) {
 		this.subscriptionEnabled = subscriptionEnabled;
 	}
@@ -597,7 +579,6 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return this.subscriptionEnabled;
 	}
 
-	/* (non-Javadoc) */
 	void setSubscriptionMessageTrackingTimeout(Integer subscriptionMessageTrackingTimeout) {
 		this.subscriptionMessageTrackingTimeout = subscriptionMessageTrackingTimeout;
 	}
@@ -606,7 +587,6 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return this.subscriptionMessageTrackingTimeout;
 	}
 
-	/* (non-Javadoc) */
 	void setSubscriptionRedundancy(Integer subscriptionRedundancy) {
 		this.subscriptionRedundancy = subscriptionRedundancy;
 	}
@@ -615,7 +595,6 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return this.subscriptionRedundancy;
 	}
 
-	/* (non-Javadoc) */
 	void setThreadLocalConnections(Boolean threadLocalConnections) {
 		this.threadLocalConnections = threadLocalConnections;
 	}
@@ -624,6 +603,14 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return this.threadLocalConnections;
 	}
 
+	/**
+	 * Returns a {@link String} containing the name of the Spring-configured Apache Geode
+	 * {@link ClientCache} application.
+	 *
+	 * @return a {@link String} containing the name of the Spring-configured Apache Geode
+	 * {@link ClientCache} application.
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		return DEFAULT_NAME;
