@@ -64,6 +64,11 @@ public class QueryString {
 	}
 
 	/* (non-Javadoc) */
+	static QueryString of(String query) {
+		return new QueryString(query);
+	}
+
+	/* (non-Javadoc) */
 	static <T> Class<T> validateDomainType(Class<T> domainType) {
 		Assert.notNull(domainType, "domainType must not be null");
 		return domainType;

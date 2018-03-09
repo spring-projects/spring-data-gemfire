@@ -15,6 +15,7 @@
  */
 package org.springframework.data.gemfire.repository.query;
 
+import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.util.Assert;
@@ -28,9 +29,11 @@ import org.springframework.util.Assert;
  * @see org.springframework.data.gemfire.repository.query.GemfireQueryMethod
  * @see org.springframework.data.repository.query.RepositoryQuery
  */
-abstract class GemfireRepositoryQuery implements RepositoryQuery {
+public abstract class GemfireRepositoryQuery implements RepositoryQuery {
 
 	private final GemfireQueryMethod queryMethod;
+
+	private QueryPostProcessor<?, String> queryPostProcessor = ProvidedQueryPostProcessor.INSTANCE;
 
 	/*
 	 * (non-Javadoc)
@@ -42,15 +45,15 @@ abstract class GemfireRepositoryQuery implements RepositoryQuery {
 
 	/**
 	 * Creates a new {@link GemfireRepositoryQuery} using the given {@link GemfireQueryMethod}.
-	 * 
+	 *
 	 * @param queryMethod must not be {@literal null}.
 	 */
 	public GemfireRepositoryQuery(GemfireQueryMethod queryMethod) {
-		Assert.notNull(queryMethod);
+		Assert.notNull(queryMethod, "QueryMethod must not be null");
 		this.queryMethod = queryMethod;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.query.RepositoryQuery#getQueryMethod()
 	 */
@@ -59,4 +62,42 @@ abstract class GemfireRepositoryQuery implements RepositoryQuery {
 		return this.queryMethod;
 	}
 
+	/**
+	 * Returns a reference to the composed {@link QueryPostProcessor QueryPostProcessors}, which are applied
+	 * to {@literal OQL queries} prior to execution.
+	 *
+	 * @return a reference to the composed {@link QueryPostProcessor QueryPostProcessors}.
+	 * @see org.springframework.data.gemfire.repository.query.QueryPostProcessor
+	 */
+	protected QueryPostProcessor<?, String> getQueryPostProcessor() {
+		return this.queryPostProcessor;
+	}
+
+	/**
+	 * Registers the given {@link QueryPostProcessor} to use for processing {@literal OQL queries}
+	 * generated from {@link Repository} {@link QueryMethod query methods}.
+	 *
+	 * Registration always links the given {@link QueryPostProcessor} to the end of the processing chain
+	 * of previously registered {@link QueryPostProcessor QueryPostProcessors}.  In other words, the given
+	 * {@link QueryPostProcessor} argument will process {@literal OQL queries} only after all
+	 * {@link QueryPostProcessor QueryPostProcessor} registered before it.
+	 *
+	 * @param queryPostProcessor {@link QueryPostProcessor} to register.
+	 * @return this {@link GemfireRepositoryQuery}.
+	 * @see org.springframework.data.gemfire.repository.query.QueryPostProcessor#processBefore(QueryPostProcessor)
+	 */
+	public GemfireRepositoryQuery register(QueryPostProcessor<?, String> queryPostProcessor) {
+		this.queryPostProcessor = this.queryPostProcessor.processBefore(queryPostProcessor);
+		return this;
+	}
+
+	static class ProvidedQueryPostProcessor extends AbstractQueryPostProcessor<Repository, String> {
+
+		static final ProvidedQueryPostProcessor INSTANCE = new ProvidedQueryPostProcessor();
+
+		@Override
+		public String postProcess(QueryMethod queryMethod, String query, Object... arguments) {
+			return query;
+		}
+	}
 }

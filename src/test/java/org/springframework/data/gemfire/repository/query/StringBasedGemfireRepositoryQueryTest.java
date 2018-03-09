@@ -18,9 +18,6 @@ package org.springframework.data.gemfire.repository.query;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -39,10 +36,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Test;
-
 import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.internal.ResultsBag;
+
+import org.junit.Test;
 
 /**
  * The SpringBasedGemfireRepositoryQueryTest class is a test suite of test cases testing the contract and functionality
@@ -122,6 +119,7 @@ public class StringBasedGemfireRepositoryQueryTest {
 
 	@Test
 	public void applyAllQueryAnnotationExtensions() {
+
 		GemfireQueryMethod mockQueryMethod = mock(GemfireQueryMethod.class, "MockGemfireQueryMethod");
 
 		when(mockQueryMethod.hasHint()).thenReturn(true);
@@ -132,18 +130,13 @@ public class StringBasedGemfireRepositoryQueryTest {
 		when(mockQueryMethod.getLimit()).thenReturn(10);
 		when(mockQueryMethod.hasTrace()).thenReturn(true);
 
-		QueryString queryString = new QueryString("SELECT * FROM /Example");
-
-		assertThat(queryString.toString(), is(equalTo("SELECT * FROM /Example")));
-
 		StringBasedGemfireRepositoryQuery repositoryQuery = new StringBasedGemfireRepositoryQuery();
 
-		QueryString actualQueryString = repositoryQuery.applyQueryAnnotationExtensions(mockQueryMethod, queryString);
+		String query = repositoryQuery.getQueryPostProcessor()
+			.postProcess(mockQueryMethod, "SELECT * FROM /Example");
 
-		assertThat(actualQueryString, is(notNullValue()));
-		assertThat(actualQueryString, is(not(sameInstance(queryString))));
-		assertThat(actualQueryString.toString(), is(equalTo(
-			"<TRACE> <HINT 'IdIdx', 'NameIdx'> IMPORT org.example.domain.Type; SELECT * FROM /Example LIMIT 10")));
+		assertThat(query,
+			is(equalTo("<TRACE> <HINT 'IdIdx', 'NameIdx'> IMPORT org.example.domain.Type; SELECT * FROM /Example LIMIT 10")));
 
 		verify(mockQueryMethod, times(1)).hasHint();
 		verify(mockQueryMethod, times(1)).getHints();
@@ -156,6 +149,7 @@ public class StringBasedGemfireRepositoryQueryTest {
 
 	@Test
 	public void applyHintLimitAndTraceQueryAnnotationExtensionsWithExistingHintAndLimit() {
+
 		GemfireQueryMethod mockQueryMethod = mock(GemfireQueryMethod.class, "MockGemfireQueryMethod");
 
 		when(mockQueryMethod.hasHint()).thenReturn(true);
@@ -165,18 +159,12 @@ public class StringBasedGemfireRepositoryQueryTest {
 		when(mockQueryMethod.getLimit()).thenReturn(50);
 		when(mockQueryMethod.hasTrace()).thenReturn(true);
 
-		QueryString queryString = new QueryString("<HINT 'LastNameIdx'> SELECT * FROM /Example LIMIT 25");
-
-		assertThat(queryString.toString(), is(equalTo("<HINT 'LastNameIdx'> SELECT * FROM /Example LIMIT 25")));
-
 		StringBasedGemfireRepositoryQuery repositoryQuery = new StringBasedGemfireRepositoryQuery();
 
-		QueryString actualQueryString = repositoryQuery.applyQueryAnnotationExtensions(mockQueryMethod, queryString);
+		String query = repositoryQuery.getQueryPostProcessor()
+			.postProcess(mockQueryMethod, "<HINT 'LastNameIdx'> SELECT * FROM /Example LIMIT 25");
 
-		assertThat(actualQueryString, is(notNullValue()));
-		assertThat(actualQueryString, is(not(sameInstance(queryString))));
-		assertThat(actualQueryString.toString(), is(equalTo(
-			"<TRACE> <HINT 'LastNameIdx'> SELECT * FROM /Example LIMIT 25")));
+		assertThat(query, is(equalTo("<TRACE> <HINT 'LastNameIdx'> SELECT * FROM /Example LIMIT 25")));
 
 		verify(mockQueryMethod, times(1)).hasHint();
 		verify(mockQueryMethod, never()).getHints();
@@ -189,6 +177,7 @@ public class StringBasedGemfireRepositoryQueryTest {
 
 	@Test
 	public void applyImportAndTraceQueryAnnotationExtensionsWithExistingTrace() {
+
 		GemfireQueryMethod mockQueryMethod = mock(GemfireQueryMethod.class, "MockGemfireQueryMethod");
 
 		when(mockQueryMethod.hasHint()).thenReturn(false);
@@ -197,18 +186,12 @@ public class StringBasedGemfireRepositoryQueryTest {
 		when(mockQueryMethod.hasLimit()).thenReturn(false);
 		when(mockQueryMethod.hasTrace()).thenReturn(true);
 
-		QueryString queryString = new QueryString("<TRACE> SELECT * FROM /Example");
-
-		assertThat(queryString.toString(), is(equalTo("<TRACE> SELECT * FROM /Example")));
-
 		StringBasedGemfireRepositoryQuery repositoryQuery = new StringBasedGemfireRepositoryQuery();
 
-		QueryString actualQueryString = repositoryQuery.applyQueryAnnotationExtensions(mockQueryMethod, queryString);
+		String query = repositoryQuery.getQueryPostProcessor()
+			.postProcess(mockQueryMethod, "<TRACE> SELECT * FROM /Example");
 
-		assertThat(actualQueryString, is(notNullValue()));
-		assertThat(actualQueryString, is(not(sameInstance(queryString))));
-		assertThat(actualQueryString.toString(), is(equalTo(
-			"IMPORT org.example.domain.Type; <TRACE> SELECT * FROM /Example")));
+		assertThat(query, is(equalTo("IMPORT org.example.domain.Type; <TRACE> SELECT * FROM /Example")));
 
 		verify(mockQueryMethod, times(1)).hasHint();
 		verify(mockQueryMethod, never()).getHints();
@@ -218,5 +201,4 @@ public class StringBasedGemfireRepositoryQueryTest {
 		verify(mockQueryMethod, never()).getLimit();
 		verify(mockQueryMethod, times(1)).hasTrace();
 	}
-
 }

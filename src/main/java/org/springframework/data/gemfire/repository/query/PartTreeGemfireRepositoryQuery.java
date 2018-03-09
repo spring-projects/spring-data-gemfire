@@ -22,14 +22,13 @@ import java.util.List;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
-import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.parser.Part;
 import org.springframework.data.repository.query.parser.PartTree;
 
 /**
  * {@link GemfireRepositoryQuery} backed by a {@link PartTree} and thus, deriving an OQL query from the backing query
  * method's name.
- * 
+ *
  * @author Oliver Gierke
  */
 public class PartTreeGemfireRepositoryQuery extends GemfireRepositoryQuery {
@@ -41,7 +40,7 @@ public class PartTreeGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	/**
 	 * Creates a new {@link PartTreeGemfireRepositoryQuery} using the given {@link GemfireQueryMethod} and
 	 * {@link GemfireTemplate}.
-	 * 
+	 *
 	 * @param method must not be {@literal null}.
 	 * @param template must not be {@literal null}.
 	 */
@@ -56,24 +55,39 @@ public class PartTreeGemfireRepositoryQuery extends GemfireRepositoryQuery {
 		this.template = template;
 	}
 
-	/* 
+	/*
 	 * (non-Javadoc)
 	 * @see org.springframework.data.repository.query.RepositoryQuery#execute(java.lang.Object[])
 	 */
 	@Override
 	public Object execute(Object[] parameters) {
-		ParametersParameterAccessor parameterAccessor = new ParametersParameterAccessor(method.getParameters(), parameters);
 
-		QueryString query = new GemfireQueryCreator(tree, method.getPersistentEntity())
+		ParametersParameterAccessor parameterAccessor =
+			new ParametersParameterAccessor(this.method.getParameters(), parameters);
+
+		QueryString query = new GemfireQueryCreator(this.tree, this.method.getPersistentEntity())
 			.createQuery(parameterAccessor.getSort());
 
-		RepositoryQuery repositoryQuery = new StringBasedGemfireRepositoryQuery(query.toString(), method, template);
+		GemfireRepositoryQuery repositoryQuery = newRepositoryQuery(query, this.method, this.template);
 
 		return repositoryQuery.execute(prepareStringParameters(parameters));
 	}
 
+	private GemfireRepositoryQuery newRepositoryQuery(QueryString query,
+			GemfireQueryMethod queryMethod, GemfireTemplate template) {
+
+		GemfireRepositoryQuery repositoryQuery =
+			new StringBasedGemfireRepositoryQuery(query.toString(), queryMethod, template);
+
+		repositoryQuery.register(getQueryPostProcessor());
+
+		return repositoryQuery;
+	}
+
 	private Object[] prepareStringParameters(Object[] parameters) {
+
 		Iterator<Part> partsIterator = tree.getParts().iterator();
+
 		List<Object> stringParameters = new ArrayList<Object>(parameters.length);
 
 		for (Object parameter : parameters) {
@@ -99,5 +113,4 @@ public class PartTreeGemfireRepositoryQuery extends GemfireRepositoryQuery {
 
 		return stringParameters.toArray();
 	}
-
 }

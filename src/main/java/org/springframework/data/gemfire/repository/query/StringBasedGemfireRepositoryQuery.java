@@ -18,15 +18,16 @@ package org.springframework.data.gemfire.repository.query;
 import java.util.Collection;
 import java.util.Collections;
 
+import com.gemstone.gemfire.cache.query.SelectResults;
+
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.gemfire.GemfireTemplate;
+import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-
-import com.gemstone.gemfire.cache.query.SelectResults;
 
 /**
  * {@link GemfireRepositoryQuery} using plain {@link String} based OQL queries.
@@ -49,8 +50,14 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	 * Constructor used for testing purposes only!
 	 */
 	StringBasedGemfireRepositoryQuery() {
-		query = null;
-		template = null;
+
+		this.query = null;
+		this.template = null;
+
+		register(LimitQueryPostProcessor.INSTANCE
+			.processBefore(ImportQueryPostProcessor.INSTANCE)
+			.processBefore(HintQueryPostProcessor.INSTANCE)
+			.processBefore(TraceQueryPostProcessor.INSTANCE));
 	}
 
 	/**
@@ -73,17 +80,20 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	 * @param template must not be {@literal null}.
 	 */
 	public StringBasedGemfireRepositoryQuery(String query, GemfireQueryMethod queryMethod, GemfireTemplate template) {
+
 		super(queryMethod);
 
-		Assert.notNull(template);
+		Assert.notNull(template, "GemfireTemplate must not be null");
+		Assert.state(!(queryMethod.isModifyingQuery() || queryMethod.isPageQuery()), INVALID_QUERY);
 
 		this.userDefinedQuery |= !StringUtils.hasText(query);
 		this.query = new QueryString(StringUtils.hasText(query) ? query : queryMethod.getAnnotatedQuery());
 		this.template = template;
 
-		if (queryMethod.isModifyingQuery() || queryMethod.isPageQuery()) {
-			throw new IllegalStateException(INVALID_QUERY);
-		}
+		register(LimitQueryPostProcessor.INSTANCE
+			.processBefore(ImportQueryPostProcessor.INSTANCE)
+			.processBefore(HintQueryPostProcessor.INSTANCE)
+			.processBefore(TraceQueryPostProcessor.INSTANCE));
 	}
 
 	/*
@@ -106,27 +116,30 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	 * @see org.springframework.data.repository.query.RepositoryQuery#execute(java.lang.Object[])
 	 */
 	@Override
-	public Object execute(Object[] parameters) {
-		QueryMethod localQueryMethod = getQueryMethod();
+	public Object execute(Object[] arguments) {
 
-		QueryString query = (isUserDefinedQuery() ? this.query : this.query.forRegion(
-			localQueryMethod.getEntityInformation().getJavaType(), template.getRegion()));
+		QueryMethod queryMethod = getQueryMethod();
 
-		ParametersParameterAccessor parameterAccessor = new ParametersParameterAccessor(
-			localQueryMethod.getParameters(), parameters);
+		QueryString query = isUserDefinedQuery() ? this.query
+			: this.query.forRegion(queryMethod.getEntityInformation().getJavaType(), this.template.getRegion());
+
+		ParametersParameterAccessor parameterAccessor =
+			new ParametersParameterAccessor(queryMethod.getParameters(), arguments);
 
 		for (Integer index : query.getInParameterIndexes()) {
 			query = query.bindIn(toCollection(parameterAccessor.getBindableValue(index - 1)));
 		}
 
-		query = applyQueryAnnotationExtensions(localQueryMethod, query);
+		String queryString = getQueryPostProcessor().postProcess(queryMethod, query.toString(), arguments);
 
-		Collection<?> result = toCollection(template.find(query.toString(), parameters));
+		SelectResults<?> selectResults = this.template.find(queryString, arguments);
 
-		if (localQueryMethod.isCollectionQuery()) {
+		Collection<?> result = toCollection(selectResults);
+
+		if (queryMethod.isCollectionQuery()) {
 			return result;
 		}
-		else if (localQueryMethod.isQueryForEntity()) {
+		else if (queryMethod.isQueryForEntity()) {
 			if (result.isEmpty()) {
 				return null;
 			}
@@ -137,7 +150,7 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 				throw new IncorrectResultSizeDataAccessException(1, result.size());
 			}
 		}
-		else if (isSingleResultNonEntityQuery(localQueryMethod, result)) {
+		else if (isSingleResultNonEntityQuery(queryMethod, result)) {
 			return result.iterator().next();
 		}
 		else {
@@ -145,31 +158,8 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 		}
 	}
 
-	QueryString applyQueryAnnotationExtensions(final QueryMethod queryMethod, final QueryString queryString) {
-		QueryString resolvedQueryString = queryString;
-
-		if (queryMethod instanceof GemfireQueryMethod) {
-			GemfireQueryMethod gemfireQueryMethod = (GemfireQueryMethod) queryMethod;
-			String query = queryString.toString().toUpperCase();
-
-			if (gemfireQueryMethod.hasImport() && !QueryString.IMPORT_PATTERN.matcher(query).find()) {
-				resolvedQueryString = resolvedQueryString.withImport(gemfireQueryMethod.getImport());
-			}
-			if (gemfireQueryMethod.hasHint() && !QueryString.HINT_PATTERN.matcher(query).find()) {
-				resolvedQueryString = resolvedQueryString.withHints(gemfireQueryMethod.getHints());
-			}
-			if (gemfireQueryMethod.hasLimit() && !QueryString.LIMIT_PATTERN.matcher(query).find()) {
-				resolvedQueryString = resolvedQueryString.withLimit(gemfireQueryMethod.getLimit());
-			}
-			if (gemfireQueryMethod.hasTrace() && !QueryString.TRACE_PATTERN.matcher(query).find()) {
-				resolvedQueryString = resolvedQueryString.withTrace();
-			}
-		}
-
-		return resolvedQueryString;
-	}
-
 	boolean isSingleResultNonEntityQuery(QueryMethod method, Collection<?> result) {
+
 		return (!method.isCollectionQuery() && method.getReturnedObjectType() != null
 			&& !Void.TYPE.equals(method.getReturnedObjectType()) && result != null && result.size() == 1);
 	}
@@ -186,6 +176,7 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	 * @see com.gemstone.gemfire.cache.query.SelectResults
 	 */
 	Collection<?> toCollection(final Object source) {
+
 		if (source instanceof SelectResults) {
 			return ((SelectResults) source).asList();
 		}
@@ -201,4 +192,83 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 		return (source.getClass().isArray() ? CollectionUtils.arrayToList(source) : Collections.singletonList(source));
 	}
 
+	protected static class HintQueryPostProcessor extends AbstractQueryPostProcessor<Repository, String> {
+
+		protected static final HintQueryPostProcessor INSTANCE = new HintQueryPostProcessor();
+
+		@Override
+		public String postProcess(QueryMethod queryMethod, String query, Object... arguments) {
+
+			if (queryMethod instanceof GemfireQueryMethod) {
+
+				GemfireQueryMethod gemfireQueryMethod = (GemfireQueryMethod) queryMethod;
+
+				if (gemfireQueryMethod.hasHint() && !QueryString.HINT_PATTERN.matcher(query).find()) {
+					query = QueryString.of(query).withHints(gemfireQueryMethod.getHints()).toString();
+				}
+			}
+
+			return query;
+		}
+	}
+
+	protected static class ImportQueryPostProcessor extends AbstractQueryPostProcessor<Repository, String> {
+
+		protected static final ImportQueryPostProcessor INSTANCE = new ImportQueryPostProcessor();
+
+		@Override
+		public String postProcess(QueryMethod queryMethod, String query, Object... arguments) {
+
+			if (queryMethod instanceof GemfireQueryMethod) {
+
+				GemfireQueryMethod gemfireQueryMethod = (GemfireQueryMethod) queryMethod;
+
+				if (gemfireQueryMethod.hasImport() && !QueryString.IMPORT_PATTERN.matcher(query).find()) {
+					query = QueryString.of(query).withImport(gemfireQueryMethod.getImport()).toString();
+				}
+			}
+
+			return query;
+		}
+	}
+
+	protected static class LimitQueryPostProcessor extends AbstractQueryPostProcessor<Repository, String> {
+
+		protected static final LimitQueryPostProcessor INSTANCE = new LimitQueryPostProcessor();
+
+		@Override
+		public String postProcess(QueryMethod queryMethod, String query, Object... arguments) {
+
+			if (queryMethod instanceof  GemfireQueryMethod) {
+
+				GemfireQueryMethod gemfireQueryMethod = (GemfireQueryMethod) queryMethod;
+
+				if (gemfireQueryMethod.hasLimit() && !QueryString.LIMIT_PATTERN.matcher(query).find()) {
+					query = QueryString.of(query).withLimit(gemfireQueryMethod.getLimit()).toString();
+				}
+			}
+
+			return query;
+		}
+	}
+
+	protected static class TraceQueryPostProcessor extends AbstractQueryPostProcessor<Repository, String> {
+
+		protected static final TraceQueryPostProcessor INSTANCE = new TraceQueryPostProcessor();
+
+		@Override
+		public String postProcess(QueryMethod queryMethod, String query, Object... arguments) {
+
+			if (queryMethod instanceof GemfireQueryMethod) {
+
+				GemfireQueryMethod gemfireQueryMethod = (GemfireQueryMethod) queryMethod;
+
+				if (gemfireQueryMethod.hasTrace() && !QueryString.TRACE_PATTERN.matcher(query).find()) {
+					query = QueryString.of(query).withTrace().toString();
+				}
+			}
+
+			return query;
+		}
+	}
 }
