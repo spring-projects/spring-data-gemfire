@@ -22,10 +22,11 @@ package org.springframework.data.gemfire.repository.cdi;
  * supporting additional data access (CRUD) operations on people.
  *
  * @author John Blum
+ * @author Mark Paluch
  * @see org.springframework.data.gemfire.repository.cdi.CustomPersonRepository
  * @since 1.8.0
  */
-public class SamplePersonRepositoryImpl implements CustomPersonRepository {
+public class CustomPersonRepositoryImpl implements CustomPersonRepository {
 
 	public int returnOne() {
 		return 1;

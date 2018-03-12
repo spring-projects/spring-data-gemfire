@@ -335,7 +335,7 @@ public class GemfireRepositoryBeanTest {
 		};
 
 		GemfireRepository<Person, Long> gemfireRepository =
-			repositoryBean.create(null, PersonRepository.class, Optional.empty());
+			repositoryBean.create(null, PersonRepository.class);
 
 		assertThat(gemfireRepository, is(notNullValue()));
 		assertThat(repositoryProxyPostProcessed.get(), is(true));

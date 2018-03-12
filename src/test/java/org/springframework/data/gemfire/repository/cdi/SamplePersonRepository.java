@@ -26,9 +26,10 @@ import org.springframework.data.gemfire.repository.sample.Person;
  * operations on instances of {@link Person}.
  *
  * @author John Blum
+ * @author Mark Paluch
  * @see org.springframework.data.gemfire.repository.GemfireRepository
  * @see org.springframework.data.gemfire.repository.cdi.CustomPersonRepository
- * @see org.springframework.data.gemfire.repository.cdi.SamplePersonRepositoryImpl
+ * @see CustomPersonRepositoryImpl
  * @see org.springframework.data.gemfire.repository.sample.Person
  * @since 1.8.0
  */

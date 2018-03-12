@@ -143,18 +143,11 @@ class GemfireRepositoryBean<T> extends CdiRepositoryBean<T> {
 	 * @param creationalContext operations used by the {@link javax.enterprise.context.spi.Contextual} implementation
 	 * during creation of the bean instance.
 	 * @param repositoryType the actual class type of the SD (GemFire) Repository.
-	 * @param customImplementation the supporting custom Repository implementing class.
-	 * @return a factory used to create instance of {@link org.springframework.data.gemfire.repository.GemfireRepository}.
 	 * @see javax.enterprise.context.spi.Contextual#create(javax.enterprise.context.spi.CreationalContext)
 	 * @see #newGemfireRepositoryFactory()
 	 */
 	@Override
-	@SuppressWarnings("all")
-	protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType,
-			Optional<Object> customImplementation) {
-
-		return (customImplementation.isPresent()
-			? newGemfireRepositoryFactory().getRepository(repositoryType, customImplementation.get())
-			: newGemfireRepositoryFactory().getRepository(repositoryType));
+	protected T create(CreationalContext<T> creationalContext, Class<T> repositoryType) {
+		return create(this::newGemfireRepositoryFactory, repositoryType);
 	}
 }
