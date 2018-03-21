@@ -63,24 +63,15 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
-<<<<<<< HEAD
- * Abstract base class and Spring {@link FactoryBean} for constructing and initializing a GemFire {@link Region}.
-=======
  * Abstract Spring {@link FactoryBean} base class extended by other SDG {@link FactoryBean FactoryBeans} used to
  * construct, configure and initialize peer {@link Region Regions}.
  *
  * This {@link FactoryBean} allows for very easy and flexible creation of peer {@link Region}.
  * For client {@link Region Regions}, however, see the {@link ClientRegionFactoryBean}.
->>>>>>> c22ebe6... DATAGEODE-12 - Introduce Spring Configurers to flexibly alter Spring Data GemFire configuration when using Annotation config.
  *
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum
-<<<<<<< HEAD
- * @see org.springframework.beans.factory.DisposableBean
- * @see org.springframework.context.SmartLifecycle
- * @see org.springframework.data.gemfire.RegionLookupFactoryBean
-=======
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.CacheListener
  * @see org.apache.geode.cache.CacheLoader
@@ -100,7 +91,6 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.data.gemfire.RegionLookupFactoryBean
  * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
->>>>>>> c22ebe6... DATAGEODE-12 - Introduce Spring Configurers to flexibly alter Spring Data GemFire configuration when using Annotation config.
  */
 @SuppressWarnings("unused")
 public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
@@ -968,8 +958,6 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 
 	/**
 	 * @inheritDoc
-<<<<<<< HEAD
-=======
 	 */
 	@Override
 	public void stop(Runnable callback) {
@@ -979,7 +967,6 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 
 	/**
 	 * @inheritDoc
->>>>>>> fffb2b0... SGF-547 - Configure Eviction with annotations.
 	 */
 	@Override
 	public void stop() {

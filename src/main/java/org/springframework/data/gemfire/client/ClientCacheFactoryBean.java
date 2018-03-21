@@ -426,15 +426,11 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	}
 
 	/**
-<<<<<<< HEAD
-	 * @inheritDoc
-=======
 	 * Null-safe internal method used to close the {@link ClientCache} and preserve durability.
 	 *
 	 * @param cache {@link GemFireCache} to close.
 	 * @see org.apache.geode.cache.client.ClientCache#close(boolean)
 	 * @see #isKeepAlive()
->>>>>>> c22ebe6... DATAGEODE-12 - Introduce Spring Configurers to flexibly alter Spring Data GemFire configuration when using Annotation config.
 	 */
 	@Override
 	protected void close(GemFireCache cache) {
@@ -442,14 +438,10 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	}
 
 	/**
-<<<<<<< HEAD
-	 * @inheritDoc
-=======
 	 * Returns the {@link Class} type of the {@link GemFireCache} produced by this {@link ClientCacheFactoryBean}.
 	 *
 	 * @return the {@link Class} type of the {@link GemFireCache} produced by this {@link ClientCacheFactoryBean}.
 	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
->>>>>>> c22ebe6... DATAGEODE-12 - Introduce Spring Configurers to flexibly alter Spring Data GemFire configuration when using Annotation config.
 	 */
 	@Override
 	@SuppressWarnings("unchecked")

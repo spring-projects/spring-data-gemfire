@@ -41,7 +41,6 @@ public class GemfirePersistentProperty extends AnnotationBasedPersistentProperty
 
 	protected static final Set<String> SUPPORTED_IDENTIFIER_NAMES = asSet("id");
 
-
 	/**
 	 * Constructs an instance of {@link GemfirePersistentProperty} initialized with entity persistent property
 	 * information (meta-data).
@@ -57,6 +56,7 @@ public class GemfirePersistentProperty extends AnnotationBasedPersistentProperty
 	 */
 	public GemfirePersistentProperty(Property property, PersistentEntity<?, GemfirePersistentProperty> owner,
 			SimpleTypeHolder simpleTypeHolder) {
+
 		super(property, owner, simpleTypeHolder);
 	}
 

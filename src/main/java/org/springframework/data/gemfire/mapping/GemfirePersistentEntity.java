@@ -76,6 +76,7 @@ public class GemfirePersistentEntity<T> extends BasicPersistentEntity<T, Gemfire
 
 	/* (non-Javadoc) */
 	protected static String getAnnotationAttributeStringValue(Annotation annotation, String attributeName) {
+
 		return AnnotationAttributes.fromMap(AnnotationUtils.getAnnotationAttributes(annotation))
 			.getString(attributeName);
 	}
