@@ -23,7 +23,6 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 
 import org.apache.geode.cache.Region;
-import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.mapping.GemfirePersistentEntity;
 import org.springframework.data.gemfire.mapping.GemfirePersistentProperty;

@@ -70,8 +70,7 @@ public class GemfireTemplate extends GemfireAccessor implements GemfireOperation
 
 	private Region<?, ?> regionProxy;
 
-	public GemfireTemplate() {
-	}
+	public GemfireTemplate() { }
 
 	public <K, V> GemfireTemplate(Region<K, V> region) {
 		setRegion(region);
