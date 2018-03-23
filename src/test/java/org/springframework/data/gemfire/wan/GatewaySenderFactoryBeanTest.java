@@ -65,17 +65,17 @@ public class GatewaySenderFactoryBeanTest {
 		return mockGatewaySenderFactory;
 	}
 
-	protected void verifyExpectations(final GatewaySenderFactoryBean factoryBean,
-			final GatewaySenderFactory mockGatewaySenderFactory) throws Exception {
+	protected void verifyExpectations(GatewaySenderFactoryBean factoryBean,
+			GatewaySenderFactory mockGatewaySenderFactory) throws Exception {
+
 		Boolean parallel = TestUtils.readField("parallel", factoryBean);
 
 		verify(mockGatewaySenderFactory).setParallel(eq(Boolean.TRUE.equals(parallel)));
 
-		String orderPolicy = TestUtils.readField("orderPolicy", factoryBean);
+		GatewaySender.OrderPolicy orderPolicy = TestUtils.readField("orderPolicy", factoryBean);
 
 		if (orderPolicy != null) {
-			verify(mockGatewaySenderFactory).setOrderPolicy(
-				eq(GatewaySender.OrderPolicy.valueOf(orderPolicy.toUpperCase())));
+			verify(mockGatewaySenderFactory).setOrderPolicy(eq(orderPolicy));
 		}
 
 		Integer dispatcherThreads = TestUtils.readField("dispatcherThreads", factoryBean);
@@ -165,7 +165,7 @@ public class GatewaySenderFactoryBeanTest {
 			factoryBean.doInit();
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Order Policy cannot be used with a Parallel Gateway Sender Queue.", expected.getMessage());
+			assertEquals("OrderPolicy cannot be used with a Parallel GatewaySender", expected.getMessage());
 			throw expected;
 		}
 	}
@@ -194,7 +194,9 @@ public class GatewaySenderFactoryBeanTest {
 
 	@Test
 	public void testGatewaySenderWithOrderPolicyAndDispatcherThreads() throws Exception {
-		GatewaySenderFactory mockGatewaySenderFactory = createMockGatewaySenderFactory("g5", 42);
+
+		GatewaySenderFactory mockGatewaySenderFactory =
+			createMockGatewaySenderFactory("g5", 42);
 
 		GatewaySenderFactoryBean factoryBean = new GatewaySenderFactoryBean(
 			createMockCacheWithGatewayInfrastructure(mockGatewaySenderFactory));
@@ -256,5 +258,4 @@ public class GatewaySenderFactoryBeanTest {
 		assertEquals("g7", gatewaySender.getId());
 		assertEquals(51, gatewaySender.getRemoteDSId());
 	}
-
 }

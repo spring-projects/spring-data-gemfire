@@ -13,21 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.wan;
+
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeList;
+
+import java.util.List;
+import java.util.Optional;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
+import org.apache.geode.cache.wan.GatewayEventFilter;
+import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.util.Assert;
 
 /**
- * FactoryBean for creating GemFire {@link AsyncEventQueue}s.
+ * Spring {@link FactoryBean} for creating Apache Geode/Pivotal GemFire {@link AsyncEventQueue AsyncEventQueues}.
  *
  * @author David Turanski
  * @author John Blum
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.asyncqueue.AsyncEventListener
+ * @see org.apache.geode.cache.asyncqueue.AsyncEventQueue
+ * @see org.springframework.data.gemfire.wan.AbstractWANComponentFactoryBean
  */
 @SuppressWarnings("unused")
 public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<AsyncEventQueue> {
@@ -38,6 +53,7 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 
 	private Boolean batchConflationEnabled;
 	private Boolean diskSynchronous;
+	private Boolean forwardExpirationDestroy;
 	private Boolean parallel;
 	private Boolean persistent;
 
@@ -46,8 +62,13 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	private Integer dispatcherThreads;
 	private Integer maximumQueueMemory;
 
+	private GatewayEventSubstitutionFilter gatewayEventSubstitutionFilter;
+
+	private GatewaySender.OrderPolicy orderPolicy;
+
+	private List<GatewayEventFilter> gatewayEventFilters;
+
 	private String diskStoreReference;
-	private String orderPolicy;
 
 	/**
 	 * Constructs an instance of the AsyncEventQueueFactoryBean for creating an GemFire AsyncEventQueue.
@@ -65,77 +86,60 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	 * @param cache the GemFire Cache reference.
 	 * @param asyncEventListener required {@link AsyncEventListener}
 	 */
-	public AsyncEventQueueFactoryBean(final Cache cache, final AsyncEventListener asyncEventListener) {
+	public AsyncEventQueueFactoryBean(Cache cache, AsyncEventListener asyncEventListener) {
+
 		super(cache);
+
 		setAsyncEventListener(asyncEventListener);
 	}
 
 	@Override
 	public AsyncEventQueue getObject() throws Exception {
-		return asyncEventQueue;
+		return this.asyncEventQueue;
 	}
 
 	@Override
 	public Class<?> getObjectType() {
-		return AsyncEventQueue.class;
+		return this.asyncEventQueue != null ? this.asyncEventQueue.getClass() : AsyncEventQueue.class;
 	}
 
 	@Override
 	protected void doInit() {
-		Assert.notNull(this.asyncEventListener, "The AsyncEventListener cannot be null.");
 
-		AsyncEventQueueFactory asyncEventQueueFactory = (this.factory != null ? (AsyncEventQueueFactory) factory
-			: cache.createAsyncEventQueueFactory());
+		Assert.state(this.asyncEventListener != null, "AsyncEventListener must not be null");
 
-		if (batchSize != null) {
-			asyncEventQueueFactory.setBatchSize(batchSize);
-		}
+		AsyncEventQueueFactory asyncEventQueueFactory =
+			this.factory != null ? (AsyncEventQueueFactory) this.factory : this.cache.createAsyncEventQueueFactory();
 
-		if (batchTimeInterval != null) {
-			asyncEventQueueFactory.setBatchTimeInterval(batchTimeInterval);
-		}
-
-		if (batchConflationEnabled != null) {
-			asyncEventQueueFactory.setBatchConflationEnabled(batchConflationEnabled);
-		}
-
-		if (dispatcherThreads != null) {
-			asyncEventQueueFactory.setDispatcherThreads(dispatcherThreads);
-		}
-
-		if (diskStoreReference != null) {
-			asyncEventQueueFactory.setDiskStoreName(diskStoreReference);
-		}
-
-		if (diskSynchronous != null) {
-			asyncEventQueueFactory.setDiskSynchronous(diskSynchronous);
-		}
-
-		if (maximumQueueMemory != null) {
-			asyncEventQueueFactory.setMaximumQueueMemory(maximumQueueMemory);
-		}
+		Optional.ofNullable(this.batchConflationEnabled).ifPresent(asyncEventQueueFactory::setBatchConflationEnabled);
+		Optional.ofNullable(this.batchSize).ifPresent(asyncEventQueueFactory::setBatchSize);
+		Optional.ofNullable(this.batchTimeInterval).ifPresent(asyncEventQueueFactory::setBatchTimeInterval);
+		Optional.ofNullable(this.diskStoreReference).ifPresent(asyncEventQueueFactory::setDiskStoreName);
+		Optional.ofNullable(this.diskSynchronous).ifPresent(asyncEventQueueFactory::setDiskSynchronous);
+		Optional.ofNullable(this.dispatcherThreads).ifPresent(asyncEventQueueFactory::setDispatcherThreads);
+		Optional.ofNullable(this.forwardExpirationDestroy).ifPresent(asyncEventQueueFactory::setForwardExpirationDestroy);
+		Optional.ofNullable(this.gatewayEventSubstitutionFilter).ifPresent(asyncEventQueueFactory::setGatewayEventSubstitutionListener);
+		Optional.ofNullable(this.maximumQueueMemory).ifPresent(asyncEventQueueFactory::setMaximumQueueMemory);
+		Optional.ofNullable(this.persistent).ifPresent(asyncEventQueueFactory::setPersistent);
 
 		asyncEventQueueFactory.setParallel(isParallelEventQueue());
 
-		if (orderPolicy != null) {
-			Assert.isTrue(isSerialEventQueue(), "Order Policy cannot be used with a Parallel Event Queue.");
+		nullSafeList(this.gatewayEventFilters).forEach(asyncEventQueueFactory::addGatewayEventFilter);
 
-			Assert.isTrue(VALID_ORDER_POLICIES.contains(orderPolicy.toUpperCase()), String.format(
-				"The value of Order Policy '$1%s' is invalid.", orderPolicy));
+		if (this.orderPolicy != null) {
 
-			asyncEventQueueFactory.setOrderPolicy(GatewaySender.OrderPolicy.valueOf(orderPolicy.toUpperCase()));
+			Assert.state(isSerialEventQueue(), "OrderPolicy cannot be used with a Parallel AsyncEventQueue");
+
+			asyncEventQueueFactory.setOrderPolicy(this.orderPolicy);
 		}
 
-		if (persistent != null) {
-			asyncEventQueueFactory.setPersistent(persistent);
-		}
-
-		asyncEventQueue = asyncEventQueueFactory.create(getName(), this.asyncEventListener);
+		setAsyncEventQueue(asyncEventQueueFactory.create(getName(), this.asyncEventListener));
 	}
 
 	@Override
 	public void destroy() throws Exception {
-		if (!cache.isClosed()) {
+
+		if (!this.cache.isClosed()) {
 			try {
 				this.asyncEventListener.close();
 			}
@@ -145,22 +149,28 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	}
 
 	public final void setAsyncEventListener(AsyncEventListener listener) {
+
 		Assert.state(this.asyncEventQueue == null,
-			"Setting an AsyncEventListener is not allowed once the AsyncEventQueue has been created.");
+			"Setting an AsyncEventListener is not allowed once the AsyncEventQueue has been created");
+
 		this.asyncEventListener = listener;
 	}
 
 	/**
-	 * @param asyncEventQueue overrides Async Event Queue returned by this FactoryBean.
+	 * Configures the {@link AsyncEventQueue} returned by this {@link FactoryBean}.
+	 *
+	 * @param asyncEventQueue overrides {@link AsyncEventQueue} returned by this {@link FactoryBean}.
+	 * @see org.apache.geode.cache.asyncqueue.AsyncEventQueue
 	 */
 	public void setAsyncEventQueue(AsyncEventQueue asyncEventQueue) {
 		this.asyncEventQueue = asyncEventQueue;
 	}
 
 	/**
-	 * Enable or disable the Async Event Queue's (AEQ) should conflate messages.
+	 * Enable or disable {@link AsyncEventQueue} (AEQ) message conflation.
 	 *
-	 * @param batchConflationEnabled a boolean value indicating whether to conflate queued events.
+	 * @param batchConflationEnabled {@link Boolean} indicating whether to conflate queued events.
+	 * @see org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory#setBatchConflationEnabled(boolean)
 	 */
 	public void setBatchConflationEnabled(Boolean batchConflationEnabled) {
 		this.batchConflationEnabled = batchConflationEnabled;
@@ -171,10 +181,11 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	}
 
 	/**
-	 * Set the Aysync Event Queue's (AEQ) interval between sending batches.
+	 * Configures the {@link AsyncEventQueue} (AEQ) interval between sending batches.
 	 *
-	 * @param batchTimeInterval an integer value indicating the maximum number of milliseconds that can elapse
-	 * between sending batches.
+	 * @param batchTimeInterval {@link Integer} specifying the maximum number of milliseconds
+	 * that can elapse between sending batches.
+	 * @see org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory#setBatchTimeInterval(int)
 	 */
 	public void setBatchTimeInterval(Integer batchTimeInterval) {
 		this.batchTimeInterval = batchTimeInterval;
@@ -185,22 +196,48 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	}
 
 	/**
-	 * Set the Async Event Queue (AEQ) disk write synchronization policy.
+	 * Configures the {@link AsyncEventQueue} (AEQ) disk write synchronization policy.
 	 *
-	 * @param diskSynchronous a boolean value indicating whether disk writes are synchronous.
+	 * @param diskSynchronous boolean value indicating whether disk writes are synchronous.
+	 * @see org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory#setDiskSynchronous(boolean)
 	 */
 	public void setDiskSynchronous(Boolean diskSynchronous) {
 		this.diskSynchronous = diskSynchronous;
 	}
 
 	/**
-	 * Set the number of dispatcher threads used to process Region Events from the associated Async Event Queue (AEQ).
+	 * Configures the number of dispatcher threads used to process Region Events
+	 * from the associated {@link AsyncEventQueue} (AEQ).
 	 *
-	 * @param dispatcherThreads an Integer indicating the number of dispatcher threads used to process Region Events
-	 * from the associated Queue.
+	 * @param dispatcherThreads {@link Integer} specifying the number of dispatcher threads used
+	 * to process {@link Region} events from the associated queue.
+	 * @see org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory#setDispatcherThreads(int)
 	 */
 	public void setDispatcherThreads(Integer dispatcherThreads) {
 		this.dispatcherThreads = dispatcherThreads;
+	}
+
+	/**
+	 * Forwards expiration (action-based) destroy events to the {@link AsyncEventQueue} (AEQ).
+	 *
+	 * By default, destroy events are not added to the AEQ.  Setting this attribute to {@literal true}
+	 * will add all expiration destroy events to the AEQ.
+	 *
+	 * @param forwardExpirationDestroy boolean value indicating whether to forward expiration destroy events.
+	 * @see org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory#setForwardExpirationDestroy(boolean)
+	 * @see org.apache.geode.cache.ExpirationAttributes#getAction()
+	 * @see org.apache.geode.cache.ExpirationAction#DESTROY
+	 */
+	public void setForwardExpirationDestroy(Boolean forwardExpirationDestroy) {
+		this.forwardExpirationDestroy = forwardExpirationDestroy;
+	}
+
+	public void setGatewayEventFilters(List<GatewayEventFilter> eventFilters) {
+		this.gatewayEventFilters = eventFilters;
+	}
+
+	public void setGatewayEventSubstitutionFilter(GatewayEventSubstitutionFilter eventSubstitutionFilter) {
+		this.gatewayEventSubstitutionFilter = eventSubstitutionFilter;
 	}
 
 	public void setMaximumQueueMemory(Integer maximumQueueMemory) {
@@ -208,13 +245,20 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	}
 
 	/**
-	 * Set the Async Event Queue (AEQ) ordering policy (e.g. KEY, PARTITION, THREAD). When dispatcher threads
-	 * are greater than 1, the ordering policy configures the way in which multiple dispatcher threads
-	 * process Region events from the queue.
+	 * Configures the {@link AsyncEventQueue} (AEQ) ordering policy (e.g. {@literal KEY}, {@literal PARTITION},
+	 * {@literal THREAD}).
 	 *
-	 * @param orderPolicy a String to indicate the AEQ order policy.
+	 * When dispatcher threads are greater than one, the ordering policy configures the way in which
+	 * multiple dispatcher threads process Region events from the queue.
+	 *
+	 * @param orderPolicy {@link String} specifying the name of the AEQ order policy.
+	 * @see org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory#setOrderPolicy(GatewaySender.OrderPolicy)
 	 */
 	public void setOrderPolicy(String orderPolicy) {
+		setOrderPolicy(GatewaySender.OrderPolicy.valueOf(String.valueOf(orderPolicy).toUpperCase()));
+	}
+
+	public void setOrderPolicy(GatewaySender.OrderPolicy orderPolicy) {
 		this.orderPolicy = orderPolicy;
 	}
 
@@ -233,5 +277,4 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	public void setPersistent(Boolean persistent) {
 		this.persistent = persistent;
 	}
-
 }

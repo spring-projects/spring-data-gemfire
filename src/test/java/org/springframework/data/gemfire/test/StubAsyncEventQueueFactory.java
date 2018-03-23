@@ -49,14 +49,15 @@ public class StubAsyncEventQueueFactory implements AsyncEventQueueFactory {
 
 	private GatewayEventSubstitutionFilter<?, ?> gatewayEventSubstitutionFilter;
 
-	private OrderPolicy orderPolicy;
-
 	private List<GatewayEventFilter> gatewayEventFilters = new ArrayList<>();
+
+	private OrderPolicy orderPolicy;
 
 	private String diskStoreName;
 
 	@Override
-	public AsyncEventQueue create(final String name, final AsyncEventListener listener) {
+	public AsyncEventQueue create(String name, AsyncEventListener listener) {
+
 		when(asyncEventQueue.getAsyncEventListener()).thenReturn(listener);
 		when(asyncEventQueue.getBatchSize()).thenReturn(this.batchSize);
 		when(asyncEventQueue.getDiskStoreName()).thenReturn(this.diskStoreName);
@@ -76,6 +77,12 @@ public class StubAsyncEventQueueFactory implements AsyncEventQueueFactory {
 		return this.asyncEventQueue;
 	}
 
+	//The following added in 7.0.1
+	public AsyncEventQueueFactory setBatchConflationEnabled(boolean arg0) {
+		this.batchConflationEnabled = arg0;
+		return this;
+	}
+
 	@Override
 	public AsyncEventQueueFactory setBatchSize(int batchSize) {
 		this.batchSize = batchSize;
@@ -83,37 +90,14 @@ public class StubAsyncEventQueueFactory implements AsyncEventQueueFactory {
 	}
 
 	@Override
+	public AsyncEventQueueFactory setBatchTimeInterval(int interval) {
+		this.batchTimeInterval = interval;
+		return this;
+	}
+
+	@Override
 	public AsyncEventQueueFactory setDiskStoreName(String diskStoreName) {
 		this.diskStoreName = diskStoreName;
-		return this;
-	}
-
-	@Override
-	public AsyncEventQueueFactory setMaximumQueueMemory(int maxQueueMemory) {
-		this.maxQueueMemory = maxQueueMemory;
-		return this;
-	}
-
-	@Override
-	public AsyncEventQueueFactory setPersistent(boolean persistent) {
-		this.persistent = persistent;
-		return this;
-	}
-
-	@Override
-	public AsyncEventQueueFactory setParallel(boolean parallel) {
-		this.parallel = parallel;
-		return this;
-	}
-
-	//The following added in 7.0.1
-	public AsyncEventQueueFactory setBatchConflationEnabled(boolean arg0) {
-		this.batchConflationEnabled = arg0;
-		return this;
-	}
-
-	public AsyncEventQueueFactory setBatchTimeInterval(int arg0) {
-		this.batchTimeInterval = arg0;
 		return this;
 	}
 
@@ -127,8 +111,36 @@ public class StubAsyncEventQueueFactory implements AsyncEventQueueFactory {
 		return this;
 	}
 
+	@Override
+	public AsyncEventQueueFactory setForwardExpirationDestroy(boolean forward) {
+		this.forwardExpirationDestroy = forward;
+		return this;
+	}
+
+	public AsyncEventQueueFactory setGatewayEventSubstitutionListener(final GatewayEventSubstitutionFilter gatewayEventSubstitutionFilter) {
+		this.gatewayEventSubstitutionFilter = gatewayEventSubstitutionFilter;
+		return this;
+	}
+
+	public AsyncEventQueueFactory setMaximumQueueMemory(int maxQueueMemory) {
+		this.maxQueueMemory = maxQueueMemory;
+		return this;
+	}
+
 	public AsyncEventQueueFactory setOrderPolicy(OrderPolicy arg0) {
 		this.orderPolicy = arg0;
+		return this;
+	}
+
+	@Override
+	public AsyncEventQueueFactory setParallel(boolean parallel) {
+		this.parallel = parallel;
+		return this;
+	}
+
+	@Override
+	public AsyncEventQueueFactory setPersistent(boolean persistent) {
+		this.persistent = persistent;
 		return this;
 	}
 
@@ -141,18 +153,6 @@ public class StubAsyncEventQueueFactory implements AsyncEventQueueFactory {
 	@Override
 	public AsyncEventQueueFactory removeGatewayEventFilter(final GatewayEventFilter gatewayEventFilter) {
 		gatewayEventFilters.remove(gatewayEventFilter);
-		return this;
-	}
-
-	@Override
-	public AsyncEventQueueFactory setGatewayEventSubstitutionListener(final GatewayEventSubstitutionFilter gatewayEventSubstitutionFilter) {
-		this.gatewayEventSubstitutionFilter = gatewayEventSubstitutionFilter;
-		return this;
-	}
-
-	@Override
-	public AsyncEventQueueFactory setForwardExpirationDestroy(boolean forward) {
-		this.forwardExpirationDestroy = forward;
 		return this;
 	}
 }

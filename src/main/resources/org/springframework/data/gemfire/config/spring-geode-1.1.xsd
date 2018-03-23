@@ -2931,8 +2931,7 @@ An AsyncEventListener bean definition for this AsyncEventQueue. (requires Gemfir
 				</xsd:annotation>
 				<xsd:complexType>
 					<xsd:sequence>
-						<xsd:any namespace="##other" processContents="skip"
-								 minOccurs="0" maxOccurs="unbounded">
+						<xsd:any namespace="##other" processContents="skip" minOccurs="0" maxOccurs="unbounded">
 							<xsd:annotation>
 								<xsd:documentation><![CDATA[
 Inner bean definition of the async event listener
@@ -2950,6 +2949,8 @@ use inner bean declarations.
 					</xsd:attribute>
 				</xsd:complexType>
 			</xsd:element>
+			<xsd:element name="event-filter" type="gatewayEventFilterType" minOccurs="0" maxOccurs="1"/>
+			<xsd:element name="event-substitution-filter" type="gatewayEventSubstitutionFilterType" minOccurs="0" maxOccurs="1"/>
 		</xsd:sequence>
 		<xsd:attribute name="name" type="xsd:string" use="optional">
 			<xsd:annotation>

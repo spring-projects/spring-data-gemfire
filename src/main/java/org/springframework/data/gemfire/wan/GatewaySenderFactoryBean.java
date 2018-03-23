@@ -46,18 +46,16 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 
 	private int remoteDistributedSystemId;
 
-	private GatewaySender gatewaySender;
-
-	private List<GatewayEventFilter> eventFilters;
-
-	private List<GatewayTransportFilter> transportFilters;
-
 	private Boolean diskSynchronous;
 	private Boolean batchConflationEnabled;
 	private Boolean parallel;
 	private Boolean persistent;
 
 	private GatewayEventSubstitutionFilter eventSubstitutionFilter;
+
+	private GatewaySender gatewaySender;
+
+	private GatewaySender.OrderPolicy orderPolicy;
 
 	private Integer alertThreshold;
 	private Integer batchSize;
@@ -67,8 +65,11 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 	private Integer socketBufferSize;
 	private Integer socketReadTimeout;
 
+	private List<GatewayEventFilter> eventFilters;
+
+	private List<GatewayTransportFilter> transportFilters;
+
 	private String diskStoreReference;
-	private String orderPolicy;
 
 	/**
 	 * Constructs an instance of the {@link GatewaySenderFactoryBean} class initialized with a reference to
@@ -86,8 +87,9 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 	 */
 	@Override
 	protected void doInit() {
-		GatewaySenderFactory gatewaySenderFactory = (this.factory != null ? (GatewaySenderFactory) factory
-			: cache.createGatewaySenderFactory());
+
+		GatewaySenderFactory gatewaySenderFactory =
+			this.factory != null ? (GatewaySenderFactory) this.factory : this.cache.createGatewaySenderFactory();
 
 		if (alertThreshold != null) {
 			gatewaySenderFactory.setAlertThreshold(alertThreshold);
@@ -132,12 +134,10 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 		}
 
 		if (orderPolicy != null) {
-			Assert.isTrue(isSerialGatewaySender(), "Order Policy cannot be used with a Parallel Gateway Sender Queue.");
 
-			Assert.isTrue(VALID_ORDER_POLICIES.contains(orderPolicy.toUpperCase()),
-				String.format("The value for Order Policy '%s' is invalid.", orderPolicy));
+			Assert.isTrue(isSerialGatewaySender(), "OrderPolicy cannot be used with a Parallel GatewaySender");
 
-			gatewaySenderFactory.setOrderPolicy(GatewaySender.OrderPolicy.valueOf(orderPolicy.toUpperCase()));
+			gatewaySenderFactory.setOrderPolicy(this.orderPolicy);
 		}
 
 		gatewaySenderFactory.setParallel(isParallelGatewaySender());
@@ -162,20 +162,14 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
         gatewaySender = wrapper;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	public GatewaySender getObject() throws Exception {
-		return gatewaySender;
+		return this.gatewaySender;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	public Class<?> getObjectType() {
-		return (gatewaySender != null ? gatewaySender.getClass() : GatewaySender.class);
+		return this.gatewaySender != null ? this.gatewaySender.getClass() : GatewaySender.class;
 	}
 
 	public void setAlertThreshold(Integer alertThreshold) {
@@ -235,6 +229,10 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 	}
 
 	public void setOrderPolicy(String orderPolicy) {
+		setOrderPolicy(GatewaySender.OrderPolicy.valueOf(String.valueOf(orderPolicy).toUpperCase()));
+	}
+
+	public void setOrderPolicy(GatewaySender.OrderPolicy orderPolicy) {
 		this.orderPolicy = orderPolicy;
 	}
 
