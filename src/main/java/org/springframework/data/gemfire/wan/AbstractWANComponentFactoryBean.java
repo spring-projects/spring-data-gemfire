@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.data.gemfire.wan;
 
-import java.util.Arrays;
-import java.util.List;
+package org.springframework.data.gemfire.wan;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,35 +27,34 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * Base class for GemFire WAN Gateway component factory beans.
+ * Abstract base class for WAN Gateway components.
  *
  * @author David Turanski
  * @author John Blum
+ * @see org.apache.geode.cache.Cache
  * @see org.springframework.beans.factory.BeanNameAware
  * @see org.springframework.beans.factory.DisposableBean
  * @see org.springframework.beans.factory.FactoryBean
  * @see org.springframework.beans.factory.InitializingBean
  */
-public abstract class AbstractWANComponentFactoryBean<T> implements BeanNameAware, FactoryBean<T>,
-		InitializingBean, DisposableBean {
-
-	protected static final List<String> VALID_ORDER_POLICIES = Arrays.asList("KEY", "PARTITION", "THREAD");
-
-	protected Log log = LogFactory.getLog(getClass());
+public abstract class AbstractWANComponentFactoryBean<T>
+		implements BeanNameAware, DisposableBean, FactoryBean<T>, InitializingBean {
 
 	protected final Cache cache;
+
+	protected final Log log = LogFactory.getLog(getClass());
 
 	protected Object factory;
 
 	private String beanName;
 	private String name;
 
-	protected AbstractWANComponentFactoryBean(final Cache cache) {
+	protected AbstractWANComponentFactoryBean(Cache cache) {
 		this.cache = cache;
 	}
 
 	@Override
-	public final void setBeanName(final String beanName) {
+	public void setBeanName(String beanName) {
 		this.beanName = beanName;
 	}
 
@@ -65,19 +62,13 @@ public abstract class AbstractWANComponentFactoryBean<T> implements BeanNameAwar
 		this.factory = factory;
 	}
 
-	public void setName(final String name) {
+	public void setName(String name) {
 		this.name = name;
 	}
 
 	public String getName() {
-		return (StringUtils.hasText(name) ? name : beanName);
+		return StringUtils.hasText(this.name) ? this.name : this.beanName;
 	}
-
-	@Override
-	public abstract T getObject() throws Exception;
-
-	@Override
-	public abstract Class<?> getObjectType();
 
 	@Override
 	public final boolean isSingleton() {
@@ -86,15 +77,16 @@ public abstract class AbstractWANComponentFactoryBean<T> implements BeanNameAwar
 
 	@Override
 	public final void afterPropertiesSet() throws Exception {
-		Assert.notNull(cache, "Cache must not be null.");
-		Assert.notNull(getName(), "Name must not be null.");
+
+		Assert.notNull(this.cache, "Cache must not be null");
+		Assert.notNull(getName(), "Name must not be null");
+
 		doInit();
 	}
 
 	protected abstract void doInit() throws Exception;
 
 	@Override
-	public void destroy() throws Exception {
-	}
+	public void destroy() throws Exception { }
 
 }

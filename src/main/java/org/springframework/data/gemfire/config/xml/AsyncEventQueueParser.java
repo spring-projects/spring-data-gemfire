@@ -20,7 +20,6 @@ import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.util.SpringUtils;
 import org.springframework.data.gemfire.wan.AsyncEventQueueFactoryBean;
 import org.springframework.util.StringUtils;
@@ -50,34 +49,50 @@ class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 	 */
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+
 		builder.setLazyInit(false);
 
 		parseAsyncEventListener(element, parserContext, builder);
 		parseCache(element, builder);
 		parseDiskStore(element, builder);
 
+		ParsingUtils.setPropertyValue(element, builder, "enable-batch-conflation", "batchConflationEnabled");
+		ParsingUtils.setPropertyValue(element, builder, "batch-conflation-enabled");
 		ParsingUtils.setPropertyValue(element, builder, "batch-size");
+		ParsingUtils.setPropertyValue(element, builder, "batch-time-interval");
+		ParsingUtils.setPropertyValue(element, builder, "disk-synchronous");
+		ParsingUtils.setPropertyValue(element, builder, "dispatcher-threads");
+		ParsingUtils.setPropertyValue(element, builder, "forward-expiration-destroy");
 		ParsingUtils.setPropertyValue(element, builder, "maximum-queue-memory");
+		ParsingUtils.setPropertyValue(element, builder, "order-policy");
 		ParsingUtils.setPropertyValue(element, builder, "parallel");
 		ParsingUtils.setPropertyValue(element, builder, "persistent");
 
-		if (GemfireUtils.GEMFIRE_VERSION.compareTo("7.0.1") >= 0) {
-			ParsingUtils.setPropertyValue(element, builder, "enable-batch-conflation", "batchConflationEnabled");
-			ParsingUtils.setPropertyValue(element, builder, "batch-conflation-enabled");
-			ParsingUtils.setPropertyValue(element, builder, "batch-time-interval");
-			ParsingUtils.setPropertyValue(element, builder, "disk-synchronous");
-			ParsingUtils.setPropertyValue(element, builder, "dispatcher-threads");
-			ParsingUtils.setPropertyValue(element, builder, "order-policy");
+		Element eventFilterElement = DomUtils.getChildElementByTagName(element, "event-filter");
+
+		if (eventFilterElement != null) {
+			builder.addPropertyValue("gatewayEventFilters",
+				ParsingUtils.parseRefOrNestedBeanDeclaration(eventFilterElement, parserContext, builder));
+		}
+
+		Element eventSubstitutionFilterElement =
+			DomUtils.getChildElementByTagName(element, "event-substitution-filter");
+
+		if (eventSubstitutionFilterElement != null) {
+			builder.addPropertyValue("gatewayEventSubstitutionFilter",
+				ParsingUtils.parseRefOrSingleNestedBeanDeclaration(eventSubstitutionFilterElement, parserContext, builder));
 		}
 
 		ParsingUtils.setPropertyValue(element, builder, NAME_ATTRIBUTE);
 
 		if (!StringUtils.hasText(element.getAttribute(NAME_ATTRIBUTE))) {
 			if (element.getParentNode().getNodeName().endsWith("region")) {
+
 				Element region = (Element) element.getParentNode();
 
 				String regionName = StringUtils.hasText(region.getAttribute(NAME_ATTRIBUTE))
-					? region.getAttribute(NAME_ATTRIBUTE) : region.getAttribute(ID_ATTRIBUTE);
+					? region.getAttribute(NAME_ATTRIBUTE)
+					: region.getAttribute(ID_ATTRIBUTE);
 
 				int index = 0;
 
@@ -92,13 +107,12 @@ class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 		}
 	}
 
-	/* (non-Javadoc) */
 	private void parseAsyncEventListener(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+
 		Element asyncEventListenerElement = DomUtils.getChildElementByTagName(element, "async-event-listener");
 
-		Object asyncEventListener = ParsingUtils.parseRefOrSingleNestedBeanDeclaration(asyncEventListenerElement,
-			parserContext,
-			builder);
+		Object asyncEventListener =
+			ParsingUtils.parseRefOrSingleNestedBeanDeclaration(asyncEventListenerElement, parserContext, builder);
 
 		builder.addPropertyValue("asyncEventListener", asyncEventListener);
 
@@ -109,15 +123,16 @@ class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 
 	/* (non-Javadoc) */
 	private void parseCache(Element element, BeanDefinitionBuilder builder) {
+
 		String cacheRefAttribute = element.getAttribute("cache-ref");
-		String cacheName = SpringUtils.defaultIfEmpty(cacheRefAttribute,
-			GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
+		String cacheName = SpringUtils.defaultIfEmpty(cacheRefAttribute, GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
 
 		builder.addConstructorArgReference(cacheName);
 	}
 
 	/* (non-Javadoc) */
 	private void parseDiskStore(Element element, BeanDefinitionBuilder builder) {
+
 		ParsingUtils.setPropertyValue(element, builder, "disk-store-ref");
 
 		String diskStoreRef = element.getAttribute("disk-store-ref");
