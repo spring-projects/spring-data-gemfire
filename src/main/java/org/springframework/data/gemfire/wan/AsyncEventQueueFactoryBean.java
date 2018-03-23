@@ -13,9 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.wan;
 
-import org.springframework.util.Assert;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeList;
+
+import java.util.List;
 
 import com.gemstone.gemfire.cache.Cache;
 import com.gemstone.gemfire.cache.CacheClosedException;
@@ -23,10 +26,14 @@ import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
 import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueueFactory;
 import com.gemstone.gemfire.cache.util.Gateway;
+import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
+import com.gemstone.gemfire.cache.wan.GatewayEventSubstitutionFilter;
+
+import org.springframework.util.Assert;
 
 /**
  * FactoryBean for creating GemFire {@link AsyncEventQueue}s.
- * 
+ *
  * @author David Turanski
  * @author John Blum
  */
@@ -42,51 +49,56 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	private Boolean parallel;
 	private Boolean persistent;
 
+	private GatewayEventSubstitutionFilter gatewayEventSubstitutionFilter;
+
 	private Integer batchSize;
 	private Integer batchTimeInterval;
 	private Integer dispatcherThreads;
 	private Integer maximumQueueMemory;
+
+	private List<GatewayEventFilter> gatewayEventFilters;
 
 	private String diskStoreReference;
 	private String orderPolicy;
 
 	/**
 	 * Constructs an instance of the AsyncEventQueueFactoryBean for creating an GemFire AsyncEventQueue.
-	 * 
+	 *
 	 * @param cache the GemFire Cache reference.
 	 * @see #AsyncEventQueueFactoryBean(com.gemstone.gemfire.cache.Cache, com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener)
 	 */
-	public AsyncEventQueueFactoryBean(final Cache cache) {
+	public AsyncEventQueueFactoryBean(Cache cache) {
 		this(cache, null);
 	}
 
 	/**
 	 * Constructs an instance of the AsyncEventQueueFactoryBean for creating an GemFire AsyncEventQueue.
-	 * 
+	 *
 	 * @param cache the GemFire Cache reference.
 	 * @param asyncEventListener required {@link AsyncEventListener}
 	 */
-	public AsyncEventQueueFactoryBean(final Cache cache, final AsyncEventListener asyncEventListener) {
+	public AsyncEventQueueFactoryBean(Cache cache, AsyncEventListener asyncEventListener) {
 		super(cache);
 		setAsyncEventListener(asyncEventListener);
 	}
 
 	@Override
 	public AsyncEventQueue getObject() throws Exception {
-		return asyncEventQueue;
+		return this.asyncEventQueue;
 	}
 
 	@Override
 	public Class<?> getObjectType() {
-		return AsyncEventQueue.class;
+		return this.asyncEventQueue != null ? this.asyncEventQueue.getClass() : AsyncEventQueue.class;
 	}
 
 	@Override
 	protected void doInit() {
+
 		Assert.notNull(this.asyncEventListener, "The AsyncEventListener cannot be null.");
 
-		AsyncEventQueueFactory asyncEventQueueFactory = (this.factory != null ? (AsyncEventQueueFactory) factory
-			: cache.createAsyncEventQueueFactory());
+		AsyncEventQueueFactory asyncEventQueueFactory =
+			this.factory != null ? (AsyncEventQueueFactory) this.factory : this.cache.createAsyncEventQueueFactory();
 
 		if (batchSize != null) {
 			asyncEventQueueFactory.setBatchSize(batchSize);
@@ -112,6 +124,14 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 			asyncEventQueueFactory.setDiskSynchronous(diskSynchronous);
 		}
 
+		for (GatewayEventFilter gatewayEventFilter : nullSafeList(gatewayEventFilters)) {
+			asyncEventQueueFactory.addGatewayEventFilter(gatewayEventFilter);
+		}
+
+		if (gatewayEventSubstitutionFilter != null) {
+			asyncEventQueueFactory.setGatewayEventSubstitutionListener(gatewayEventSubstitutionFilter);
+		}
+
 		if (maximumQueueMemory != null) {
 			asyncEventQueueFactory.setMaximumQueueMemory(maximumQueueMemory);
 		}
@@ -119,6 +139,7 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 		asyncEventQueueFactory.setParallel(isParallelEventQueue());
 
 		if (orderPolicy != null) {
+
 			Assert.isTrue(isSerialEventQueue(), "Order Policy cannot be used with a Parallel Event Queue.");
 
 			Assert.isTrue(VALID_ORDER_POLICIES.contains(orderPolicy.toUpperCase()), String.format(
@@ -131,12 +152,13 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 			asyncEventQueueFactory.setPersistent(persistent);
 		}
 
-		asyncEventQueue = asyncEventQueueFactory.create(getName(), this.asyncEventListener);
+		this.asyncEventQueue = asyncEventQueueFactory.create(getName(), this.asyncEventListener);
 	}
 
 	@Override
 	public void destroy() throws Exception {
-		if (!cache.isClosed()) {
+
+		if (!this.cache.isClosed()) {
 			try {
 				this.asyncEventListener.close();
 			}
@@ -146,8 +168,10 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	}
 
 	public final void setAsyncEventListener(AsyncEventListener listener) {
+
 		Assert.state(this.asyncEventQueue == null,
 			"Setting an AsyncEventListener is not allowed once the AsyncEventQueue has been created.");
+
 		this.asyncEventListener = listener;
 	}
 
@@ -204,6 +228,14 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 		this.dispatcherThreads = dispatcherThreads;
 	}
 
+	public void setGatewayEventFilters(List<GatewayEventFilter> gatewayEventFilters) {
+		this.gatewayEventFilters = gatewayEventFilters;
+	}
+
+	public void setGatewayEventSubstitutionFilter(GatewayEventSubstitutionFilter gatewayEventSubstitutionFilter) {
+		this.gatewayEventSubstitutionFilter = gatewayEventSubstitutionFilter;
+	}
+
 	public void setMaximumQueueMemory(Integer maximumQueueMemory) {
 		this.maximumQueueMemory = maximumQueueMemory;
 	}
@@ -234,5 +266,4 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	public void setPersistent(Boolean persistent) {
 		this.persistent = persistent;
 	}
-
 }

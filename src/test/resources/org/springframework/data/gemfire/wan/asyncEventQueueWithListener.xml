@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:c="http://www.springframework.org/schema/c"
 	   xmlns:p="http://www.springframework.org/schema/p"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
 	   xmlns:util="http://www.springframework.org/schema/util"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="
@@ -12,7 +13,7 @@
 
 	<util:properties id="gemfireProperties">
 		<prop key="name">AsyncEventQueueWithListenerTest</prop>
-		<prop key="log-level">config</prop>
+		<prop key="log-level">error</prop>
 		<prop key="mcast-port">0</prop>
 	</util:properties>
 
@@ -43,6 +44,21 @@
 	<gfe:async-event-queue id="Q3" name="QueueThree" persistent="false" parallel="false" maximum-queue-memory="25"
 						   dispatcher-threads="2">
 		<gfe:async-event-listener ref="anotherAsyncEventListener"/>
+	</gfe:async-event-queue>
+
+	<bean id="testListenerOne" class="org.springframework.data.gemfire.wan.AsyncEventQueueWithListenerIntegrationTest.TestAsyncEventListener"
+		  p:name="TestListenerOne"/>
+
+	<gfe:async-event-queue id="TestAsyncEventQueueWithFilters">
+		<gfe:async-event-listener ref="testListenerOne"/>
+		<gfe:event-filter>
+			<bean class="org.springframework.data.gemfire.wan.AsyncEventQueueWithListenerIntegrationTest.TestGatewayEventFilter" c:name="GatewayEventFilterOne"/>
+			<bean class="org.springframework.data.gemfire.wan.AsyncEventQueueWithListenerIntegrationTest.TestGatewayEventFilter" c:name="GatewayEventFilterTwo"/>
+		</gfe:event-filter>
+		<gfe:event-substitution-filter>
+			<bean class="org.springframework.data.gemfire.wan.AsyncEventQueueWithListenerIntegrationTest.TestGatewayEventSubstitutionFilter"
+				  c:name="GatewayEventSubstitutionFilterOne"/>
+		</gfe:event-substitution-filter>
 	</gfe:async-event-queue>
 
 </beans>

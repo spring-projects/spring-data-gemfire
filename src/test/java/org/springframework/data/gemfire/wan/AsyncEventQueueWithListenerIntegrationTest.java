@@ -16,6 +16,7 @@
 
 package org.springframework.data.gemfire.wan;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -23,7 +24,17 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+
 import javax.annotation.Resource;
+
+import com.gemstone.gemfire.cache.EntryEvent;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
+import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
+import com.gemstone.gemfire.cache.wan.GatewayEventFilter;
+import com.gemstone.gemfire.cache.wan.GatewayEventSubstitutionFilter;
+import com.gemstone.gemfire.cache.wan.GatewayQueueEvent;
+import com.gemstone.gemfire.cache.wan.GatewaySender;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,11 +43,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEvent;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventListener;
-import com.gemstone.gemfire.cache.asyncqueue.AsyncEventQueue;
-import com.gemstone.gemfire.cache.wan.GatewaySender;
 
 /**
  * The AsyncEventQueueWithListenerIntegrationTest class is a test suite of test cases testing the circular references
@@ -65,8 +71,12 @@ public class AsyncEventQueueWithListenerIntegrationTest {
 	@Resource(name = "Q3")
 	private AsyncEventQueue queueThree;
 
+	@Resource(name = "TestAsyncEventQueueWithFilters")
+	private AsyncEventQueue queueWithFilters;
+
 	@Test
 	public void testAsyncEventQueueOneAndListenerConfiguration() {
+
 		assertNotNull(queueOne);
 		assertEquals("QueueOne", queueOne.getId());
 		assertFalse(queueOne.isPersistent());
@@ -78,6 +88,7 @@ public class AsyncEventQueueWithListenerIntegrationTest {
 	}
 	@Test
 	public void testAsyncEventQueueTwoAndListenerConfiguration() {
+
 		assertNotNull(queueTwo);
 		assertEquals("QueueTwo", queueTwo.getId());
 		assertFalse(queueTwo.isPersistent());
@@ -90,6 +101,7 @@ public class AsyncEventQueueWithListenerIntegrationTest {
 
 	@Test
 	public void testAsyncEventQueueThreeAndListenerConfiguration() {
+
 		assertNotNull(queueThree);
 		assertEquals("QueueThree", queueThree.getId());
 		assertFalse(queueThree.isPersistent());
@@ -98,6 +110,31 @@ public class AsyncEventQueueWithListenerIntegrationTest {
 		assertEquals(2, queueThree.getDispatcherThreads());
 		assertTrue(queueThree.getAsyncEventListener() instanceof TestAsyncEventListener);
 		assertSame(queueThree, ((TestAsyncEventListener) queueThree.getAsyncEventListener()).getQueue());
+	}
+
+	@Test
+	public void asyncEventQueueWithFiltersIsConfiguredProperly() {
+
+		assertThat(queueWithFilters).isNotNull();
+		assertThat(queueWithFilters.getId()).isEqualTo("TestAsyncEventQueueWithFilters");
+
+		AsyncEventListener listener = queueWithFilters.getAsyncEventListener();
+
+		assertThat(listener).isNotNull();
+		assertThat(listener.toString()).isEqualTo("TestListenerOne");
+
+		List<GatewayEventFilter> gatewayEventFilters = queueWithFilters.getGatewayEventFilters();
+
+		assertThat(gatewayEventFilters).isNotNull();
+		assertThat(gatewayEventFilters).hasSize(2);
+		assertThat(gatewayEventFilters.get(0).toString()).isEqualTo("GatewayEventFilterOne");
+		assertThat(gatewayEventFilters.get(1).toString()).isEqualTo("GatewayEventFilterTwo");
+
+		GatewayEventSubstitutionFilter<?, ?> gatewayEventSubstitutionFilter =
+			queueWithFilters.getGatewayEventSubstitutionFilter();
+
+		assertThat(gatewayEventSubstitutionFilter).isNotNull();
+		assertThat(gatewayEventSubstitutionFilter.toString()).isEqualTo("GatewayEventSubstitutionFilterOne");
 	}
 
 	/**
@@ -159,7 +196,56 @@ public class AsyncEventQueueWithListenerIntegrationTest {
 		public String toString() {
 			return (StringUtils.hasText(getName()) ? getName() : getClass().getName());
 		}
-
 	}
 
+	public static class TestGatewayEventFilter implements GatewayEventFilter {
+
+		private final String name;
+
+		public TestGatewayEventFilter(String name) {
+			this.name = name;
+		}
+
+		@Override
+		public boolean beforeEnqueue(GatewayQueueEvent event) {
+			return false;
+		}
+
+		@Override
+		public boolean beforeTransmit(GatewayQueueEvent event) {
+			return false;
+		}
+
+		@Override
+		public void afterAcknowledgement(GatewayQueueEvent event) { }
+
+		@Override
+		public void close() { }
+
+		@Override
+		public String toString() {
+			return this.name;
+		}
+	}
+
+	public static class TestGatewayEventSubstitutionFilter implements GatewayEventSubstitutionFilter<Object, Object> {
+
+		private final String name;
+
+		public TestGatewayEventSubstitutionFilter(String name) {
+			this.name = name;
+		}
+		@Override
+		public Object getSubstituteValue(EntryEvent<Object, Object> event) {
+			return null;
+		}
+
+		@Override
+		public void close() { }
+
+		@Override
+		public String toString() {
+			return this.name;
+		}
+	}
 }
