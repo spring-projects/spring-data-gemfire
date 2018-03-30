@@ -74,8 +74,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SuppressWarnings("unused")
 public class EnableClusterConfigurationIntegrationTests extends ClientServerIntegrationTestsSupport {
 
-	private static final String LOG_LEVEL = "warning";
-
 	private static ProcessWrapper gemfireServer;
 
 	@Autowired
@@ -88,7 +86,7 @@ public class EnableClusterConfigurationIntegrationTests extends ClientServerInte
 
 		int availablePort = findAvailablePort();
 
-		gemfireServer = run(GemFireServerConfiguration.class,
+		gemfireServer = run(ServerTestConfiguration.class,
 			String.format("-D%s=%d", GEMFIRE_CACHE_SERVER_PORT_PROPERTY, availablePort));
 
 		waitForServerToStart("localhost", availablePort);
@@ -122,12 +120,12 @@ public class EnableClusterConfigurationIntegrationTests extends ClientServerInte
 
 	@Configuration
 	@EnableClusterConfiguration
-	@Import(GemFireClientConfiguration.class)
+	@Import(ClientTestConfiguration.class)
 	static class TestConfiguration {
 	}
 
-	@ClientCacheApplication(logLevel = LOG_LEVEL, subscriptionEnabled = true)
-	static class GemFireClientConfiguration {
+	@ClientCacheApplication(logLevel = TEST_GEMFIRE_LOG_LEVEL, subscriptionEnabled = true)
+	static class ClientTestConfiguration {
 
 		@Bean
 		ClientCacheConfigurer clientCachePoolPortConfigurer(
@@ -188,13 +186,13 @@ public class EnableClusterConfigurationIntegrationTests extends ClientServerInte
 		}
 	}
 
-	@CacheServerApplication(name = "EnableClusterConfigurationIntegrationTests", logLevel = LOG_LEVEL)
-	static class GemFireServerConfiguration {
+	@CacheServerApplication(name = "EnableClusterConfigurationIntegrationTests", logLevel = TEST_GEMFIRE_LOG_LEVEL)
+	static class ServerTestConfiguration {
 
 		public static void main(String[] args) {
 
-			AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(
-				EnableClusterConfigurationIntegrationTests.GemFireServerConfiguration.class);
+			AnnotationConfigApplicationContext applicationContext =
+				new AnnotationConfigApplicationContext(ServerTestConfiguration.class);
 
 			applicationContext.registerShutdownHook();
 		}

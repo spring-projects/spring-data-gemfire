@@ -435,7 +435,8 @@ public abstract class AbstractAnnotationConfigSupport
 	 * @see #getBeanClassLoader()
 	 */
 	protected ClassLoader resolveBeanClassLoader() {
-		return Optional.ofNullable(getBeanClassLoader()).orElseGet(() -> Thread.currentThread().getContextClassLoader());
+		return Optional.ofNullable(getBeanClassLoader())
+			.orElseGet(() -> Thread.currentThread().getContextClassLoader());
 	}
 
 	/**
@@ -640,12 +641,10 @@ public abstract class AbstractAnnotationConfigSupport
 		return beanDefinition;
 	}
 
-	/* (non-Javadoc) */
 	protected List<String> arrayOfPropertyNamesFor(String propertyNamePrefix) {
 		return arrayOfPropertyNamesFor(propertyNamePrefix, null);
 	}
 
-	/* (non-Javadoc) */
 	protected List<String> arrayOfPropertyNamesFor(String propertyNamePrefix, String propertyNameSuffix) {
 
 		List<String> propertyNames = new ArrayList<>();
@@ -666,139 +665,107 @@ public abstract class AbstractAnnotationConfigSupport
 		return propertyNames;
 	}
 
-	/* (non-Javadoc) */
 	protected String asArrayProperty(String propertyNamePrefix, int index, String propertyNameSuffix) {
 		return String.format("%1$s[%2$d]%3$s", propertyNamePrefix, index,
 			Optional.ofNullable(propertyNameSuffix).filter(StringUtils::hasText).map("."::concat).orElse(""));
 	}
 
-	/* (non-Javadoc) */
 	protected String cacheProperty(String propertyNameSuffix) {
 		return String.format("%1$s%2$s", propertyName("cache."), propertyNameSuffix);
 	}
 
-	/* (non-Javadoc) */
 	protected String cacheClientProperty(String propertyNameSuffix) {
 		return String.format("%1$s%2$s", propertyName("cache.client."), propertyNameSuffix);
 	}
 
-	/* (non-Javadoc) */
 	protected String cacheCompressionProperty(String propertyNameSuffix) {
 		return String.format("%1$s%2$s", propertyName("cache.compression."), propertyNameSuffix);
 	}
 
-	/* (non-Javadoc) */
 	protected String cacheOffHeapProperty(String propertyNameSuffix) {
 		return String.format("%1$s%2$s", propertyName("cache.off-heap."), propertyNameSuffix);
 	}
 
-	/* (non-Javadoc) */
 	protected String cachePeerProperty(String propertyNameSuffix) {
 		return String.format("%1$s%2$s", propertyName("cache.peer."), propertyNameSuffix);
 	}
 
-	/* (non-Javadoc) */
 	protected String cacheServerProperty(String propertyNameSuffix) {
 		return String.format("%1$s%2$s", propertyName("cache.server."), propertyNameSuffix);
 	}
 
-	/* (non-Javadoc) */
 	protected String namedCacheServerProperty(String name, String propertyNameSuffix) {
 		return String.format("%1$s%2$s.%3$s", propertyName("cache.server."), name, propertyNameSuffix);
 	}
 
-	/* (non-Javadoc) */
 	protected String clusterProperty(String propertyNameSuffix) {
 		return String.format("%1$s%2$s", propertyName("cluster."), propertyNameSuffix);
 	}
 
-	/* (non-Javadoc) */
 	protected String diskStoreProperty(String propertyNameSuffix) {
 		return String.format("%1$s%2$s", propertyName("disk.store."), propertyNameSuffix);
 	}
 
-	/* (non-Javadoc) */
 	protected String namedDiskStoreProperty(String name, String propertyNameSuffix) {
 		return String.format("%1$s%2$s.%3$s", propertyName("disk.store."), name, propertyNameSuffix);
 	}
 
-	/* (non-Javadoc) */
 	protected String entitiesProperty(String propertyNameSuffix) {
 		return String.format("%1$s%2$s", propertyName("entities."), propertyNameSuffix);
 	}
 
-	/* (non-Javadoc) */
 	protected String locatorProperty(String propertyNameSuffix) {
 		return String.format("%1$s%2$s", propertyName("locator."), propertyNameSuffix);
 	}
 
-	/* (non-Javadoc) */
 	protected String loggingProperty(String propertyNameSuffix) {
 		return String.format("%1$s%2$s", propertyName("logging."), propertyNameSuffix);
 	}
 
-	/* (non-Javadoc) */
 	protected String managementProperty(String propertyNameSuffix) {
 		return String.format("%1$s%2$s", propertyName("management."), propertyNameSuffix);
 	}
 
-	/* (non-Javadoc) */
 	protected String managerProperty(String propertyNameSuffix) {
 		return String.format("%1$s%2$s", propertyName("manager."), propertyNameSuffix);
 	}
 
-	/* (non-Javadoc) */
 	protected String pdxProperty(String propertyNameSuffix) {
 		return String.format("%1$s%2$s", propertyName("pdx."), propertyNameSuffix);
 	}
 
-	/* (non-Javadoc) */
 	protected String poolProperty(String propertyNameSuffix) {
 		return String.format("%1$s%2$s", propertyName("pool."), propertyNameSuffix);
 	}
 
-	/* (non-Javadoc) */
 	protected String namedPoolProperty(String name, String propertyNameSuffix) {
 		return String.format("%1$s%2$s.%3$s", propertyName("pool."), name, propertyNameSuffix);
 	}
 
-	/* (non-Javadoc) */
 	protected String securityProperty(String propertyNameSuffix) {
 		return String.format("%1$s%2$s", propertyName("security."), propertyNameSuffix);
 	}
 
-	/* (non-Javadoc) */
 	protected String sslProperty(String propertyNameSuffix) {
 		return String.format("%1$s%2$s", securityProperty("ssl."), propertyNameSuffix);
 	}
 
-	/* (non-Javadoc) */
-	protected String componentSslProperty(String component, String propertyNameSuffix) {
-		return String.format("%1$s%2$s.%3$s", securityProperty("ssl."),
-			component, propertyNameSuffix);
-	}
-
-	/* (non-Javadoc) */
 	protected String statsProperty(String propertyNameSuffix) {
 		return String.format("%1$s%2$s", propertyName("stats."), propertyNameSuffix);
 	}
 
-	/* (non-Javadoc) */
 	protected String serviceProperty(String propertyNameSuffix) {
 		return String.format("%1$s%2$s", propertyName("service."), propertyNameSuffix);
 	}
 
-	/* (non-Javadoc) */
 	protected String redisServiceProperty(String propertyNameSuffix) {
 		return String.format("%1$s%2$s", serviceProperty("redis."), propertyNameSuffix);
 	}
 
-	/* (non-Javadoc) */
 	protected String memcachedServiceProperty(String propertyNameSuffix) {
 		return String.format("%1$s%2$s", serviceProperty("memcached."), propertyNameSuffix);
 	}
 
-	/* (non-Javadoc) */
 	protected String httpServiceProperty(String propertyNameSuffix) {
 		return String.format("%1$s%2$s", serviceProperty("http."), propertyNameSuffix);
 	}
@@ -1056,8 +1023,12 @@ public abstract class AbstractAnnotationConfigSupport
 
 		return Optional.ofNullable(getEnvironment())
 			.filter(environment -> environment.containsProperty(propertyName))
-			.map(environment -> environment.getProperty(environment.resolveRequiredPlaceholders(propertyName),
-				targetType, defaultValue))
+			.map(environment -> {
+
+				String resolvedPropertyName = environment.resolveRequiredPlaceholders(propertyName);
+
+				return environment.getProperty(resolvedPropertyName, targetType, defaultValue);
+			})
 			.orElse(defaultValue);
 	}
 

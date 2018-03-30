@@ -210,7 +210,7 @@ public abstract class AbstractGeodeSecurityIntegrationTests extends ClientServer
 		}
 	}
 
-	@ClientCacheApplication(name = "GeodeSecurityIntegrationTestsClient", logLevel = TEST_GEMFIRE_LOG_LEVEL,
+	@ClientCacheApplication(name = "GeodeSecurityIntegrationTestsClient", logLevel = "error",
 		servers = { @ClientCacheApplication.Server(port = CACHE_SERVER_PORT) })
 	@EnableAuth(clientAuthenticationInitializer =
 		"org.springframework.data.gemfire.config.annotation.AbstractGeodeSecurityIntegrationTests$GeodeClientAuthInitialize.create")
@@ -230,7 +230,7 @@ public abstract class AbstractGeodeSecurityIntegrationTests extends ClientServer
 		}
 	}
 
-	@CacheServerApplication(name = "GeodeSecurityIntegrationTestsServer", logLevel = TEST_GEMFIRE_LOG_LEVEL,
+	@CacheServerApplication(name = "GeodeSecurityIntegrationTestsServer", logLevel = "error",
 		port = CACHE_SERVER_PORT)
 	@Import({
 		ApacheShiroIniGeodeSecurityIntegrationTests.ApacheShiroIniConfiguration.class,

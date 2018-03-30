@@ -42,8 +42,12 @@ import org.springframework.mock.env.MockPropertySource;
  * Integration tests for {@link ClientCacheApplication}.
  *
  * @author John Blum
+ * @see java.util.Properties
  * @see org.junit.Test
+ * @see org.springframework.core.env.PropertySource
+ * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.ClientCacheApplication
+ * @see org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockObjects
  * @since 2.0.0
  */
 public class ClientCachePropertiesIntegrationTests {
@@ -56,7 +60,7 @@ public class ClientCachePropertiesIntegrationTests {
 	}
 
 	private ConfigurableApplicationContext newApplicationContext(PropertySource<?> testPropertySource,
-		Class<?>... annotatedClasses) {
+			Class<?>... annotatedClasses) {
 
 		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
 
@@ -64,8 +68,8 @@ public class ClientCachePropertiesIntegrationTests {
 
 		propertySources.addFirst(testPropertySource);
 
-		applicationContext.registerShutdownHook();
 		applicationContext.register(annotatedClasses);
+		applicationContext.registerShutdownHook();
 		applicationContext.refresh();
 
 		return applicationContext;
@@ -98,6 +102,8 @@ public class ClientCachePropertiesIntegrationTests {
 		assertThat(this.applicationContext.containsBean("mockPdxSerializer")).isTrue();
 
 		ClientCache testClientCache = this.applicationContext.getBean("gemfireCache", ClientCache.class);
+
+		assertThat(testClientCache).isNotNull();
 
 		PdxSerializer mockPdxSerializer = this.applicationContext.getBean("mockPdxSerializer", PdxSerializer.class);
 
@@ -271,8 +277,8 @@ public class ClientCachePropertiesIntegrationTests {
 	}
 
 	@EnableGemFireMockObjects
-	@EnablePdx(serializerBeanName = "mockPdxSerializer")
 	@ClientCacheApplication(name = "TestClientCache")
+	@EnablePdx(serializerBeanName = "mockPdxSerializer")
 	@SuppressWarnings("unused")
 	static class TestDynamicClientCacheConfiguration {
 

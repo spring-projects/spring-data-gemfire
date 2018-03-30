@@ -38,8 +38,6 @@ import org.springframework.util.StringUtils;
 @SuppressWarnings("unused")
 public class PropertiesBuilder implements FactoryBean<Properties> {
 
-	private final Properties properties;
-
 	/**
 	 * Factory method to create a default {@link PropertiesBuilder} instance.
 	 *
@@ -73,13 +71,14 @@ public class PropertiesBuilder implements FactoryBean<Properties> {
 	 * @see java.util.Properties#load(InputStream)
 	 */
 	public static PropertiesBuilder from(InputStream in) {
+
 		try {
 			Properties defaults = new Properties();
 			defaults.load(in);
 			return new PropertiesBuilder(defaults);
 		}
-		catch (IOException e) {
-			throw new IllegalArgumentException("Failed to read properties from InputStream", e);
+		catch (IOException cause) {
+			throw new IllegalArgumentException("Failed to read properties from InputStream", cause);
 		}
 	}
 
@@ -94,13 +93,14 @@ public class PropertiesBuilder implements FactoryBean<Properties> {
 	 * @see java.util.Properties#load(Reader)
 	 */
 	public static PropertiesBuilder from(Reader reader) {
+
 		try {
 			Properties defaults = new Properties();
 			defaults.load(reader);
 			return new PropertiesBuilder(defaults);
 		}
-		catch (IOException e) {
-			throw new IllegalArgumentException("Failed to read properties from Reader", e);
+		catch (IOException cause) {
+			throw new IllegalArgumentException("Failed to read properties from Reader", cause);
 		}
 	}
 
@@ -116,15 +116,18 @@ public class PropertiesBuilder implements FactoryBean<Properties> {
 	 * @see java.util.Properties#loadFromXML(InputStream)
 	 */
 	public static PropertiesBuilder fromXml(InputStream xml) {
+
 		try {
 			Properties defaults = new Properties();
 			defaults.loadFromXML(xml);
 			return new PropertiesBuilder(defaults);
 		}
-		catch (IOException e) {
-			throw new IllegalArgumentException("Failed to read properties from XML", e);
+		catch (IOException cause) {
+			throw new IllegalArgumentException("Failed to read properties from XML", cause);
 		}
 	}
+
+	private final Properties properties;
 
 	/**
 	 * Constructs an instance of the {@link PropertiesBuilder} class.
@@ -172,7 +175,7 @@ public class PropertiesBuilder implements FactoryBean<Properties> {
 	 */
 	@Override
 	public Class<?> getObjectType() {
-		return (this.properties != null ? this.properties.getClass() : Properties.class);
+		return this.properties != null ? this.properties.getClass() : Properties.class;
 	}
 
 	/*
@@ -193,6 +196,7 @@ public class PropertiesBuilder implements FactoryBean<Properties> {
 	 * @see java.util.Properties
 	 */
 	public PropertiesBuilder add(Properties properties) {
+
 		if (!CollectionUtils.isEmpty(properties)) {
 			this.properties.putAll(properties);
 		}
@@ -209,7 +213,7 @@ public class PropertiesBuilder implements FactoryBean<Properties> {
 	 * @see org.springframework.data.gemfire.util.PropertiesBuilder
 	 */
 	public PropertiesBuilder add(PropertiesBuilder builder) {
-		return (builder != null ? add(builder.build()) : this);
+		return builder != null ? add(builder.build()) : this;
 	}
 
 	/**
@@ -221,7 +225,7 @@ public class PropertiesBuilder implements FactoryBean<Properties> {
 	 * @see #setProperty(String, String)
 	 */
 	public PropertiesBuilder setProperty(String name, Object value) {
-		return (value != null ? setProperty(name, value.toString()) : this);
+		return value != null ? setProperty(name, value.toString()) : this;
 	}
 
 	/**
@@ -235,8 +239,7 @@ public class PropertiesBuilder implements FactoryBean<Properties> {
 	 * @see #setProperty(String, String)
 	 */
 	public PropertiesBuilder setProperty(String name, Object[] values) {
-		return (!ObjectUtils.isEmpty(values) ? setProperty(name, StringUtils.arrayToCommaDelimitedString(values))
-			: this);
+		return !ObjectUtils.isEmpty(values) ? setProperty(name, StringUtils.arrayToCommaDelimitedString(values)) : this;
 	}
 
 	/**
@@ -251,6 +254,7 @@ public class PropertiesBuilder implements FactoryBean<Properties> {
 	 * @see java.util.Properties#setProperty(String, String)
 	 */
 	public PropertiesBuilder setProperty(String name, String value) {
+
 		Assert.hasText(name, String.format("Name [%s] must be specified", name));
 
 		if (isValuable(value)) {
@@ -273,7 +277,7 @@ public class PropertiesBuilder implements FactoryBean<Properties> {
 	 * @see #setProperty(String, Object)
 	 */
 	public <T> PropertiesBuilder setPropertyIfNotDefault(String name, Object value, T defaultValue) {
-		return (defaultValue == null || !defaultValue.equals(value) ? setProperty(name, value) : this);
+		return defaultValue == null || !defaultValue.equals(value) ? setProperty(name, value) : this;
 	}
 
 	/**
@@ -284,8 +288,11 @@ public class PropertiesBuilder implements FactoryBean<Properties> {
 	 * @throws IllegalArgumentException if the property name is not specified.
 	 */
 	public PropertiesBuilder unsetProperty(String name) {
+
 		Assert.hasText(name, String.format("Name [%s] mut be specified", name));
+
 		this.properties.setProperty(name, "");
+
 		return this;
 	}
 
@@ -298,7 +305,7 @@ public class PropertiesBuilder implements FactoryBean<Properties> {
 	 * @return a boolean value indicating whether the given {@link String} value is a valid {@link Properties} value.
 	 */
 	protected boolean isValuable(String value) {
-		return (StringUtils.hasText(value) && !"null".equalsIgnoreCase(value.trim()));
+		return StringUtils.hasText(value) && !"null".equalsIgnoreCase(value.trim());
 	}
 
 	/**

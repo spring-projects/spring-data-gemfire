@@ -43,8 +43,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Test suite of test cases testing the contract and functionality of the {@link CacheServerApplication}
- * and {@link ClientCacheApplication} SDG annotation for configuring and bootstrapping the Pivotal GemFire
- * client/server topology
+ * and {@link ClientCacheApplication} SDG annotations for configuring and bootstrapping a Pivotal GemFire
+ * or Apache Geode client/server topology
  *
  * @author John Blum
  * @see org.junit.Test
@@ -57,7 +57,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @since 1.9.0
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = ClientServerCacheApplicationIntegrationTests.ClientCacheApplicationConfiguration.class)
+@ContextConfiguration(classes = ClientServerCacheApplicationIntegrationTests.ClientTestConfiguration.class)
 @SuppressWarnings("all")
 public class ClientServerCacheApplicationIntegrationTests extends ClientServerIntegrationTestsSupport {
 
@@ -68,7 +68,7 @@ public class ClientServerCacheApplicationIntegrationTests extends ClientServerIn
 	@BeforeClass
 	public static void setupGemFireServer() throws Exception {
 
-		gemfireServerProcess = run(CacheServerApplicationConfiguration.class, String.format("-Dgemfire.name=%1$s",
+		gemfireServerProcess = run(ServerTestConfiguration.class, String.format("-Dgemfire.name=%1$s",
 			asApplicationName(ClientServerCacheApplicationIntegrationTests.class)));
 
 		waitForServerToStart("localhost", PORT);
@@ -91,11 +91,28 @@ public class ClientServerCacheApplicationIntegrationTests extends ClientServerIn
 		assertThat(echo.get("Test")).isEqualTo("Test");
 	}
 
-	@CacheServerApplication(name = "ClientServerCacheApplicationIntegrationTests", logLevel = "warn", port = PORT)
-	public static class CacheServerApplicationConfiguration {
+	@ClientCacheApplication(logLevel = TEST_GEMFIRE_LOG_LEVEL, servers = { @ClientCacheApplication.Server(port = PORT)})
+	static class ClientTestConfiguration {
+
+		@Bean(name = "Echo")
+		ClientRegionFactoryBean<String, String> echoRegion(ClientCache gemfireCache) {
+
+			ClientRegionFactoryBean<String, String> echoRegion = new ClientRegionFactoryBean<String, String>();
+
+			echoRegion.setCache(gemfireCache);
+			echoRegion.setClose(false);
+			echoRegion.setShortcut(ClientRegionShortcut.PROXY);
+
+			return echoRegion;
+		}
+	}
+
+	@CacheServerApplication(name = "ClientServerCacheApplicationIntegrationTests",
+		logLevel = TEST_GEMFIRE_LOG_LEVEL, port = PORT)
+	public static class ServerTestConfiguration {
 
 		public static void main(String[] args) {
-			runSpringApplication(CacheServerApplicationConfiguration.class, args);
+			runSpringApplication(ServerTestConfiguration.class, args);
 		}
 
 		@Bean("Echo")
@@ -124,22 +141,6 @@ public class ClientServerCacheApplicationIntegrationTests extends ClientServerIn
 				public void close() {
 				}
 			};
-		}
-	}
-
-	@ClientCacheApplication(logLevel = "warn", servers = { @ClientCacheApplication.Server(port = PORT)})
-	static class ClientCacheApplicationConfiguration {
-
-		@Bean(name = "Echo")
-		ClientRegionFactoryBean<String, String> echoRegion(ClientCache gemfireCache) {
-
-			ClientRegionFactoryBean<String, String> echoRegion = new ClientRegionFactoryBean<String, String>();
-
-			echoRegion.setCache(gemfireCache);
-			echoRegion.setClose(false);
-			echoRegion.setShortcut(ClientRegionShortcut.PROXY);
-
-			return echoRegion;
 		}
 	}
 }
