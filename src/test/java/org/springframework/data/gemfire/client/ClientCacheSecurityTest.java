@@ -42,20 +42,20 @@ import org.springframework.data.gemfire.process.ProcessWrapper;
 import org.springframework.data.gemfire.test.support.FileSystemUtils;
 import org.springframework.data.gemfire.test.support.ThreadUtils;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.Assert;
 
 /**
- * The ClientCacheSecurityTest class is a test suite with test cases testing SSL configuration between a GemFire client
- * and server using the cluster-ssl-*  GemFire System properties.
+ * Integration tests to test SSL configuration between a Pivotal GemFire or Apache Geode client and server
+ * using GemFire/Geode System properties.
  *
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.test.context.ContextConfiguration
- * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
+ * @see org.springframework.test.context.junit4.SpringRunner
  * @since 1.7.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @SuppressWarnings("all")
 public class ClientCacheSecurityTest {
@@ -67,6 +67,7 @@ public class ClientCacheSecurityTest {
 
 	@BeforeClass
 	public static void setup() throws IOException {
+
 		String serverName = "GemFireSecurityCacheServer";
 
 		File serverWorkingDirectory = new File(FileSystemUtils.WORKING_DIRECTORY, serverName.toLowerCase());
@@ -88,6 +89,7 @@ public class ClientCacheSecurityTest {
 	}
 
 	private static void waitForServerStart(final long milliseconds) {
+
 		ThreadUtils.timedWait(milliseconds, TimeUnit.MILLISECONDS.toMillis(500), new ThreadUtils.WaitCondition() {
 			private File serverPidControlFile = new File(serverProcess.getWorkingDirectory(),
 				ServerProcess.getServerProcessControlFilename());
@@ -100,6 +102,7 @@ public class ClientCacheSecurityTest {
 
 	@AfterClass
 	public static void tearDown() {
+
 		serverProcess.shutdown();
 
 		if (Boolean.valueOf(System.getProperty("spring.gemfire.fork.clean", Boolean.TRUE.toString()))) {
@@ -115,12 +118,13 @@ public class ClientCacheSecurityTest {
 	@SuppressWarnings("unused")
 	public static class TestCacheLoader implements CacheLoader<String, String> {
 
-		@Override public String load(final LoaderHelper<String, String> helper) throws CacheLoaderException {
+		@Override
+		public String load(LoaderHelper<String, String> helper) throws CacheLoaderException {
 			return "TestValue";
 		}
 
-		@Override public void close() {
-		}
+		@Override
+		public void close() { }
 	}
 
 }

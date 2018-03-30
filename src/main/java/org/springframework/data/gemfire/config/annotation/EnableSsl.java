@@ -17,13 +17,17 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Arrays;
 
+import org.apache.shiro.util.Assert;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
@@ -47,122 +51,177 @@ import org.springframework.context.annotation.Import;
 public @interface EnableSsl {
 
 	/**
-	 * A space-separated list of the valid SSL ciphers for secure Socket connections. A setting of 'any'
-	 * uses any ciphers that are enabled by default in the configured JSSE provider.
+	 * Configures the SSL ciphers used for secure Socket connections as an array of valid {@link String cipher names}.
+	 *
+	 * A setting of {@literal any} uses any ciphers that are enabled by default in the configured JSSE provider.
 	 *
 	 * Defaults to {@literal any}.
 	 *
-	 * Use either the {@literal spring.data.gemfire.security.ssl.<component>.ciphers} property
-	 * or the {@literal spring.data.gemfire.security.ssl.ciphers} property
+	 * Use the {@literal spring.data.gemfire.security.ssl.ciphers} property
 	 * in {@literal application.properties}.
 	 */
-	String ciphers() default "any";
+	String[] ciphers() default { "any" };
 
 	/**
-	 * An array of Pivotal GemFire/Apache Geode Components in which SSL can be enabled.
+	 * Configures the Pivotal GemFire/Apache Geode components for which SSL will be enabled.
 	 *
-	 * Defaults to {@link EnableSsl.Component#CLUSTER}.
+	 * Defaults to {@link EnableSsl.Component#ALL}.
 	 *
-	 * The value(s) for this attribute are used to configure cluster-wide
-	 * (e.g. {@literal spring.data.gemfire.security.ssl.cluster.keystore} SSL properties
-	 * or individual component {e.g. {@literal spring.data.gemfire.security.ssl.locator.keystore}} SSL properties.
+	 * Use the {@literal spring.data.gemfire.security.ssl.components} property
+	 * in {@literal application.properties}.
+	 *
+	 * E.g. {@literal spring.data.gemfire.security.ssl.components=cluster,gateway,locator,server}.
 	 */
-	Component[] components() default { Component.CLUSTER };
+	Component[] components() default { Component.ALL };
 
 	/**
-	 * Pathname to the keystore used for SSL communications.
+	 * Configures the {@link String names} of all the individual {@literal Keystore} certificates to use
+	 * when configuring SSL for each Pivotal GemFire/Apache Geode {@link Component} separately.
+	 *
+	 * Each {@link Component} defaults to the configured value of the {@link #defaultCertificateAlias()}
+	 * if not individually configured with this attribute.
+	 *
+	 * Use {@literal spring.data.gemfire.security.ssl.certificate.alias.<component>}
+	 * in {@literal application.properties}.
+	 *
+	 * E.g. {@literal spring.data.gemfire.security.ssl.certificate.alias.gateway=WanCert}.
+	 */
+	ComponentAlias[] componentCertificateAliases() default {};
+
+	/**
+	 * Configures the default {@link String name} of a single {@literal Keystore} certificate to use
+	 * when configuring SSL for all Pivotal GemFire/Apache Geode {@link Component components} collectively.
+	 *
+	 * If {@code defaultAlias} is not specified, then the first certificate in the {@literal Keystore}
+	 * acts as the {@literal default} SSL certificate.
+	 *
+	 * Use the {@literal spring.data.gemfire.security.ssl.certificate.alias.default} property
+	 * in {@literal application.properties}.
+	 */
+	String defaultCertificateAlias() default "";
+
+	/**
+	 * Pathname to the {@literal Keystore} used for SSL communications.
 	 *
 	 * Defaults to unset.
 	 *
-	 * Use either the {@literal spring.data.gemfire.security.ssl.<component>.keystore} property
-	 * or the {@literal spring.data.gemfire.security.ssl.keystore} property
+	 * Use the {@literal spring.data.gemfire.security.ssl.keystore} property
 	 * in {@literal application.properties}.
 	 */
 	String keystore() default "";
 
 	/**
-	 * Password to access the keys in the keystore used in SSL communications.
+	 * Password to access the keys in the {@literal Keystore} used for SSL communications.
 	 *
 	 * Defaults to unset.
 	 *
-	 * Use either the {@literal spring.data.gemfire.security.ssl.<component>.keystore-password} property
-	 * or the {@literal spring.data.gemfire.security.ssl.keystore-password} property
+	 * Use the {@literal spring.data.gemfire.security.ssl.keystore.password} property
 	 * in {@literal application.properties}.
 	 */
 	String keystorePassword() default "";
 
 	/**
-	 * TODO change to an enum?
+	 * Identifies the type of {@literal Keystore} used for SSL communications.
 	 *
-	 * Identifies the type of keystore used in SSL communications.  For example, JKS, PKCS11, etc.
+	 * For example: {@literal JKS}, {@literal PKCS11}, etc.
 	 *
-	 * Defaults to unset.
+	 * Defaults to {@literal JKS}, or the {@literal Java Keystore}.
 	 *
-	 * Use either the {@literal spring.data.gemfire.security.ssl.<component>.keystore-type} property
-	 * or the {@literal spring.data.gemfire.security.ssl.keystore-type} property
+	 * Use the {@literal spring.data.gemfire.security.ssl.keystore.type} property
 	 * in {@literal application.properties}.
 	 */
-	String keystoreType() default "";
+	String keystoreType() default "JKS";
 
 	/**
-	 * A space-separated list of the valid SSL protocols used in secure Socket connections. A setting of 'any'
-	 * uses any protocol that is enabled by default in the configured JSSE provider.
+	 * Configures the SSL protocols used for secure Socket connections as an array of
+	 * valid {@link String protocol names}.
+	 *
+	 * A setting of {@literal any} uses any protocol that is enabled by default in the configured JSSE provider.
 	 *
 	 * Defaults to {@literal any}.
 	 *
-	 * Use either the {@literal spring.data.gemfire.security.ssl.<component>.protocols} property
-	 * or the {@literal spring.data.gemfire.security.ssl.protocols} property
+	 * Use the {@literal spring.data.gemfire.security.ssl.protocols} property
 	 * in {@literal application.properties}.
 	 */
-	String protocols() default "any";
+	String[] protocols() default { "any" };
 
 	/**
-	 * Boolean value indicating whether to require authentication for SSL communication between peers,
-	 * clients and servers, gateways, etc.
+	 * Boolean value indicating whether to require authentication for SSL communication between clients, servers,
+	 * gateways, etc.
 	 *
 	 * Defaults to {@literal true}.
 	 *
-	 * Use either the {@literal spring.data.gemfire.security.ssl.<component>.require-authentication} property
-	 * or the {@literal spring.data.gemfire.security.ssl.require-authentication} property
+	 * Use the {@literal spring.data.gemfire.security.ssl.require-authentication} property
 	 * in {@literal application.properties}.
 	 */
 	boolean requireAuthentication() default true;
 
 	/**
-	 * Pathname to the truststore used in SSL communications.
+	 * Pathname to the truststore used for SSL communications.
 	 *
 	 * Defaults to unset.
 	 *
-	 * Use either the {@literal spring.data.gemfire.security.ssl.<component>.truststore} property
-	 * or the {@literal spring.data.gemfire.security.ssl.truststore} property
+	 * Use the {@literal spring.data.gemfire.security.ssl.truststore} property
 	 * in {@literal application.properties}.
 	 */
 	String truststore() default "";
 
 	/**
-	 * Password to access the keys in the truststore used in SSL communications.
+	 * Password to access the keys in the truststore used for SSL communications.
 	 *
 	 * Defaults to unset.
 	 *
-	 * Use either the {@literal spring.data.gemfire.security.ssl.<component>.truststore-password} property
-	 * or the {@literal spring.data.gemfire.security.ssl.truststore-password} property
+	 * Use the {@literal spring.data.gemfire.security.ssl.truststore.password} property
 	 * in {@literal application.properties}.
 	 */
 	String truststorePassword() default "";
 
+	/**
+	 * Identifies the type of truststore used for SSL communications.
+	 *
+	 * For example: {@literal JKS}, {@literal PKCS11}, etc.
+	 *
+	 * Defaults to {@literal JKS}, or the {@literal Java Keystore}.
+	 *
+	 * Use the {@literal spring.data.gemfire.security.ssl.truststore.type} property
+	 * in {@literal application.properties}.
+	 */
+	String truststoreType() default "JKS";
+
+	/**
+	 * If {@literal true} then requires two-way authentication for web component.
+	 *
+	 * Defaults to {@literal false}.
+	 *
+	 * Use the {@literal spring.data.gemfire.security.ssl.web-require-authentication}
+	 * in {@literal application.properties}.
+	 */
+	boolean webRequireAuthentication() default false;
+
 	enum Component {
 
+		ALL("all"),
 		CLUSTER("cluster"),
 		GATEWAY("gateway"),
-		HTTP("http-service"),
-		JMX("jmx-manager"),
+		JMX("jmx"),
 		LOCATOR("locator"),
-		SERVER("server");
+		SERVER("server"),
+		WEB("web");
+
+		public static Component valueOfName(String name) {
+
+			return Arrays.stream(values())
+				.filter(component -> component.name().equalsIgnoreCase(String.valueOf(name).trim()))
+				.findFirst()
+				.orElseThrow(() -> newIllegalArgumentException("Name [%s] is not a valid component", name));
+		}
 
 		private final String prefix;
 
-		/* (non-Javadoc) */
 		Component(String prefix) {
+
+			Assert.hasText(prefix, "Prefix is required");
+
 			this.prefix = prefix;
 		}
 
@@ -174,7 +233,15 @@ public @interface EnableSsl {
 		 */
 		@Override
 		public String toString() {
-			return prefix;
+			return this.prefix;
 		}
+	}
+
+	@interface ComponentAlias {
+
+		String alias();
+
+		Component component();
+
 	}
 }

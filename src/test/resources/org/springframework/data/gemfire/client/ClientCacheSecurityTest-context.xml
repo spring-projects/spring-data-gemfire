@@ -14,7 +14,7 @@
 	<util:properties id="clientProperties">
 		<prop key="client.server.host">localhost</prop>
 		<prop key="client.server.port">31517</prop>
-		<prop key="gemfire.security.ssl.enabled">true</prop>
+		<prop key="gemfire.security.ssl.components">all</prop>
 		<prop key="gemfire.security.ssl.require-authentication">true</prop>
 		<prop key="gemfire.security.ssl.protocols">any</prop>
 		<prop key="gemfire.security.ssl.ciphers">any</prop>
@@ -26,17 +26,17 @@
 	<context:property-placeholder properties-ref="clientProperties" system-properties-mode="FALLBACK"/>
 
 	<util:properties id="gemfireProperties">
-		<prop key="cluster-ssl-enabled">${gemfire.security.ssl.enabled}</prop>
-		<prop key="cluster-ssl-require-authentication">${gemfire.security.ssl.require-authentication}</prop>
-		<prop key="cluster-ssl-protocols">${gemfire.security.ssl.protocols}</prop>
-		<prop key="cluster-ssl-ciphers">${gemfire.security.ssl.ciphers}</prop>
-		<prop key="cluster-ssl-keystore">${gemfire.security.ssl.keystore.location}</prop>
-		<prop key="cluster-ssl-keystore-password">${gemfire.security.ssl.keystore.password}</prop>
-		<prop key="cluster-ssl-keystore-type">${gemfire.security.ssl.keystore.type}</prop>
-		<prop key="cluster-ssl-truststore">${gemfire.security.ssl.keystore.location}</prop>
-		<prop key="cluster-ssl-truststore-password">${gemfire.security.ssl.keystore.password}</prop>
-		<prop key="log-level">warning</prop>
-		<prop key="mcast-port">0</prop>
+		<prop key="log-level">error</prop>
+		<prop key="ssl-ciphers">${gemfire.security.ssl.ciphers}</prop>
+		<prop key="ssl-enabled-components">${gemfire.security.ssl.components}</prop>
+		<prop key="ssl-keystore">${gemfire.security.ssl.keystore.location}</prop>
+		<prop key="ssl-keystore-password">${gemfire.security.ssl.keystore.password}</prop>
+		<prop key="ssl-keystore-type">${gemfire.security.ssl.keystore.type}</prop>
+		<prop key="ssl-protocols">${gemfire.security.ssl.protocols}</prop>
+		<prop key="ssl-require-authentication">${gemfire.security.ssl.require-authentication}</prop>
+		<prop key="ssl-truststore">${gemfire.security.ssl.keystore.location}</prop>
+		<prop key="ssl-truststore-password">${gemfire.security.ssl.keystore.password}</prop>
+		<prop key="ssl-truststore-type">${gemfire.security.ssl.keystore.type}</prop>
 	</util:properties>
 
 	<gfe:pool id="gemfireServerPool" max-connections="1" min-connections="1">

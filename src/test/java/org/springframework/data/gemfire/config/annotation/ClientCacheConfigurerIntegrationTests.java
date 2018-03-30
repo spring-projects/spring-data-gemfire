@@ -31,7 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
-import org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor;
+import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockObjects;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
@@ -86,13 +86,9 @@ public class ClientCacheConfigurerIntegrationTests {
 		assertClientCacheConfigurerInvokedSuccessfully(this.configurerTwo, "gemfireCache");
 	}
 
-	@ClientCacheApplication
+	@EnableGemFireMockObjects
+	@ClientCacheApplication(logLevel = "error")
 	static class TestConfiguration {
-
-		@Bean
-		GemfireTestBeanPostProcessor testBeanPostProcessor() {
-			return new GemfireTestBeanPostProcessor();
-		}
 
 		@Bean
 		TestClientCacheConfigurer testClientCacheConfigurerOne() {

@@ -17,24 +17,27 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
-import static java.util.Arrays.stream;
-import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
-
+import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
+import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport;
+import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.data.gemfire.util.PropertiesBuilder;
-import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * The {@link SslConfiguration} class is a Spring {@link ImportBeanDefinitionRegistrar} that applies
  * additional configuration using Pivotal GemFire/Apache Geode {@link Properties} to configure SSL.
  *
  * @author John Blum
- * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar
  * @see org.springframework.data.gemfire.config.annotation.EnableSsl
  * @see org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport
  * @since 1.9.0
@@ -42,77 +45,114 @@ import org.springframework.util.ObjectUtils;
 public class SslConfiguration extends EmbeddedServiceConfigurationSupport {
 
 	/**
-	 * Returns the {@link EnableSsl} {@link java.lang.annotation.Annotation} {@link Class} type.
+	 * Returns the {@link EnableSsl} {@link Annotation} {@link Class type}.
 	 *
-	 * @return the {@link EnableSsl} {@link java.lang.annotation.Annotation} {@link Class} type.
+	 * @return the {@link EnableSsl} {@link Annotation} {@link Class type}.
 	 * @see org.springframework.data.gemfire.config.annotation.EnableSsl
 	 */
 	@Override
-	protected Class getAnnotationType() {
+	protected Class<? extends Annotation> getAnnotationType() {
 		return EnableSsl.class;
 	}
 
 	/* (non-Javadoc) */
 	@Override
-	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
+	protected Properties toGemFireProperties(Map<String, Object> annotationAttributesMap) {
+
+		AnnotationAttributes annotationAttributes = AnnotationAttributes.fromMap(annotationAttributesMap);
 
 		PropertiesBuilder gemfireProperties = PropertiesBuilder.create();
 
-		EnableSsl.Component[] components = (EnableSsl.Component[]) annotationAttributes.get("components");
+		Set<EnableSsl.Component> components = resolveComponents(annotationAttributes);
 
-		if (ObjectUtils.isEmpty(components)) {
-			logWarning("SSL will not be configured; No SSL enabled Components %s were specified",
-				Arrays.toString(EnableSsl.Component.values()));
-		}
+		gemfireProperties.setProperty("ssl-enabled-components",
+			StringUtils.collectionToCommaDelimitedString(components.stream()
+				.map(EnableSsl.Component::toString)
+				.collect(Collectors.toSet())))
 
-		stream(nullSafeArray(components, EnableSsl.Component.class)).forEach(component ->
+			.setProperty("ssl-ciphers", resolveProperty(sslProperty("ciphers"),
+				StringUtils.arrayToCommaDelimitedString(annotationAttributes.getStringArray("ciphers"))))
 
-			gemfireProperties.setProperty(String.format("%s-ssl-ciphers", component),
-				resolveProperty(componentSslProperty(component.toString(), "ciphers"),
-					resolveProperty(sslProperty("ciphers"),
-						(String) annotationAttributes.get("ciphers"))))
+			.setPropertyIfNotDefault("ssl-default-alias",
+				resolveProperty(sslProperty("certificate.alias.default"),
+					annotationAttributes.getString("defaultCertificateAlias")), "")
 
-				.setProperty(String.format("%s-ssl-enabled", component),
-					resolveProperty(componentSslProperty(component.toString(), "enabled"),
-						resolveProperty(sslProperty("enabled"), true)))
+			.setProperty("ssl-keystore", resolveProperty(sslProperty("keystore"),
+				annotationAttributes.getString("keystore")))
 
-				.setProperty(String.format("%s-ssl-keystore", component),
-					resolveProperty(componentSslProperty(component.toString(), "keystore"),
-						resolveProperty(sslProperty("keystore"),
-							(String) annotationAttributes.get("keystore"))))
+			.setProperty("ssl-keystore-password", resolveProperty(sslProperty("keystore.password"),
+				annotationAttributes.getString("keystorePassword")))
 
-				.setProperty(String.format("%s-ssl-keystore-password", component),
-					resolveProperty(componentSslProperty(component.toString(), "keystore-password"),
-						resolveProperty(sslProperty("keystore-password"),
-							(String) annotationAttributes.get("keystorePassword"))))
+			.setProperty("ssl-keystore-type", resolveProperty(sslProperty("keystore.type"),
+				annotationAttributes.getString("keystoreType")))
 
-				.setProperty(String.format("%s-ssl-keystore-type", component),
-					resolveProperty(componentSslProperty(component.toString(), "keystore-type"),
-						resolveProperty(sslProperty("keystore-type"),
-							(String) annotationAttributes.get("keystoreType"))))
+			.setProperty("ssl-protocols", resolveProperty(sslProperty("protocols"),
+				StringUtils.arrayToCommaDelimitedString(annotationAttributes.getStringArray("protocols"))))
 
-				.setProperty(String.format("%s-ssl-protocols", component),
-					resolveProperty(componentSslProperty(component.toString(), "protocols"),
-						resolveProperty(sslProperty("protocols"),
-							(String) annotationAttributes.get("protocols"))))
+			.setProperty("ssl-require-authentication",
+				resolveProperty(sslProperty("require-authentication"),
+					annotationAttributes.getBoolean("requireAuthentication")))
 
-				.setProperty(String.format("%s-ssl-require-authentication", component),
-					resolveProperty(componentSslProperty(component.toString(), "require-authentication"),
-						resolveProperty(sslProperty("require-authentication"),
-							Boolean.TRUE.equals(annotationAttributes.get("requireAuthentication")))))
+			.setProperty("ssl-truststore", resolveProperty(sslProperty("truststore"),
+				annotationAttributes.getString("truststore")))
 
-				.setProperty(String.format("%s-ssl-truststore", component),
-					resolveProperty(componentSslProperty(component.toString(), "truststore"),
-						resolveProperty(sslProperty("truststore"),
-							(String) annotationAttributes.get("truststore"))))
+			.setProperty("ssl-truststore-password", resolveProperty(sslProperty("truststore.password"),
+				annotationAttributes.getString("truststorePassword")))
 
-				.setProperty(String.format("%s-ssl-truststore-password", component),
-					resolveProperty(componentSslProperty(component.toString(), "truststore-password"),
-						resolveProperty(sslProperty("truststore-password"),
-							(String) annotationAttributes.get("truststorePassword"))))
+			.setProperty("ssl-truststore-type", resolveProperty(sslProperty("truststore.type"),
+				annotationAttributes.getString("truststoreType")))
 
-		);
+			.setProperty("ssl-web-require-authentication",
+				resolveProperty(sslProperty("web-require-authentication"),
+					annotationAttributes.getBoolean("webRequireAuthentication")));
+
+		configureComponentCertificateAliases(annotationAttributes, gemfireProperties);
 
 		return gemfireProperties.build();
+	}
+
+	private Set<EnableSsl.Component> resolveComponents(AnnotationAttributes annotationAttributes) {
+
+		Set<EnableSsl.Component> components =
+			Arrays.stream(Optional.of(resolveProperty(sslProperty("components"), ""))
+				.filter(StringUtils::hasText)
+				.map(StringUtils::commaDelimitedListToStringArray)
+				.orElseGet(() -> new String[0]))
+				.map(EnableSsl.Component::valueOfName)
+				.collect(Collectors.toSet());
+
+		components = components.isEmpty()
+			? CollectionUtils.asSet((EnableSsl.Component[]) annotationAttributes.get("components"))
+			: components;
+
+		components = components.isEmpty() ? Collections.singleton(EnableSsl.Component.ALL) : components;
+
+		return components;
+	}
+
+	private void configureComponentCertificateAliases(AnnotationAttributes annotationAttributes,
+			PropertiesBuilder gemfireProperties) {
+
+		AnnotationAttributes[] componentCertificateAliases =
+			annotationAttributes.getAnnotationArray("componentCertificateAliases");
+
+		Arrays.stream(componentCertificateAliases).forEach(aliasAttributes -> {
+
+			EnableSsl.Component component = aliasAttributes.getEnum("component");
+			String alias = aliasAttributes.getString("alias");
+
+			gemfireProperties.setProperty(String.format("ssl-%s-alias", component), alias);
+		});
+
+		Arrays.stream(EnableSsl.Component.values()).forEach(component -> {
+
+			String propertyNameSuffix = String.format("certificate.alias.%s", component);
+
+			Optional.ofNullable(resolveProperty(sslProperty(propertyNameSuffix), ""))
+				.filter(StringUtils::hasText)
+				.ifPresent(alias ->
+					gemfireProperties.setProperty(String.format("ssl-%s-alias", component),
+						StringUtils.trimWhitespace(alias)));
+		});
 	}
 }

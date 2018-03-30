@@ -64,13 +64,15 @@ public class ClientServerIntegrationTestsSupport {
 	protected static final String DEFAULT_HOSTNAME = "localhost";
 	protected static final String DIRECTORY_DELETE_ON_EXIT_PROPERTY = "spring.data.gemfire.directory.delete-on-exit";
 	protected static final String GEMFIRE_CACHE_SERVER_PORT_PROPERTY = "spring.data.gemfire.cache.server.port";
+	protected static final String GEMFIRE_POOL_LOCATORS_PROPERTY = "spring.data.gemfire.pool.locators";
+	protected static final String GEMFIRE_POOL_SERVERS_PROPERTY = "spring.data.gemfire.pool.servers";
 	protected static final String GEMFIRE_LOG_FILE = "gemfire-server.log";
 	protected static final String GEMFIRE_LOG_FILE_PROPERTY = "spring.data.gemfire.log.file";
-	protected static final String GEMFIRE_LOG_LEVEL = "warning";
+	protected static final String GEMFIRE_LOG_LEVEL = "error";
 	protected static final String GEMFIRE_LOG_LEVEL_PROPERTY = "spring.data.gemfire.log.level";
 	protected static final String PROCESS_RUN_MANUAL_PROPERTY = "spring.data.gemfire.process.run-manual";
 	protected static final String SYSTEM_PROPERTIES_LOG_FILE = "system-properties.log";
-	protected static final String TEST_GEMFIRE_LOG_LEVEL = "warning";
+	protected static final String TEST_GEMFIRE_LOG_LEVEL = "error";
 
 	/* (non-Javadoc) */
 	protected static String asApplicationName(Class<?> type) {
