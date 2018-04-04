@@ -3,6 +3,16 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.9.11.RELEASE (2018-04-04)
+----------------------------------------------
+* SGF-728 - Remove explicit declaration of Jackson library versions.
+* SGF-726 - Impossible to define event filter for AsyncEventQueue.
+* SGF-722 - Upgrade to Pivotal GemFire 8.2.9.
+* SGF-719 - Extend MappingPdxSerializer to allow registering custom PdxSerializers based on fully qualified property name.
+* SGF-715 - Release 1.9.11 (Ingalls SR11).
+* SGF-713 - Override generated OQL from Repository query methods.
+
+
 Changes in version 2.0.5.RELEASE (2018-02-28)
 ---------------------------------------------
 * SGF-721 - Release 2.0.5 (Kay SR5).
