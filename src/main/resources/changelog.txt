@@ -3,6 +3,16 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.0.6.RELEASE (2018-04-04)
+---------------------------------------------
+* SGF-729 - Realign SSL configuration using @EnableSsl with Apache Geode's SSL configuration properties.
+* SGF-728 - Remove explicit declaration of Jackson library versions.
+* SGF-727 - Remove all git merge conflict tags in SDG source code Javadoc.
+* SGF-726 - Impossible to define event filter for AsyncEventQueue.
+* SGF-724 - Add configuration support for critical and eviction off-heap percentages in client, peer and cache server application annotations.
+* SGF-723 - Release 2.0.6 (Kay SR6).
+
+
 Changes in version 1.9.11.RELEASE (2018-04-04)
 ----------------------------------------------
 * SGF-728 - Remove explicit declaration of Jackson library versions.
