@@ -32,7 +32,7 @@
 			  ping-interval="5000" pr-single-hop-enabled="false" read-timeout="500" retry-attempts="5"
 			  server-group="TestGroup" socket-buffer-size="65536" statistic-interval="250"
 			  subscription-ack-interval="250" subscription-enabled="true" subscription-message-tracking-timeout="30000"
-			  subscription-redundancy="2" thread-local-connections="false">
+			  subscription-redundancy="2" subscription-timeout-multiplier="3" thread-local-connections="false">
 		<gfe:server host="localhost" port="${gfe.port.4}"/>
 		<gfe:server host="localhost" port="50505"/>
 	</gfe:pool>

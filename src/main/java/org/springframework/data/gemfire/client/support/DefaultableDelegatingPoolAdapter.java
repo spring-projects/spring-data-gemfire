@@ -196,6 +196,11 @@ public abstract class DefaultableDelegatingPoolAdapter {
 		return defaultIfNull(defaultSubscriptionRedundancy, () -> getDelegate().getSubscriptionRedundancy());
 	}
 
+	public int getSubscriptionTimeoutMultiplier(Integer defaultSubscriptionTimeoutMultiplier) {
+		return defaultIfNull(defaultSubscriptionTimeoutMultiplier,
+			() -> getDelegate().getSubscriptionTimeoutMultiplier());
+	}
+
 	public boolean getThreadLocalConnections(Boolean defaultThreadLocalConnections) {
 		return defaultIfNull(defaultThreadLocalConnections, () -> getDelegate().getThreadLocalConnections());
 	}
@@ -204,7 +209,7 @@ public abstract class DefaultableDelegatingPoolAdapter {
 		getDelegate().destroy();
 	}
 
-	public void destroy(boolean keepAlive) {
+	public void destroy(final boolean keepAlive) {
 		getDelegate().destroy(keepAlive);
 	}
 
@@ -217,5 +222,9 @@ public abstract class DefaultableDelegatingPoolAdapter {
 		PREFER_DEFAULT,
 		PREFER_POOL
 
+	}
+
+	interface ValueProvider<T> {
+		T getValue();
 	}
 }

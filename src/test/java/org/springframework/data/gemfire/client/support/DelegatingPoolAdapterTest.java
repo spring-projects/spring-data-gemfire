@@ -105,6 +105,7 @@ public class DelegatingPoolAdapterTest {
 		when(this.mockPool.getSubscriptionEnabled()).thenReturn(true);
 		when(this.mockPool.getSubscriptionMessageTrackingTimeout()).thenReturn(60000);
 		when(this.mockPool.getSubscriptionRedundancy()).thenReturn(2);
+		when(this.mockPool.getSubscriptionTimeoutMultiplier()).thenReturn(3);
 		when(this.mockPool.getThreadLocalConnections()).thenReturn(false);
 	}
 
@@ -143,6 +144,7 @@ public class DelegatingPoolAdapterTest {
 		assertThat(pool.getSubscriptionEnabled(), is(equalTo(true)));
 		assertThat(pool.getSubscriptionMessageTrackingTimeout(), is(equalTo(60000)));
 		assertThat(pool.getSubscriptionRedundancy(), is(equalTo(2)));
+		assertThat(pool.getSubscriptionTimeoutMultiplier(), is(equalTo(3)));
 		assertThat(pool.getThreadLocalConnections(), is(equalTo(false)));
 
 		verify(this.mockPool, times(1)).isDestroyed();
@@ -169,6 +171,7 @@ public class DelegatingPoolAdapterTest {
 		verify(this.mockPool, times(1)).getSubscriptionEnabled();
 		verify(this.mockPool, times(1)).getSubscriptionMessageTrackingTimeout();
 		verify(this.mockPool, times(1)).getSubscriptionRedundancy();
+		verify(this.mockPool, times(1)).getSubscriptionTimeoutMultiplier();
 		verify(this.mockPool, times(1)).getThreadLocalConnections();
 	}
 
@@ -214,6 +217,7 @@ public class DelegatingPoolAdapterTest {
 		assertThat(pool.getSubscriptionEnabled(), is(equalTo(PoolFactory.DEFAULT_SUBSCRIPTION_ENABLED)));
 		assertThat(pool.getSubscriptionMessageTrackingTimeout(), is(equalTo(PoolFactory.DEFAULT_SUBSCRIPTION_MESSAGE_TRACKING_TIMEOUT)));
 		assertThat(pool.getSubscriptionRedundancy(), is(equalTo(PoolFactory.DEFAULT_SUBSCRIPTION_REDUNDANCY)));
+		assertThat(pool.getSubscriptionTimeoutMultiplier(), is(equalTo(PoolFactory.DEFAULT_SUBSCRIPTION_TIMEOUT_MULTIPLIER)));
 		assertThat(pool.getThreadLocalConnections(), is(equalTo(PoolFactory.DEFAULT_THREAD_LOCAL_CONNECTIONS)));
 
 		verifyZeroInteractions(this.mockPool);

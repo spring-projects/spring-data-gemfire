@@ -259,6 +259,12 @@ public abstract class DelegatingPoolAdapter extends FactoryDefaultsPoolAdapter {
 	}
 
 	@Override
+	public int getSubscriptionTimeoutMultiplier() {
+		return Optional.ofNullable(getDelegate()).map(Pool::getSubscriptionTimeoutMultiplier)
+			.orElseGet(super::getSubscriptionTimeoutMultiplier);
+	}
+
+	@Override
 	public boolean getThreadLocalConnections() {
 
 		return Optional.ofNullable(getDelegate())

@@ -20,47 +20,58 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
 /**
- * Creates a GemFire {@link Execution} using {code}FunctionService.onServer(Pool pool){code}
- * @author David Turanski
+ * Creates an {@link Execution} from {@link FunctionService#onServer(Pool)}.
  *
+ * @author David Turanski
+ * @author John Blum
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.data.gemfire.function.execution.AbstractFunctionExecution
  */
 class PoolServerFunctionExecution extends AbstractFunctionExecution implements InitializingBean {
 
-
 	private Pool pool;
-	private String poolname;
 
+	private String poolName;
 
     /**
-     * @param pool the {@link Pool}
+	 * Constructs a new instance of {@link PoolServerFunctionExecution} initialized with the given {@link Pool}.
+	 *
+     * @param pool {@link Pool} used to initialize the {@link Execution}.
+	 * @throws IllegalArgumentException if {@link Pool} is {@literal null}.
+	 * @see org.apache.geode.cache.client.Pool
      */
 	public PoolServerFunctionExecution(Pool pool) {
-		super();
-		Assert.notNull(pool, "pool cannot be null");
+
+		Assert.notNull(pool, "Pool must not be null");
+
 		this.pool = pool;
 	}
 
-	public PoolServerFunctionExecution(String poolname) {
-		super();
-		Assert.notNull(poolname, "pool name cannot be null");
-		this.poolname = poolname;
+	/**
+	 * Constructs a new instance of {@link PoolServerFunctionExecution} initialized with
+	 * the given {@link String name} of the {@link Pool}.
+	 *
+	 * @param poolName {@link String} containing the name of the {@link Pool}
+	 * used to initialize the {@link Execution}.
+	 * @throws IllegalArgumentException if {@link String poolName} is {@literal null} or empty.
+	 */
+	public PoolServerFunctionExecution(String poolName) {
 
+		Assert.hasText(poolName, "Pool name must not be null or empty");
+
+		this.poolName = poolName;
 	}
-
 
 	@Override
 	protected Execution getExecution() {
 		return FunctionService.onServer(this.pool);
 	}
 
-
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		this.pool = PoolManager.find(poolname);
-		Assert.notNull(pool," pool " + poolname+ " does not exist");
 
+		this.pool = PoolManager.find(this.poolName);
+
+		Assert.notNull(this.pool,String.format("Pool [%s] not found", this.poolName));
 	}
 }

@@ -78,7 +78,6 @@ public abstract class PoolAdapter implements Pool {
 		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
 
-	@Override
 	public List<InetSocketAddress> getOnlineLocators() {
 		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
@@ -140,6 +139,10 @@ public abstract class PoolAdapter implements Pool {
 	}
 
 	public int getSubscriptionRedundancy() {
+		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
+	}
+
+	public int getSubscriptionTimeoutMultiplier() {
 		throw new UnsupportedOperationException(NOT_IMPLEMENTED);
 	}
 

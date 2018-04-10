@@ -158,6 +158,7 @@ public class PoolParserUnitTests {
 	}
 
 	@Test
+	@SuppressWarnings("all")
 	public void doParse() {
 
 		Element mockPoolElement = mock(Element.class, "testDoParse.MockPoolElement");
@@ -186,6 +187,7 @@ public class PoolParserUnitTests {
 		when(mockPoolElement.getAttribute(eq("subscription-enabled"))).thenReturn("true");
 		when(mockPoolElement.getAttribute(eq("subscription-message-tracking-timeout"))).thenReturn("30000");
 		when(mockPoolElement.getAttribute(eq("subscription-redundancy"))).thenReturn("2");
+		when(mockPoolElement.getAttribute(eq("subscription-timeout-multiplier"))).thenReturn("3");
 		when(mockPoolElement.getAttribute(eq("thread-local-connections"))).thenReturn("false");
 		when(mockPoolElement.getAttribute(PoolParser.LOCATORS_ATTRIBUTE_NAME)).thenReturn(null);
 		when(mockPoolElement.getAttribute(PoolParser.SERVERS_ATTRIBUTE_NAME)).thenReturn(null);
@@ -232,6 +234,7 @@ public class PoolParserUnitTests {
 		assertPropertyValue(poolDefinition, "subscriptionEnabled", "true");
 		assertPropertyValue(poolDefinition, "subscriptionMessageTrackingTimeout", "30000");
 		assertPropertyValue(poolDefinition, "subscriptionRedundancy", "2");
+		assertPropertyValue(poolDefinition, "subscriptionTimeoutMultiplier", "3");
 		assertPropertyValue(poolDefinition, "threadLocalConnections", "false");
 		assertPropertyPresent(poolDefinition, "locators");
 		assertPropertyPresent(poolDefinition, "servers");

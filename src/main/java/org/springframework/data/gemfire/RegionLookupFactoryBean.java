@@ -205,6 +205,7 @@ public abstract class RegionLookupFactoryBean<K, V> extends AbstractFactoryBeanS
 	}
 
 	/**
+>>>>>>> SGF-734 - Upgrade to Pivotal GemFire 9.4.
 	 * Returns a reference to the {@link GemFireCache} used to create the {@link Region}.
 	 *
 	 * @return a reference to the {@link GemFireCache} used to create the {@link Region}..

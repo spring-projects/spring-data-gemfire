@@ -2666,6 +2666,7 @@ Comma-delimited list of Server endpoints used by this Pool in the form of: host1
 			<xsd:attribute name="subscription-enabled" type="xsd:string" use="optional"/>
 			<xsd:attribute name="subscription-message-tracking-timeout" type="xsd:string" use="optional"/>
 			<xsd:attribute name="subscription-redundancy" type="xsd:string" use="optional"/>
+			<xsd:attribute name="subscription-timeout-multiplier" type="xsd:string" use="optional"/>
 			<xsd:attribute name="thread-local-connections" type="xsd:string" use="optional"/>
 		</xsd:complexType>
 	</xsd:element>

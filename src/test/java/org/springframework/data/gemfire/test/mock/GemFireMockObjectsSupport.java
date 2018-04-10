@@ -2056,9 +2056,9 @@ public abstract class GemFireMockObjectsSupport extends MockObjectsSupport {
 		return rememberMockedRegion(mockRegion);
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("all")
 	private static <K, V> RegionAttributes<K, V> mockRegionAttributes(Region<K, V> mockRegion,
-		RegionAttributes<K, V> baseRegionAttributes) {
+			RegionAttributes<K, V> baseRegionAttributes) {
 
 		AttributesMutator<K, V> mockAttributesMutator = mock(AttributesMutator.class);
 
@@ -2461,7 +2461,13 @@ public abstract class GemFireMockObjectsSupport extends MockObjectsSupport {
 		when(mockRegionFactory.setMulticastEnabled(anyBoolean()))
 			.thenAnswer(newSetter(multicastEnabled, mockRegionFactory));
 
-		when(mockRegionFactory.setOffHeap(anyBoolean())).thenAnswer(newSetter(offHeap, mockRegionFactory));
+		//when(mockRegionFactory.setOffHeap(anyBoolean())).thenAnswer(newSetter(offHeap, mockRegionFactory));
+
+		when(mockRegionFactory.setOffHeap(anyBoolean())).thenAnswer(invocation -> {
+			Boolean value = invocation.getArgument(0);
+			offHeap.set(value);
+			return mockRegionFactory;
+		});
 
 		when(mockRegionFactory.setPartitionAttributes(any(PartitionAttributes.class)))
 			.thenAnswer(newSetter(partitionAttributes, mockRegionFactory));

@@ -44,8 +44,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ObjectUtils;
 
 /**
- * The LocalRegionNamespaceTest class is a test suite of test cases testing the contract and functionality
- * of GemFire's Local Region support in SDG.
+ * Unit tests for the Local Region Namespace.
  *
  * @author Costin Leau
  * @author David Turanski
@@ -56,6 +55,7 @@ import org.springframework.util.ObjectUtils;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(locations="local-ns.xml",
 	initializers = GemFireMockObjectsApplicationContextInitializer.class)
+@SuppressWarnings("unused")
 public class LocalRegionNamespaceTest {
 
 	@Autowired
@@ -63,6 +63,8 @@ public class LocalRegionNamespaceTest {
 
 	@Test
 	public void testSimpleLocalRegion() throws Exception {
+
+		assertTrue(applicationContext.containsBean("simple"));
 
 		assertTrue(applicationContext.containsBean("simple"));
 

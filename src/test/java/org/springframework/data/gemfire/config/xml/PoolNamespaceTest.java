@@ -32,7 +32,7 @@ import org.springframework.data.gemfire.support.ConnectionEndpoint;
 import org.springframework.data.gemfire.support.ConnectionEndpointList;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Integration tests for {@link PoolParser} and {@link PoolFactoryBean}.
@@ -46,7 +46,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @see org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer
  * @see org.apache.geode.cache.client.Pool
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(locations = "pool-ns.xml", initializers = GemfireTestApplicationContextInitializer.class)
 @SuppressWarnings("unused")
 public class PoolNamespaceTest {
@@ -55,7 +55,7 @@ public class PoolNamespaceTest {
 	private ApplicationContext applicationContext;
 
 	protected void assertConnectionEndpoint(ConnectionEndpointList connectionEndpoints,
-		String expectedHost, int expectedPort) {
+			String expectedHost, int expectedPort) {
 
 		assertThat(connectionEndpoints).isNotNull();
 		assertThat(connectionEndpoints.size()).isEqualTo(1);
@@ -77,6 +77,7 @@ public class PoolNamespaceTest {
 
 	@Test
 	public void gemfirePoolIsConfiguredProperly() throws Exception {
+
 		assertThat(applicationContext.containsBean("gemfirePool")).isTrue();
 		assertThat(applicationContext.containsBean("gemfire-pool")).isTrue();
 
@@ -89,6 +90,7 @@ public class PoolNamespaceTest {
 
 	@Test
 	public void simplePoolIsConfiguredProperly() throws Exception {
+
 		assertThat(applicationContext.containsBean("simple")).isTrue();
 
 		PoolFactoryBean poolFactoryBean = applicationContext.getBean("&simple", PoolFactoryBean.class);
@@ -104,6 +106,7 @@ public class PoolNamespaceTest {
 
 	@Test
 	public void locatorPoolIsConfiguredProperly() throws Exception {
+
 		assertThat(applicationContext.containsBean("locator")).isTrue();
 
 		PoolFactoryBean poolFactoryBean = applicationContext.getBean("&locator", PoolFactoryBean.class);
@@ -125,6 +128,7 @@ public class PoolNamespaceTest {
 
 	@Test
 	public void serverPoolIsConfiguredProperly() throws Exception {
+
 		assertThat(applicationContext.containsBean("server")).isTrue();
 
 		PoolFactoryBean poolFactoryBean = applicationContext.getBean("&server", PoolFactoryBean.class);
@@ -149,6 +153,7 @@ public class PoolNamespaceTest {
 		assertThat(pool.getSubscriptionEnabled()).isTrue();
 		assertThat(pool.getSubscriptionMessageTrackingTimeout()).isEqualTo(30000);
 		assertThat(pool.getSubscriptionRedundancy()).isEqualTo(2);
+		assertThat(pool.getSubscriptionTimeoutMultiplier()).isEqualTo(3);
 		assertThat(pool.getThreadLocalConnections()).isFalse();
 
 		ConnectionEndpointList servers = TestUtils.readField("servers", poolFactoryBean);
@@ -164,6 +169,7 @@ public class PoolNamespaceTest {
 
 	@Test
 	public void locatorsPoolIsConfiguredProperly() throws Exception {
+
 		assertThat(applicationContext.containsBean("locators")).isTrue();
 
 		PoolFactoryBean poolFactoryBean = applicationContext.getBean("&locators", PoolFactoryBean.class);
@@ -183,6 +189,7 @@ public class PoolNamespaceTest {
 
 	@Test
 	public void serversPoolIsConfiguredProperly() throws Exception {
+
 		assertThat(applicationContext.containsBean("servers")).isTrue();
 
 		PoolFactoryBean poolFactoryBean = applicationContext.getBean("&servers", PoolFactoryBean.class);

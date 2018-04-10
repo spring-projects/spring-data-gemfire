@@ -33,6 +33,7 @@ import org.springframework.util.Assert;
  * @author David Turanski
  * @author John Blum
  */
+@SuppressWarnings("unused")
 abstract class AbstractFunctionExecution {
 
 	private final static String NO_RESULT_MESSAGE = "Cannot return any result as the Function#hasResult() is false";
@@ -60,14 +61,13 @@ abstract class AbstractFunctionExecution {
 
 	public AbstractFunctionExecution(String functionId, Object... args) {
 
-		Assert.hasText(functionId, "FunctionId cannot be null or empty");
+		Assert.hasText(functionId, "Function ID must not be null or empty");
 
 		this.functionId = functionId;
 		this.args = args;
 	}
 
-	AbstractFunctionExecution() {
-	}
+	AbstractFunctionExecution() { }
 
 	Object[] getArgs() {
 		return this.args;

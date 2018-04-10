@@ -56,7 +56,7 @@ import org.mockito.junit.MockitoJUnitRunner;
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
  * @see org.mockito.Mockito
- * @see org.mockito.runners.MockitoJUnitRunner
+ * @see org.mockito.junit.MockitoJUnitRunner
  * @see org.springframework.data.gemfire.function.execution.AbstractFunctionExecution
  * @see org.apache.geode.cache.execute.Execution
  * @since 1.7.0
@@ -65,12 +65,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class AbstractFunctionExecutionTest {
 
 	@Rule
-	public ExpectedException expectedException = ExpectedException.none();
+	public ExpectedException exception = ExpectedException.none();
 
 	@Mock
 	private Execution mockExecution;
-
-	// TODO: add more tests!!!
 
 	@Test
 	@SuppressWarnings("unchecked")
@@ -99,7 +97,7 @@ public class AbstractFunctionExecutionTest {
 			.setArgs(args).setTimeout(500).execute();
 
 		assertThat(actualResults, is(notNullValue()));
-		assertThat(actualResults, is(equalTo((Iterable<Object>) results)));
+		assertThat(actualResults, is(equalTo(results)));
 
 		verify(mockExecution, times(1)).setArguments(eq(args));
 		verify(mockExecution, never()).withCollector(any(ResultCollector.class));
@@ -112,10 +110,13 @@ public class AbstractFunctionExecutionTest {
 
 	@Test
 	public void executeAndExtractWithSingleResult() {
-		final List<String> results = Collections.singletonList("test");
+
+		List<String> results = Collections.singletonList("test");
 
 		AbstractFunctionExecution functionExecution = new AbstractFunctionExecution() {
-			@Override protected Execution getExecution() {
+
+			@Override
+			protected Execution getExecution() {
 				return mockExecution;
 			}
 
@@ -130,10 +131,13 @@ public class AbstractFunctionExecutionTest {
 
 	@Test
 	public void executeAndExtractWithMultipleResults() {
-		final List<String> results = Arrays.asList("one", "two", "three");
+
+		List<String> results = Arrays.asList("one", "two", "three");
 
 		AbstractFunctionExecution functionExecution = new AbstractFunctionExecution() {
-			@Override protected Execution getExecution() {
+
+			@Override
+			protected Execution getExecution() {
 				return mockExecution;
 			}
 
@@ -148,8 +152,11 @@ public class AbstractFunctionExecutionTest {
 
 	@Test
 	public void executeAndExtractWithNullResults() {
+
 		AbstractFunctionExecution functionExecution = new AbstractFunctionExecution() {
-			@Override protected Execution getExecution() {
+
+			@Override
+			protected Execution getExecution() {
 				return mockExecution;
 			}
 
@@ -164,8 +171,11 @@ public class AbstractFunctionExecutionTest {
 
 	@Test
 	public void executeAndExtractWithNoResults() {
+
 		AbstractFunctionExecution functionExecution = new AbstractFunctionExecution() {
-			@Override protected Execution getExecution() {
+
+			@Override
+			protected Execution getExecution() {
 				return mockExecution;
 			}
 
@@ -194,11 +204,10 @@ public class AbstractFunctionExecutionTest {
 			}
 		};
 
-		expectedException.expect(FunctionException.class);
-		expectedException.expectCause(isA(IllegalArgumentException.class));
-		expectedException.expectMessage(containsString("Execution of Function with ID [TestFunction] failed"));
+		exception.expect(FunctionException.class);
+		exception.expectCause(isA(IllegalArgumentException.class));
+		exception.expectMessage(containsString("Execution of Function with ID [TestFunction] failed"));
 
 		functionExecution.setFunctionId("TestFunction").executeAndExtract();
 	}
-
 }

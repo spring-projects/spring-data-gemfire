@@ -123,6 +123,7 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 		ParsingUtils.setPropertyValue(element, poolBuilder, "subscription-enabled");
 		ParsingUtils.setPropertyValue(element, poolBuilder, "subscription-message-tracking-timeout");
 		ParsingUtils.setPropertyValue(element, poolBuilder, "subscription-redundancy");
+		ParsingUtils.setPropertyValue(element, poolBuilder, "subscription-timeout-multiplier");
 		ParsingUtils.setPropertyValue(element, poolBuilder, "thread-local-connections");
 
 		List<Element> childElements = DomUtils.getChildElements(element);

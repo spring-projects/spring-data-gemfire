@@ -57,13 +57,13 @@ import org.junit.Test;
  */
 public class LookupRegionFactoryBeanTest {
 
-	protected AsyncEventQueue mockAsyncEventQueue(final String id) {
+	private AsyncEventQueue mockAsyncEventQueue(final String id) {
 		AsyncEventQueue mockQueue = mock(AsyncEventQueue.class, String.format("MockAsyncEventQueue.%1$s", id));
 		when(mockQueue.getId()).thenReturn(id);
 		return mockQueue;
 	}
 
-	protected GatewaySender mockGatewaySender(final String id) {
+	private GatewaySender mockGatewaySender(final String id) {
 		GatewaySender mockGatewaySender = mock(GatewaySender.class, String.format("MockGatewaySender.%1$s", id));
 		when(mockGatewaySender.getId()).thenReturn(id);
 		return mockGatewaySender;
@@ -72,6 +72,7 @@ public class LookupRegionFactoryBeanTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testAfterPropertiesSet() throws Exception {
+
 		Cache mockCache = mock(Cache.class, "testAfterPropertiesSet.MockCache");
 
 		Region<Object, Object> mockRegion = mock(Region.class, "testAfterPropertiesSet.MockRegion");
@@ -163,24 +164,25 @@ public class LookupRegionFactoryBeanTest {
 	@Test(expected = IllegalStateException.class)
 	@SuppressWarnings("unchecked")
 	public void testAfterPropertiesSetWhenRegionStatisticsDisabledAndExpirationSpecified() throws Exception {
-		Cache mockCache = mock(Cache.class, "testAfterPropertiesSetWhenRegionStatisticsDisabledAndExpirationSpecified.MockCache");
 
-		Region<Object, Object> mockRegion = mock(Region.class, "testAfterPropertiesSetWhenRegionStatisticsDisabledAndExpirationSpecified.MockRegion");
+		Cache mockCache = mock(Cache.class);
 
-		RegionAttributes<Object, Object> mockRegionAttributes = mock(RegionAttributes.class,
-			"testAfterPropertiesSetWhenRegionStatisticsDisabledAndExpirationSpecified.MockRegionAttributes");
+		Region<Object, Object> mockRegion = mock(Region.class);
 
-		AttributesMutator mockAttributesMutator = mock(AttributesMutator.class,
-			"testAfterPropertiesSetWhenRegionStatisticsDisabledAndExpirationSpecified.MockAttributesMutator");
+		RegionAttributes<Object, Object> mockRegionAttributes = mock(RegionAttributes.class);
 
-		ExpirationAttributes mockExpirationAttributesEntryTtl = mock(ExpirationAttributes.class,
-			"testAfterPropertiesSetWhenRegionStatisticsDisabledAndExpirationSpecified.MockExpirationAttributes.Entry.TTL");
+		AttributesMutator mockAttributesMutator = mock(AttributesMutator.class);
+
+		EvictionAttributesMutator mockEvictionAttributesMutator = mock(EvictionAttributesMutator.class);
+
+		ExpirationAttributes mockExpirationAttributesEntryTtl = mock(ExpirationAttributes.class);
 
 		when(mockCache.getRegion(eq("Example"))).thenReturn(mockRegion);
 		when(mockRegion.getFullPath()).thenReturn("/Example");
 		when(mockRegion.getName()).thenReturn("Example");
 		when(mockRegion.getAttributes()).thenReturn(mockRegionAttributes);
 		when(mockRegion.getAttributesMutator()).thenReturn(mockAttributesMutator);
+		when(mockAttributesMutator.getEvictionAttributesMutator()).thenReturn(mockEvictionAttributesMutator);
 		when(mockRegionAttributes.getStatisticsEnabled()).thenReturn(false);
 
 		LookupRegionFactoryBean factoryBean = new LookupRegionFactoryBean();
@@ -207,6 +209,7 @@ public class LookupRegionFactoryBeanTest {
 
 	@Test
 	public void testIsLookupEnabledAlways() {
+
 		LookupRegionFactoryBean factoryBean = new LookupRegionFactoryBean();
 
 		assertTrue(factoryBean.isLookupEnabled());
@@ -215,5 +218,4 @@ public class LookupRegionFactoryBeanTest {
 
 		assertTrue(factoryBean.isLookupEnabled());
 	}
-
 }

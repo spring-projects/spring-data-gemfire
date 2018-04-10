@@ -51,8 +51,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ObjectUtils;
 
 /**
- * The PartitionRegionNamespaceTest class is a test suite of test cases testing the contract and functionality
- * of the GemFire Partition Region support in SDG.
+ * Unit tests for the Partitioned Region Namespace.
  *
  * @author Costin Leau
  * @author David Turanski

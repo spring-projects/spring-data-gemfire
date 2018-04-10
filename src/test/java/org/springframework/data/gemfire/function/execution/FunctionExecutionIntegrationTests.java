@@ -49,6 +49,7 @@ public class FunctionExecutionIntegrationTests extends ClientServerIntegrationTe
 
 	@BeforeClass
 	public static void startGemFireServer() throws Exception {
+
 		availablePort = findAvailablePort();
 
 		gemfireServer = run(FunctionCacheServerProcess.class,
@@ -67,24 +68,35 @@ public class FunctionExecutionIntegrationTests extends ClientServerIntegrationTe
 
 	@Before
 	public void setupGemFireClient() {
-		gemfireCache = new ClientCacheFactory()
-			.set("name", "FunctionExecutionIntegrationTests")
-			.set("log-level", "warning")
+
+		this.gemfireCache = new ClientCacheFactory()
+			.set("name", FunctionExecutionIntegrationTests.class.getSimpleName())
+			.set("log-level", "error")
 			.setPoolSubscriptionEnabled(true)
 			.addPoolServer("localhost", availablePort)
 			.create();
 
-		gemfirePool = PoolManager.find("DEFAULT");
+		assertThat(this.gemfireCache).isNotNull();
+		assertThat(this.gemfireCache.getName()).isEqualTo(FunctionExecutionIntegrationTests.class.getSimpleName());
 
-		gemfireRegion = gemfireCache.<String, String>createClientRegionFactory(ClientRegionShortcut.PROXY)
+		this.gemfireRegion = this.gemfireCache.<String, String>createClientRegionFactory(ClientRegionShortcut.PROXY)
 			.create("test-function");
+
+		assertThat(this.gemfireRegion).isNotNull();
+		assertThat(this.gemfireRegion.getName()).isEqualTo("test-function");
+
+		this.gemfirePool = PoolManager.find("DEFAULT");
+
+		assertThat(this.gemfirePool).isNotNull();
+		assertThat(this.gemfirePool.getName()).isEqualTo("DEFAULT");
 	}
 
 	@After
 	public void tearDownGemFireClient() {
-		if (gemfireCache != null) {
+
+		if (this.gemfireCache != null) {
 			try {
-				gemfireCache.close();
+				this.gemfireCache.close();
 			}
 			catch (CacheClosedException ignore) {
 			}
@@ -93,6 +105,7 @@ public class FunctionExecutionIntegrationTests extends ClientServerIntegrationTe
 
 	@Test
 	public void basicFunctionExecutionsAreCorrect() {
+
 		verifyFunctionExecution(new PoolServerFunctionExecution(gemfirePool));
 		verifyFunctionExecution(new RegionFunctionExecution(gemfireRegion));
 		verifyFunctionExecution(new ServerFunctionExecution(gemfireCache));
@@ -100,7 +113,9 @@ public class FunctionExecutionIntegrationTests extends ClientServerIntegrationTe
 	}
 
 	private void verifyFunctionExecution(AbstractFunctionExecution functionExecution) {
+
 		Iterable<String> results = functionExecution.setArgs("1", "2", "3").setFunctionId("echoFunction").execute();
+
 		int count = 1;
 
 		for (String result : results) {

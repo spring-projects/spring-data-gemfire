@@ -54,7 +54,7 @@ import org.springframework.data.gemfire.GemfireUtils;
  * @see org.junit.rules.ExpectedException
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
- * @see org.mockito.runners.MockitoJUnitRunner
+ * @see org.mockito.junit.MockitoJUnitRunner
  * @see org.springframework.data.gemfire.client.support.DefaultableDelegatingPoolAdapter
  * @since 1.8.0
  */
@@ -106,6 +106,7 @@ public class DefaultableDelegatingPoolAdapterTest {
 		when(this.mockPool.getSubscriptionEnabled()).thenReturn(true);
 		when(this.mockPool.getSubscriptionMessageTrackingTimeout()).thenReturn(20000);
 		when(this.mockPool.getSubscriptionRedundancy()).thenReturn(2);
+		when(this.mockPool.getSubscriptionTimeoutMultiplier()).thenReturn(3);
 		when(this.mockPool.getThreadLocalConnections()).thenReturn(false);
 
 		setupPoolAdapter();
@@ -337,6 +338,7 @@ public class DefaultableDelegatingPoolAdapterTest {
 		assertThat(this.poolAdapter.getSubscriptionEnabled(false), is(equalTo(false)));
 		assertThat(this.poolAdapter.getSubscriptionMessageTrackingTimeout(15000), is(equalTo(15000)));
 		assertThat(this.poolAdapter.getSubscriptionRedundancy(1), is(equalTo(1)));
+		assertThat(this.poolAdapter.getSubscriptionTimeoutMultiplier(1), is(equalTo(1)));
 		assertThat(this.poolAdapter.getThreadLocalConnections(true), is(equalTo(true)));
 
 		verify(this.mockPool, times(1)).getName();
@@ -376,7 +378,8 @@ public class DefaultableDelegatingPoolAdapterTest {
 		assertThat(this.poolAdapter.getSubscriptionAckInterval(50), is(equalTo(50)));
 		assertThat(this.poolAdapter.getSubscriptionEnabled(true), is(equalTo(true)));
 		assertThat(this.poolAdapter.getSubscriptionMessageTrackingTimeout(null), is(equalTo(20000)));
-		assertThat(this.poolAdapter.getSubscriptionRedundancy(null), is(equalTo(2)));
+		assertThat(this.poolAdapter.getSubscriptionRedundancy(1), is(equalTo(1)));
+		assertThat(this.poolAdapter.getSubscriptionTimeoutMultiplier(null), is(equalTo(3)));
 		assertThat(this.poolAdapter.getThreadLocalConnections(null), is(equalTo(false)));
 
 		verify(this.mockPool, times(1)).getFreeConnectionTimeout();
@@ -392,7 +395,7 @@ public class DefaultableDelegatingPoolAdapterTest {
 		verify(this.mockPool, times(1)).getSocketConnectTimeout();
 		verify(this.mockPool, times(1)).getStatisticInterval();
 		verify(this.mockPool, times(1)).getSubscriptionMessageTrackingTimeout();
-		verify(this.mockPool, times(1)).getSubscriptionRedundancy();
+		verify(this.mockPool, times(1)).getSubscriptionTimeoutMultiplier();
 		verify(this.mockPool, times(1)).getThreadLocalConnections();
 		verifyNoMoreInteractions(this.mockPool);
 	}
@@ -429,6 +432,7 @@ public class DefaultableDelegatingPoolAdapterTest {
 		assertThat(this.poolAdapter.getSubscriptionEnabled(null), is(equalTo(true)));
 		assertThat(this.poolAdapter.getSubscriptionMessageTrackingTimeout(null), is(equalTo(20000)));
 		assertThat(this.poolAdapter.getSubscriptionRedundancy(null), is(equalTo(2)));
+		assertThat(this.poolAdapter.getSubscriptionTimeoutMultiplier(null), is(equalTo(3)));
 		assertThat(this.poolAdapter.getThreadLocalConnections(null), is(equalTo(false)));
 
 		verify(this.mockPool, times(1)).getFreeConnectionTimeout();
@@ -454,6 +458,7 @@ public class DefaultableDelegatingPoolAdapterTest {
 		verify(this.mockPool, times(1)).getSubscriptionEnabled();
 		verify(this.mockPool, times(1)).getSubscriptionMessageTrackingTimeout();
 		verify(this.mockPool, times(1)).getSubscriptionRedundancy();
+		verify(this.mockPool, times(1)).getSubscriptionTimeoutMultiplier();
 		verify(this.mockPool, times(1)).getThreadLocalConnections();
 		verifyNoMoreInteractions(this.mockPool);
 	}
@@ -489,6 +494,7 @@ public class DefaultableDelegatingPoolAdapterTest {
 		assertThat(this.poolAdapter.getSubscriptionEnabled(false), is(equalTo(true)));
 		assertThat(this.poolAdapter.getSubscriptionMessageTrackingTimeout(30000), is(equalTo(20000)));
 		assertThat(this.poolAdapter.getSubscriptionRedundancy(1), is(equalTo(2)));
+		assertThat(this.poolAdapter.getSubscriptionTimeoutMultiplier(2), is(equalTo(3)));
 		assertThat(this.poolAdapter.getThreadLocalConnections(true), is(equalTo(false)));
 
 		verify(this.mockPool, times(1)).getFreeConnectionTimeout();
@@ -514,6 +520,7 @@ public class DefaultableDelegatingPoolAdapterTest {
 		verify(this.mockPool, times(1)).getSubscriptionEnabled();
 		verify(this.mockPool, times(1)).getSubscriptionMessageTrackingTimeout();
 		verify(this.mockPool, times(1)).getSubscriptionRedundancy();
+		verify(this.mockPool, times(1)).getSubscriptionTimeoutMultiplier();
 		verify(this.mockPool, times(1)).getThreadLocalConnections();
 		verifyNoMoreInteractions(this.mockPool);
 	}

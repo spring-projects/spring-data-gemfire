@@ -162,6 +162,11 @@ public abstract class FactoryDefaultsPoolAdapter extends PoolAdapter {
 	}
 
 	@Override
+	public int getSubscriptionTimeoutMultiplier() {
+		return PoolFactory.DEFAULT_SUBSCRIPTION_TIMEOUT_MULTIPLIER;
+	}
+
+	@Override
 	public boolean getThreadLocalConnections() {
 		return PoolFactory.DEFAULT_THREAD_LOCAL_CONNECTIONS;
 	}

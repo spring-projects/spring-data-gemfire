@@ -46,8 +46,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ObjectUtils;
 
 /**
- * The ReplicatedRegionNamespaceTest class is a test suite of test cases testing the contract and functionality
- * of GemFire Replicated Region support in SDG.
+ * Unit tests for the Replicated Region Namespace.
  *
  * @author Costin Leau
  * @author David Turanski

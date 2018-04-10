@@ -15,7 +15,6 @@ package org.springframework.data.gemfire.function.execution;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
@@ -27,6 +26,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.fork.FunctionCacheServerProcess;
 import org.springframework.data.gemfire.process.ProcessWrapper;
 import org.springframework.data.gemfire.test.support.ClientServerIntegrationTestsSupport;
@@ -48,6 +48,7 @@ public class GemfireFunctionTemplateIntegrationTests extends ClientServerIntegra
 
 	@BeforeClass
 	public static void startGemFireServer() throws Exception {
+
 		availablePort = findAvailablePort();
 
 		gemfireServer = run(FunctionCacheServerProcess.class,
@@ -66,32 +67,37 @@ public class GemfireFunctionTemplateIntegrationTests extends ClientServerIntegra
 
 	@Before
 	public void setupGemFireClient() {
-		gemfireCache = new ClientCacheFactory()
-			.set("name", "GemfireFunctionTemplateIntegrationTests")
-			.set("log-level", "warning")
+
+		this.gemfireCache = new ClientCacheFactory()
+			.set("name", GemfireFunctionTemplateIntegrationTests.class.getSimpleName())
+			.set("log-level", "error")
 			.setPoolSubscriptionEnabled(true)
 			.addPoolServer("localhost", availablePort)
 			.create();
 
-		gemfirePool = PoolManager.find("DEFAULT");
+		assertThat(this.gemfireCache).isNotNull();
+		assertThat(this.gemfireCache.getName()).isEqualTo(GemfireFunctionTemplateIntegrationTests.class.getSimpleName());
 
-		gemfireRegion = gemfireCache.<String, String>createClientRegionFactory(ClientRegionShortcut.PROXY)
+		this.gemfireRegion = this.gemfireCache.<String, String>createClientRegionFactory(ClientRegionShortcut.PROXY)
 			.create("test-function");
+
+		assertThat(this.gemfireRegion).isNotNull();
+		assertThat(this.gemfireRegion.getName()).isEqualTo("test-function");
+
+		this.gemfirePool = PoolManager.find("DEFAULT");
+
+		assertThat(this.gemfirePool).isNotNull();
+		assertThat(this.gemfirePool.getName()).isEqualTo("DEFAULT");
 	}
 
 	@After
 	public void tearDownGemFireClient() {
-		if (gemfireCache != null) {
-			try {
-				gemfireCache.close();
-			}
-			catch (CacheClosedException ignore) {
-			}
-		}
+		GemfireUtils.close(this.gemfireCache);
 	}
 
 	@Test
 	public void testFunctionTemplates() {
+
 		verifyFunctionTemplateExecution(new GemfireOnRegionFunctionTemplate(gemfireRegion));
 		verifyFunctionTemplateExecution(new GemfireOnServerFunctionTemplate(gemfireCache));
 		verifyFunctionTemplateExecution(new GemfireOnServerFunctionTemplate(gemfirePool));
@@ -100,7 +106,9 @@ public class GemfireFunctionTemplateIntegrationTests extends ClientServerIntegra
 	}
 
 	private void verifyFunctionTemplateExecution(GemfireFunctionOperations functionTemplate) {
+
 		Iterable<String> results = functionTemplate.execute("echoFunction", "1", "2", "3");
+
 		int count = 1;
 
 		for (String result : results) {

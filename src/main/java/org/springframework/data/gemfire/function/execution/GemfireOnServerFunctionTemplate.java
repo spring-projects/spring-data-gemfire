@@ -15,10 +15,16 @@ package org.springframework.data.gemfire.function.execution;
 
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.Function;
 
 /**
+ * Creates an {@literal OnServer} {@link Function} {@link Execution} initialized with
+ * either {@link RegionService cache} or {@link Pool}.
+ *
  * @author David Turanski
  * @author John Blum
+ * @see org.springframework.data.gemfire.function.execution.AbstractFunctionTemplate
  */
 public class GemfireOnServerFunctionTemplate  extends AbstractFunctionTemplate {
 
@@ -37,7 +43,6 @@ public class GemfireOnServerFunctionTemplate  extends AbstractFunctionTemplate {
 
 	@Override
 	protected AbstractFunctionExecution getFunctionExecution() {
-		return (pool != null ? new PoolServerFunctionExecution(this.pool) : new ServerFunctionExecution(this.cache));
+		return pool != null ? new PoolServerFunctionExecution(this.pool) : new ServerFunctionExecution(this.cache);
 	}
-
 }

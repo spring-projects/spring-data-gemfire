@@ -30,7 +30,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * The RegionEvictionAttributesNamespaceTest class is a test suite of test cases testing the use of
@@ -44,7 +44,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @since 1.3.4
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(initializers = GemfireTestApplicationContextInitializer.class)
 @SuppressWarnings("unused")
 public class RegionEvictionAttributesNamespaceTest {
@@ -69,6 +69,7 @@ public class RegionEvictionAttributesNamespaceTest {
 
 	@Test
 	public void testEntryCountRegionEvictionAttributes() {
+
 		assertNotNull(one);
 		assertNotNull(one.getAttributes());
 		assertEquals(DataPolicy.REPLICATE, one.getAttributes().getDataPolicy());
@@ -88,8 +89,9 @@ public class RegionEvictionAttributesNamespaceTest {
 			two.getAttributes().getEvictionAttributes().getMaximum());
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
+	@Test
 	public void testHeapPercentageRegionEvictionAttributes() {
+
 		assertNotNull(three);
 		assertNotNull(three.getAttributes());
 		assertEquals(DataPolicy.REPLICATE, three.getAttributes().getDataPolicy());
@@ -103,18 +105,12 @@ public class RegionEvictionAttributesNamespaceTest {
 		assertNotNull(four.getAttributes().getEvictionAttributes());
 		assertEquals(EvictionAction.OVERFLOW_TO_DISK, four.getAttributes().getEvictionAttributes().getAction());
 		assertEquals(EvictionAlgorithm.LRU_HEAP, three.getAttributes().getEvictionAttributes().getAlgorithm());
-
-		try {
-			four.getAttributes().getEvictionAttributes().getMaximum();
-		}
-		catch (UnsupportedOperationException expected) {
-			assertEquals("LRUHeap does not support a maximum", expected.getMessage());
-			throw expected;
-		}
+		assertEquals(0, four.getAttributes().getEvictionAttributes().getMaximum());
 	}
 
 	@Test
 	public void testMemorySizeRegionEvictionAttributes() {
+
 		assertNotNull(five);
 		assertNotNull(five.getAttributes());
 		assertEquals(DataPolicy.REPLICATE, five.getAttributes().getDataPolicy());
@@ -130,8 +126,8 @@ public class RegionEvictionAttributesNamespaceTest {
 		assertEquals(EvictionAction.OVERFLOW_TO_DISK, six.getAttributes().getEvictionAttributes().getAction());
 		assertEquals(EvictionAlgorithm.LRU_MEMORY, six.getAttributes().getEvictionAttributes().getAlgorithm());
 
-		int expectedMaximum = (Boolean.getBoolean("org.springframework.data.gemfire.test.GemfireTestRunner.nomock")
-			? 512 : 256);
+		int expectedMaximum =
+			Boolean.getBoolean("org.springframework.data.gemfire.test.GemfireTestRunner.nomock") ? 512 : 256;
 
 		assertEquals(expectedMaximum, six.getAttributes().getEvictionAttributes().getMaximum());
 	}

@@ -98,6 +98,7 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 	private int subscriptionAckInterval = PoolFactory.DEFAULT_SUBSCRIPTION_ACK_INTERVAL;
 	private int subscriptionMessageTrackingTimeout = PoolFactory.DEFAULT_SUBSCRIPTION_MESSAGE_TRACKING_TIMEOUT;
 	private int subscriptionRedundancy = PoolFactory.DEFAULT_SUBSCRIPTION_REDUNDANCY;
+	private int subscriptionTimeoutMultiplier = PoolFactory.DEFAULT_SUBSCRIPTION_TIMEOUT_MULTIPLIER;
 
 	private long idleTimeout = PoolFactory.DEFAULT_IDLE_TIMEOUT;
 	private long pingInterval = PoolFactory.DEFAULT_PING_INTERVAL;
@@ -124,16 +125,18 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 	 * @see org.apache.geode.cache.client.PoolManager
 	 * @see org.apache.geode.cache.client.PoolFactory
 	 * @see org.apache.geode.cache.client.Pool
-	 * @see #resolvePoolName()
 	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
+		init(Optional.ofNullable(find(resolvePoolName())));
+	}
 
-		Pool existingPool = find(resolvePoolName());
+	@SuppressWarnings("all")
+	private void init(Optional<Pool> existingPool) {
 
-		if (existingPool != null) {
+		if (existingPool.isPresent()) {
 
-			this.pool = existingPool;
+			this.pool = existingPool.get();
 			this.springManagedPool = false;
 
 			logDebug(() -> String.format("A Pool with name [%s] already exists; Using existing Pool",
@@ -308,6 +311,7 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 			it.setSubscriptionEnabled(this.subscriptionEnabled);
 			it.setSubscriptionMessageTrackingTimeout(this.subscriptionMessageTrackingTimeout);
 			it.setSubscriptionRedundancy(this.subscriptionRedundancy);
+			it.setSubscriptionTimeoutMultiplier(this.subscriptionTimeoutMultiplier);
 			it.setThreadLocalConnections(this.threadLocalConnections);
 
 			nullSafeCollection(this.locators).forEach(locator ->
@@ -565,6 +569,11 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 			}
 
 			@Override
+			public int getSubscriptionTimeoutMultiplier() {
+				return PoolFactoryBean.this.subscriptionTimeoutMultiplier;
+			}
+
+			@Override
 			public boolean getThreadLocalConnections() {
 				return PoolFactoryBean.this.threadLocalConnections;
 			}
@@ -737,21 +746,19 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 		this.subscriptionRedundancy = subscriptionRedundancy;
 	}
 
+	public void setSubscriptionTimeoutMultiplier(int subscriptionTimeoutMultiplier) {
+		this.subscriptionTimeoutMultiplier = subscriptionTimeoutMultiplier;
+	}
+
 	public void setThreadLocalConnections(boolean threadLocalConnections) {
 		this.threadLocalConnections = threadLocalConnections;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * internal framework use only
-	 */
+	// Internal framework use only.
 	public final void setLocatorsConfiguration(Object locatorsConfiguration) {
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * internal framework use only
-	 */
+	// Internal framework use only.
 	public final void setServersConfiguration(Object serversConfiguration) {
 	}
 
@@ -771,5 +778,6 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 		 * @see org.apache.geode.cache.client.PoolFactory
 		 */
 		PoolFactory initialize(PoolFactory poolFactory);
+
 	}
 }
