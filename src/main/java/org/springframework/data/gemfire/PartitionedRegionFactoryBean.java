@@ -28,9 +28,10 @@ public class PartitionedRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> 
 
 	@Override
 	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, DataPolicy dataPolicy) {
+
 		// First, verify the GemFire version is 6.5 or Higher when Persistence is specified...
 		Assert.isTrue(!DataPolicy.PERSISTENT_PARTITION.equals(dataPolicy) || GemfireUtils.isGemfireVersion65OrAbove(),
-			String.format("Persistent PARTITION Regions can only be used from GemFire 6.5 onwards; current version is [%1$s].",
+			String.format("Persistent PARTITION Regions can only be used from GemFire 6.5 onwards; current version is [%s].",
 				CacheFactory.getVersion()));
 
 		if (dataPolicy == null) {
@@ -52,6 +53,7 @@ public class PartitionedRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> 
 
 	@Override
 	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, String dataPolicy) {
+
 		DataPolicy resolvedDataPolicy = null;
 
 		if (dataPolicy != null) {
@@ -61,5 +63,4 @@ public class PartitionedRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> 
 
 		resolveDataPolicy(regionFactory, persistent, resolvedDataPolicy);
 	}
-
 }

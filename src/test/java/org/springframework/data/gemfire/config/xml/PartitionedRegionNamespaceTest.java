@@ -16,9 +16,11 @@
 
 package org.springframework.data.gemfire.config.xml;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
@@ -43,7 +45,7 @@ import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.data.gemfire.SimpleCacheListener;
 import org.springframework.data.gemfire.SimplePartitionResolver;
 import org.springframework.data.gemfire.TestUtils;
-import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
+import org.springframework.data.gemfire.test.mock.context.GemFireMockObjectsApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ObjectUtils;
@@ -59,7 +61,8 @@ import org.springframework.util.ObjectUtils;
  * @see org.springframework.data.gemfire.config.xml.PartitionedRegionParser
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(locations = "partitioned-ns.xml", initializers = GemfireTestApplicationContextInitializer.class)
+@ContextConfiguration(locations = "partitioned-ns.xml",
+	initializers = GemFireMockObjectsApplicationContextInitializer.class)
 @SuppressWarnings("unused")
 public class PartitionedRegionNamespaceTest {
 
@@ -85,14 +88,22 @@ public class PartitionedRegionNamespaceTest {
 	public void testOptionsPartitionRegion() throws Exception {
 
 		assertTrue(applicationContext.containsBean("options"));
+		assertTrue(applicationContext.containsBean("redundant"));
+
+		Region<?, ?> options = applicationContext.getBean("options", Region.class);
+
+		assertThat(options).isNotNull();
+		assertThat(options.getAttributes()).isNotNull();
+		assertThat(options.getName()).isEqualTo("redundant");
+		assertThat(options.getAttributes().getOffHeap()).isTrue();
 
 		RegionFactoryBean optionsRegionFactoryBean = applicationContext.getBean("&options", RegionFactoryBean.class);
 
 		assertTrue(optionsRegionFactoryBean instanceof PartitionedRegionFactoryBean);
-		assertEquals(null, TestUtils.readField("scope", optionsRegionFactoryBean));
+		assertNull(TestUtils.readField("scope", optionsRegionFactoryBean));
 		assertEquals("redundant", TestUtils.readField("name", optionsRegionFactoryBean));
 
-		RegionAttributes optionsRegionAttributes = TestUtils.readField("attributes", optionsRegionFactoryBean);
+		RegionAttributes optionsRegionAttributes = optionsRegionFactoryBean.getAttributes();
 
 		assertNotNull(optionsRegionAttributes);
 		assertTrue(optionsRegionAttributes.getOffHeap());
@@ -265,5 +276,4 @@ public class PartitionedRegionNamespaceTest {
 			return this.name;
 		}
 	}
-
 }

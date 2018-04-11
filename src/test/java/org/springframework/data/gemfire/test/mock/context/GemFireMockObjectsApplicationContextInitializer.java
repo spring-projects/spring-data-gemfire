@@ -18,24 +18,24 @@ package org.springframework.data.gemfire.test.mock.context;
 
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.data.gemfire.test.mock.config.MockGemFireObjectsBeanPostProcessor;
+import org.springframework.data.gemfire.test.mock.config.GemFireMockObjectsBeanPostProcessor;
 
 /**
- * The {@link MockGemFireObjectsApplicationContextInitializer} class is a Spring {@link ApplicationContextInitializer}
+ * The {@link GemFireMockObjectsApplicationContextInitializer} class is a Spring {@link ApplicationContextInitializer}
  * used to initialize the Spring {@link ConfigurableApplicationContext} with GemFire Object mocking.
  *
  * @author John Blum
  * @see org.springframework.context.ApplicationContextInitializer
  * @see org.springframework.context.ConfigurableApplicationContext
- * @see org.springframework.data.gemfire.test.mock.config.MockGemFireObjectsBeanPostProcessor
+ * @see GemFireMockObjectsBeanPostProcessor
  * @since 2.0.0
  */
-public class MockGemFireObjectsApplicationContextInitializer
+public class GemFireMockObjectsApplicationContextInitializer
 		implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
 	@Override
 	@SuppressWarnings("all")
 	public void initialize(ConfigurableApplicationContext applicationContext) {
-		applicationContext.getBeanFactory().addBeanPostProcessor(MockGemFireObjectsBeanPostProcessor.newInstance());
+		applicationContext.getBeanFactory().addBeanPostProcessor(GemFireMockObjectsBeanPostProcessor.newInstance());
 	}
 }

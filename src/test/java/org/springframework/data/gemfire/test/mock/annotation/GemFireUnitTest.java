@@ -24,7 +24,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.junit.runner.RunWith;
-import org.springframework.data.gemfire.test.mock.context.MockGemFireObjectsApplicationContextInitializer;
+import org.springframework.data.gemfire.test.mock.context.GemFireMockObjectsApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -41,7 +41,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @see java.lang.annotation.Retention
  * @see java.lang.annotation.Target
  * @see org.junit.runner.RunWith
- * @see org.springframework.data.gemfire.test.mock.context.MockGemFireObjectsApplicationContextInitializer
+ * @see GemFireMockObjectsApplicationContextInitializer
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringRunner
  * @since 2.0.0
@@ -51,7 +51,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @Inherited
 @Documented
 @RunWith(SpringRunner.class)
-@ContextConfiguration(initializers = MockGemFireObjectsApplicationContextInitializer.class)
+@ContextConfiguration(initializers = GemFireMockObjectsApplicationContextInitializer.class)
 @SuppressWarnings("unused")
 public @interface GemFireUnitTest {
 

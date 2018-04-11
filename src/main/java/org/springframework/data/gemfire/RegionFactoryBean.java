@@ -338,7 +338,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 */
 	protected RegionFactory<K, V> postProcess(RegionFactory<K, V> regionFactory) {
 
-		regionFactory.setOffHeap(Boolean.TRUE.equals(this.offHeap));
+		Optional.ofNullable(this.offHeap).ifPresent(regionFactory::setOffHeap);
 
 		return regionFactory;
 	}

@@ -57,7 +57,7 @@ import org.springframework.data.gemfire.listener.annotation.ContinuousQuery;
 import org.springframework.data.gemfire.mapping.GemfireMappingContext;
 import org.springframework.data.gemfire.repository.config.EnableGemfireRepositories;
 import org.springframework.data.gemfire.repository.support.GemfireRepositoryFactoryBean;
-import org.springframework.data.gemfire.test.mock.MockGemFireObjectsSupport;
+import org.springframework.data.gemfire.test.mock.GemFireMockObjectsSupport;
 import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockObjects;
 import org.springframework.data.gemfire.test.model.Person;
 import org.springframework.data.gemfire.test.repo.PersonRepository;
@@ -255,7 +255,7 @@ public class EnableContinuousQueriesConfigurationUnitTests {
 		Region<Long, Person> mockPeopleRegion(GemFireCache gemfireCache,
 				@Qualifier("peopleRegionAttributes") RegionAttributes<Long, Person> peopleRegionAttributes) {
 
-			return MockGemFireObjectsSupport.mockRegion(gemfireCache, "People", peopleRegionAttributes);
+			return GemFireMockObjectsSupport.mockRegion(gemfireCache, "People", peopleRegionAttributes);
 		}
 
 		@Bean
@@ -274,7 +274,7 @@ public class EnableContinuousQueriesConfigurationUnitTests {
 		Region<Long, Example> mockExamplesRegion(GemFireCache gemfireCache,
 				@Qualifier("examplesRegionAttributes") RegionAttributes<Long, Example> mockExamplesRegionAttributes) {
 
-			return MockGemFireObjectsSupport.mockRegion(gemfireCache, "Examples",
+			return GemFireMockObjectsSupport.mockRegion(gemfireCache, "Examples",
 				mockExamplesRegionAttributes);
 		}
 
