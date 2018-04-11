@@ -30,11 +30,11 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 import org.springframework.data.gemfire.client.PoolFactoryBean;
-import org.springframework.data.gemfire.test.mock.MockGemFireObjectsSupport;
+import org.springframework.data.gemfire.test.mock.GemFireMockObjectsSupport;
 import org.springframework.lang.Nullable;
 
 /**
- * The {@link MockGemFireObjectsBeanPostProcessor} class is a Spring {@link BeanPostProcessor} that applies
+ * The {@link GemFireMockObjectsBeanPostProcessor} class is a Spring {@link BeanPostProcessor} that applies
  * mocks and spies to Spring Data GemFire / Spring Data Geode and Pivotal GemFire / Apache Geode objects
  * and components.
  *
@@ -46,10 +46,10 @@ import org.springframework.lang.Nullable;
  * @see org.springframework.data.gemfire.CacheFactoryBean
  * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
  * @see org.springframework.data.gemfire.client.PoolFactoryBean
- * @see org.springframework.data.gemfire.test.mock.MockGemFireObjectsSupport
+ * @see GemFireMockObjectsSupport
  * @since 2.0.0
  */
-public class MockGemFireObjectsBeanPostProcessor implements BeanPostProcessor {
+public class GemFireMockObjectsBeanPostProcessor implements BeanPostProcessor {
 
 	private static final boolean DEFAULT_USE_SINGLETON_CACHE = false;
 
@@ -59,13 +59,13 @@ public class MockGemFireObjectsBeanPostProcessor implements BeanPostProcessor {
 
 	private final AtomicReference<Properties> gemfireProperties = new AtomicReference<>(new Properties());
 
-	public static MockGemFireObjectsBeanPostProcessor newInstance() {
+	public static GemFireMockObjectsBeanPostProcessor newInstance() {
 		return newInstance(DEFAULT_USE_SINGLETON_CACHE);
 	}
 
-	public static MockGemFireObjectsBeanPostProcessor newInstance(boolean useSingletonCache) {
+	public static GemFireMockObjectsBeanPostProcessor newInstance(boolean useSingletonCache) {
 
-		MockGemFireObjectsBeanPostProcessor beanPostProcessor = new MockGemFireObjectsBeanPostProcessor();
+		GemFireMockObjectsBeanPostProcessor beanPostProcessor = new GemFireMockObjectsBeanPostProcessor();
 
 		beanPostProcessor.useSingletonCache = useSingletonCache;
 
@@ -130,7 +130,7 @@ public class MockGemFireObjectsBeanPostProcessor implements BeanPostProcessor {
 
 		@Override
 		public CacheFactory initialize(CacheFactory cacheFactory) {
-			return MockGemFireObjectsSupport.spyOn(cacheFactory, useSingletonCache);
+			return GemFireMockObjectsSupport.spyOn(cacheFactory, useSingletonCache);
 		}
 	}
 
@@ -154,7 +154,7 @@ public class MockGemFireObjectsBeanPostProcessor implements BeanPostProcessor {
 
 		@Override
 		public ClientCacheFactory initialize(ClientCacheFactory clientCacheFactory) {
-			return MockGemFireObjectsSupport.spyOn(clientCacheFactory, this.useSingletonCache);
+			return GemFireMockObjectsSupport.spyOn(clientCacheFactory, this.useSingletonCache);
 		}
 	}
 
@@ -167,7 +167,7 @@ public class MockGemFireObjectsBeanPostProcessor implements BeanPostProcessor {
 
 		@Override
 		public PoolFactory initialize(PoolFactory poolFactory) {
-			return MockGemFireObjectsSupport.mockPoolFactory();
+			return GemFireMockObjectsSupport.mockPoolFactory();
 		}
 	}
 }

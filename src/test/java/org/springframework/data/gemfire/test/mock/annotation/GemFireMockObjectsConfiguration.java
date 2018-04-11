@@ -26,8 +26,8 @@ import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.data.gemfire.test.mock.MockGemFireObjectsSupport;
-import org.springframework.data.gemfire.test.mock.config.MockGemFireObjectsBeanPostProcessor;
+import org.springframework.data.gemfire.test.mock.GemFireMockObjectsSupport;
+import org.springframework.data.gemfire.test.mock.config.GemFireMockObjectsBeanPostProcessor;
 
 /**
  * The {@link GemFireMockObjectsConfiguration} class is a Spring {@link Configuration @Configuration} class
@@ -41,7 +41,7 @@ import org.springframework.data.gemfire.test.mock.config.MockGemFireObjectsBeanP
  * @see org.springframework.context.annotation.ImportAware
  * @see org.springframework.core.annotation.AnnotationAttributes
  * @see org.springframework.core.type.AnnotationMetadata
- * @see org.springframework.data.gemfire.test.mock.config.MockGemFireObjectsBeanPostProcessor
+ * @see GemFireMockObjectsBeanPostProcessor
  * @since 2.0.0
  */
 @SuppressWarnings("unused")
@@ -87,11 +87,11 @@ public class GemFireMockObjectsConfiguration implements ImportAware {
 
 	@Bean
 	public BeanPostProcessor mockGemFireObjectsBeanPostProcessor() {
-		return MockGemFireObjectsBeanPostProcessor.newInstance(this.useSingletonCache);
+		return GemFireMockObjectsBeanPostProcessor.newInstance(this.useSingletonCache);
 	}
 
 	@EventListener
 	public void releaseMockResources(ContextClosedEvent event) {
-		MockGemFireObjectsSupport.destroy();
+		GemFireMockObjectsSupport.destroy();
 	}
 }

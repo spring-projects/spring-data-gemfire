@@ -37,7 +37,7 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
 import org.springframework.data.gemfire.support.ConnectionEndpointList;
-import org.springframework.data.gemfire.test.mock.MockGemFireObjectsSupport;
+import org.springframework.data.gemfire.test.mock.GemFireMockObjectsSupport;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -217,7 +217,7 @@ public class SpELExpressionConfiguredPoolsIntegrationTests {
 		@Override
 		protected PoolFactory createPoolFactory() {
 
-			PoolFactory mockPoolFactory = MockGemFireObjectsSupport.mockPoolFactory();
+			PoolFactory mockPoolFactory = GemFireMockObjectsSupport.mockPoolFactory();
 
 			when(mockPoolFactory.addLocator(anyString(), anyInt())).thenAnswer(invocation -> {
 				String host = invocation.getArgument(0);

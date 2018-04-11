@@ -57,7 +57,7 @@ public class RegionAttributesFactoryBean extends AttributesFactory
 		return true;
 	}
 
-	public void setIndexUpdateType(final IndexMaintenancePolicyType indexUpdateType) {
+	public void setIndexUpdateType(IndexMaintenancePolicyType indexUpdateType) {
 		indexUpdateType.setIndexMaintenance(this);
 	}
 }

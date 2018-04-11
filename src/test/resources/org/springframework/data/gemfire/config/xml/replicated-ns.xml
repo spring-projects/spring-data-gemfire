@@ -20,7 +20,7 @@
 
 	<gfe:cache properties-ref="gemfireProperties"/>
 
-	<gfe:replicated-region id="simple" concurrency-checks-enabled="false" close="false"/>
+	<gfe:replicated-region id="simple" concurrency-checks-enabled="false" concurrency-level="13" close="false"/>
 
 	<gfe:replicated-region id="pub" name="publisher" scope="DISTRIBUTED_ACK"/>
 

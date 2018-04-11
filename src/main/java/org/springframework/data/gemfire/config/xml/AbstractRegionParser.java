@@ -91,11 +91,9 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
         doParseRegion(element, parserContext, builder, isSubRegion(element));
 	}
 
-	/* (non-Javadoc) */
 	protected abstract void doParseRegion(Element element, ParserContext parserContext,
 			BeanDefinitionBuilder builder, boolean subRegion);
 
-	/* (non-Javadoc) */
 	protected void doParseRegionConfiguration(Element element, ParserContext parserContext,
 			BeanDefinitionBuilder regionBuilder, BeanDefinitionBuilder regionAttributesBuilder, boolean subRegion) {
 
@@ -156,7 +154,6 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		}
 	}
 
-	/* (non-Javadoc) */
 	void mergeRegionTemplateAttributes(Element element, ParserContext parserContext,
 			BeanDefinitionBuilder regionBuilder, BeanDefinitionBuilder regionAttributesBuilder) {
 
@@ -164,6 +161,7 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 
 		if (StringUtils.hasText(regionTemplateName)) {
 			if (parserContext.getRegistry().containsBeanDefinition(regionTemplateName)) {
+
 				BeanDefinition templateRegion = parserContext.getRegistry().getBeanDefinition(regionTemplateName);
 
 				BeanDefinition templateRegionAttributes = getRegionAttributesBeanDefinition(templateRegion);
@@ -183,8 +181,8 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		}
 	}
 
-	/* (non-Javadoc) */
 	BeanDefinition getRegionAttributesBeanDefinition(BeanDefinition region) {
+
 		Assert.notNull(region, "BeanDefinition must not be null");
 
 		Object regionAttributes = null;
@@ -197,14 +195,14 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		return (regionAttributes instanceof BeanDefinition ? (BeanDefinition) regionAttributes : null);
 	}
 
-	/* (non-Javadoc) */
 	protected void parseCollectionOfCustomSubElements(Element element, ParserContext parserContext,
 			BeanDefinitionBuilder builder, String className, String subElementName, String propertyName) {
 
-		List<Element> subElements = DomUtils.getChildElementsByTagName(
-			element, subElementName, subElementName + "-ref");
+		List<Element> subElements =
+			DomUtils.getChildElementsByTagName(element, subElementName, subElementName + "-ref");
 
 		if (!CollectionUtils.isEmpty(subElements)) {
+
 			ManagedArray array = new ManagedArray(className, subElements.size());
 
 			for (Element subElement : subElements) {
@@ -215,9 +213,9 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		}
 	}
 
-	/* (non-Javadoc) */
 	protected void parseSubRegions(Element element, ParserContext parserContext, String resolvedCacheRef) {
-		Map<String, Element> allSubRegionElements = new HashMap<String, Element>();
+
+		Map<String, Element> allSubRegionElements = new HashMap<>();
 
 		findSubRegionElements(element, getRegionNameFromElement(element), allSubRegionElements);
 
@@ -228,30 +226,36 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		}
 	}
 
-	/* (non-Javadoc) */
 	private void findSubRegionElements(Element parent, String parentPath, Map<String, Element> allSubRegionElements) {
+
 		for (Element element : DomUtils.getChildElements(parent)) {
 			if (element.getLocalName().endsWith("region")) {
+
 				String subRegionName = getRegionNameFromElement(element);
 				String subRegionPath = buildSubRegionPath(parentPath, subRegionName);
+
 				allSubRegionElements.put(subRegionPath, element);
+
 				findSubRegionElements(element, subRegionPath, allSubRegionElements);
 			}
 		}
 	}
 
-	/* (non-Javadoc) */
 	private String getRegionNameFromElement(Element element) {
+
 		String name = element.getAttribute(NAME_ATTRIBUTE);
+
 		return (StringUtils.hasText(name) ? name : element.getAttribute(ID_ATTRIBUTE));
 	}
 
-	/* (non-Javadoc) */
 	private String buildSubRegionPath(String parentName, String regionName) {
+
 		String regionPath = StringUtils.arrayToDelimitedString(new String[] { parentName, regionName }, "/");
+
 		if (!regionPath.startsWith("/")) {
 			regionPath = "/" + regionPath;
 		}
+
 		return regionPath;
 	}
 
@@ -276,16 +280,21 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 
 	/* (non-Javadoc) */
 	private String getParentRegionPathFrom(String regionPath) {
+
 		int index = regionPath.lastIndexOf("/");
+
 		String parentPath = regionPath.substring(0, index);
+
 		if (parentPath.lastIndexOf("/") == 0) {
 			parentPath = parentPath.substring(1);
 		}
+
 		return parentPath;
 	}
 
 	/* (non-Javadoc) */
 	protected void validateDataPolicyShortcutAttributesMutualExclusion(Element element, ParserContext parserContext) {
+
 		if (element.hasAttribute("data-policy") && element.hasAttribute("shortcut")) {
 			parserContext.getReaderContext().error(String.format(
 				"Only one of [data-policy, shortcut] may be specified with element '%1$s'.", element.getTagName()),

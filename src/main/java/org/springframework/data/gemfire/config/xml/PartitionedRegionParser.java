@@ -63,15 +63,15 @@ class PartitionedRegionParser extends AbstractRegionParser {
 
 		validateDataPolicyShortcutAttributesMutualExclusion(element, parserContext);
 
-		BeanDefinitionBuilder regionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
-			RegionAttributesFactoryBean.class);
+		BeanDefinitionBuilder regionAttributesBuilder =
+			BeanDefinitionBuilder.genericBeanDefinition(RegionAttributesFactoryBean.class);
 
 		doParseRegionConfiguration(element, parserContext, regionBuilder, regionAttributesBuilder, subRegion);
 
 		regionBuilder.addPropertyValue("attributes", regionAttributesBuilder.getBeanDefinition());
 
-		BeanDefinitionBuilder partitionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
-			PartitionAttributesFactoryBean.class);
+		BeanDefinitionBuilder partitionAttributesBuilder =
+			BeanDefinitionBuilder.genericBeanDefinition(PartitionAttributesFactoryBean.class);
 
 		mergeTemplateRegionPartitionAttributes(element, parserContext, regionBuilder, partitionAttributesBuilder);
 
@@ -83,13 +83,6 @@ class PartitionedRegionParser extends AbstractRegionParser {
 		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "total-buckets", "totalNumBuckets");
 		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "total-max-memory");
 
-		Element partitionResolverSubElement = DomUtils.getChildElementByTagName(element, "partition-resolver");
-
-		if (partitionResolverSubElement != null) {
-			partitionAttributesBuilder.addPropertyValue("partitionResolver",
-				parsePartitionResolver(partitionResolverSubElement, parserContext, regionBuilder));
-		}
-
 		Element partitionListenerSubElement = DomUtils.getChildElementByTagName(element, "partition-listener");
 
 		if (partitionListenerSubElement != null) {
@@ -97,18 +90,29 @@ class PartitionedRegionParser extends AbstractRegionParser {
 				parsePartitionListeners(partitionListenerSubElement, parserContext, regionBuilder));
 		}
 
+		Element partitionResolverSubElement = DomUtils.getChildElementByTagName(element, "partition-resolver");
+
+		if (partitionResolverSubElement != null) {
+			partitionAttributesBuilder.addPropertyValue("partitionResolver",
+				parsePartitionResolver(partitionResolverSubElement, parserContext, regionBuilder));
+		}
+
 		List<Element> fixedPartitionSubElements = DomUtils.getChildElementsByTagName(element, "fixed-partition");
 
 		if (!CollectionUtils.isEmpty(fixedPartitionSubElements)){
+
 			@SuppressWarnings("rawtypes")
 			ManagedList fixedPartitionAttributes = new ManagedList();
 
 			for (Element fixedPartition : fixedPartitionSubElements) {
-				BeanDefinitionBuilder fixedPartitionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
-					FixedPartitionAttributesFactoryBean.class);
+
+				BeanDefinitionBuilder fixedPartitionAttributesBuilder =
+					BeanDefinitionBuilder.genericBeanDefinition(FixedPartitionAttributesFactoryBean.class);
+
 				ParsingUtils.setPropertyValue(fixedPartition, fixedPartitionAttributesBuilder, "partition-name");
 				ParsingUtils.setPropertyValue(fixedPartition, fixedPartitionAttributesBuilder, "num-buckets");
 				ParsingUtils.setPropertyValue(fixedPartition, fixedPartitionAttributesBuilder, "primary");
+
 				fixedPartitionAttributes.add(fixedPartitionAttributesBuilder.getBeanDefinition());
 			}
 
@@ -126,20 +130,22 @@ class PartitionedRegionParser extends AbstractRegionParser {
 
 		if (StringUtils.hasText(regionTemplateName)) {
 			if (parserContext.getRegistry().containsBeanDefinition(regionTemplateName)) {
+
 				BeanDefinition templateRegion = parserContext.getRegistry().getBeanDefinition(regionTemplateName);
 
 				BeanDefinition templateRegionAttributes = getRegionAttributesBeanDefinition(templateRegion);
 
 				if (templateRegionAttributes != null) {
 					if (templateRegionAttributes.getPropertyValues().contains("partitionAttributes")) {
+
 						PropertyValue partitionAttributesProperty = templateRegionAttributes.getPropertyValues()
 							.getPropertyValue("partitionAttributes");
 
 						Object partitionAttributes = partitionAttributesProperty.getValue();
 
 						if (partitionAttributes instanceof BeanDefinition) {
-							partitionAttributesBuilder.getRawBeanDefinition().overrideFrom(
-								(BeanDefinition) partitionAttributes);
+							partitionAttributesBuilder.getRawBeanDefinition()
+								.overrideFrom((BeanDefinition) partitionAttributes);
 						}
 					}
 				}
@@ -155,6 +161,7 @@ class PartitionedRegionParser extends AbstractRegionParser {
 	/* (non-Javadoc) */
 	private void parseColocatedWith(Element element, BeanDefinitionBuilder regionBuilder,
 			BeanDefinitionBuilder partitionAttributesBuilder, String attributeName) {
+
 		// NOTE rather than using a dependency (with depends-on) we could also set the colocatedWith property of the
 		// PartitionAttributesFactoryBean with a reference to the Region "this" Partitioned Region will be colocated
 		// with, where the colocated-with attribute refers to the the bean name/alias of the other, depended on Region
