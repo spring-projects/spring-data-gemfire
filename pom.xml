@@ -19,7 +19,7 @@
 		<dist.key>SGF</dist.key>
 		<antlr.version>2.7.7</antlr.version>
 		<assertj.version>2.6.0</assertj.version>
-		<gemfire.version>8.2.9</gemfire.version>
+		<gemfire.version>8.2.10</gemfire.version>
 		<google-code-findbugs.version>2.0.2</google-code-findbugs.version>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
 		<servlet-api.version>2.5</servlet-api.version>
