@@ -3,6 +3,21 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.1.0.M2 (2018-04-13)
+----------------------------------------
+* SGF-735 - RegionAttributes.offHeap is improperly overridden by RegionFactoryBean.offHeap.
+* SGF-729 - Realign SSL configuration using @EnableSsl with Apache Geode's SSL configuration properties.
+* SGF-728 - Remove explicit declaration of Jackson library versions.
+* SGF-727 - Remove all git merge conflict tags in SDG source code Javadoc.
+* SGF-726 - Impossible to define event filter for AsyncEventQueue.
+* SGF-725 - Export composable repositories via CDI.
+* SGF-724 - Add configuration support for critical and eviction off-heap percentages in client, peer and cache server application annotations.
+* SGF-720 - Fix CI test failures caused by changes in Spring Data Commons CDI Repository support allowing unlimited implementation classes.
+* SGF-719 - Extend MappingPdxSerializer to allow registering custom PdxSerializers based on fully qualified property name.
+* SGF-718 - Release 2.1 M2 (Lovelace).
+* SGF-713 - Override generated OQL from Repository query methods.
+
+
 Changes in version 2.0.6.RELEASE (2018-04-04)
 ---------------------------------------------
 * SGF-729 - Realign SSL configuration using @EnableSsl with Apache Geode's SSL configuration properties.
