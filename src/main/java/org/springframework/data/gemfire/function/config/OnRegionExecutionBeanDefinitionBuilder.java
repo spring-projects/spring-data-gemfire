@@ -1,5 +1,9 @@
 /*
+<<<<<<< Updated upstream
  * Copyright 2002-2018 the original author or authors.
+=======
+ * Copyright 2002-2013 the original author or authors.
+>>>>>>> Stashed changes
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -19,36 +23,36 @@ import org.springframework.data.gemfire.function.execution.OnRegionFunctionProxy
 
 /**
  * @author David Turanski
- *
+ * @author John Blum
  */
 class OnRegionExecutionBeanDefinitionBuilder extends AbstractFunctionExecutionBeanDefinitionBuilder {
 
-	/**
-	 * @param configuration
-	 */
     OnRegionExecutionBeanDefinitionBuilder(FunctionExecutionConfiguration configuration) {
 		super(configuration);
 	}
 
-
-
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.gemfire.function.config.AbstractFunctionExecutionBeanDefinitionBuilder#getGemfireFunctionOperationsBeanDefinitionBuilder(org.springframework.beans.factory.support.BeanDefinitionRegistry)
 	 */
 	@Override
 	protected BeanDefinitionBuilder getGemfireFunctionOperationsBeanDefinitionBuilder(BeanDefinitionRegistry registry) {
-		BeanDefinitionBuilder functionTemplateBuilder = BeanDefinitionBuilder.genericBeanDefinition(GemfireOnRegionFunctionTemplate.class);
-		functionTemplateBuilder.addConstructorArgReference((String)configuration.getAttribute("region"));
+
+		BeanDefinitionBuilder functionTemplateBuilder =
+			BeanDefinitionBuilder.genericBeanDefinition(GemfireOnRegionFunctionTemplate.class);
+
+		functionTemplateBuilder.addConstructorArgReference((String) this.configuration.getAttribute("region"));
+
 		return functionTemplateBuilder;
 	}
 
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.gemfire.function.config.AbstractFunctionExecutionBeanDefinitionBuilder#getFunctionProxyFactoryBeanClass()
 	 */
 	@Override
 	protected Class<?> getFunctionProxyFactoryBeanClass() {
 		return OnRegionFunctionProxyFactoryBean.class;
 	}
-
 }

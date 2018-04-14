@@ -131,7 +131,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 			@Override
 			public void verify() {
 				assertNotNull(this.exception);
-				assertEquals("Data Policy [PERSISTENT_REPLICATE] is invalid when persistent is false.",
+				assertEquals("Data Policy [PERSISTENT_REPLICATE] is not valid when persistent is false",
 					exception.getMessage());
 			}
 		};
@@ -181,53 +181,6 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 	}
 
 	@Test
-	public void testAssertDataPolicyAndPersistentAttributesAreCompatible() {
-
-		RegionFactoryBean<?, ?> factoryBean = new TestRegionFactoryBean<>();
-
-		factoryBean.setPersistent(null);
-		factoryBean.assertDataPolicyAndPersistentAttributesAreCompatible(DataPolicy.PARTITION);
-		factoryBean.assertDataPolicyAndPersistentAttributesAreCompatible(DataPolicy.REPLICATE);
-		factoryBean.assertDataPolicyAndPersistentAttributesAreCompatible(DataPolicy.PERSISTENT_PARTITION);
-		factoryBean.assertDataPolicyAndPersistentAttributesAreCompatible(DataPolicy.PERSISTENT_REPLICATE);
-		factoryBean.setPersistent(false);
-		factoryBean.assertDataPolicyAndPersistentAttributesAreCompatible(DataPolicy.PARTITION);
-		factoryBean.assertDataPolicyAndPersistentAttributesAreCompatible(DataPolicy.REPLICATE);
-		factoryBean.setPersistent(true);
-		factoryBean.assertDataPolicyAndPersistentAttributesAreCompatible(DataPolicy.PERSISTENT_PARTITION);
-		factoryBean.assertDataPolicyAndPersistentAttributesAreCompatible(DataPolicy.PERSISTENT_REPLICATE);
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testAssertNonPersistentDataPolicyWithPersistentAttribute() {
-
-		try {
-			RegionFactoryBean<?, ?> factoryBean = new TestRegionFactoryBean<>();
-			factoryBean.setPersistent(true);
-			factoryBean.assertDataPolicyAndPersistentAttributesAreCompatible(DataPolicy.REPLICATE);
-		}
-		catch (IllegalArgumentException expected) {
-			assertEquals("Data Policy [REPLICATE] is invalid when persistent is true.", expected.getMessage());
-			throw expected;
-		}
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testAssertPersistentDataPolicyWithNonPersistentAttribute() {
-
-		try {
-			RegionFactoryBean<?, ?> factoryBean = new TestRegionFactoryBean<>();
-			factoryBean.setPersistent(false);
-			factoryBean.assertDataPolicyAndPersistentAttributesAreCompatible(DataPolicy.PERSISTENT_PARTITION);
-		}
-		catch (IllegalArgumentException expected) {
-			assertEquals("Data Policy [PERSISTENT_PARTITION] is invalid when persistent is false.",
-				expected.getMessage());
-			throw expected;
-		}
-	}
-
-	@Test
 	public void testIsPersistent() {
 
 		RegionFactoryBean<?, ?> factoryBean = new TestRegionFactoryBean<>();
@@ -241,26 +194,6 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 		factoryBean.setPersistent(true);
 
 		assertTrue(factoryBean.isPersistent());
-	}
-
-	@Test
-	public void testIsPersistentUnspecified() {
-
-		RegionFactoryBean<?, ?> factoryBean = new TestRegionFactoryBean<>();
-
-		assertTrue(factoryBean.isPersistentUnspecified());
-
-		factoryBean.setPersistent(false);
-
-		assertFalse(factoryBean.isPersistentUnspecified());
-
-		factoryBean.setPersistent(true);
-
-		assertFalse(factoryBean.isPersistentUnspecified());
-
-		factoryBean.setPersistent(null);
-
-		assertTrue(factoryBean.isPersistentUnspecified());
 	}
 
 	@Test
@@ -790,7 +723,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 			factoryBean.resolveDataPolicy(mockRegionFactory, true, "  ");
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Data Policy [  ] is invalid.", expected.getMessage());
+			assertEquals("Data Policy [  ] is invalid", expected.getMessage());
 			throw expected;
 		}
 		finally {
@@ -810,7 +743,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 			factoryBean.resolveDataPolicy(mockRegionFactory, true, "");
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Data Policy [] is invalid.", expected.getMessage());
+			assertEquals("Data Policy [] is invalid", expected.getMessage());
 			throw expected;
 		}
 		finally {
@@ -830,7 +763,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 			factoryBean.resolveDataPolicy(mockRegionFactory, true, "CSV");
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Data Policy [CSV] is invalid.", expected.getMessage());
+			assertEquals("Data Policy [CSV] is invalid", expected.getMessage());
 			throw expected;
 		}
 		finally {
@@ -871,7 +804,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 			factoryBean.resolveDataPolicy(mockRegionFactory, true, "EMPTY");
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Data Policy [EMPTY] is invalid when persistent is true.", expected.getMessage());
+			assertEquals("Data Policy [EMPTY] is not valid when persistent is true", expected.getMessage());
 			throw expected;
 		}
 		finally {
@@ -912,7 +845,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 			factoryBean.resolveDataPolicy(mockRegionFactory, false, "PERSISTENT_PARTITION");
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Data Policy [PERSISTENT_PARTITION] is invalid when persistent is false.", expected.getMessage());
+			assertEquals("Data Policy [PERSISTENT_PARTITION] is not valid when persistent is false", expected.getMessage());
 			throw expected;
 		}
 		finally {
@@ -935,7 +868,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 				"Setting the 'persistent' attribute to TRUE and 'Data Policy' to PARTITION should have thrown an IllegalArgumentException!");
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Data Policy [PARTITION] is invalid when persistent is true.", expected.getMessage());
+			assertEquals("Data Policy [PARTITION] is not valid when persistent is true", expected.getMessage());
 			throw expected;
 		}
 		finally {
@@ -1021,7 +954,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 			factoryBean.resolveDataPolicy(mockRegionFactory, false, (String) null);
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Data Policy [PERSISTENT_PARTITION] is invalid when persistent is false.", expected.getMessage());
+			assertEquals("Data Policy [PERSISTENT_PARTITION] is not valid when persistent is false", expected.getMessage());
 			throw expected;
 		}
 		finally {
@@ -1043,7 +976,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 			factoryBean.resolveDataPolicy(mockRegionFactory, true, (String) null);
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Data Policy [PARTITION] is invalid when persistent is true.", expected.getMessage());
+			assertEquals("Data Policy [PARTITION] is not valid when persistent is true", expected.getMessage());
 			throw expected;
 		}
 		finally {
@@ -1121,7 +1054,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 			fail("Setting the 'persistent' attribute to FALSE and 'Data Policy' to PERSISTENT_REPLICATE should have thrown an IllegalArgumentException!");
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Data Policy [PERSISTENT_REPLICATE] is invalid when persistent is false.", expected.getMessage());
+			assertEquals("Data Policy [PERSISTENT_REPLICATE] is not valid when persistent is false", expected.getMessage());
 			throw expected;
 		}
 		finally {
@@ -1143,7 +1076,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 			fail("Setting the 'persistent' attribute to TRUE and 'Data Policy' to REPLICATE should have thrown an IllegalArgumentException!");
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Data Policy [REPLICATE] is invalid when persistent is true.", expected.getMessage());
+			assertEquals("Data Policy [REPLICATE] is not valid when persistent is true", expected.getMessage());
 			throw expected;
 		}
 		finally {

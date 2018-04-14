@@ -29,11 +29,11 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * The AutoRegionLookupWithAutowiringIntegrationTests class is a test suite class testing the behavior of
- * Spring Data GemFire's auto Region lookup functionality when combined with Spring's component auto-wiring capabilities.
+ * Integration tests to test the behavior of Spring Data GemFire's Auto Region Lookup functionality
+ * when combined with Spring's component auto-wiring capabilities.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -42,7 +42,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @since 1.5.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @SuppressWarnings("unused")
 public class AutoRegionLookupWithAutowiringIntegrationTests {
@@ -50,24 +50,24 @@ public class AutoRegionLookupWithAutowiringIntegrationTests {
 	@Autowired
 	private TestComponent testComponent;
 
-	protected static void assertRegionMetaData(final Region<?, ?> region,
-			final String expectedName, final DataPolicy expectedDataPolicy) {
+	private static void assertRegionMetaData(Region<?, ?> region, String expectedName, DataPolicy expectedDataPolicy) {
 		assertRegionMetaData(region, expectedName, Region.SEPARATOR + expectedName, expectedDataPolicy);
 	}
 
-	protected static void assertRegionMetaData(final Region<?, ?> region, final String expectedName,
-			final String expectedFullPath, final DataPolicy expectedDataPolicy) {
+	private static void assertRegionMetaData(Region<?, ?> region, String expectedName, String expectedFullPath,
+			DataPolicy expectedDataPolicy) {
+
 		assertNotNull(String.format("Region (%1$s) was not properly configured and initialized!", expectedName), region);
 		assertEquals(expectedName, region.getName());
 		assertEquals(expectedFullPath, region.getFullPath());
-		assertNotNull(String.format("Region (%1$s) must have RegionAttributes defined!", expectedName),
-			region.getAttributes());
+		assertNotNull(String.format("Region (%1$s) must have RegionAttributes defined!", expectedName), region.getAttributes());
 		assertEquals(expectedDataPolicy, region.getAttributes().getDataPolicy());
 		assertFalse(region.getAttributes().getDataPolicy().withPersistence());
 	}
 
 	@Test
 	public void testAutowiredNativeRegions() {
+
 		assertRegionMetaData(testComponent.nativePartitionedRegion, "NativePartitionedRegion", DataPolicy.PARTITION);
 		assertRegionMetaData(testComponent.nativeReplicateParent, "NativeReplicateParent", DataPolicy.REPLICATE);
 		assertRegionMetaData(testComponent.nativeReplicateChild, "NativeReplicateChild",
@@ -92,5 +92,4 @@ public class AutoRegionLookupWithAutowiringIntegrationTests {
 		Region<?, ?> nativeReplicateGrandchild;
 
 	}
-
 }

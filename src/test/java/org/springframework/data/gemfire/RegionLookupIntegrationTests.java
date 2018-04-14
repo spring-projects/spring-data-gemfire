@@ -22,6 +22,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Optional;
+
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionExistsException;
@@ -44,9 +46,11 @@ import org.springframework.data.gemfire.fork.SpringContainerProcess;
  * @since 1.4.0
  * @link https://jira.spring.io/browse/SGF-204
  */
+// TODO: slow test; can this test use mocks?
 public class RegionLookupIntegrationTests {
 
-	protected void assertNoRegionLookup(final String configLocation) {
+	private void assertNoRegionLookup(String configLocation) {
+
 		ConfigurableApplicationContext applicationContext = null;
 
 		try {
@@ -54,8 +58,9 @@ public class RegionLookupIntegrationTests {
 			fail("Spring ApplicationContext should have thrown a BeanCreationException caused by a RegionExistsException!");
 		}
 		catch (BeanCreationException expected) {
-			//expected.printStackTrace(System.err);
+
 			assertTrue(expected.getMessage(), expected.getCause() instanceof RegionExistsException);
+
 			throw (RegionExistsException) expected.getCause();
 		}
 		finally {
@@ -63,18 +68,17 @@ public class RegionLookupIntegrationTests {
 		}
 	}
 
-	protected void closeApplicationContext(final ConfigurableApplicationContext applicationContext) {
-		if (applicationContext != null) {
-			applicationContext.close();
-		}
+	private ConfigurableApplicationContext createApplicationContext(String configLocation) {
+		return new ClassPathXmlApplicationContext(configLocation);
 	}
 
-	protected ConfigurableApplicationContext createApplicationContext(final String configLocation) {
-		return new ClassPathXmlApplicationContext(configLocation);
+	private void closeApplicationContext(ConfigurableApplicationContext applicationContext) {
+		Optional.ofNullable(applicationContext).ifPresent(ConfigurableApplicationContext::close);
 	}
 
 	@Test
 	public void testAllowRegionBeanDefinitionOverrides() {
+
 		ConfigurableApplicationContext applicationContext = null;
 
 		try {
@@ -142,6 +146,7 @@ public class RegionLookupIntegrationTests {
 
 	@Test
 	public void testEnableRegionLookups() {
+
 		ConfigurableApplicationContext applicationContext = null;
 
 		try {
@@ -225,6 +230,7 @@ public class RegionLookupIntegrationTests {
 
 	@Test
 	public void testEnableClientRegionLookups() {
+
 		ConfigurableApplicationContext applicationContext = null;
 
 		try {
@@ -257,5 +263,4 @@ public class RegionLookupIntegrationTests {
 			closeApplicationContext(applicationContext);
 		}
 	}
-
 }

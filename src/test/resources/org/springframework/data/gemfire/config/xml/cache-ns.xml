@@ -4,16 +4,16 @@
 	   xmlns:util="http://www.springframework.org/schema/util"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="
-		http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	   	http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd"
-	   default-lazy-init="true">
+default-lazy-init="true">
 
 	<bean class="org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor"/>
 
 	<util:properties id="gemfireProperties">
 		<prop key="disable-tcp">false</prop>
-		<prop key="log-level">warning</prop>
+		<prop key="log-level">error</prop>
 	</util:properties>
 
 	<gfe:cache/>
@@ -33,11 +33,15 @@
 
 	<gfe:cache id="cache-with-auto-reconnect-enabled" properties-ref="gemfireProperties" enable-auto-reconnect="true"/>
 
+	<gfe:cache id="cache-with-no-bean-factory-locator" properties-ref="gemfireProperties" use-bean-factory-locator="false"/>
+
+	<gfe:cache id="cache-with-use-cluster-configuration-disabled" use-cluster-configuration="false"/>
+
+	<gfe:cache id="cache-with-use-cluster-configuration-enabled" use-cluster-configuration="true"/>
+
 	<gfe:cache id="heap-tuned-cache" properties-ref="gemfireProperties" critical-heap-percentage="70.0" eviction-heap-percentage="60.0"/>
 
 	<gfe:cache id="off-heap-tuned-cache" properties-ref="gemfireProperties" critical-off-heap-percentage="90.0" eviction-off-heap-percentage="50.0"/>
-
-	<gfe:cache id="no-bean-factory-locator-cache" properties-ref="gemfireProperties" use-bean-factory-locator="false"/>
 
 	<gfe:client-cache id="client-cache-with-name"/>
 

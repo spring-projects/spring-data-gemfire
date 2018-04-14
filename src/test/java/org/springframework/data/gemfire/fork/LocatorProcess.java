@@ -31,10 +31,11 @@ import org.springframework.data.gemfire.test.support.FileSystemUtils;
 import org.springframework.data.gemfire.test.support.ThreadUtils;
 
 /**
- * The LocatorProcess class is a main Java class that is used fork and launch a GemFire Locator process using the
- * LocatorLauncher class.
+ * The {@link LocatorProcess} class is a main Java class that is used fork and launch a {@link Locator} process
+ * using the {@link LocatorLauncher} class.
  *
  * @author John Blum
+ * @see org.apache.geode.distributed.Locator
  * @see org.apache.geode.distributed.LocatorLauncher
  * @since 1.5.0
  */
@@ -43,11 +44,12 @@ public class LocatorProcess {
 	private static final int DEFAULT_LOCATOR_PORT = 20668;
 
 	private static final String GEMFIRE_NAME = "SpringDataGemFireLocator";
-	private static final String GEMFIRE_LOG_LEVEL = "warning";
+	private static final String GEMFIRE_LOG_LEVEL = "error";
 	private static final String HOSTNAME_FOR_CLIENTS = "localhost";
 	private static final String HTTP_SERVICE_PORT = "0";
 
-	public static void main(final String... args) throws IOException {
+	public static void main(String... args) throws IOException {
+
 		//runLocator();
 		runInternalLocator();
 
@@ -67,8 +69,9 @@ public class LocatorProcess {
 
 	@SuppressWarnings("unused")
 	private static InternalLocator runInternalLocator() throws IOException {
-		String hostnameForClients = System.getProperty("spring.gemfire.hostname-for-clients",
-			HOSTNAME_FOR_CLIENTS);
+
+		String hostnameForClients =
+			System.getProperty("spring.data.gemfire.locator.hostname-for-clients", HOSTNAME_FOR_CLIENTS);
 
 		int locatorPort = Integer.getInteger("spring.data.gemfire.locator.port", DEFAULT_LOCATOR_PORT);
 
@@ -90,21 +93,23 @@ public class LocatorProcess {
 		distributedSystemProperties.setProperty(DistributionConfig.LOG_LEVEL_NAME,
 			System.getProperty("spring.data.gemfire.log-level", GEMFIRE_LOG_LEVEL));
 
-		return InternalLocator.startLocator(locatorPort, null, null, null, null,
-			true, distributedSystemProperties, hostnameForClients);
+		return InternalLocator.startLocator(locatorPort, null, null, null,
+			null, true, distributedSystemProperties, hostnameForClients);
 	}
 
 	@SuppressWarnings("unused")
 	private static LocatorLauncher runLocator() {
+
 		LocatorLauncher locatorLauncher = buildLocatorLauncher();
 
-		// start the GemFire Locator process...
+		// Start a Pivotal GemFire Locator process...
 		locatorLauncher.start();
 
 		return locatorLauncher;
 	}
 
 	private static LocatorLauncher buildLocatorLauncher() {
+
 		return new LocatorLauncher.Builder()
 			.setMemberName(GEMFIRE_NAME)
 			.setHostnameForClients(getProperty("spring.data.gemfire.hostname-for-clients", HOSTNAME_FOR_CLIENTS))
@@ -136,7 +141,9 @@ public class LocatorProcess {
 	}
 
 	private static void registerShutdownHook() {
+
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+
 			Locator locator = GemfireUtils.getLocator();
 
 			if (locator != null) {
@@ -146,6 +153,7 @@ public class LocatorProcess {
 	}
 
 	private static void waitForLocatorStart(final long milliseconds) {
+
 		InternalLocator locator = InternalLocator.getLocator();
 
 		if (isClusterConfigurationEnabled(locator)) {
@@ -158,7 +166,8 @@ public class LocatorProcess {
 	}
 
 	private static boolean isClusterConfigurationEnabled(final InternalLocator locator) {
-		return (locator != null && Boolean.valueOf(locator.getDistributedSystem().getProperties().getProperty(
-			DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME)));
+
+		return locator != null && Boolean.valueOf(locator.getDistributedSystem().getProperties()
+			.getProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME));
 	}
 }

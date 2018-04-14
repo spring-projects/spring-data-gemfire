@@ -23,17 +23,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
 
 import java.io.File;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
@@ -47,16 +42,12 @@ import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.compression.Compressor;
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.SimpleCacheListener;
@@ -64,6 +55,7 @@ import org.springframework.data.gemfire.SimpleObjectSizer;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.client.Interest;
+import org.springframework.data.gemfire.test.mock.context.GemFireMockObjectsApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ObjectUtils;
@@ -80,7 +72,7 @@ import org.springframework.util.ObjectUtils;
  * @see org.springframework.data.gemfire.config.xml.ClientRegionParser
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="client-ns.xml")
+@ContextConfiguration(locations="client-ns.xml", initializers = GemFireMockObjectsApplicationContextInitializer.class)
 @SuppressWarnings("unused")
 public class ClientRegionNamespaceTest {
 
@@ -95,6 +87,7 @@ public class ClientRegionNamespaceTest {
 
 	@Test
 	public void testBeanNames() throws Exception {
+
 		assertTrue(applicationContext.containsBean("SimpleRegion"));
 		assertTrue(applicationContext.containsBean("Publisher"));
 		assertTrue(applicationContext.containsBean("ComplexRegion"));
@@ -105,6 +98,7 @@ public class ClientRegionNamespaceTest {
 
 	@Test
 	public void testSimpleClientRegion() throws Exception {
+
 		assertTrue(applicationContext.containsBean("simple"));
 
 		Region<?, ?> simple = applicationContext.getBean("simple", Region.class);
@@ -119,6 +113,7 @@ public class ClientRegionNamespaceTest {
 	@Test
 	@SuppressWarnings("rawtypes")
 	public void testPublishingClientRegion() throws Exception {
+
 		assertTrue(applicationContext.containsBean("empty"));
 
 		ClientRegionFactoryBean emptyClientRegionFactoryBean = applicationContext
@@ -134,6 +129,7 @@ public class ClientRegionNamespaceTest {
 	@Test
 	@SuppressWarnings("rawtypes")
 	public void testComplexClientRegion() throws Exception {
+
 		assertTrue(applicationContext.containsBean("complex"));
 
 		ClientRegionFactoryBean complexClientRegionFactoryBean = applicationContext
@@ -161,6 +157,7 @@ public class ClientRegionNamespaceTest {
 	@Test
 	@SuppressWarnings({ "deprecation", "rawtypes" })
 	public void testPersistentClientRegion() throws Exception {
+
 		assertTrue(applicationContext.containsBean("persistent"));
 
 		Region persistent = applicationContext.getBean("persistent", Region.class);
@@ -179,6 +176,7 @@ public class ClientRegionNamespaceTest {
 	@Test
 	@SuppressWarnings("rawtypes")
 	public void testOverflowClientRegion() throws Exception {
+
 		assertTrue(applicationContext.containsBean("overflow"));
 
 		ClientRegionFactoryBean overflowClientRegionFactoryBean = applicationContext
@@ -204,6 +202,7 @@ public class ClientRegionNamespaceTest {
 
 	@Test
 	public void testClientRegionWithCacheLoaderAndCacheWriter() throws Exception {
+
 		assertTrue(applicationContext.containsBean("loadWithWrite"));
 
 		ClientRegionFactoryBean factory = applicationContext.getBean("&loadWithWrite", ClientRegionFactoryBean.class);
@@ -217,6 +216,7 @@ public class ClientRegionNamespaceTest {
 
 	@Test
 	public void testCompressedReplicateRegion() {
+
 		assertTrue(applicationContext.containsBean("Compressed"));
 
 		Region<?, ?> compressed = applicationContext.getBean("Compressed", Region.class);
@@ -276,7 +276,7 @@ public class ClientRegionNamespaceTest {
 		assertInterest(true, false, InterestResultPolicy.KEYS, getInterestWithKey(".*", interests));
 		assertInterest(true, false, InterestResultPolicy.KEYS_VALUES, getInterestWithKey("keyPrefix.*", interests));
 
-		Region mockClientRegion = MockCacheFactoryBean.MOCK_REGION_REF.get();
+		Region mockClientRegion = applicationContext.getBean("client-with-interests", Region.class);
 
 		assertNotNull(mockClientRegion);
 
@@ -287,15 +287,17 @@ public class ClientRegionNamespaceTest {
 			eq(InterestResultPolicy.KEYS_VALUES), eq(true), eq(false));
 	}
 
-	protected void assertInterest(final boolean expectedDurable, final boolean expectedReceiveValues,
-			final InterestResultPolicy expectedPolicy, final Interest actualInterest) {
+	private void assertInterest(boolean expectedDurable, boolean expectedReceiveValues,
+			InterestResultPolicy expectedPolicy, Interest actualInterest) {
+
 		assertNotNull(actualInterest);
 		assertEquals(expectedDurable, actualInterest.isDurable());
 		assertEquals(expectedReceiveValues, actualInterest.isReceiveValues());
 		assertEquals(expectedPolicy, actualInterest.getPolicy());
 	}
 
-	protected Interest getInterestWithKey(final String key, final Interest... interests) {
+	private Interest getInterestWithKey(final String key, final Interest... interests) {
+
 		for (Interest interest : interests) {
 			if (interest.getKey().equals(key)) {
 				return interest;
@@ -303,43 +305,6 @@ public class ClientRegionNamespaceTest {
 		}
 
 		return null;
-	}
-
-	static final class MockCacheFactoryBean implements FactoryBean<ClientCache>, InitializingBean {
-
-		static final AtomicReference<Region> MOCK_REGION_REF = new AtomicReference<Region>(null);
-
-		private ClientCache mockClientCache;
-
-		@Override
-		@SuppressWarnings("unchecked")
-		public void afterPropertiesSet() throws Exception {
-			this.mockClientCache = mock(ClientCache.class,
-				ClientRegionNamespaceTest.class.getSimpleName().concat(".MockClientCache"));
-
-			ClientRegionFactory mockClientRegionFactory = mock(ClientRegionFactory.class,
-				ClientRegionNamespaceTest.class.getSimpleName().concat("MockClientRegionFactory"));
-
-			when(this.mockClientCache.createClientRegionFactory(any(ClientRegionShortcut.class)))
-				.thenReturn(mockClientRegionFactory);
-
-			Region mockRegion = mock(Region.class,
-				ClientRegionNamespaceTest.class.getSimpleName().concat(".MockClientRegion"));
-
-			when(mockClientRegionFactory.create(anyString())).thenReturn(mockRegion);
-
-			MOCK_REGION_REF.compareAndSet(null, mockRegion);
-		}
-
-		@Override
-		public ClientCache getObject() throws Exception {
-			return this.mockClientCache;
-		}
-
-		@Override
-		public Class<?> getObjectType() {
-			return ClientCache.class;
-		}
 	}
 
 	public static final class TestCacheLoader implements CacheLoader<Object, Object> {
@@ -350,12 +315,11 @@ public class ClientRegionNamespaceTest {
 		}
 
 		@Override
-		public void close() {
-		}
+		public void close() { }
+
 	}
 
-	public static final class TestCacheWriter extends CacheWriterAdapter<Object, Object> {
-	}
+	public static final class TestCacheWriter extends CacheWriterAdapter<Object, Object> { }
 
 	public static class TestCompressor implements Compressor {
 

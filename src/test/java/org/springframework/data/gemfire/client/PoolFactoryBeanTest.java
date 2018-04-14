@@ -68,11 +68,11 @@ public class PoolFactoryBeanTest {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
-	protected ConnectionEndpoint newConnectionEndpoint(String host, int port) {
+	private ConnectionEndpoint newConnectionEndpoint(String host, int port) {
 		return new ConnectionEndpoint(host, port);
 	}
 
-	protected InetSocketAddress newSocketAddress(String host, int port) {
+	private InetSocketAddress newSocketAddress(String host, int port) {
 		return new InetSocketAddress(host, port);
 	}
 
@@ -89,10 +89,14 @@ public class PoolFactoryBeanTest {
 		when(mockPoolFactory.create(eq("GemFirePool"))).thenReturn(mockPool);
 
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean() {
-			@Override protected PoolFactory createPoolFactory() {
+
+			@Override
+			protected PoolFactory createPoolFactory() {
 				return mockPoolFactory;
 			}
-			@Override boolean isDistributedSystemPresent() {
+
+			@Override
+			boolean isClientCachePresent() {
 				return false;
 			}
 		};
@@ -229,7 +233,7 @@ public class PoolFactoryBeanTest {
 
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
 
-		ReflectionUtils.setField(PoolFactoryBean.class.getDeclaredField("springBasedPool"), poolFactoryBean, false);
+		ReflectionUtils.setField(PoolFactoryBean.class.getDeclaredField("springManagedPool"), poolFactoryBean, false);
 		poolFactoryBean.setPool(mockPool);
 		poolFactoryBean.destroy();
 
@@ -287,7 +291,7 @@ public class PoolFactoryBeanTest {
 		assertThat(poolFactoryBean.getLocators().size(), is(equalTo(1)));
 		assertThat(poolFactoryBean.getLocators().findOne("localhost"), is(equalTo(localhost)));
 
-		poolFactoryBean.setLocators(Collections.<ConnectionEndpoint>emptyList());
+		poolFactoryBean.setLocators(Collections.emptyList());
 
 		assertThat(poolFactoryBean.getLocators(), is(notNullValue()));
 		assertThat(poolFactoryBean.getLocators().isEmpty(), is(true));
@@ -323,7 +327,7 @@ public class PoolFactoryBeanTest {
 		assertThat(poolFactoryBean.getServers().size(), is(equalTo(1)));
 		assertThat(poolFactoryBean.getServers().findOne("localhost"), is(equalTo(localhost)));
 
-		poolFactoryBean.setServers(Collections.<ConnectionEndpoint>emptyList());
+		poolFactoryBean.setServers(Collections.emptyList());
 
 		assertThat(poolFactoryBean.getServers(), is(notNullValue()));
 		assertThat(poolFactoryBean.getServers().isEmpty(), is(true));
@@ -444,7 +448,7 @@ public class PoolFactoryBeanTest {
 
 		exception.expect(IllegalStateException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("The Pool has not been initialized");
+		exception.expectMessage("Pool [null] has not been initialized");
 
 		new PoolFactoryBean().getPool().getPendingEventCount();
 	}
@@ -476,7 +480,7 @@ public class PoolFactoryBeanTest {
 
 		exception.expect(IllegalStateException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("The Pool has not been initialized");
+		exception.expectMessage("Pool [null] has not been initialized");
 
 		new PoolFactoryBean().getPool().getQueryService();
 	}
@@ -511,7 +515,9 @@ public class PoolFactoryBeanTest {
 		AtomicBoolean destroyCalled = new AtomicBoolean(false);
 
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean() {
-			@Override public void destroy() throws Exception {
+
+			@Override
+			public void destroy() throws Exception {
 				destroyCalled.set(true);
 				throw new IllegalStateException("test");
 			}
@@ -559,7 +565,7 @@ public class PoolFactoryBeanTest {
 
 		exception.expect(IllegalStateException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("The Pool has not been initialized");
+		exception.expectMessage("Pool [null] has not been initialized");
 
 		pool.releaseThreadLocalConnection();
 	}

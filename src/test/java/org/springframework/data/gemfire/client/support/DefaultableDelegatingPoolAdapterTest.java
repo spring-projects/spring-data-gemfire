@@ -32,6 +32,7 @@ import static org.mockito.Mockito.when;
 import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.query.QueryService;
@@ -72,7 +73,7 @@ public class DefaultableDelegatingPoolAdapterTest {
 	private QueryService mockQueryService;
 
 	@Mock
-	private DefaultableDelegatingPoolAdapter.ValueProvider mockValueProvider;
+	private Supplier mockSupplier;
 
 	private static InetSocketAddress newSocketAddress(String host, int port) {
 		return new InetSocketAddress(host, port);
@@ -125,7 +126,7 @@ public class DefaultableDelegatingPoolAdapterTest {
 
 		exception.expect(IllegalArgumentException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("'delegate' must not be null");
+		exception.expectMessage("Pool delegate must not be null");
 
 		DefaultableDelegatingPoolAdapter.from(null);
 	}
@@ -154,10 +155,10 @@ public class DefaultableDelegatingPoolAdapterTest {
 		this.poolAdapter = this.poolAdapter.preferDefault();
 
 		assertThat(this.poolAdapter.prefersDefault(), is(true));
-		assertThat(this.poolAdapter.defaultIfNull("default", this.mockValueProvider),
+		assertThat(this.poolAdapter.defaultIfNull("default", this.mockSupplier),
 			is(equalTo("default")));
 
-		verifyZeroInteractions(this.mockValueProvider);
+		verifyZeroInteractions(this.mockSupplier);
 	}
 
 	@Test
@@ -166,13 +167,13 @@ public class DefaultableDelegatingPoolAdapterTest {
 
 		this.poolAdapter = this.poolAdapter.preferDefault();
 
-		when(this.mockValueProvider.getValue()).thenReturn("pool");
+		when(this.mockSupplier.get()).thenReturn("pool");
 
 		assertThat(this.poolAdapter.prefersDefault(), is(true));
-		assertThat(this.poolAdapter.defaultIfNull(null, this.mockValueProvider),
+		assertThat(this.poolAdapter.defaultIfNull(null, this.mockSupplier),
 			is(equalTo("pool")));
 
-		verify(this.mockValueProvider, times(1)).getValue();
+		verify(this.mockSupplier, times(1)).get();
 	}
 
 	@Test
@@ -181,13 +182,13 @@ public class DefaultableDelegatingPoolAdapterTest {
 
 		this.poolAdapter = this.poolAdapter.preferPool();
 
-		when(mockValueProvider.getValue()).thenReturn("pool");
+		when(mockSupplier.get()).thenReturn("pool");
 
 		assertThat(this.poolAdapter.prefersPool(), is(true));
-		assertThat(this.poolAdapter.defaultIfNull("default", this.mockValueProvider),
+		assertThat(this.poolAdapter.defaultIfNull("default", this.mockSupplier),
 			is(equalTo("pool")));
 
-		verify(this.mockValueProvider, times(1)).getValue();
+		verify(this.mockSupplier, times(1)).get();
 	}
 
 	@Test
@@ -196,13 +197,13 @@ public class DefaultableDelegatingPoolAdapterTest {
 
 		this.poolAdapter = this.poolAdapter.preferPool();
 
-		when(this.mockValueProvider.getValue()).thenReturn(null);
+		when(this.mockSupplier.get()).thenReturn(null);
 
 		assertThat(this.poolAdapter.prefersPool(), is(true));
-		assertThat(this.poolAdapter.defaultIfNull("default", this.mockValueProvider),
+		assertThat(this.poolAdapter.defaultIfNull("default", this.mockSupplier),
 			is(equalTo("default")));
 
-		verify(this.mockValueProvider, times(1)).getValue();
+		verify(this.mockSupplier, times(1)).get();
 	}
 
 	@Test
@@ -214,9 +215,9 @@ public class DefaultableDelegatingPoolAdapterTest {
 		List<Object> defaultList = Collections.singletonList("default");
 
 		assertThat(this.poolAdapter.prefersDefault(), is(true));
-		assertThat((List<Object>) this.poolAdapter.defaultIfEmpty(defaultList, this.mockValueProvider), is(equalTo(defaultList)));
+		assertThat((List<Object>) this.poolAdapter.defaultIfEmpty(defaultList, this.mockSupplier), is(equalTo(defaultList)));
 
-		verifyZeroInteractions(this.mockValueProvider);
+		verifyZeroInteractions(this.mockSupplier);
 	}
 
 	@Test
@@ -227,12 +228,12 @@ public class DefaultableDelegatingPoolAdapterTest {
 
 		List<Object> poolList = Collections.singletonList("pool");
 
-		when(this.mockValueProvider.getValue()).thenReturn(poolList);
+		when(this.mockSupplier.get()).thenReturn(poolList);
 
 		assertThat(this.poolAdapter.prefersDefault(), is(true));
-		assertThat((List<Object>) this.poolAdapter.defaultIfEmpty(null, this.mockValueProvider), is(equalTo(poolList)));
+		assertThat((List<Object>) this.poolAdapter.defaultIfEmpty(null, this.mockSupplier), is(equalTo(poolList)));
 
-		verify(this.mockValueProvider, times(1)).getValue();
+		verify(this.mockSupplier, times(1)).get();
 	}
 
 	@Test
@@ -243,13 +244,13 @@ public class DefaultableDelegatingPoolAdapterTest {
 
 		List<Object> poolList = Collections.singletonList("pool");
 
-		when(this.mockValueProvider.getValue()).thenReturn(poolList);
+		when(this.mockSupplier.get()).thenReturn(poolList);
 
 		assertThat(this.poolAdapter.prefersDefault(), is(true));
-		assertThat((List<Object>) this.poolAdapter.defaultIfEmpty(Collections.emptyList(), this.mockValueProvider),
+		assertThat((List<Object>) this.poolAdapter.defaultIfEmpty(Collections.emptyList(), this.mockSupplier),
 			is(equalTo(poolList)));
 
-		verify(this.mockValueProvider, times(1)).getValue();
+		verify(this.mockSupplier, times(1)).get();
 	}
 
 	@Test
@@ -260,13 +261,13 @@ public class DefaultableDelegatingPoolAdapterTest {
 
 		List<Object> poolList = Collections.singletonList("pool");
 
-		when(this.mockValueProvider.getValue()).thenReturn(poolList);
+		when(this.mockSupplier.get()).thenReturn(poolList);
 
 		assertThat(this.poolAdapter.prefersPool(), is(true));
-		assertThat((List<Object>) this.poolAdapter.defaultIfEmpty(Collections.<Object>singletonList("default"), this.mockValueProvider),
+		assertThat((List<Object>) this.poolAdapter.defaultIfEmpty(Collections.<Object>singletonList("default"), this.mockSupplier),
 			is(equalTo(poolList)));
 
-		verify(this.mockValueProvider, times(1)).getValue();
+		verify(this.mockSupplier, times(1)).get();
 	}
 
 	@Test
@@ -275,15 +276,15 @@ public class DefaultableDelegatingPoolAdapterTest {
 
 		this.poolAdapter = this.poolAdapter.preferPool();
 
-		when(this.mockValueProvider.getValue()).thenReturn(null);
+		when(this.mockSupplier.get()).thenReturn(null);
 
 		List<Object> defaultList = Collections.singletonList("default");
 
 		assertThat(this.poolAdapter.prefersPool(), is(true));
-		assertThat((List<Object>) this.poolAdapter.defaultIfEmpty(defaultList, this.mockValueProvider),
+		assertThat((List<Object>) this.poolAdapter.defaultIfEmpty(defaultList, this.mockSupplier),
 			is(equalTo(defaultList)));
 
-		verify(this.mockValueProvider, times(1)).getValue();
+		verify(this.mockSupplier, times(1)).get();
 	}
 
 	@Test
@@ -292,15 +293,15 @@ public class DefaultableDelegatingPoolAdapterTest {
 
 		assertThat(this.poolAdapter.preferPool(), is(sameInstance(this.poolAdapter)));
 
-		when(this.mockValueProvider.getValue()).thenReturn(Collections.emptyList());
+		when(this.mockSupplier.get()).thenReturn(Collections.emptyList());
 
 		List<Object> defaultList = Collections.singletonList("default");
 
 		assertThat(this.poolAdapter.prefersPool(), is(true));
-		assertThat((List<Object>) this.poolAdapter.defaultIfEmpty(defaultList, this.mockValueProvider),
+		assertThat((List<Object>) this.poolAdapter.defaultIfEmpty(defaultList, this.mockSupplier),
 			is(equalTo(defaultList)));
 
-		verify(this.mockValueProvider, times(1)).getValue();
+		verify(this.mockSupplier, times(1)).get();
 	}
 
 	@Test

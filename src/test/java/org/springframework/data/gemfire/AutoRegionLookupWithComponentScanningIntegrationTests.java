@@ -24,11 +24,11 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * The AutoRegionLookupWithComponentScanningIntegrationTests class is a test suite class testing the behavior of
- * Spring Data GemFire's auto Region lookup behavior with Spring component scanning functionality.
+ * Integration tests to test the behavior of Spring Data GemFire's Auto Region Lookup behavior
+ * with Spring component scanning functionality.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -37,19 +37,19 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @since 1.5.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @SuppressWarnings("unused")
 public class AutoRegionLookupWithComponentScanningIntegrationTests {
 
 	@Autowired
-	private ApplicationContext context;
+	private ApplicationContext applicationContext;
 
 	@Test
 	public void testAutowiredNativeRegions() {
-		assertTrue("The 'autoRegionLookupDao' Spring bean DAO was not properly configured an initialized!",
-			context.containsBean("autoRegionLookupDao"));
-		assertNotNull(context.getBean("autoRegionLookupDao", AutoRegionLookupDao.class));
-	}
 
+		assertTrue("The 'autoRegionLookupDao' Spring bean DAO was not properly configured an initialized!",
+			this.applicationContext.containsBean("autoRegionLookupDao"));
+		assertNotNull(this.applicationContext.getBean("autoRegionLookupDao", AutoRegionLookupDao.class));
+	}
 }

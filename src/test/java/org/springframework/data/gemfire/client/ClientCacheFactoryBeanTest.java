@@ -32,6 +32,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -40,7 +41,6 @@ import static org.mockito.Mockito.when;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -52,14 +52,10 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.pdx.PdxSerializer;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.data.gemfire.GemfireUtils;
-import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
 import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.data.gemfire.util.DistributedSystemUtils;
@@ -84,17 +80,16 @@ import org.springframework.data.gemfire.util.DistributedSystemUtils;
  */
 public class ClientCacheFactoryBeanTest {
 
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
-
 	private Properties createProperties(String key, String value) {
 		return addProperty(null, key, value);
 	}
 
 	@SuppressWarnings("all")
 	private Properties addProperty(Properties properties, String key, String value) {
+
 		properties = Optional.ofNullable(properties).orElseGet(Properties::new);
 		properties.setProperty(key, value);
+
 		return properties;
 	}
 
@@ -267,19 +262,19 @@ public class ClientCacheFactoryBeanTest {
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
 
 			@Override
-			ClientCacheFactory initializePdx(ClientCacheFactory clientCacheFactory) {
+			ClientCacheFactory configurePdx(ClientCacheFactory clientCacheFactory) {
 				initializePdxCalled.set(true);
 				return clientCacheFactory;
 			}
 
 			@Override
-			ClientCacheFactory initializePool(final ClientCacheFactory clientCacheFactory) {
+			ClientCacheFactory configurePool(final ClientCacheFactory clientCacheFactory) {
 				initializePoolCalled.set(true);
 				return clientCacheFactory;
 			}
 		};
 
-		assertThat(clientCacheFactoryBean.prepareFactory(mockClientCacheFactory),
+		assertThat(clientCacheFactoryBean.configureFactory(mockClientCacheFactory),
 			is(sameInstance(mockClientCacheFactory)));
 		assertThat(initializePdxCalled.get(), is(true));
 		assertThat(initializePoolCalled.get(), is(true));
@@ -306,7 +301,7 @@ public class ClientCacheFactoryBeanTest {
 
 		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
 
-		assertThat(clientCacheFactoryBean.initializePdx(mockClientCacheFactory),
+		assertThat(clientCacheFactoryBean.configurePdx(mockClientCacheFactory),
 			is(sameInstance(mockClientCacheFactory)));
 
 		verify(mockClientCacheFactory, times(1)).setPdxSerializer(eq(mockPdxSerializer));
@@ -332,7 +327,7 @@ public class ClientCacheFactoryBeanTest {
 
 		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
 
-		assertThat(clientCacheFactoryBean.initializePdx(mockClientCacheFactory),
+		assertThat(clientCacheFactoryBean.configurePdx(mockClientCacheFactory),
 			is(sameInstance(mockClientCacheFactory)));
 
 		verify(mockClientCacheFactory, never()).setPdxDiskStore(anyString());
@@ -355,7 +350,7 @@ public class ClientCacheFactoryBeanTest {
 
 		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
 
-		assertThat(clientCacheFactoryBean.initializePdx(mockClientCacheFactory),
+		assertThat(clientCacheFactoryBean.configurePdx(mockClientCacheFactory),
 			is(sameInstance(mockClientCacheFactory)));
 
 		verifyZeroInteractions(mockClientCacheFactory);
@@ -419,7 +414,7 @@ public class ClientCacheFactoryBeanTest {
 
 		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
 
-		assertThat(clientCacheFactoryBean.initializePool(mockClientCacheFactory),
+		assertThat(clientCacheFactoryBean.configurePool(mockClientCacheFactory),
 			is(sameInstance(mockClientCacheFactory)));
 
 		verify(mockPool, times(1)).getFreeConnectionTimeout();
@@ -523,7 +518,7 @@ public class ClientCacheFactoryBeanTest {
 
 		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
 
-		assertThat(clientCacheFactoryBean.initializePool(mockClientCacheFactory),
+		assertThat(clientCacheFactoryBean.configurePool(mockClientCacheFactory),
 			is(sameInstance(mockClientCacheFactory)));
 
 		verifyZeroInteractions(mockPool);
@@ -622,7 +617,7 @@ public class ClientCacheFactoryBeanTest {
 
 		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
 
-		assertThat(clientCacheFactoryBean.initializePool(mockClientCacheFactory),
+		assertThat(clientCacheFactoryBean.configurePool(mockClientCacheFactory),
 			is(sameInstance(mockClientCacheFactory)));
 
 		verify(mockPool, times(1)).getFreeConnectionTimeout();
@@ -687,7 +682,7 @@ public class ClientCacheFactoryBeanTest {
 
 		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
 
-		assertThat(clientCacheFactoryBean.initializePool(mockClientCacheFactory),
+		assertThat(clientCacheFactoryBean.configurePool(mockClientCacheFactory),
 			is(sameInstance(mockClientCacheFactory)));
 
 		verify(mockPool, never()).getLocators();
@@ -715,7 +710,7 @@ public class ClientCacheFactoryBeanTest {
 
 		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
 
-		assertThat(clientCacheFactoryBean.initializePool(mockClientCacheFactory),
+		assertThat(clientCacheFactoryBean.configurePool(mockClientCacheFactory),
 			is(sameInstance(mockClientCacheFactory)));
 
 		verify(mockPool, never()).getLocators();
@@ -742,7 +737,7 @@ public class ClientCacheFactoryBeanTest {
 
 		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
 
-		assertThat(clientCacheFactoryBean.initializePool(mockClientCacheFactory),
+		assertThat(clientCacheFactoryBean.configurePool(mockClientCacheFactory),
 			is(sameInstance(mockClientCacheFactory)));
 
 		verify(mockPool, times(1)).getLocators();
@@ -769,7 +764,7 @@ public class ClientCacheFactoryBeanTest {
 
 		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
 
-		assertThat(clientCacheFactoryBean.initializePool(mockClientCacheFactory),
+		assertThat(clientCacheFactoryBean.configurePool(mockClientCacheFactory),
 			is(sameInstance(mockClientCacheFactory)));
 
 		verify(mockPool, never()).getLocators();
@@ -793,7 +788,7 @@ public class ClientCacheFactoryBeanTest {
 
 		ClientCacheFactory mockClientCacheFactory = mock(ClientCacheFactory.class);
 
-		assertThat(clientCacheFactoryBean.initializePool(mockClientCacheFactory),
+		assertThat(clientCacheFactoryBean.configurePool(mockClientCacheFactory),
 			is(sameInstance(mockClientCacheFactory)));
 
 		verify(mockClientCacheFactory, never()).addPoolLocator(anyString(), anyInt());
@@ -819,31 +814,29 @@ public class ClientCacheFactoryBeanTest {
 	}
 
 	@Test
-	public void resolvePoolByReturningProvidedPool() {
+	public void resolvePoolReturnsConfiguredPool() {
 
 		Pool mockPool = mock(Pool.class);
 
-		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+		ClientCacheFactoryBean clientCacheFactoryBean = spy(new ClientCacheFactoryBean());
 
 		clientCacheFactoryBean.setPool(mockPool);
 
 		assertThat(clientCacheFactoryBean.getPool(), is(sameInstance(mockPool)));
 		assertThat(clientCacheFactoryBean.resolvePool(), is(equalTo(mockPool)));
 
+		verify(clientCacheFactoryBean, never()).getPoolName();
 		verifyZeroInteractions(mockPool);
 	}
 
 	@Test
-	public void resolvesPoolByName() {
+	public void resolvesPoolReturnsNamedPool() {
 
 		Pool mockPool = mock(Pool.class);
 
-		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
-			@Override Pool findPool(String name) {
-				assertThat(name, is(equalTo("TestPool")));
-				return mockPool;
-			}
-		};
+		ClientCacheFactoryBean clientCacheFactoryBean = spy(new ClientCacheFactoryBean());
+
+		when(clientCacheFactoryBean.findPool(eq("TestPool"))).thenReturn(mockPool);
 
 		clientCacheFactoryBean.setPoolName("TestPool");
 
@@ -851,150 +844,59 @@ public class ClientCacheFactoryBeanTest {
 		assertThat(clientCacheFactoryBean.getPoolName(), is(equalTo("TestPool")));
 		assertThat(clientCacheFactoryBean.resolvePool(), is(equalTo(mockPool)));
 
+		verify(clientCacheFactoryBean, times(1)).findPool(eq("TestPool"));
 		verifyZeroInteractions(mockPool);
 	}
 
 	@Test
-	public void resolvesPoolByDefaultName() {
-
-		Pool mockPool = mock(Pool.class);
-
-		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean() {
-			@Override Pool findPool(String name) {
-				assertThat(name, is(equalTo(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME)));
-				return mockPool;
-			}
-		};
-
-		assertThat(clientCacheFactoryBean.getPool(), is(nullValue()));
-		assertThat(clientCacheFactoryBean.getPoolName(), is(nullValue()));
-		assertThat(clientCacheFactoryBean.resolvePool(), is(equalTo(mockPool)));
-
-		verifyZeroInteractions(mockPool);
-	}
-
-	@Test
-	public void resolvesNamedPoolFromBeanFactory() {
-
-		ListableBeanFactory mockBeanFactory = mock(ListableBeanFactory.class);
-
-		Pool mockPool = mock(Pool.class);
-
-		PoolFactoryBean mockPoolFactoryBean = mock(PoolFactoryBean.class);
-
-		Map<String, PoolFactoryBean> beans = Collections.singletonMap("&TestPool", mockPoolFactoryBean);
-
-		when(mockBeanFactory.getBeansOfType(eq(PoolFactoryBean.class), eq(false), eq(false))).thenReturn(beans);
-		when(mockPoolFactoryBean.getPool()).thenReturn(mockPool);
-
-		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
-
-		clientCacheFactoryBean.setBeanFactory(mockBeanFactory);
-		clientCacheFactoryBean.setPoolName("TestPool");
-
-		assertThat(clientCacheFactoryBean.getBeanFactory(), is(equalTo(mockBeanFactory)));
-		assertThat(clientCacheFactoryBean.getPool(), is(nullValue()));
-		assertThat(clientCacheFactoryBean.getPoolName(), is(equalTo("TestPool")));
-		assertThat(clientCacheFactoryBean.resolvePool(), is(equalTo(mockPool)));
-
-		verify(mockBeanFactory, times(1)).getBeansOfType(eq(PoolFactoryBean.class), eq(false), eq(false));
-		verify(mockPoolFactoryBean, times(1)).getPool();
-		verifyZeroInteractions(mockPool);
-	}
-
-	@Test
-	public void resolvesUnnamedPoolFromBeanFactory() {
-
-		ListableBeanFactory mockBeanFactory = mock(ListableBeanFactory.class);
-
-		Pool mockPool = mock(Pool.class);
-
-		PoolFactoryBean mockPoolFactoryBean = mock(PoolFactoryBean.class);
-
-		Map<String, PoolFactoryBean> beans = Collections.singletonMap("&gemfirePool", mockPoolFactoryBean);
-
-		when(mockBeanFactory.getBeansOfType(eq(PoolFactoryBean.class), eq(false), eq(false))).thenReturn(beans);
-		when(mockPoolFactoryBean.getPool()).thenReturn(mockPool);
-
-		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
-
-		clientCacheFactoryBean.setBeanFactory(mockBeanFactory);
-
-		assertThat(clientCacheFactoryBean.getBeanFactory(), is(equalTo(mockBeanFactory)));
-		assertThat(clientCacheFactoryBean.getPool(), is(nullValue()));
-		assertThat(clientCacheFactoryBean.getPoolName(), is(nullValue()));
-		assertThat(clientCacheFactoryBean.resolvePool(), is(equalTo(mockPool)));
-
-		verify(mockBeanFactory, times(1)).getBeansOfType(eq(PoolFactoryBean.class), eq(false), eq(false));
-		verify(mockPoolFactoryBean, times(1)).getPool();
-		verifyZeroInteractions(mockPool);
-	}
-
-	@Test
-	public void resolvePoolReturnsNullWhenNoBeansOfTypePoolFactoryBeanExists() {
-
-		ListableBeanFactory mockBeanFactory = mock(ListableBeanFactory.class);
-
-		Map<String, PoolFactoryBean> beans = Collections.emptyMap();
-
-		when(mockBeanFactory.getBeansOfType(eq(PoolFactoryBean.class), eq(false), eq(false))).thenReturn(beans);
-
-		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
-
-		clientCacheFactoryBean.setBeanFactory(mockBeanFactory);
-
-		assertThat(clientCacheFactoryBean.getBeanFactory(), is(equalTo(mockBeanFactory)));
-		assertThat(clientCacheFactoryBean.getPool(), is(nullValue()));
-		assertThat(clientCacheFactoryBean.getPoolName(), is(nullValue()));
-		assertThat(clientCacheFactoryBean.resolvePool(), is(nullValue()));
-
-		verify(mockBeanFactory, times(1)).getBeansOfType(eq(PoolFactoryBean.class), eq(false), eq(false));
-	}
-
-	@Test
-	public void resolvePoolReturnsNullWhenNoBeansOfTypePoolFactoryBeanExistsWithPoolName() {
-
-		ListableBeanFactory mockBeanFactory = mock(ListableBeanFactory.class);
-
-		Pool mockPool = mock(Pool.class);
-
-		PoolFactoryBean mockPoolFactoryBean = mock(PoolFactoryBean.class);
-
-		Map<String, PoolFactoryBean> beans = Collections.singletonMap("&swimPool", mockPoolFactoryBean);
-
-		when(mockBeanFactory.getBeansOfType(eq(PoolFactoryBean.class), eq(false), eq(false))).thenReturn(beans);
-		when(mockPoolFactoryBean.getPool()).thenReturn(mockPool);
-
-		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
-
-		clientCacheFactoryBean.setBeanFactory(mockBeanFactory);
-		clientCacheFactoryBean.setPoolName("TestPool");
-
-		assertThat(clientCacheFactoryBean.getBeanFactory(), is(equalTo(mockBeanFactory)));
-		assertThat(clientCacheFactoryBean.getPool(), is(nullValue()));
-		assertThat(clientCacheFactoryBean.getPoolName(), is(equalTo("TestPool")));
-		assertThat(clientCacheFactoryBean.resolvePool(), is(nullValue()));
-
-		verify(mockBeanFactory, times(1)).getBeansOfType(eq(PoolFactoryBean.class), eq(false), eq(false));
-		verify(mockPoolFactoryBean, never()).getPool();
-		verifyZeroInteractions(mockPool);
-	}
-
-	@Test
-	public void resolvePoolReturnsNullWhenBeanFactoryIsNotAListableBeanFactory() {
+	public void resolvesPoolReturnsNamedPoolFromBeanFactory() {
 
 		BeanFactory mockBeanFactory = mock(BeanFactory.class);
 
+		Pool mockPool = mock(Pool.class);
+
+		PoolFactoryBean mockPoolFactoryBean = mock(PoolFactoryBean.class);
+
+		when(mockBeanFactory.containsBean(eq("TestPool"))).thenReturn(true);
+		when(mockBeanFactory.getBean(eq("&TestPool"), eq(PoolFactoryBean.class))).thenReturn(mockPoolFactoryBean);
+		when(mockPoolFactoryBean.getPool()).thenReturn(mockPool);
+
 		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
 
 		clientCacheFactoryBean.setBeanFactory(mockBeanFactory);
+		clientCacheFactoryBean.setPoolName("TestPool");
 
 		assertThat(clientCacheFactoryBean.getBeanFactory(), is(equalTo(mockBeanFactory)));
 		assertThat(clientCacheFactoryBean.getPool(), is(nullValue()));
-		assertThat(clientCacheFactoryBean.getPoolName(), is(nullValue()));
-		assertThat(clientCacheFactoryBean.resolvePool(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getPoolName(), is(equalTo("TestPool")));
+		assertThat(clientCacheFactoryBean.resolvePool(), is(equalTo(mockPool)));
 
-		verifyZeroInteractions(mockBeanFactory);
+		verify(mockBeanFactory, times(1)).containsBean(eq("TestPool"));
+		verify(mockBeanFactory, times(1))
+			.getBean(eq("&TestPool"), eq(PoolFactoryBean.class));
+		verify(mockPoolFactoryBean, times(1)).getPool();
+		verifyZeroInteractions(mockPool);
+	}
+
+	@Test
+	public void resolvePoolWhenBeanFactoryHasNoPoolBeansReturnsNull() {
+
+		BeanFactory mockBeanFactory = mock(BeanFactory.class);
+
+		when(mockBeanFactory.containsBean(anyString())).thenReturn(false);
+
+		ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
+
+		clientCacheFactoryBean.setBeanFactory(mockBeanFactory);
+		clientCacheFactoryBean.setPoolName("TestPool");
+
+		assertThat(clientCacheFactoryBean.getBeanFactory(), is(equalTo(mockBeanFactory)));
+		assertThat(clientCacheFactoryBean.getPool(), is(nullValue()));
+		assertThat(clientCacheFactoryBean.getPoolName(), is(equalTo("TestPool")));
+		assertThat(clientCacheFactoryBean.resolvePool(), is(nullValue(Pool.class)));
+
+		verify(mockBeanFactory, times(1)).containsBean(eq("TestPool"));
+		verify(mockBeanFactory, never()).getBean(anyString(), eq(PoolFactoryBean.class));
 	}
 
 	@Test

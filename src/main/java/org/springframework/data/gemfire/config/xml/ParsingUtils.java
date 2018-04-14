@@ -18,8 +18,6 @@ package org.springframework.data.gemfire.config.xml;
 
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.geode.cache.LossAction;
 import org.apache.geode.cache.MembershipAttributes;
 import org.apache.geode.cache.ResumptionAction;
@@ -32,6 +30,7 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.core.Conventions;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.SubscriptionAttributesFactoryBean;
+import org.springframework.data.gemfire.config.support.GemfireFeature;
 import org.springframework.data.gemfire.eviction.EvictionAttributesFactoryBean;
 import org.springframework.data.gemfire.expiration.ExpirationAttributesFactoryBean;
 import org.springframework.data.gemfire.util.SpringUtils;
@@ -58,15 +57,13 @@ import org.w3c.dom.Element;
  */
 abstract class ParsingUtils {
 
-	private static final Log log = LogFactory.getLog(ParsingUtils.class);
-
 	protected static final String CACHE_PROPERTY_NAME = "cache";
 	protected static final String REGION_PROPERTY_NAME = "region";
 	protected static final String CACHE_REF_ATTRIBUTE_NAME = "cache-ref";
 	protected static final String REGION_REF_ATTRIBUTE_NAME = "region-ref";
 
 	static void setPropertyReference(Element element, BeanDefinitionBuilder builder, String attributeName,
-			String propertyName) {
+		String propertyName) {
 
 		String attributeValue = element.getAttribute(attributeName);
 
@@ -81,7 +78,7 @@ abstract class ParsingUtils {
 	}
 
 	static void setPropertyValue(Element element, BeanDefinitionBuilder builder, String attributeName,
-			String propertyName, Object defaultValue) {
+		String propertyName, Object defaultValue) {
 
 		String attributeValue = element.getAttribute(attributeName);
 
@@ -94,7 +91,8 @@ abstract class ParsingUtils {
 	}
 
 	static void setPropertyValue(Element element, BeanDefinitionBuilder builder, String attributeName,
-			String propertyName) {
+		String propertyName) {
+
 		setPropertyValue(element, builder, attributeName, propertyName, null);
 	}
 
@@ -103,7 +101,7 @@ abstract class ParsingUtils {
 	}
 
 	static void setPropertyValue(BeanDefinitionBuilder builder, BeanDefinition source, String propertyName,
-			boolean withDependsOn) {
+		boolean withDependsOn) {
 
 		PropertyValue propertyValue = source.getPropertyValues().getPropertyValue(propertyName);
 
@@ -129,7 +127,7 @@ abstract class ParsingUtils {
 			if (!DomUtils.getChildElements(element).isEmpty()) {
 				parserContext.getReaderContext().error(String.format(
 					"Use either the '%1$s' attribute or a nested bean declaration for '%2$s' element, but not both.",
-						refAttributeName, element.getLocalName()), element);
+					refAttributeName, element.getLocalName()), element);
 			}
 
 			returnValue = new RuntimeBeanReference(refAttributeValue);
@@ -139,7 +137,7 @@ abstract class ParsingUtils {
 	}
 
 	static Object parseRefOrNestedCustomElement(Element element, ParserContext parserContext,
-			BeanDefinitionBuilder builder) {
+		BeanDefinitionBuilder builder) {
 
 		Object beanRef = ParsingUtils.getBeanReference(element, parserContext, "bean");
 
@@ -166,31 +164,31 @@ abstract class ParsingUtils {
 	 * @return Bean reference or nested Bean definition.
 	 */
 	static Object parseRefOrNestedBeanDeclaration(Element element, ParserContext parserContext,
-			BeanDefinitionBuilder builder) {
+		BeanDefinitionBuilder builder) {
 
 		return parseRefOrNestedBeanDeclaration(element, parserContext, builder, "ref", false);
 	}
 
 	static Object parseRefOrNestedBeanDeclaration(Element element, ParserContext parserContext,
-			BeanDefinitionBuilder builder, String refAttributeName) {
+		BeanDefinitionBuilder builder, String refAttributeName) {
 
 		return parseRefOrNestedBeanDeclaration(element, parserContext, builder, refAttributeName, false);
 	}
 
 	static Object parseRefOrSingleNestedBeanDeclaration(Element element, ParserContext parserContext,
-			BeanDefinitionBuilder builder) {
+		BeanDefinitionBuilder builder) {
 
 		return parseRefOrNestedBeanDeclaration(element, parserContext, builder, "ref", true);
 	}
 
 	static Object parseRefOrSingleNestedBeanDeclaration(Element element, ParserContext parserContext,
-			BeanDefinitionBuilder builder, String refAttributeName) {
+		BeanDefinitionBuilder builder, String refAttributeName) {
 
 		return parseRefOrNestedBeanDeclaration(element, parserContext, builder, refAttributeName, true);
 	}
 
 	static Object parseRefOrNestedBeanDeclaration(Element element, ParserContext parserContext,
-			BeanDefinitionBuilder builder, String refAttributeName, boolean single) {
+		BeanDefinitionBuilder builder, String refAttributeName, boolean single) {
 
 		Object beanReference = getBeanReference(element, parserContext, refAttributeName);
 
@@ -211,7 +209,7 @@ abstract class ParsingUtils {
 			if (single) {
 				parserContext.getReaderContext().error(String.format(
 					"The element '%1$s' does not support multiple nested bean definitions.",
-						element.getLocalName()), element);
+					element.getLocalName()), element);
 			}
 		}
 
@@ -233,7 +231,7 @@ abstract class ParsingUtils {
 	 * @return true if parsing actually occurred, false otherwise.
 	 */
 	static boolean parseEviction(Element element, ParserContext parserContext,
-			BeanDefinitionBuilder regionAttributesBuilder) {
+		BeanDefinitionBuilder regionAttributesBuilder) {
 
 		Element evictionElement = DomUtils.getChildElementByTagName(element, "eviction");
 
@@ -259,7 +257,7 @@ abstract class ParsingUtils {
 			return true;
 		}
 
-	    return false;
+		return false;
 	}
 
 	/**
@@ -336,7 +334,7 @@ abstract class ParsingUtils {
 
 	@SuppressWarnings("unused")
 	static void parseOptionalRegionAttributes(Element element, ParserContext parserContext,
-			BeanDefinitionBuilder regionAttributesBuilder) {
+		BeanDefinitionBuilder regionAttributesBuilder) {
 
 		setPropertyValue(element, regionAttributesBuilder, "cloning-enabled");
 		setPropertyValue(element, regionAttributesBuilder, "concurrency-level");
@@ -357,18 +355,13 @@ abstract class ParsingUtils {
 		String concurrencyChecksEnabled = element.getAttribute("concurrency-checks-enabled");
 
 		if (StringUtils.hasText(concurrencyChecksEnabled)) {
-			if (GemfireUtils.isGemfireVersion7OrAbove()) {
-				ParsingUtils.setPropertyValue(element, regionAttributesBuilder, "concurrency-checks-enabled");
-			}
-			else {
-				log.warn("Setting 'concurrency-checks-enabled' is only available in Gemfire 7.0 or above!");
-			}
+			ParsingUtils.setPropertyValue(element, regionAttributesBuilder, "concurrency-checks-enabled");
 		}
 	}
 
 	@SuppressWarnings({ "deprecation", "unused" })
 	static void parseMembershipAttributes(Element element, ParserContext parserContext,
-			BeanDefinitionBuilder regionAttributesBuilder) {
+		BeanDefinitionBuilder regionAttributesBuilder) {
 
 		Element membershipAttributes = DomUtils.getChildElementByTagName(element, "membership-attributes");
 
@@ -393,17 +386,6 @@ abstract class ParsingUtils {
 		}
 	}
 
-	static void throwExceptionIfNotGemfireV7(String elementName, String attributeName, ParserContext parserContext) {
-		if (!GemfireUtils.isGemfireVersion7OrAbove()) {
-			String messagePrefix = (attributeName != null)
-				? String.format("Attribute '%1$s' of element '%2$s'", attributeName, elementName)
-				: String.format("Element '%1$s'", elementName);
-			parserContext.getReaderContext().error(
-				String.format("%1$s requires GemFire version 7 or later. The current version is %2$s.",
-					messagePrefix, GemfireUtils.GEMFIRE_VERSION), null);
-		}
-	}
-
 	static void parseScope(Element element, BeanDefinitionBuilder builder) {
 		String scopeAttributeValue = element.getAttribute("scope");
 
@@ -413,7 +395,7 @@ abstract class ParsingUtils {
 	}
 
 	private static boolean parseExpiration(Element rootElement, String elementName, String propertyName,
-			BeanDefinitionBuilder regionAttributesBuilder) {
+		BeanDefinitionBuilder regionAttributesBuilder) {
 
 		Element expirationElement = DomUtils.getChildElementByTagName(rootElement, elementName);
 
@@ -432,7 +414,7 @@ abstract class ParsingUtils {
 	}
 
 	private static boolean parseCustomExpiration(Element rootElement, ParserContext parserContext, String elementName,
-			String propertyName, BeanDefinitionBuilder regionAttributesBuilder) {
+		String propertyName, BeanDefinitionBuilder regionAttributesBuilder) {
 
 		Element expirationElement = DomUtils.getChildElementByTagName(rootElement, elementName);
 
@@ -449,13 +431,21 @@ abstract class ParsingUtils {
 	}
 
 	static void parseCompressor(Element element, ParserContext parserContext,
-			BeanDefinitionBuilder regionAttributesBuilder) {
+		BeanDefinitionBuilder regionAttributesBuilder) {
 
 		Element compressorElement = DomUtils.getChildElementByTagName(element, "compressor");
 
 		if (compressorElement != null) {
 			regionAttributesBuilder.addPropertyValue("compressor", parseRefOrSingleNestedBeanDeclaration(
 				compressorElement, parserContext, regionAttributesBuilder));
+		}
+	}
+
+	@SuppressWarnings("unused")
+	static void assertGemFireFeatureAvailable(Element element, ParserContext parserContext) {
+		if (GemfireUtils.isGemfireFeatureUnavailable(element)) {
+			parserContext.getReaderContext().error(String.format("'%1$s' is not supported in %2$s v%3$s",
+				element.getLocalName(), GemfireUtils.GEMFIRE_NAME, GemfireUtils.GEMFIRE_VERSION), element);
 		}
 	}
 
@@ -477,5 +467,18 @@ abstract class ParsingUtils {
 
 	static String resolveRegionReference(Element element) {
 		return element.getAttribute(REGION_REF_ATTRIBUTE_NAME);
+	}
+
+	static void throwExceptionWhenGemFireFeatureUnavailable(GemfireFeature feature,
+		String elementName, String attributeName, ParserContext parserContext) {
+
+		if (GemfireUtils.isGemfireFeatureUnavailable(feature)) {
+			String messagePrefix = (attributeName != null)
+				? String.format("Attribute '%1$s' of element '%2$s'", attributeName, elementName)
+				: String.format("Element '%1$s'", elementName);
+			parserContext.getReaderContext().error(
+				String.format("%1$s requires GemFire version 7 or later. The current version is %2$s.",
+					messagePrefix, GemfireUtils.GEMFIRE_VERSION), null);
+		}
 	}
 }

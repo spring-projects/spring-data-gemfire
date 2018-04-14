@@ -1,5 +1,9 @@
 /*
+<<<<<<< Updated upstream
  * Copyright 2002-2018 the original author or authors.
+=======
+ * Copyright 2002-2013 the original author or authors.
+>>>>>>> Stashed changes
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -12,23 +16,25 @@
  */
 package org.springframework.data.gemfire.function.config;
 
+import java.lang.annotation.Annotation;
+
 import org.springframework.core.type.filter.TypeFilter;
 
 /**
+<<<<<<< Updated upstream
  * Interface for function execution configuration sources (e.g., annotation or XML configuration) to configure
  * classpath scanning of annotated interfaces to implement proxies that invoke Gemfire functions
  *
  * @author David Turanski
+=======
+ * Interface for Function Execution configuration sources (e.g. {@link Annotation} or XML configuration)
+ * to configure classpath scanning of annotated interfaces to implement proxies that invoke Functions.
+>>>>>>> Stashed changes
  *
+ * @author David Turanski
+ * @author John Blum
  */
 interface FunctionExecutionConfigurationSource {
-	/**
-	 * Returns the actual source object that the configuration originated from. Will be used by the tooling to give visual
-	 * feedback on where the repository instances actually come from.
-	 *
-	 * @return must not be {@literal null}.
-	 */
-	Object getSource();
 
 	/**
 	 * Returns the base packages the repository interfaces shall be found under.
@@ -36,7 +42,6 @@ interface FunctionExecutionConfigurationSource {
 	 * @return must not be {@literal null}.
 	 */
 	Iterable<String> getBasePackages();
-
 
 	/**
 	 * Returns configured {@link TypeFilter}s
@@ -49,5 +54,13 @@ interface FunctionExecutionConfigurationSource {
 	 * @return exclude filters
 	 */
 	Iterable<TypeFilter> getExcludeFilters();
+
+	/**
+	 * Returns the actual source object that the configuration originated from. Will be used by the tooling to give visual
+	 * feedback on where the repository instances actually come from.
+	 *
+	 * @return must not be {@literal null}.
+	 */
+	Object getSource();
 
 }

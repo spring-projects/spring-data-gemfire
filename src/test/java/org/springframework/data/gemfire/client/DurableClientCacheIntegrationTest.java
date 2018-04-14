@@ -60,7 +60,7 @@ import org.springframework.data.gemfire.test.support.ThreadUtils;
 import org.springframework.data.gemfire.util.DistributedSystemUtils;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.Assert;
 import org.springframework.util.SocketUtils;
 
@@ -82,7 +82,7 @@ import org.springframework.util.SocketUtils;
  * @see org.apache.geode.cache.util.CacheListenerAdapter
  * @since 1.6.3
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @SuppressWarnings("all")
 public class DurableClientCacheIntegrationTest extends AbstractGemFireClientServerIntegrationTest {
@@ -117,30 +117,30 @@ public class DurableClientCacheIntegrationTest extends AbstractGemFireClientServ
 	private Region<String, Integer> example;
 
 	@BeforeClass
-	public static void setupGemFireServer() throws IOException {
+	public static void startGemFireServer() throws IOException {
 		serverPort = setSystemProperty(CACHE_SERVER_PORT_SYSTEM_PROPERTY, SocketUtils.findAvailableTcpPort());
 		serverProcess = startGemFireServer(DurableClientCacheIntegrationTest.class);
 	}
 
 	@AfterClass
-	public static void tearDownGemFireServer() {
-		serverProcess = stopGemFireServer(serverProcess);
+	public static void stopGemFireServer() {
+		stopGemFireServer(serverProcess);
 		clearSystemProperties(DurableClientCacheIntegrationTest.class);
 	}
 
-	protected static boolean isAfterDirtiesContext() {
+	private static boolean isAfterDirtiesContext() {
 		return DIRTIES_CONTEXT.get();
 	}
 
-	protected static boolean isBeforeDirtiesContext() {
+	private static boolean isBeforeDirtiesContext() {
 		return !isAfterDirtiesContext();
 	}
 
-	protected boolean dirtiesContext() {
+	private boolean dirtiesContext() {
 		return !DIRTIES_CONTEXT.getAndSet(true);
 	}
 
-	protected <T> T valueBeforeAndAfterDirtiesContext(T before, T after) {
+	private <T> T valueBeforeAndAfterDirtiesContext(T before, T after) {
 		return (isBeforeDirtiesContext() ? before : after);
 	}
 
@@ -161,6 +161,7 @@ public class DurableClientCacheIntegrationTest extends AbstractGemFireClientServ
 
 	@After
 	public void tearDown() {
+
 		if (dirtiesContext()) {
 			closeApplicationContext();
 			runClientCacheProducer();
@@ -171,6 +172,7 @@ public class DurableClientCacheIntegrationTest extends AbstractGemFireClientServ
 	}
 
 	protected void closeApplicationContext() {
+
 		applicationContext.close();
 
 		assertThat(applicationContext.isRunning(), is(false));
@@ -178,6 +180,7 @@ public class DurableClientCacheIntegrationTest extends AbstractGemFireClientServ
 	}
 
 	protected void runClientCacheProducer() {
+
 		try {
 			ClientCache gemfireClientCache = new ClientCacheFactory()
 				.addPoolServer(SERVER_HOST, serverPort)
@@ -197,17 +200,17 @@ public class DurableClientCacheIntegrationTest extends AbstractGemFireClientServ
 		}
 	}
 
-	protected void setSystemProperties() {
+	private void setSystemProperties() {
 		System.setProperty(CLIENT_CACHE_INTERESTS_RESULT_POLICY_SYSTEM_PROPERTY, InterestResultPolicyType.NONE.name());
 		System.setProperty(DURABLE_CLIENT_TIMEOUT_SYSTEM_PROPERTY, "600");
 	}
 
-	protected void assertRegion(Region<?, ?> region, String expectedName, DataPolicy expectedDataPolicy) {
+	private void assertRegion(Region<?, ?> region, String expectedName, DataPolicy expectedDataPolicy) {
 		assertRegion(region, expectedName, String.format("%1$s%2$s", Region.SEPARATOR, expectedName),
 			expectedDataPolicy);
 	}
 
-	protected void assertRegion(Region<?, ?> region, String expectedName, String expectedPath,
+	private void assertRegion(Region<?, ?> region, String expectedName, String expectedPath,
 			DataPolicy expectedDataPolicy) {
 
 		assertThat(region, is(notNullValue()));
@@ -217,7 +220,8 @@ public class DurableClientCacheIntegrationTest extends AbstractGemFireClientServ
 		assertThat(region.getAttributes().getDataPolicy(), is(equalTo(expectedDataPolicy)));
 	}
 
-	protected void assertRegionValues(Region<?, ?> region, Object... values) {
+	private void assertRegionValues(Region<?, ?> region, Object... values) {
+
 		assertThat(region.size(), is(equalTo(values.length)));
 
 		for (Object value : values) {
@@ -225,7 +229,7 @@ public class DurableClientCacheIntegrationTest extends AbstractGemFireClientServ
 		}
 	}
 
-	protected void waitForRegionEntryEvents() {
+	private void waitForRegionEntryEvents() {
 		ThreadUtils.timedWait(TimeUnit.SECONDS.toMillis(5), TimeUnit.MILLISECONDS.toMillis(500),
 			new ThreadUtils.WaitCondition() {
 				@Override public boolean waiting() {
@@ -238,6 +242,7 @@ public class DurableClientCacheIntegrationTest extends AbstractGemFireClientServ
 	@Test
 	@DirtiesContext
 	public void durableClientGetsInitializedWithDataOnServer() {
+
 		assumeTrue(isBeforeDirtiesContext());
 		assertRegionValues(example, 1, 2, 3);
 		assertThat(regionCacheListenerEventValues.isEmpty(), is(true));
@@ -245,6 +250,7 @@ public class DurableClientCacheIntegrationTest extends AbstractGemFireClientServ
 
 	@Test
 	public void durableClientGetsUpdatesFromServerWhileClientWasOffline() {
+
 		assumeTrue(isAfterDirtiesContext());
 		assertThat(example.isEmpty(), is(true));
 
@@ -264,7 +270,9 @@ public class DurableClientCacheIntegrationTest extends AbstractGemFireClientServ
 
 		@Override
 		public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+
 			if (bean instanceof Pool && "gemfireServerPool".equals(beanName)) {
+
 				Pool gemfireServerPool = (Pool) bean;
 
 				if (isBeforeDirtiesContext()) {

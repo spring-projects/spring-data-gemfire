@@ -1,5 +1,9 @@
 /*
+<<<<<<< Updated upstream
  * Copyright 2010-2018 the original author or authors.
+=======
+ * Copyright 2018 the original author or authors.
+>>>>>>> Stashed changes
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,9 +82,9 @@ class ClientRegionParser extends AbstractRegionParser {
 
 		parseDiskStoreAttribute(element, regionBuilder);
 
-		// Client RegionAttributes for overflow/eviction, expiration and statistics
-		BeanDefinitionBuilder regionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
-			RegionAttributesFactoryBean.class);
+		// Client RegionAttributes for Compression, Eviction, Expiration and Statistics
+		BeanDefinitionBuilder regionAttributesBuilder =
+			BeanDefinitionBuilder.genericBeanDefinition(RegionAttributesFactoryBean.class);
 
 		mergeRegionTemplateAttributes(element, parserContext, regionBuilder, regionAttributesBuilder);
 
@@ -94,9 +98,10 @@ class ClientRegionParser extends AbstractRegionParser {
 
 		List<Element> subElements = DomUtils.getChildElements(element);
 
-		ManagedList<Object> interests = new ManagedList<Object>();
+		ManagedList<Object> interests = new ManagedList<>();
 
 		for (Element subElement : subElements) {
+
 			String subElementLocalName = subElement.getLocalName();
 
 			if ("cache-listener".equals(subElementLocalName)) {
@@ -128,8 +133,8 @@ class ClientRegionParser extends AbstractRegionParser {
 		}
 	}
 
-	/* (non-Javadoc) */
 	private void parseDiskStoreAttribute(Element element, BeanDefinitionBuilder builder) {
+
 		String diskStoreRefAttribute = element.getAttribute("disk-store-ref");
 
 		if (StringUtils.hasText(diskStoreRefAttribute)) {
@@ -138,28 +143,28 @@ class ClientRegionParser extends AbstractRegionParser {
 		}
 	}
 
-	/* (non-Javadoc) */
 	private void parseCommonInterestAttributes(Element element, BeanDefinitionBuilder builder) {
+
 		ParsingUtils.setPropertyValue(element, builder, "durable", "durable");
 		ParsingUtils.setPropertyValue(element, builder, "receive-values", "receiveValues");
 		ParsingUtils.setPropertyValue(element, builder, "result-policy", "policy");
 	}
 
-	/* (non-Javadoc) */
 	private Object parseKeyInterest(Element keyInterestElement, ParserContext parserContext) {
+
 		BeanDefinitionBuilder keyInterestBuilder = BeanDefinitionBuilder.genericBeanDefinition(KeyInterest.class);
 
-		keyInterestBuilder.addConstructorArgValue(ParsingUtils.parseRefOrNestedBeanDeclaration(keyInterestElement,
-			parserContext,
-			keyInterestBuilder, "key-ref"));
+		keyInterestBuilder.addConstructorArgValue(
+			ParsingUtils.parseRefOrNestedBeanDeclaration(keyInterestElement, parserContext, keyInterestBuilder,
+				"key-ref"));
 
 		parseCommonInterestAttributes(keyInterestElement, keyInterestBuilder);
 
 		return keyInterestBuilder.getBeanDefinition();
 	}
 
-	/* (non-Javadoc) */
 	private Object parseRegexInterest(Element regexInterestElement) {
+
 		BeanDefinitionBuilder regexInterestBuilder = BeanDefinitionBuilder.genericBeanDefinition(RegexInterest.class);
 
 		regexInterestBuilder.addConstructorArgValue(regexInterestElement.getAttribute("pattern"));

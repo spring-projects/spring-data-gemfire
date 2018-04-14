@@ -73,6 +73,7 @@ public abstract class ThreadUtils {
 	}
 
 	// TODO rename interface to Condition and waiting() method to evaluate()
+	@FunctionalInterface
 	public interface WaitCondition {
 		boolean waiting();
 	}

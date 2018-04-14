@@ -3,25 +3,19 @@
 	   xmlns:context="http://www.springframework.org/schema/context"
 	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
 	   xmlns:gfe-data="http://www.springframework.org/schema/data/gemfire"
-	   xmlns:util="http://www.springframework.org/schema/util"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
         http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
         http://www.springframework.org/schema/data/gemfire http://www.springframework.org/schema/data/gemfire/spring-data-gemfire.xsd
-        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
-	<util:properties id="client.properties">
-		<prop key="gemfire.client.server.host">localhost</prop>
-		<prop key="gemfire.client.server.port">42084</prop>
-	</util:properties>
-
-	<context:property-placeholder properties-ref="client.properties"/>
+	<context:property-placeholder/>
 
 	<gfe-data:datasource min-connections="1" max-connections="1">
-		<gfe-data:server host="${gemfire.client.server.host}" port="${gemfire.client.server.port}"/>
+		<gfe-data:server host="${spring.data.gemfire.cache.server.host:localhost}"
+						 port="${spring.data.gemfire.cache.server.port:40404}"/>
 	</gfe-data:datasource>
 
 	<gfe:client-region id="ClientOnlyRegion" shortcut="LOCAL"/>

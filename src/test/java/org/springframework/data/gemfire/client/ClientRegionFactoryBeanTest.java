@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,13 +21,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -51,10 +50,8 @@ import org.apache.geode.compression.Compressor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InOrder;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.core.io.Resource;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.util.ArrayUtils;
 
@@ -74,32 +71,36 @@ public class ClientRegionFactoryBeanTest {
 
 	@Before
 	public void setup() {
-		factoryBean = spy(new ClientRegionFactoryBean<>());
+		this.factoryBean = spy(new ClientRegionFactoryBean<>());
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		factoryBean.destroy();
-		factoryBean = null;
+		this.factoryBean.destroy();
+		this.factoryBean = null;
 	}
 
 	@Test
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public void createRegionUsingDefaultShortcut() throws Exception {
 
-		String testRegionName = "TestRegion";
+		BeanFactory mockBeanFactory = mock(BeanFactory.class);
 
 		ClientCache mockClientCache = mock(ClientCache.class);
 
 		ClientRegionFactory mockClientRegionFactory = mock(ClientRegionFactory.class);
 
+		Pool mockPool = mock(Pool.class);
+
 		Region mockRegion = mock(Region.class);
 
 		RegionAttributes mockRegionAttributes = mock(RegionAttributes.class);
 
+		when(mockBeanFactory.getBean(eq("TestPoolTwo"), eq(Pool.class))).thenReturn(mockPool);
 		when(mockClientCache.createClientRegionFactory(eq(ClientRegionShortcut.LOCAL)))
 			.thenReturn(mockClientRegionFactory);
-		when(mockClientRegionFactory.create(eq(testRegionName))).thenReturn(mockRegion);
+		when(mockClientRegionFactory.create(eq("TestRegion"))).thenReturn(mockRegion);
+		when(mockPool.getName()).thenReturn("TestPoolTwo");
 		when(mockRegionAttributes.getCloningEnabled()).thenReturn(false);
 		when(mockRegionAttributes.getCompressor()).thenReturn(mock(Compressor.class));
 		when(mockRegionAttributes.getConcurrencyChecksEnabled()).thenReturn(true);
@@ -120,19 +121,6 @@ public class ClientRegionFactoryBeanTest {
 		when(mockRegionAttributes.getStatisticsEnabled()).thenReturn(true);
 		when(mockRegionAttributes.getValueConstraint()).thenReturn(Number.class);
 
-		BeanFactory mockBeanFactory = mock(BeanFactory.class);
-
-		Pool mockPool = mock(Pool.class);
-
-		Resource mockSnapshot = mock(Resource.class, "Snapshot");
-
-		when(mockBeanFactory.containsBean(eq("TestPoolOne"))).thenReturn(false);
-		when(mockBeanFactory.containsBean(eq("TestPoolTwo"))).thenReturn(true);
-		when(mockBeanFactory.isTypeMatch(eq("TestPoolTwo"), eq(Pool.class))).thenReturn(true);
-		when(mockBeanFactory.getBean(eq("TestPoolTwo"))).thenReturn(mockPool);
-		when(mockPool.getName()).thenReturn("TestPoolTwo");
-		when(mockSnapshot.getInputStream()).thenReturn(mock(InputStream.class));
-
 		EvictionAttributes evictionAttributes = EvictionAttributes.createLRUEntryAttributes();
 
 		factoryBean.setAttributes(mockRegionAttributes);
@@ -141,12 +129,11 @@ public class ClientRegionFactoryBeanTest {
 		factoryBean.setEvictionAttributes(evictionAttributes);
 		factoryBean.setPersistent(false);
 		factoryBean.setPoolName("TestPoolTwo");
-		factoryBean.setSnapshot(mockSnapshot);
 		factoryBean.setShortcut(null);
 
-		Region actualRegion = factoryBean.createRegion(mockClientCache, testRegionName);
+		Region actualRegion = factoryBean.createRegion(mockClientCache, "TestRegion");
 
-		assertSame(mockRegion, actualRegion);
+		assertThat(actualRegion).isEqualTo(mockRegion);
 
 		verify(mockClientCache, times(1)).createClientRegionFactory(eq(ClientRegionShortcut.LOCAL));
 		verify(mockClientRegionFactory, times(1)).setCloningEnabled(eq(false));
@@ -156,6 +143,7 @@ public class ClientRegionFactoryBeanTest {
 		verify(mockClientRegionFactory, times(1)).setCustomEntryIdleTimeout(null);
 		verify(mockClientRegionFactory, times(1)).setCustomEntryTimeToLive(null);
 		verify(mockClientRegionFactory, times(1)).setDiskStoreName(eq("TestDiskStoreOne"));
+		verify(mockClientRegionFactory, times(1)).setDiskStoreName(eq("TestDiskStoreTwo"));
 		verify(mockClientRegionFactory, times(1)).setDiskSynchronous(eq(false));
 		verify(mockClientRegionFactory, times(1)).setEntryIdleTimeout(any(ExpirationAttributes.class));
 		verify(mockClientRegionFactory, times(1)).setEntryTimeToLive(any(ExpirationAttributes.class));
@@ -164,13 +152,12 @@ public class ClientRegionFactoryBeanTest {
 		verify(mockClientRegionFactory, times(1)).setKeyConstraint(eq(Long.class));
 		verify(mockClientRegionFactory, times(1)).setLoadFactor(eq(0.75f));
 		verify(mockClientRegionFactory, never()).setPoolName(eq("TestPoolOne"));
+		verify(mockClientRegionFactory, times(1)).setPoolName(eq("TestPoolTwo"));
 		verify(mockClientRegionFactory, times(1)).setRegionIdleTimeout(any(ExpirationAttributes.class));
 		verify(mockClientRegionFactory, times(1)).setRegionTimeToLive(any(ExpirationAttributes.class));
 		verify(mockClientRegionFactory, times(1)).setStatisticsEnabled(eq(true));
 		verify(mockClientRegionFactory, times(1)).setValueConstraint(eq(Number.class));
-		verify(mockClientRegionFactory, times(1)).setDiskStoreName(eq("TestDiskStoreTwo"));
-		verify(mockClientRegionFactory, times(1)).setPoolName(eq("TestPoolTwo"));
-		verify(mockClientRegionFactory, times(1)).create(eq(testRegionName));
+		verify(mockClientRegionFactory, times(1)).create(eq("TestRegion"));
 		verify(mockRegion, never()).loadSnapshot(any(InputStream.class));
 	}
 
@@ -178,34 +165,37 @@ public class ClientRegionFactoryBeanTest {
 	@SuppressWarnings({ "deprecation", "unchecked" })
 	public void createRegionUsingDefaultPersistentShortcut() throws Exception {
 
+		BeanFactory mockBeanFactory = mock(BeanFactory.class);
+
 		ClientCache mockClientCache = mock(ClientCache.class);
 
 		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
 
+		Pool mockPool = mock(Pool.class);
+
 		Region<Object, Object> mockRegion = mock(Region.class);
 
+		RegionAttributes<Object, Object> mockRegionAttributes = mock(RegionAttributes.class);
+
+		when(mockBeanFactory.getBean(anyString(), eq(Pool.class))).thenReturn(mockPool);
 		when(mockClientCache.createClientRegionFactory(eq(ClientRegionShortcut.LOCAL_PERSISTENT)))
 			.thenReturn(mockClientRegionFactory);
 		when(mockClientRegionFactory.create(eq("TestRegion"))).thenReturn(mockRegion);
+		when(mockRegionAttributes.getPoolName()).thenReturn("TestPool");
 
-		BeanFactory mockBeanFactory = mock(BeanFactory.class);
-
-		when(mockBeanFactory.containsBean(eq("TestPool"))).thenReturn(true);
-		when(mockBeanFactory.isTypeMatch(eq("TestPool"), eq(Pool.class))).thenReturn(false);
-
+		factoryBean.setAttributes(mockRegionAttributes);
 		factoryBean.setBeanFactory(mockBeanFactory);
 		factoryBean.setPersistent(true);
-		factoryBean.setPoolName("TestPool");
 
 		Region<Object, Object> actualRegion = factoryBean.createRegion(mockClientCache, "TestRegion");
 
-		assertSame(mockRegion, actualRegion);
+		assertThat(actualRegion).isEqualTo(mockRegion);
 
+		verify(mockBeanFactory, times(1)).getBean(eq("TestPool"), eq(Pool.class));
 		verify(mockClientCache, times(1)).createClientRegionFactory(eq(ClientRegionShortcut.LOCAL_PERSISTENT));
 		verify(mockClientRegionFactory, times(1)).setPoolName(eq("TestPool"));
 		verify(mockClientRegionFactory, times(1)).create(eq("TestRegion"));
-		verify(mockBeanFactory, times(1)).containsBean(eq("TestPool"));
-		verify(mockBeanFactory, never()).getBean(eq("TestPool"));
+		verify(mockRegionAttributes, times(1)).getPoolName();
 		verify(mockRegion, never()).loadSnapshot(any(InputStream.class));
 	}
 
@@ -230,7 +220,7 @@ public class ClientRegionFactoryBeanTest {
 
 		Region<Object, Object> actualRegion = factoryBean.createRegion(mockClientCache, "TestRegion");
 
-		assertSame(mockRegion, actualRegion);
+		assertThat(actualRegion).isEqualTo(mockRegion);
 
 		verifyZeroInteractions(mockBeanFactory);
 		verify(mockClientCache, times(1))
@@ -240,7 +230,7 @@ public class ClientRegionFactoryBeanTest {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void createRegionWithSubRegionCreation() throws Exception {
+	public void createRegionAsSubRegion() throws Exception {
 
 		BeanFactory mockBeanFactory = mock(BeanFactory.class);
 
@@ -260,7 +250,7 @@ public class ClientRegionFactoryBeanTest {
 
 		Region<Object, Object> actualRegion = factoryBean.createRegion(mockClientCache, "TestSubRegion");
 
-		assertSame(mockSubRegion, actualRegion);
+		assertThat(actualRegion).isEqualTo(mockSubRegion);
 
 		verifyZeroInteractions(mockBeanFactory);
 		verify(mockClientCache, times(1))
@@ -271,108 +261,142 @@ public class ClientRegionFactoryBeanTest {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void configurePoolFromRegionAttributesAndEagerlyInitializesPool() {
+	public void createClientRegionFactoryFromClientCache() {
+
+		ClientCache mockClientCache = mock(ClientCache.class);
+
+		ClientRegionFactory mockClientRegionFactory = mock(ClientRegionFactory.class);
+
+		when(mockClientCache.createClientRegionFactory(any(ClientRegionShortcut.class)))
+			.thenReturn(mockClientRegionFactory);
+
+		assertThat(factoryBean.createClientRegionFactory(mockClientCache, ClientRegionShortcut.CACHING_PROXY))
+			.isEqualTo(mockClientRegionFactory);
+
+		verify(mockClientCache, times(1))
+			.createClientRegionFactory(eq(ClientRegionShortcut.CACHING_PROXY));
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void configurePoolFromClientRegionFactoryBeanAndEagerlyInitializePool() {
 
 		BeanFactory mockBeanFactory = mock(BeanFactory.class);
 
 		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
 
+		Pool mockPool = mock(Pool.class);
+
+		when(mockBeanFactory.getBean(eq("MockPool"), eq(Pool.class))).thenReturn(mockPool);
+
+		factoryBean.setBeanFactory(mockBeanFactory);
+		factoryBean.setPoolName("MockPool");
+		factoryBean.configure(mockClientRegionFactory);
+
+		verify(mockBeanFactory, times(1)).getBean(eq("MockPool"), eq(Pool.class));
+		verify(mockClientRegionFactory, times(1)).setPoolName(eq("MockPool"));
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void configurePoolFromClientRegionFactoryBeanEvenWhenRegionAttributesPoolNameIsSet() {
+
+		BeanFactory mockBeanFactory = mock(BeanFactory.class);
+
+		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
+
+		Pool mockPool = mock(Pool.class);
+
 		RegionAttributes<Object, Object> mockRegionAttributes = mock(RegionAttributes.class);
 
-		when(mockBeanFactory.containsBean(eq("TestPool"))).thenReturn(true);
-		when(mockBeanFactory.isTypeMatch(eq("TestPool"), eq(Pool.class))).thenReturn(true);
+		when(mockBeanFactory.getBean(anyString(), eq(Pool.class))).thenReturn(mockPool);
+		when(mockRegionAttributes.getPoolName()).thenReturn("TestPool");
+
+		factoryBean.setAttributes(mockRegionAttributes);
+		factoryBean.setBeanFactory(mockBeanFactory);
+		factoryBean.setPoolName("MockPool");
+		factoryBean.configure(mockClientRegionFactory);
+
+		verify(mockBeanFactory, times(1)).getBean(eq("MockPool"), eq(Pool.class));
+		verify(mockBeanFactory, never()).getBean(eq("TestPool"), eq(Pool.class));
+		verify(mockClientRegionFactory, times(1)).setPoolName(eq("MockPool"));
+		verify(mockRegionAttributes, times(1)).getPoolName();
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void configurePoolFromRegionAttributesAndEagerlyInitializePool() {
+
+		BeanFactory mockBeanFactory = mock(BeanFactory.class);
+
+		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
+
+		Pool mockPool = mock(Pool.class);
+
+		RegionAttributes<Object, Object> mockRegionAttributes = mock(RegionAttributes.class);
+
+		when(mockBeanFactory.getBean(eq("TestPool"), eq(Pool.class))).thenReturn(mockPool);
 		when(mockRegionAttributes.getPoolName()).thenReturn("TestPool");
 
 		factoryBean.setAttributes(mockRegionAttributes);
 		factoryBean.setBeanFactory(mockBeanFactory);
 		factoryBean.configure(mockClientRegionFactory);
 
-		verify(mockBeanFactory, times(1)).containsBean(eq("TestPool"));
-		verify(mockBeanFactory, times(1)).isTypeMatch(eq("TestPool"), eq(Pool.class));
 		verify(mockBeanFactory, times(1)).getBean(eq("TestPool"), eq(Pool.class));
 		verify(mockClientRegionFactory, times(1)).setPoolName(eq("TestPool"));
 		verify(mockRegionAttributes, times(1)).getPoolName();
 	}
 
-	@Test
+	@Test(expected = IllegalArgumentException.class)
 	@SuppressWarnings("unchecked")
-	public void configurePoolFromRegionAttributesThrowsExceptionWhileEagerlyInitializingPool() {
+	public void configurePoolThrowsExceptionWhileEagerlyInitializingPool() {
 
 		BeanFactory mockBeanFactory = mock(BeanFactory.class);
 
 		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
 
-		RegionAttributes<Object, Object> mockRegionAttributes = mock(RegionAttributes.class);
+		when(mockBeanFactory.getBean(anyString(), eq(Pool.class))).thenThrow(new BeanCreationException("test"));
 
-		when(mockBeanFactory.containsBean(eq("TestPool"))).thenReturn(true);
-		when(mockBeanFactory.isTypeMatch(eq("TestPool"), eq(Pool.class))).thenReturn(true);
-		when(mockBeanFactory.getBean(eq("TestPool"), eq(Pool.class)))
-			.thenThrow(new BeanCreationException("TEST"));
-		when(mockRegionAttributes.getPoolName()).thenReturn("TestPool");
-
-		factoryBean.setAttributes(mockRegionAttributes);
 		factoryBean.setBeanFactory(mockBeanFactory);
-		factoryBean.configure(mockClientRegionFactory);
+		factoryBean.setPoolName("MockPool");
 
-		verify(mockBeanFactory, times(1)).containsBean(eq("TestPool"));
-		verify(mockBeanFactory, times(1)).isTypeMatch(eq("TestPool"), eq(Pool.class));
-		verify(mockBeanFactory, times(1)).getBean(eq("TestPool"), eq(Pool.class));
-		verify(mockClientRegionFactory, times(1)).setPoolName(eq("TestPool"));
-		verify(mockRegionAttributes, times(1)).getPoolName();
+		try {
+			factoryBean.configure(mockClientRegionFactory);
+		}
+		catch (IllegalArgumentException expected) {
+
+			assertThat(expected).hasMessage("[MockPool] is not resolvable as a Pool in the application context");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
+		finally {
+			verify(mockBeanFactory, times(1)).getBean(eq("MockPool"), eq(Pool.class));
+			verify(mockClientRegionFactory, never()).setPoolName(eq("MockPool"));
+		}
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void configurePoolFromRegionAttributesDoesNotEagerlyInitializePoolWhenNotPoolTypeMatch() {
+	public void doesNotConfigurePoolWhenClientRegionFactoryBeanPoolIsDefaultPool() {
 
 		BeanFactory mockBeanFactory = mock(BeanFactory.class);
 
 		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
 
-		RegionAttributes<Object, Object> mockRegionAttributes = mock(RegionAttributes.class);
-
-		when(mockBeanFactory.containsBean(eq("TestPool"))).thenReturn(true);
-		when(mockBeanFactory.isTypeMatch(eq("TestPool"), eq(Pool.class))).thenReturn(false);
-		when(mockRegionAttributes.getPoolName()).thenReturn("TestPool");
-
-		factoryBean.setAttributes(mockRegionAttributes);
 		factoryBean.setBeanFactory(mockBeanFactory);
+		factoryBean.setPoolName(ClientRegionFactoryBean.DEFAULT_POOL_NAME);
 		factoryBean.configure(mockClientRegionFactory);
 
-		verify(mockBeanFactory, times(1)).containsBean(eq("TestPool"));
-		verify(mockBeanFactory, times(1)).isTypeMatch(eq("TestPool"), eq(Pool.class));
-		verify(mockBeanFactory, never()).getBean(anyString(), eq(Pool.class));
-		verify(mockClientRegionFactory, times(1)).setPoolName(eq("TestPool"));
-		verify(mockRegionAttributes, times(1)).getPoolName();
-	}
+		assertThat(factoryBean.getPoolName().orElse(null)).isEqualTo(ClientRegionFactoryBean.DEFAULT_POOL_NAME);
 
-	@Test
-	@SuppressWarnings("unchecked")
-	public void doesNotConfigurePoolFromRegionAttributesWhenPoolIsUnresolvable() {
-
-		BeanFactory mockBeanFactory = mock(BeanFactory.class);
-
-		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
-
-		RegionAttributes<Object, Object> mockRegionAttributes = mock(RegionAttributes.class);
-
-		when(mockBeanFactory.containsBean(anyString())).thenReturn(false);
-		when(mockRegionAttributes.getPoolName()).thenReturn("TestPool");
-
-		factoryBean.setAttributes(mockRegionAttributes);
-		factoryBean.setBeanFactory(mockBeanFactory);
-		factoryBean.configure(mockClientRegionFactory);
-
-		verify(mockBeanFactory, times(1)).containsBean(eq("TestPool"));
-		verify(mockBeanFactory, never()).isTypeMatch(anyString(), eq(Pool.class));
 		verify(mockBeanFactory, never()).getBean(anyString(), eq(Pool.class));
 		verify(mockClientRegionFactory, never()).setPoolName(anyString());
-		verify(mockRegionAttributes, times(1)).getPoolName();
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void doesNotConfigurePoolFromRegionAttributesWhenPoolIsDefaultPool() {
+	public void doesNotConfigurePoolWhenRegionAttributesPoolIsDefaultPool() {
 
 		BeanFactory mockBeanFactory = mock(BeanFactory.class);
 
@@ -386,9 +410,8 @@ public class ClientRegionFactoryBeanTest {
 		factoryBean.setBeanFactory(mockBeanFactory);
 		factoryBean.configure(mockClientRegionFactory);
 
-		verify(factoryBean, never()).isPoolResolvable(anyString());
-		verify(mockBeanFactory, never()).containsBean(anyString());
-		verify(mockBeanFactory, never()).isTypeMatch(anyString(), eq(Pool.class));
+		assertThat(factoryBean.getPoolName().orElse(null)).isNull();
+
 		verify(mockBeanFactory, never()).getBean(anyString(), eq(Pool.class));
 		verify(mockClientRegionFactory, never()).setPoolName(anyString());
 		verify(mockRegionAttributes, times(1)).getPoolName();
@@ -396,7 +419,7 @@ public class ClientRegionFactoryBeanTest {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void doesNotConfigurePoolFromRegionAttributesWhenPoolIsEmpty() {
+	public void doesNotConfigurePoolWhenDeclaredPoolIsEmpty() {
 
 		BeanFactory mockBeanFactory = mock(BeanFactory.class);
 
@@ -408,12 +431,11 @@ public class ClientRegionFactoryBeanTest {
 
 		factoryBean.setAttributes(mockRegionAttributes);
 		factoryBean.setBeanFactory(mockBeanFactory);
+		factoryBean.setPoolName("");
 		factoryBean.configure(mockClientRegionFactory);
 
-		verify(factoryBean, never()).isNotDefaultPool(anyString());
-		verify(factoryBean, never()).isPoolResolvable(anyString());
-		verify(mockBeanFactory, never()).containsBean(anyString());
-		verify(mockBeanFactory, never()).isTypeMatch(anyString(), eq(Pool.class));
+		assertThat(factoryBean.getPoolName().orElse(null)).isEqualTo("");
+
 		verify(mockBeanFactory, never()).getBean(anyString(), eq(Pool.class));
 		verify(mockClientRegionFactory, never()).setPoolName(anyString());
 		verify(mockRegionAttributes, times(1)).getPoolName();
@@ -421,7 +443,7 @@ public class ClientRegionFactoryBeanTest {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void doesNotConfigurePoolFromRegionAttributesWhenPoolIsNull() {
+	public void doesNotConfigurePoolWhenDeclaredPoolIsNull() {
 
 		BeanFactory mockBeanFactory = mock(BeanFactory.class);
 
@@ -433,189 +455,14 @@ public class ClientRegionFactoryBeanTest {
 
 		factoryBean.setAttributes(mockRegionAttributes);
 		factoryBean.setBeanFactory(mockBeanFactory);
-		factoryBean.configure(mockClientRegionFactory);
-
-		verify(factoryBean, never()).isNotDefaultPool(anyString());
-		verify(factoryBean, never()).isPoolResolvable(anyString());
-		verify(mockBeanFactory, never()).containsBean(anyString());
-		verify(mockBeanFactory, never()).isTypeMatch(anyString(), eq(Pool.class));
-		verify(mockBeanFactory, never()).getBean(anyString(), eq(Pool.class));
-		verify(mockClientRegionFactory, never()).setPoolName(anyString());
-		verify(mockRegionAttributes, times(1)).getPoolName();
-	}
-
-	@Test
-	@SuppressWarnings("unchecked")
-	public void configurePoolFromClientRegionFactoryBeanAndEagerlyInitializesPool() {
-
-		BeanFactory mockBeanFactory = mock(BeanFactory.class);
-
-		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
-
-		when(mockBeanFactory.containsBean(eq("MockPool"))).thenReturn(true);
-		when(mockBeanFactory.isTypeMatch(eq("MockPool"), eq(Pool.class))).thenReturn(true);
-
-		factoryBean.setBeanFactory(mockBeanFactory);
-		factoryBean.setPoolName("MockPool");
-		factoryBean.configure(mockClientRegionFactory);
-
-		verify(mockBeanFactory, times(1)).containsBean(eq("MockPool"));
-		verify(mockBeanFactory, times(1)).isTypeMatch(eq("MockPool"), eq(Pool.class));
-		verify(mockBeanFactory, times(1)).getBean(eq("MockPool"), eq(Pool.class));
-		verify(mockClientRegionFactory, times(1)).setPoolName(eq("MockPool"));
-	}
-
-	@Test
-	@SuppressWarnings("unchecked")
-	public void configurePoolFromClientRegionFactoryBeanThrowsExceptionWhileEagerlyInitializingPool() {
-
-		BeanFactory mockBeanFactory = mock(BeanFactory.class);
-
-		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
-
-		when(mockBeanFactory.containsBean(eq("MockPool"))).thenReturn(true);
-		when(mockBeanFactory.isTypeMatch(eq("MockPool"), eq(Pool.class))).thenReturn(true);
-		when(mockBeanFactory.getBean(eq("MockPool"), eq(Pool.class))).thenThrow(new BeanCreationException("TEST"));
-
-		factoryBean.setBeanFactory(mockBeanFactory);
-		factoryBean.setPoolName("MockPool");
-		factoryBean.configure(mockClientRegionFactory);
-
-		verify(mockBeanFactory, times(1)).containsBean(eq("MockPool"));
-		verify(mockBeanFactory, times(1)).isTypeMatch(eq("MockPool"), eq(Pool.class));
-		verify(mockBeanFactory, times(1)).getBean(eq("MockPool"), eq(Pool.class));
-		verify(mockClientRegionFactory, times(1)).setPoolName(eq("MockPool"));
-	}
-
-	@Test
-	@SuppressWarnings("unchecked")
-	public void configurePoolFromClientRegionFactoryBeanDoesNotEagerlyInitializePoolWhenNotPoolTypeMatch() {
-
-		BeanFactory mockBeanFactory = mock(BeanFactory.class);
-
-		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
-
-		when(mockBeanFactory.containsBean(eq("MockPool"))).thenReturn(true);
-		when(mockBeanFactory.isTypeMatch(anyString(), eq(Pool.class))).thenReturn(false);
-
-		factoryBean.setBeanFactory(mockBeanFactory);
-		factoryBean.setPoolName("MockPool");
-		factoryBean.configure(mockClientRegionFactory);
-
-		verify(mockBeanFactory, times(1)).containsBean(eq("MockPool"));
-		verify(mockBeanFactory, times(1)).isTypeMatch(eq("MockPool"), eq(Pool.class));
-		verify(mockBeanFactory, never()).getBean(anyString(), eq(Pool.class));
-		verify(mockClientRegionFactory, times(1)).setPoolName(eq("MockPool"));
-	}
-
-	@Test
-	@SuppressWarnings("unchecked")
-	public void configuresPoolFromClientRegionFactoryBeanEvenWhenRegionAttributesPoolNameIsSet() {
-
-		BeanFactory mockBeanFactory = mock(BeanFactory.class);
-
-		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
-
-		RegionAttributes<Object, Object> mockRegionAttributes = mock(RegionAttributes.class);
-
-		when(mockBeanFactory.containsBean(anyString())).thenReturn(true);
-		when(mockBeanFactory.isTypeMatch(anyString(), eq(Pool.class))).thenReturn(true);
-		when(mockRegionAttributes.getPoolName()).thenReturn("TestPool");
-
-		factoryBean.setAttributes(mockRegionAttributes);
-		factoryBean.setBeanFactory(mockBeanFactory);
-		factoryBean.setPoolName("MockPool");
-		factoryBean.configure(mockClientRegionFactory);
-
-		InOrder inOrderVerifier = inOrder(mockBeanFactory, mockClientRegionFactory);
-
-		inOrderVerifier.verify(mockBeanFactory, times(1)).containsBean(eq("TestPool"));
-		inOrderVerifier.verify(mockBeanFactory, times(1)).isTypeMatch(eq("TestPool"), eq(Pool.class));
-		inOrderVerifier.verify(mockBeanFactory, times(1)).getBean(eq("TestPool"), eq(Pool.class));
-		inOrderVerifier.verify(mockClientRegionFactory, times(1)).setPoolName(eq("TestPool"));
-		inOrderVerifier.verify(mockBeanFactory, times(1)).containsBean(eq("MockPool"));
-		inOrderVerifier.verify(mockBeanFactory, times(1)).isTypeMatch(eq("MockPool"), eq(Pool.class));
-		inOrderVerifier.verify(mockBeanFactory, times(1)).getBean(eq("MockPool"), eq(Pool.class));
-		inOrderVerifier.verify(mockClientRegionFactory, times(1)).setPoolName(eq("MockPool"));
-	}
-
-	@Test
-	@SuppressWarnings("unchecked")
-	public void doesNotConfigurePoolFromClientRegionFactoryBeanWhenPoolIsUnresolvable() {
-
-		BeanFactory mockBeanFactory = mock(BeanFactory.class);
-
-		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
-
-		when(mockBeanFactory.containsBean(anyString())).thenReturn(false);
-
-		factoryBean.setBeanFactory(mockBeanFactory);
-		factoryBean.setPoolName("MockPool");
-		factoryBean.configure(mockClientRegionFactory);
-
-		verify(mockBeanFactory, times(1)).containsBean(eq("MockPool"));
-		verify(mockBeanFactory, never()).isTypeMatch(anyString(), eq(Pool.class));
-		verify(mockBeanFactory, never()).getBean(anyString(), eq(Pool.class));
-		verify(mockClientRegionFactory, never()).setPoolName(anyString());
-	}
-
-	@Test
-	@SuppressWarnings("unchecked")
-	public void doesNotConfigurePoolFromClientRegionFactoryBeanWhenPoolIsDefaultPool() {
-
-		BeanFactory mockBeanFactory = mock(BeanFactory.class);
-
-		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
-
-		factoryBean.setBeanFactory(mockBeanFactory);
-		factoryBean.setPoolName(ClientRegionFactoryBean.DEFAULT_POOL_NAME);
-		factoryBean.configure(mockClientRegionFactory);
-
-		verify(factoryBean, never()).isPoolResolvable(anyString());
-		verify(mockBeanFactory, never()).containsBean(anyString());
-		verify(mockBeanFactory, never()).isTypeMatch(anyString(), eq(Pool.class));
-		verify(mockBeanFactory, never()).getBean(anyString(), eq(Pool.class));
-		verify(mockClientRegionFactory, never()).setPoolName(anyString());
-	}
-
-	@Test
-	@SuppressWarnings("unchecked")
-	public void doesNotConfigurePoolFromClientRegionFactoryBeanWhenPoolIsEmpty() {
-
-		BeanFactory mockBeanFactory = mock(BeanFactory.class);
-
-		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
-
-		factoryBean.setBeanFactory(mockBeanFactory);
-		factoryBean.setPoolName("");
-		factoryBean.configure(mockClientRegionFactory);
-
-		verify(factoryBean, never()).isNotDefaultPool(anyString());
-		verify(factoryBean, never()).isPoolResolvable(anyString());
-		verify(mockBeanFactory, never()).containsBean(anyString());
-		verify(mockBeanFactory, never()).isTypeMatch(anyString(), eq(Pool.class));
-		verify(mockBeanFactory, never()).getBean(anyString(), eq(Pool.class));
-		verify(mockClientRegionFactory, never()).setPoolName(anyString());
-	}
-
-	@Test
-	@SuppressWarnings("unchecked")
-	public void doesNotConfigurePoolFromClientRegionFactoryBeanWhenPoolIsNull() {
-
-		BeanFactory mockBeanFactory = mock(BeanFactory.class);
-
-		ClientRegionFactory<Object, Object> mockClientRegionFactory = mock(ClientRegionFactory.class);
-
-		factoryBean.setBeanFactory(mockBeanFactory);
 		factoryBean.setPoolName(null);
 		factoryBean.configure(mockClientRegionFactory);
 
-		verify(factoryBean, never()).isNotDefaultPool(anyString());
-		verify(factoryBean, never()).isPoolResolvable(anyString());
-		verify(mockBeanFactory, never()).containsBean(anyString());
-		verify(mockBeanFactory, never()).isTypeMatch(anyString(), eq(Pool.class));
+		assertThat(factoryBean.getPoolName().orElse(null)).isNull();
+
 		verify(mockBeanFactory, never()).getBean(anyString(), eq(Pool.class));
 		verify(mockClientRegionFactory, never()).setPoolName(anyString());
+		verify(mockRegionAttributes, times(1)).getPoolName();
 	}
 
 	@Test
@@ -658,22 +505,6 @@ public class ClientRegionFactoryBeanTest {
 		factoryBean.setPersistent(true);
 
 		assertTrue(factoryBean.isPersistent());
-	}
-
-	@Test
-	public void isPersistentUnspecifiedIsCorrect() {
-
-		assertTrue(factoryBean.isPersistentUnspecified());
-
-		factoryBean.setPersistent(true);
-
-		assertTrue(factoryBean.isPersistent());
-		assertFalse(factoryBean.isPersistentUnspecified());
-
-		factoryBean.setPersistent(false);
-
-		assertTrue(factoryBean.isNotPersistent());
-		assertFalse(factoryBean.isPersistentUnspecified());
 	}
 
 	@Test

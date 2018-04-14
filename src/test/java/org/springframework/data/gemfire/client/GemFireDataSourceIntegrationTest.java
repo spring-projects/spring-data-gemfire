@@ -16,18 +16,12 @@
 
 package org.springframework.data.gemfire.client;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
@@ -39,14 +33,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.fork.ServerProcess;
-import org.springframework.data.gemfire.process.ProcessExecutor;
 import org.springframework.data.gemfire.process.ProcessWrapper;
+import org.springframework.data.gemfire.test.support.ClientServerIntegrationTestsSupport;
 import org.springframework.data.gemfire.test.support.FileSystemUtils;
-import org.springframework.data.gemfire.test.support.ThreadUtils;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.util.Assert;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * The GemFireDataSourceIntegrationTest class is a test suite of test cases testing the contract and functionality
@@ -64,12 +57,57 @@ import org.springframework.util.Assert;
  * @see org.apache.geode.cache.client.ClientCache
  * @since 1.7.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @SuppressWarnings({ "rawtypes", "unused"})
-public class GemFireDataSourceIntegrationTest {
+public class GemFireDataSourceIntegrationTest extends ClientServerIntegrationTestsSupport {
 
-	private static ProcessWrapper serverProcess;
+	private static final String GEMFIRE_LOG_LEVEL = "error";
+
+	private static ProcessWrapper gemfireServer;
+
+	@BeforeClass
+	public static void startGemFireServer() throws IOException {
+
+		int availablePort = findAvailablePort();
+
+		String serverName = GemFireDataSourceIntegrationTest.class.getSimpleName().concat("Server");
+
+		File serverWorkingDirectory = new File(FileSystemUtils.WORKING_DIRECTORY, serverName.toLowerCase());
+
+		List<String> arguments = new ArrayList<>();
+
+		arguments.add(String.format("-Dgemfire.name=%s", serverName));
+		arguments.add(String.format("-Dgemfire.log-level=%s", GEMFIRE_LOG_LEVEL));
+		arguments.add(String.format("-Dspring.data.gemfire.cache.server.port=%d", availablePort));
+		arguments.add(GemFireDataSourceIntegrationTest.class.getName()
+			.replace(".", "/").concat("-server-context.xml"));
+
+		gemfireServer = run(serverWorkingDirectory, ServerProcess.class,
+			arguments.toArray(new String[arguments.size()]));
+
+		waitForServerToStart(DEFAULT_HOSTNAME, availablePort);
+
+		configureGemFireClient(availablePort);
+	}
+
+	private static void configureGemFireClient(int availablePort) {
+		System.setProperty("gemfire.log-level", "error");
+		System.setProperty("spring.data.gemfire.cache.server.port", String.valueOf(availablePort));
+	}
+
+	@AfterClass
+	public static void stopGemFireServer() {
+
+		stop(gemfireServer);
+
+		System.clearProperty("gemfire.log-level");
+		System.clearProperty("spring.data.gemfire.cache.server.port");
+
+		if (Boolean.valueOf(System.getProperty("spring.gemfire.fork.clean", Boolean.TRUE.toString()))) {
+			org.springframework.util.FileSystemUtils.deleteRecursively(gemfireServer.getWorkingDirectory());
+		}
+	}
 
 	@Autowired
 	private ApplicationContext applicationContext;
@@ -86,64 +124,23 @@ public class GemFireDataSourceIntegrationTest {
 	@Resource(name = "ServerOnlyRegion")
 	private Region serverOnlyRegion;
 
-	@BeforeClass
-	public static void setupBeforeClass() throws IOException {
-		System.setProperty("gemfire.log-level", "warning");
+	@SuppressWarnings("unchecked")
+	private void assertRegion(Region actualRegion, String expectedRegionName) {
 
-		String serverName = "GemFireDataSourceSpringBasedServer";
-
-		File serverWorkingDirectory = new File(FileSystemUtils.WORKING_DIRECTORY, serverName.toLowerCase());
-
-		Assert.isTrue(serverWorkingDirectory.isDirectory() || serverWorkingDirectory.mkdirs());
-
-		List<String> arguments = new ArrayList<String>();
-
-		arguments.add(String.format("-Dgemfire.name=%1$s", serverName));
-		arguments.add(GemFireDataSourceIntegrationTest.class.getName().replace(".", "/").concat("-server-context.xml"));
-
-		serverProcess = ProcessExecutor.launch(serverWorkingDirectory, ServerProcess.class,
-			arguments.toArray(new String[arguments.size()]));
-
-		waitForProcessStart(TimeUnit.SECONDS.toMillis(20), serverProcess, ServerProcess.getServerProcessControlFilename());
-
-		System.out.println("Spring configured/bootstrapped GemFire Cache Server Process for ClientCache DataSource Test should be running...");
-	}
-
-	private static void waitForProcessStart(final long milliseconds, final ProcessWrapper process, final String processControlFilename) {
-		ThreadUtils.timedWait(milliseconds, TimeUnit.MILLISECONDS.toMillis(500), new ThreadUtils.WaitCondition() {
-			private File processControlFile = new File(process.getWorkingDirectory(), processControlFilename);
-
-			@Override public boolean waiting() {
-				return !processControlFile.isFile();
-			}
-		});
-	}
-
-	@AfterClass
-	public static void tearDown() {
-		serverProcess.shutdown();
-
-		if (Boolean.valueOf(System.getProperty("spring.gemfire.fork.clean", Boolean.TRUE.toString()))) {
-			org.springframework.util.FileSystemUtils.deleteRecursively(serverProcess.getWorkingDirectory());
-		}
-	}
-
-	protected void assertRegion(Region actualRegion, String expectedRegionName) {
-		assertThat(actualRegion, is(not(nullValue())));
-		assertThat(actualRegion.getName(), is(equalTo(expectedRegionName)));
-		assertThat(actualRegion.getFullPath(), is(equalTo(String.format("%1$s%2$s",
-			Region.SEPARATOR, expectedRegionName))));
-		assertThat(gemfireClientCache.getRegion(actualRegion.getFullPath()), is(sameInstance(actualRegion)));
-		assertThat(applicationContext.containsBean(expectedRegionName), is(true));
-		assertThat(applicationContext.getBean(expectedRegionName, Region.class), is(sameInstance(actualRegion)));
+		assertThat(actualRegion).isNotNull();
+		assertThat(actualRegion.getName()).isEqualTo(expectedRegionName);
+		assertThat(actualRegion.getFullPath()).isEqualTo(GemfireUtils.toRegionPath(expectedRegionName));
+		assertThat(gemfireClientCache.getRegion(actualRegion.getFullPath())).isSameAs(actualRegion);
+		assertThat(applicationContext.containsBean(expectedRegionName)).isTrue();
+		assertThat(applicationContext.getBean(expectedRegionName, Region.class)).isSameAs(actualRegion);
 	}
 
 	@Test
 	@SuppressWarnings("unchecked")
 	public void clientProxyRegionBeansExist() {
+
 		assertRegion(clientOnlyRegion, "ClientOnlyRegion");
 		assertRegion(clientServerRegion, "ClientServerRegion");
 		assertRegion(serverOnlyRegion, "ServerOnlyRegion");
 	}
-
 }

@@ -1,5 +1,9 @@
 /*
+<<<<<<< Updated upstream
  * Copyright 2002-2018 the original author or authors.
+=======
+ * Copyright 2002-2013 the original author or authors.
+>>>>>>> Stashed changes
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -26,20 +30,26 @@ import org.w3c.dom.Element;
  *
  */
 class XmlFunctionExecutionConfigurationSource extends AbstractFunctionExecutionConfigurationSource {
-	private static final String BASE_PACKAGE = "base-package";
-	private Element element;
-	private ParserContext context;
-	private Iterable<TypeFilter> includeFilters;
-	private Iterable<TypeFilter> excludeFilters;
 
-	XmlFunctionExecutionConfigurationSource(Element element, ParserContext context) {
-		Assert.notNull(element);
-		Assert.notNull(context);
+	private static final String BASE_PACKAGE = "base-package";
+
+	private final Element element;
+
+	private final Iterable<TypeFilter> includeFilters;
+	private final Iterable<TypeFilter> excludeFilters;
+
+	private final ParserContext parserContext;
+
+	XmlFunctionExecutionConfigurationSource(Element element, ParserContext parserContext) {
+
+		Assert.notNull(element, "Element must not be null");
+		Assert.notNull(parserContext, "ParserContext must not be null");
 
 		this.element = element;
-		this.context = context;
+		this.parserContext = parserContext;
 
-		TypeFilterParser parser = new TypeFilterParser(context.getReaderContext());
+		TypeFilterParser parser = new TypeFilterParser(parserContext.getReaderContext());
+
 		this.includeFilters = parser.parseTypeFilters(element, Type.INCLUDE);
 		this.excludeFilters = parser.parseTypeFilters(element, Type.EXCLUDE);
 	}
@@ -49,7 +59,7 @@ class XmlFunctionExecutionConfigurationSource extends AbstractFunctionExecutionC
 	 */
 	@Override
 	public Object getSource() {
-		return context.extractSource(element);
+		return this.parserContext.extractSource(this.element);
 	}
 
 	/* (non-Javadoc)
@@ -57,7 +67,9 @@ class XmlFunctionExecutionConfigurationSource extends AbstractFunctionExecutionC
 	 */
 	@Override
 	public Iterable<String> getBasePackages() {
-		String attribute = element.getAttribute(BASE_PACKAGE);
+
+		String attribute = this.element.getAttribute(BASE_PACKAGE);
+
 		return Arrays.asList(StringUtils.delimitedListToStringArray(attribute, ",", " "));
 	}
 
@@ -67,7 +79,7 @@ class XmlFunctionExecutionConfigurationSource extends AbstractFunctionExecutionC
 	 */
 	@Override
 	public Iterable<TypeFilter> getIncludeFilters() {
-		return includeFilters;
+		return this.includeFilters;
 	}
 
 	/* (non-Javadoc)
@@ -75,7 +87,6 @@ class XmlFunctionExecutionConfigurationSource extends AbstractFunctionExecutionC
 	 */
 	@Override
 	public Iterable<TypeFilter> getExcludeFilters() {
-		return excludeFilters;
+		return this.excludeFilters;
 	}
-
 }

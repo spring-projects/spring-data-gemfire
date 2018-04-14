@@ -18,19 +18,11 @@ package org.springframework.data.gemfire;
 
 import static java.util.Arrays.stream;
 import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
-import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeCollection;
-import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeIterable;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.StreamSupport;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheListener;
@@ -56,7 +48,7 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.core.io.Resource;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
-import org.springframework.data.gemfire.config.annotation.RegionConfigurer;
+import org.springframework.data.gemfire.util.RegionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
@@ -88,15 +80,14 @@ import org.springframework.util.StringUtils;
  * @see org.apache.geode.cache.asyncqueue.AsyncEventQueue
  * @see org.springframework.beans.factory.DisposableBean
  * @see org.springframework.context.SmartLifecycle
- * @see org.springframework.data.gemfire.RegionLookupFactoryBean
+ * @see RegionLookupFactoryBean
  * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
  */
 @SuppressWarnings("unused")
-public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
+// TODO: Rename to PeerRegionFatoryBean in SD Lovelace
+public abstract class RegionFactoryBean<K, V> extends ConfigurableRegionFactoryBean<K, V>
 		implements DisposableBean, SmartLifecycle {
-
-	protected final Log log = LogFactory.getLog(getClass());
 
 	private boolean close = true;
 	private boolean destroy = false;
@@ -124,18 +115,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 
 	private GatewaySender[] gatewaySenders;
 
-	private List<RegionConfigurer> regionConfigurers = Collections.emptyList();
-
 	private RegionAttributes<K, V> attributes;
-
-	private RegionConfigurer compositeRegionConfigurer = new RegionConfigurer() {
-
-		@Override
-		public void configure(String beanName, RegionFactoryBean<?, ?> bean) {
-			nullSafeCollection(regionConfigurers)
-				.forEach(regionConfigurer -> regionConfigurer.configure(beanName, bean));
-		}
-	};
 
 	private RegionShortcut shortcut;
 
@@ -170,40 +150,6 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		return enableAsLockGrantor(region);
 	}
 
-	/* (non-Javadoc) */
-	private void applyRegionConfigurers(String regionName) {
-		applyRegionConfigurers(regionName, getCompositeRegionConfigurer());
-	}
-
-	/**
-	 * Null-safe operation to apply the given array of {@link RegionConfigurer RegionConfigurers}
-	 * to this {@link RegionFactoryBean}.
-	 *
-	 * @param regionName {@link String} containing the name of the {@link Region}.
-	 * @param regionConfigurers array of {@link RegionConfigurer RegionConfigurers} applied
-	 * to this {@link RegionFactoryBean}.
-	 * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
-	 * @see #applyRegionConfigurers(String, Iterable)
-	 */
-	protected void applyRegionConfigurers(String regionName, RegionConfigurer... regionConfigurers) {
-		applyRegionConfigurers(regionName, Arrays.asList(nullSafeArray(regionConfigurers, RegionConfigurer.class)));
-	}
-
-	/**
-	 * Null-safe operation to apply the given {@link Iterable} of {@link RegionConfigurer RegionConfigurers}
-	 * to this {@link RegionFactoryBean}.
-	 *
-	 * @param regionName {@link String} containing the name of the {@link Region}.
-	 * @param regionConfigurers {@link Iterable} of {@link RegionConfigurer RegionConfigurers} applied
-	 * to this {@link RegionFactoryBean}.
-	 * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
-	 */
-	protected void applyRegionConfigurers(String regionName, Iterable<RegionConfigurer> regionConfigurers) {
-		StreamSupport.stream(nullSafeIterable(regionConfigurers).spliterator(), false)
-			.forEach(regionConfigurer -> regionConfigurer.configure(regionName, this));
-	}
-
-	/* (non-Javadoc) */
 	private Region<K, V> enableAsLockGrantor(Region<K, V> region) {
 
 		Optional.ofNullable(region)
@@ -213,7 +159,6 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		return region;
 	}
 
-	/* (non-Javadoc) */
 	private Region<K, V> newRegion(RegionFactory<K, V> regionFactory, Region<?, ?> parentRegion, String regionName) {
 
 		return Optional.ofNullable(parentRegion)
@@ -230,7 +175,6 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 			});
 	}
 
-	/* (non-Javadoc) */
 	private Cache resolveCache(GemFireCache gemfireCache) {
 
 		return Optional.ofNullable(gemfireCache)
@@ -239,7 +183,6 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 			.orElseThrow(() -> newIllegalArgumentException("Peer Cache is required"));
 	}
 
-	/* (non-Javadoc) */
 	private RegionAttributes<K, V> verifyLockGrantorEligibility(RegionAttributes<K, V> regionAttributes, Scope scope) {
 
 		Optional.ofNullable(regionAttributes).ifPresent(attributes ->
@@ -249,9 +192,8 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		return regionAttributes;
 	}
 
-	/* (non-Javadoc) */
 	private boolean verifyScope(Scope scope) {
-		return (scope == null || Scope.GLOBAL.equals(scope));
+		return scope == null || Scope.GLOBAL.equals(scope);
 	}
 
 	/**
@@ -314,7 +256,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		Optional.ofNullable(this.evictionAttributes).ifPresent(regionFactory::setEvictionAttributes);
 
 		stream(nullSafeArray(this.gatewaySenders, GatewaySender.class))
-			.forEach(gatewaySender -> regionFactory.addGatewaySenderId(((GatewaySender) gatewaySender).getId()));
+			.forEach(gatewaySender -> regionFactory.addGatewaySenderId(gatewaySender.getId()));
 
 		Optional.ofNullable(this.keyConstraint).ifPresent(regionFactory::setKeyConstraint);
 
@@ -343,23 +285,12 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		return regionFactory;
 	}
 
-	/**
-	 * Returns a reference to the Composite {@link RegionConfigurer} used to apply additional configuration
-	 * to this {@link RegionFactoryBean} on Spring container initialization.
-	 *
-	 * @return the Composite {@link RegionConfigurer}.
-	 * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
-	 */
-	protected RegionConfigurer getCompositeRegionConfigurer() {
-		return this.compositeRegionConfigurer;
-	}
-
 	/*
 	 * (non-Javadoc)
 	 *
 	 * This method is not considered part of the RegionFactoryBean API and is strictly used for testing purposes!
 	 *
-	 * NOTE cannot pass RegionAttributes.class as the "targetType" in the second invocation of getFieldValue(..)
+	 * NOTE: Cannot pass RegionAttributes.class as the "targetType" in the second invocation of getFieldValue(..)
 	 * since the "regionAttributes" field is naively declared as a instance of the implementation class type
 	 * (RegionAttributesImpl) rather than the interface type (RegionAttributes)...
 	 * so much for 'programming to interfaces' in GemFire!
@@ -378,7 +309,6 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 			.orElseGet(() -> RegionShortcutToDataPolicyConverter.INSTANCE.convert(regionShortcut));
 	}
 
-	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
 	private <T> Optional<T> getFieldValue(Object source, String fieldName, Class<T> targetType) {
 
@@ -470,27 +400,30 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 
 		// NOTE: PartitionAttributes are created by certain RegionShortcuts; need the null check since RegionAttributes
 		// can technically return null!
-		// NOTE: most likely, the PartitionAttributes will never be null since the PartitionRegionFactoryBean always
+		// NOTE: Most likely, the PartitionAttributes will never be null since the PartitionRegionFactoryBean always
 		// sets a PartitionAttributesFactoryBean BeanBuilder on the RegionAttributesFactoryBean "partitionAttributes"
 		// property.
 		if (regionAttributes.getPartitionAttributes() != null) {
+
 			PartitionAttributes partitionAttributes = regionAttributes.getPartitionAttributes();
+
 			PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory(partitionAttributes);
+
 			RegionShortcutWrapper shortcutWrapper = RegionShortcutWrapper.valueOf(shortcut);
 
-			// NOTE however, since the default value of redundancy is 0, we need to account for 'redundant'
+			// NOTE: However, since the default value of redundancy is 0, we need to account for 'redundant'
 			// RegionShortcut types, which specify a redundancy of 1.
 			if (shortcutWrapper.isRedundant() && partitionAttributes.getRedundantCopies() == 0) {
 				partitionAttributesFactory.setRedundantCopies(1);
 			}
 
-			// NOTE and, since the default value of localMaxMemory is based on the system memory, we need to account for
-			// 'proxy' RegionShortcut types, which specify a local max memory of 0.
+			// NOTE: And, since the default value of localMaxMemory is based on the system memory, we need to
+			// account for 'proxy' RegionShortcut types, which specify a local max memory of 0.
 			if (shortcutWrapper.isProxy()) {
 				partitionAttributesFactory.setLocalMaxMemory(0);
 			}
 
-			// NOTE internally, RegionFactory.setPartitionAttributes handles merging the PartitionAttributes, hooray!
+			// NOTE: Internally, RegionFactory.setPartitionAttributes handles merging the PartitionAttributes, hooray!
 			regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
 		}
 	}
@@ -521,12 +454,12 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 			&& ((UserSpecifiedRegionAttributes) regionAttributes).hasEvictionAttributes());
 	}
 
-	/* (non-Javadoc) */
 	private boolean isDiskStoreConfigurationAllowed() {
 
 		boolean allow = StringUtils.hasText(this.diskStoreName);
 
-		allow &= (getDataPolicy().withPersistence() || (getAttributes() != null
+		allow &= (getDataPolicy().withPersistence()
+			|| (getAttributes() != null
 			&& getAttributes().getEvictionAttributes() != null
 			&& EvictionAction.OVERFLOW_TO_DISK.equals(attributes.getEvictionAttributes().getAction())));
 
@@ -541,21 +474,9 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * @return true when the user specified an explicit value for the persistent attribute and it is true;
 	 * false otherwise.
 	 * @see #isNotPersistent()
-	 * @see #isPersistentUnspecified()
 	 */
 	protected boolean isPersistent() {
 		return Boolean.TRUE.equals(persistent);
-	}
-
-	/**
-	 * Determines whether the user explicitly set the 'persistent' attribute or not.
-	 *
-	 * @return a boolean value indicating whether the user explicitly set the 'persistent' attribute to true or false.
-	 * @see #isPersistent()
-	 * @see #isNotPersistent()
-	 */
-	protected boolean isPersistentUnspecified() {
-		return (persistent == null);
 	}
 
 	/**
@@ -566,38 +487,16 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * @return true when the user specified an explicit value for the persistent attribute and it is false;
 	 * false otherwise.
 	 * @see #isPersistent()
-	 * @see #isPersistentUnspecified()
 	 */
 	protected boolean isNotPersistent() {
 		return Boolean.FALSE.equals(persistent);
 	}
 
 	/**
-	 * Validates that the settings for Data Policy and the 'persistent' attribute in &lt;gfe:*-region&gt; elements
-	 * are compatible.
-	 *
-	 * @param resolvedDataPolicy the GemFire Data Policy resolved form the Spring GemFire XML namespace configuration
-	 * meta-data.
-	 * @see #isPersistent()
-	 * @see #isNotPersistent()
-	 * @see org.apache.geode.cache.DataPolicy
-	 */
-	protected void assertDataPolicyAndPersistentAttributesAreCompatible(DataPolicy resolvedDataPolicy) {
-
-		if (resolvedDataPolicy.withPersistence()) {
-			Assert.isTrue(isPersistentUnspecified() || isPersistent(), String.format(
-				"Data Policy [%s] is invalid when persistent is false.", resolvedDataPolicy));
-		}
-		else {
-			// NOTE otherwise, the Data Policy is not persistent, so...
-			Assert.isTrue(isPersistentUnspecified() || isNotPersistent(), String.format(
-				"Data Policy [%s] is invalid when persistent is true.", resolvedDataPolicy));
-		}
-	}
-
-	/**
 =======
 >>>>>>> c22ebe6... DATAGEODE-12 - Introduce Spring Configurers to flexibly alter Spring Data GemFire configuration when using Annotation config.
+=======
+>>>>>>> 1fd41c9... DATAGEODE-100 - Avoid Pool Already Exists Exception on Spring container initialization.
 	 * Validates and sets the Data Policy on the RegionFactory used to create and configure the Region from this
 	 * FactoryBean.
 	 *
@@ -612,7 +511,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, DataPolicy dataPolicy) {
 
 		if (dataPolicy != null) {
-			assertDataPolicyAndPersistentAttributesAreCompatible(dataPolicy);
+			RegionUtils.assertDataPolicyAndPersistentAttributeAreCompatible(dataPolicy, this.persistent);
 			regionFactory.setDataPolicy(dataPolicy);
 			setDataPolicy(dataPolicy);
 		}
@@ -637,8 +536,9 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 
 			DataPolicy resolvedDataPolicy = new DataPolicyConverter().convert(dataPolicy);
 
-			Assert.notNull(resolvedDataPolicy, String.format("Data Policy [%s] is invalid.", dataPolicy));
-			assertDataPolicyAndPersistentAttributesAreCompatible(resolvedDataPolicy);
+			Assert.notNull(resolvedDataPolicy, String.format("Data Policy [%s] is invalid", dataPolicy));
+
+			RegionUtils.assertDataPolicyAndPersistentAttributeAreCompatible(resolvedDataPolicy, this.persistent);
 
 			regionFactory.setDataPolicy(resolvedDataPolicy);
 			setDataPolicy(resolvedDataPolicy);
@@ -646,17 +546,17 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		else {
 
 			DataPolicy regionAttributesDataPolicy = getDataPolicy(getAttributes(), DataPolicy.DEFAULT);
-			DataPolicy resolvedDataPolicy = (isPersistent() && DataPolicy.DEFAULT.equals(regionAttributesDataPolicy)
-				? DataPolicy.PERSISTENT_REPLICATE : regionAttributesDataPolicy);
 
-			assertDataPolicyAndPersistentAttributesAreCompatible(resolvedDataPolicy);
+			DataPolicy resolvedDataPolicy = isPersistent() && DataPolicy.DEFAULT.equals(regionAttributesDataPolicy)
+				? DataPolicy.PERSISTENT_REPLICATE : regionAttributesDataPolicy;
+
+			RegionUtils.assertDataPolicyAndPersistentAttributeAreCompatible(resolvedDataPolicy, this.persistent);
 
 			regionFactory.setDataPolicy(resolvedDataPolicy);
 			setDataPolicy(resolvedDataPolicy);
 		}
 	}
 
-	/* (non-Javadoc) */
 	private DataPolicy getDataPolicy(RegionAttributes regionAttributes, DataPolicy defaultDataPolicy) {
 		return Optional.ofNullable(regionAttributes).map(RegionAttributes::getDataPolicy).orElse(defaultDataPolicy);
 	}
@@ -877,31 +777,6 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		this.persistent = persistent;
 	}
 
-	/**
-	 * Null-safe operation to set an array of {@link RegionConfigurer RegionConfigurers} used to apply
-	 * additional configuration to this {@link RegionFactoryBean} when using Annotation-based configuration.
-	 *
-	 * @param regionConfigurers array of {@link RegionConfigurer RegionConfigurers} used to apply
-	 * additional configuration to this {@link RegionFactoryBean}.
-	 * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
-	 * @see #setRegionConfigurers(List)
-	 */
-	public void setRegionConfigurers(RegionConfigurer... regionConfigurers) {
-		setRegionConfigurers(Arrays.asList(nullSafeArray(regionConfigurers, RegionConfigurer.class)));
-	}
-
-	/**
-	 * Null-safe operation to set an {@link Iterable} of {@link RegionConfigurer RegionConfigurers} used to apply
-	 * additional configuration to this {@link RegionFactoryBean} when using Annotation-based configuration.
-	 *
-	 * @param regionConfigurers {@link Iterable} of {@link RegionConfigurer RegionConfigurers} used to apply
-	 * additional configuration to this {@link RegionFactoryBean}.
-	 * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
-	 */
-	public void setRegionConfigurers(List<RegionConfigurer> regionConfigurers) {
-		this.regionConfigurers = Optional.ofNullable(regionConfigurers).orElseGet(Collections::emptyList);
-	}
-
 	public Scope getScope() {
 		return this.scope;
 	}
@@ -936,16 +811,14 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		this.valueConstraint = valueConstraint;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	@SuppressWarnings("all")
 	public void start() {
 
-		if (!ObjectUtils.isEmpty(gatewaySenders)) {
-			synchronized (gatewaySenders) {
-				for (GatewaySender gatewaySender: gatewaySenders) {
+		if (!ObjectUtils.isEmpty(this.gatewaySenders)) {
+			synchronized (this.gatewaySenders) {
+				for (Object obj : this.gatewaySenders) {
+					GatewaySender gatewaySender = (GatewaySender) obj;
 					if (!(gatewaySender.isManualStart() || gatewaySender.isRunning())) {
 						gatewaySender.start();
 					}
@@ -956,24 +829,19 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		this.running = true;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	public void stop(Runnable callback) {
 		stop();
 		callback.run();
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
+	@SuppressWarnings("all")
 	public void stop() {
 
-		if (!ObjectUtils.isEmpty(gatewaySenders)) {
-			synchronized (gatewaySenders) {
-				for (GatewaySender gatewaySender : gatewaySenders) {
+		if (!ObjectUtils.isEmpty(this.gatewaySenders)) {
+			synchronized (this.gatewaySenders) {
+				for (GatewaySender gatewaySender : this.gatewaySenders) {
 					gatewaySender.stop();
 				}
 			}
@@ -982,25 +850,16 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		this.running = false;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	public boolean isRunning() {
 		return this.running;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	public int getPhase() {
 		return Integer.MAX_VALUE;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	public boolean isAutoStartup() {
 		return true;

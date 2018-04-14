@@ -19,8 +19,11 @@ import org.apache.geode.cache.GemFireCache;
 import org.springframework.data.gemfire.CacheFactoryBean;
 
 /**
+ * Mock {@link CacheFactoryBean} used in Unit Tests.
+ *
  * @author David Turanski
  * @author John Blum
+ * @see org.springframework.data.gemfire.CacheFactoryBean
  */
 public class MockCacheFactoryBean extends CacheFactoryBean {
 
@@ -57,6 +60,7 @@ public class MockCacheFactoryBean extends CacheFactoryBean {
 			setTransactionListeners(it.getTransactionListeners());
 			setTransactionWriter(it.getTransactionWriter());
 			setUseBeanFactoryLocator(it.isUseBeanFactoryLocator());
+			setUseClusterConfiguration(it.getUseClusterConfiguration());
 		});
 
 		applyPeerCacheConfigurers(cacheFactoryBean.getCompositePeerCacheConfigurer());

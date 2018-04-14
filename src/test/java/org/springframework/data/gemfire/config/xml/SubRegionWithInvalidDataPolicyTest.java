@@ -39,11 +39,13 @@ public class SubRegionWithInvalidDataPolicyTest {
 
 	@Test(expected = XmlBeanDefinitionStoreException.class)
 	public void testSubRegionBeanDefinitionWithInconsistentDataPolicy() {
+
 		try {
 			new ClassPathXmlApplicationContext(
 				"/org/springframework/data/gemfire/config/xml/subregion-with-invalid-datapolicy.xml");
 		}
 		catch (XmlBeanDefinitionStoreException expected) {
+
 			assertTrue(expected.getCause() instanceof SAXParseException);
 			assertTrue(expected.getCause().getMessage().contains("PERSISTENT_PARTITION"));
 
@@ -53,14 +55,16 @@ public class SubRegionWithInvalidDataPolicyTest {
 
 	@Test(expected = BeanCreationException.class)
 	public void testSubRegionBeanDefinitionWithInvalidDataPolicyPersistentSettings() {
+
 		try {
 			new ClassPathXmlApplicationContext(
 				"/org/springframework/data/gemfire/config/xml/subregion-with-inconsistent-datapolicy-persistent-settings.xml");
 		}
 		catch (BeanCreationException expected) {
+
 			assertTrue(expected.getMessage().contains("Error creating bean with name '/Parent/Child'"));
 			assertTrue(expected.getCause() instanceof IllegalArgumentException);
-			assertEquals("Data Policy [REPLICATE] is invalid when persistent is true.",
+			assertEquals("Data Policy [REPLICATE] is not valid when persistent is true",
 				expected.getCause().getMessage());
 
 			throw expected;

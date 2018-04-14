@@ -47,6 +47,7 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.data.gemfire.support.AbstractFactoryBeanSupport
  */
 @SuppressWarnings("unused")
+// TODO: Rename to ResolvableRegionFactoryBean in SD Lovelace
 public abstract class RegionLookupFactoryBean<K, V> extends AbstractFactoryBeanSupport<Region<K, V>>
 		implements InitializingBean {
 
@@ -74,15 +75,12 @@ public abstract class RegionLookupFactoryBean<K, V> extends AbstractFactoryBeanS
 	@SuppressWarnings("all")
 	public void afterPropertiesSet() throws Exception {
 
-		GemFireCache cache = getCache();
+		GemFireCache cache = requireCache();
 
-		Assert.notNull(cache, "Cache is required");
-
-		String regionName = resolveRegionName();
-
-		Assert.hasText(regionName, "regionName, name or beanName property must be set");
+		String regionName = requireRegionName();
 
 		synchronized (cache) {
+
 			setRegion(isLookupEnabled()
 				? Optional.ofNullable(getParent())
 					.map(parentRegion -> parentRegion.<K, V>getSubregion(regionName))
@@ -99,6 +97,35 @@ public abstract class RegionLookupFactoryBean<K, V> extends AbstractFactoryBeanS
 				setRegion(postProcess(loadSnapshot(createRegion(cache, regionName))));
 			}
 		}
+	}
+
+	private GemFireCache requireCache() {
+
+		GemFireCache cache = getCache();
+
+		Assert.notNull(cache, "Cache is required");
+
+		return cache;
+	}
+
+	private String requireRegionName() {
+
+		String regionName = resolveRegionName();
+
+		Assert.hasText(regionName, "regionName, name or the beanName property must be set");
+
+		return regionName;
+	}
+
+	/**
+	 * Resolves the {@link String name} of the {@link Region}.
+	 *
+	 * @return a {@link String} containing the name of the {@link Region}.
+	 * @see org.apache.geode.cache.Region#getName()
+	 */
+	public String resolveRegionName() {
+		return StringUtils.hasText(this.regionName) ? this.regionName
+			: (StringUtils.hasText(this.name) ? this.name : getBeanName());
 	}
 
 	/**
@@ -134,8 +161,8 @@ public abstract class RegionLookupFactoryBean<K, V> extends AbstractFactoryBeanS
 			try {
 				region.loadSnapshot(snapshot.getInputStream());
 			}
-			catch (Exception e) {
-				throw newRuntimeException(e, "Failed to load snapshot [%s]", snapshot);
+			catch (Exception cause) {
+				throw newRuntimeException(cause, "Failed to load snapshot [%s]", snapshot);
 			}
 		});
 
@@ -178,17 +205,6 @@ public abstract class RegionLookupFactoryBean<K, V> extends AbstractFactoryBeanS
 	}
 
 	/**
-	 * Resolves the {@link String name} of the {@link Region}.
-	 *
-	 * @return a {@link String} containing the name of the {@link Region}.
-	 * @see org.apache.geode.cache.Region#getName()
-	 */
-	public String resolveRegionName() {
-		return (StringUtils.hasText(this.regionName) ? this.regionName
-			: (StringUtils.hasText(this.name) ? this.name : getBeanName()));
-	}
-
-	/**
 	 * Returns a reference to the {@link GemFireCache} used to create the {@link Region}.
 	 *
 	 * @return a reference to the {@link GemFireCache} used to create the {@link Region}..
@@ -208,17 +224,14 @@ public abstract class RegionLookupFactoryBean<K, V> extends AbstractFactoryBeanS
 		this.cache = cache;
 	}
 
-	/* (non-Javadoc) */
-	boolean isLookupEnabled() {
+	public boolean isLookupEnabled() {
 		return Boolean.TRUE.equals(getLookupEnabled());
 	}
 
-	/* (non-Javadoc) */
 	public void setLookupEnabled(Boolean lookupEnabled) {
 		this.lookupEnabled = lookupEnabled;
 	}
 
-	/* (non-Javadoc) */
 	public Boolean getLookupEnabled() {
 		return this.lookupEnabled;
 	}

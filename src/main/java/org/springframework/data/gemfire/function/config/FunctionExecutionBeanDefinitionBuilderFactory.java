@@ -1,5 +1,9 @@
 /*
+<<<<<<< Updated upstream
  * Copyright 2002-2018 the original author or authors.
+=======
+ * Copyright 2002-2013 the original author or authors.
+>>>>>>> Stashed changes
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -37,6 +41,7 @@ import org.springframework.data.gemfire.function.annotation.OnServers;
 abstract class FunctionExecutionBeanDefinitionBuilderFactory {
 
 	static AbstractFunctionExecutionBeanDefinitionBuilder newInstance(FunctionExecutionConfiguration configuration) {
+
 		String functionExecutionAnnotation = configuration.getAnnotationType();
 
 		if (OnMember.class.getName().equals(functionExecutionAnnotation)) {
@@ -57,5 +62,4 @@ abstract class FunctionExecutionBeanDefinitionBuilderFactory {
 
 		return null;
 	}
-
 }

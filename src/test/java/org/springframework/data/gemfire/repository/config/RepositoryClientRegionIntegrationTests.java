@@ -45,6 +45,9 @@ public class RepositoryClientRegionIntegrationTests extends ClientServerIntegrat
 
 	@BeforeClass
 	public static void startGemFireServer() throws Exception {
+
+		System.setProperty("gemfire.log-level", GEMFIRE_LOG_LEVEL);
+
 		int availablePort = findAvailablePort();
 
 		gemfireServer = run(ServerProcess.class,
@@ -58,6 +61,7 @@ public class RepositoryClientRegionIntegrationTests extends ClientServerIntegrat
 
 	@AfterClass
 	public static void stopGemFireServer() {
+		System.clearProperty("gemfire.log-level");
 		System.clearProperty(GEMFIRE_CACHE_SERVER_PORT_PROPERTY);
 		stop(gemfireServer);
 	}

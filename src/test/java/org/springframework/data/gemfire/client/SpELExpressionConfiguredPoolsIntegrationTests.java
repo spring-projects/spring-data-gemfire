@@ -237,7 +237,7 @@ public class SpELExpressionConfiguredPoolsIntegrationTests {
 		}
 
 		@Override
-		boolean isDistributedSystemPresent() {
+		boolean isClientCachePresent() {
 			return true;
 		}
 	}

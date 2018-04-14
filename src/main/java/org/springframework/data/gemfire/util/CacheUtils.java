@@ -25,6 +25,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.Pool;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.springframework.util.StringUtils;
@@ -50,7 +51,6 @@ public abstract class CacheUtils extends DistributedSystemUtils {
 
 	public static final String DEFAULT_POOL_NAME = "DEFAULT";
 
-	/* (non-Javadoc) */
 	@SuppressWarnings("all")
 	public static boolean isClient(GemFireCache cache) {
 
@@ -63,10 +63,25 @@ public abstract class CacheUtils extends DistributedSystemUtils {
 		return client;
 	}
 
-	/* (non-Javadoc) */
+	public static boolean isDefaultPool(Pool pool) {
+		return Optional.ofNullable(pool).map(Pool::getName).filter(CacheUtils::isDefaultPool).isPresent();
+	}
+
+	public static boolean isNotDefaultPool(Pool pool) {
+		return !isDefaultPool(pool);
+	}
+
+	public static boolean isDefaultPool(String poolName) {
+		return DEFAULT_POOL_NAME.equals(poolName);
+	}
+
+	public static boolean isNotDefaultPool(String poolName) {
+		return !isDefaultPool(poolName);
+	}
+
 	public static boolean isDurable(ClientCache clientCache) {
 
-		// NOTE technically the following code snippet would be more useful/valuable but is not "testable"!
+		// NOTE: Technically, the following code snippet would be more useful/valuable but is not "testable"!
 		//((InternalDistributedSystem) distributedSystem).getConfig().getDurableClientId();
 
 		return Optional.ofNullable(clientCache)
@@ -78,7 +93,6 @@ public abstract class CacheUtils extends DistributedSystemUtils {
 			.isPresent();
 	}
 
-	/* (non-Javadoc) */
 	@SuppressWarnings("all")
 	public static boolean isPeer(GemFireCache cache) {
 
@@ -91,17 +105,14 @@ public abstract class CacheUtils extends DistributedSystemUtils {
 		return peer;
 	}
 
-	/* (non-Javadoc) */
 	public static boolean close() {
 		return close(resolveGemFireCache());
 	}
 
-	/* (non-Javadoc) */
 	public static boolean close(GemFireCache gemfireCache) {
 		return close(gemfireCache, () -> {});
 	}
 
-	/* (non-Javadoc) */
 	public static boolean close(GemFireCache gemfireCache, Runnable shutdownHook) {
 
 		try {
@@ -116,7 +127,6 @@ public abstract class CacheUtils extends DistributedSystemUtils {
 		}
 	}
 
-	/* (non-Javadoc) */
 	public static boolean closeCache() {
 
 		try {
@@ -128,7 +138,6 @@ public abstract class CacheUtils extends DistributedSystemUtils {
 		}
 	}
 
-	/* (non-Javadoc) */
 	public static boolean closeClientCache() {
 
 		try {
@@ -140,7 +149,6 @@ public abstract class CacheUtils extends DistributedSystemUtils {
 		}
 	}
 
-	/* (non-Javadoc) */
 	public static Cache getCache() {
 
 		try {
@@ -151,7 +159,6 @@ public abstract class CacheUtils extends DistributedSystemUtils {
 		}
 	}
 
-	/* (non-Javadoc) */
 	public static ClientCache getClientCache() {
 
 		try {
@@ -162,7 +169,6 @@ public abstract class CacheUtils extends DistributedSystemUtils {
 		}
 	}
 
-	/* (non-Javadoc) */
 	public static GemFireCache resolveGemFireCache() {
 		return Optional.<GemFireCache>ofNullable(getClientCache()).orElseGet(CacheUtils::getCache);
 	}

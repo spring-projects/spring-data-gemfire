@@ -16,7 +16,7 @@
 
 package org.springframework.data.gemfire.config.xml;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 import org.springframework.beans.factory.parsing.BeanDefinitionParsingException;
@@ -37,20 +37,23 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class TemplateRegionDefinitionOrderErrorNamespaceTest {
 
-	protected String getConfigLocation() {
+	private String getConfigLocation() {
 		return getClass().getName().replace(".", "/").concat("-context.xml");
 	}
 
 	@Test(expected = BeanDefinitionParsingException.class)
 	public void testIncorrectTemplateRegionDefinitionOrder() throws Exception {
+
 		try {
 			new ClassPathXmlApplicationContext(getConfigLocation());
 		}
 		catch (BeanDefinitionParsingException expected) {
-			assertTrue(expected.getMessage().contains(
-				"The Region template [RegionTemplate] must be 'defined before' the Region [TemplateBasedPartitionRegion] referring to the template!"));
+
+			assertThat(expected)
+				.hasMessageContaining("The Region template [RegionTemplate] must be defined before the Region [TemplateBasedPartitionRegion] referring to the template");
+			assertThat(expected).hasNoCause();
+
 			throw expected;
 		}
 	}
-
 }

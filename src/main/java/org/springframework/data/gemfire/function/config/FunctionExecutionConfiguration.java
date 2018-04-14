@@ -1,5 +1,9 @@
 /*
+<<<<<<< Updated upstream
  * Copyright 2002-2018 the original author or authors.
+=======
+ * Copyright 2002-2013 the original author or authors.
+>>>>>>> Stashed changes
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -15,6 +19,7 @@ package org.springframework.data.gemfire.function.config;
 import java.util.Map;
 
 import org.springframework.context.annotation.ScannedGenericBeanDefinition;
+import org.springframework.data.gemfire.util.SpringUtils;
 import org.springframework.util.Assert;
 
 /**
@@ -27,29 +32,29 @@ class FunctionExecutionConfiguration  {
 
 	private Class<?> functionExecutionInterface;
 
-	private final Map<String,Object> attributes;
+	private final Map<String, Object> annotationAttributes;
 
 	private final String annotationType;
 
 	/* constructor for testing purposes only! */
 	FunctionExecutionConfiguration() {
 		this.annotationType = null;
-		this.attributes = null;
+		this.annotationAttributes = null;
 	}
 
 	FunctionExecutionConfiguration(ScannedGenericBeanDefinition beanDefinition, String annotationType) {
+
 		try {
 			this.annotationType = annotationType;
-			this.attributes = beanDefinition.getMetadata().getAnnotationAttributes(annotationType, true);
+			this.annotationAttributes = beanDefinition.getMetadata().getAnnotationAttributes(annotationType, true);
 			this.functionExecutionInterface = beanDefinition.resolveBeanClass(beanDefinition.getClass().getClassLoader());
 
-			Assert.isTrue(functionExecutionInterface.isInterface(),
-				String.format("The annotation %1$s only applies to an interface. It is not valid for the type %2$s",
-					annotationType, functionExecutionInterface.getName()));
-
+			Assert.isTrue(this.functionExecutionInterface != null && this.functionExecutionInterface.isInterface(),
+				String.format("The annotation %1$s only applies to an interface. It is not valid for type %2$s",
+					annotationType, SpringUtils.nullSafeName(this.functionExecutionInterface)));
 		}
-		catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
+		catch (ClassNotFoundException cause) {
+			throw new RuntimeException(cause);
 		}
 	}
 
@@ -58,15 +63,14 @@ class FunctionExecutionConfiguration  {
 	}
 
 	Object getAttribute(String name) {
-		return attributes.get(name);
+		return this.annotationAttributes.get(name);
 	}
 
 	Map<String, Object> getAttributes() {
-		return this.attributes;
+		return this.annotationAttributes;
 	}
 
 	Class<?> getFunctionExecutionInterface() {
 		return this.functionExecutionInterface;
 	}
-
 }

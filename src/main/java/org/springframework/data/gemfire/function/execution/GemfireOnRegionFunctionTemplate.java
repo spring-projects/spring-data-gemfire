@@ -20,11 +20,11 @@ import org.springframework.util.Assert;
 
 /**
  * @author David Turanski
- *
+ * @author John Blum
  */
 public class GemfireOnRegionFunctionTemplate extends AbstractFunctionTemplate implements GemfireOnRegionOperations {
 
-	private Region<?, ?> region;
+	private final Region<?, ?> region;
 
 	/**
 	 * Constructs an instance of the GemFireOnRegionFunctionTemplate with the given GemFire Cache Region.
@@ -33,37 +33,52 @@ public class GemfireOnRegionFunctionTemplate extends AbstractFunctionTemplate im
 	 * @see org.apache.geode.cache.Region
 	 */
 	public GemfireOnRegionFunctionTemplate(Region<?, ?> region) {
-		Assert.notNull(region, "Region cannot be null");
+
+		Assert.notNull(region, "Region must not be null");
+
 		this.region = region;
 	}
 
 	@Override
-	public <T> Iterable<T> execute(Function function, Set<?> keys, Object... args) {
-		return execute(new RegionFunctionExecution(region).setKeys(keys).setFunction(function).setTimeout(timeout)
-				.setArgs(args));
-	}
-
-	@Override
-	public <T> Iterable<T> execute(String functionId, Set<?> keys, Object... args) {
-		return execute(new RegionFunctionExecution(region).setKeys(keys).setFunctionId(functionId).setTimeout(timeout)
-				.setArgs(args));
-	}
-
-	@Override
-	public <T> T executeAndextract(String functionId, Set<?> keys, Object... args) {
-		return this.<T> executeAndExtract(new RegionFunctionExecution(region).setKeys(keys).setFunctionId(functionId)
-				.setTimeout(timeout).setArgs(args));
-	}
-
-	@Override
-	protected AbstractFunctionExecution getFunctionExecution() {
+	protected RegionFunctionExecution getFunctionExecution() {
 		return new RegionFunctionExecution(this.region);
 	}
 
 	@Override
-	public void executeWithNoResult(String functionId, Set<?> keys, Object... args) {
-		execute(new RegionFunctionExecution(region).setKeys(keys).setFunctionId(functionId).setTimeout(timeout)
-				.setArgs(args), false);
+	public <T> Iterable<T> execute(Function function, Set<?> keys, Object... args) {
+
+		return execute(getFunctionExecution()
+			.setKeys(keys)
+			.setFunction(function)
+			.setTimeout(this.timeout)
+			.setArgs(args));
 	}
 
+	@Override
+	public <T> Iterable<T> execute(String functionId, Set<?> keys, Object... args) {
+
+		return execute(getFunctionExecution()
+			.setKeys(keys).setFunctionId(functionId)
+			.setTimeout(this.timeout)
+			.setArgs(args));
+	}
+
+	@Override
+	public <T> T executeAndextract(String functionId, Set<?> keys, Object... args) {
+
+		return executeAndExtract(getFunctionExecution()
+			.setKeys(keys)
+			.setFunctionId(functionId)
+			.setTimeout(this.timeout).setArgs(args));
+	}
+
+	@Override
+	public void executeWithNoResult(String functionId, Set<?> keys, Object... args) {
+
+		execute(getFunctionExecution()
+			.setKeys(keys)
+			.setFunctionId(functionId)
+			.setTimeout(this.timeout)
+			.setArgs(args), false);
+	}
 }

@@ -1,5 +1,9 @@
 /*
+<<<<<<< Updated upstream
  * Copyright 2002-2018 the original author or authors.
+=======
+ * Copyright 2002-2013 the original author or authors.
+>>>>>>> Stashed changes
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -35,7 +39,7 @@ import org.springframework.util.ClassUtils;
  * @see org.springframework.beans.factory.BeanClassLoaderAware
  * @see org.springframework.beans.factory.FactoryBean
  */
-public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, MethodInterceptor, BeanClassLoaderAware {
+public class GemfireFunctionProxyFactoryBean implements BeanClassLoaderAware, FactoryBean<Object>, MethodInterceptor {
 
 	private volatile ClassLoader beanClassLoader = ClassUtils.getDefaultClassLoader();
 
@@ -56,6 +60,7 @@ public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, Met
 	 * @param gemfireFunctionOperations an interface used to delegate the function invocation (typically a GemFire function template)
 	 */
 	public GemfireFunctionProxyFactoryBean(Class<?> functionExecutionInterface, GemfireFunctionOperations gemfireFunctionOperations) {
+
 		Assert.notNull(functionExecutionInterface, "'functionExecutionInterface' must not be null");
 		Assert.isTrue(functionExecutionInterface.isInterface(), "'functionExecutionInterface' must be an interface");
 
@@ -65,16 +70,17 @@ public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, Met
 	}
 
 	protected GemfireFunctionOperations getGemfireFunctionOperations() {
-		return gemfireFunctionOperations;
+		return this.gemfireFunctionOperations;
 	}
 
 	@Override
 	public void setBeanClassLoader(ClassLoader classLoader) {
-		beanClassLoader = classLoader;
+		this.beanClassLoader = classLoader;
 	}
 
 	@Override
 	public Object invoke(MethodInvocation invocation) throws Throwable {
+
 		if (AopUtils.isToStringMethod(invocation.getMethod())) {
 			return "GemFire Function Proxy for service interface [" + this.functionExecutionInterface + "]";
 		}
@@ -88,17 +94,18 @@ public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, Met
 
 	protected Object invokeFunction(Method method, Object[] args) {
 		return this.gemfireFunctionOperations.executeAndExtract(
-			methodMetadata.getMethodMetadata(method).getFunctionId(), args);
+			this.methodMetadata.getMethodMetadata(method).getFunctionId(), args);
 	}
 
 	@Override
 	public Object getObject() throws Exception {
-		if (functionExecutionProxy == null) {
+
+		if (this.functionExecutionProxy == null) {
 			onInit();
-			Assert.notNull(functionExecutionProxy, "failed to initialize proxy");
+			Assert.notNull(this.functionExecutionProxy, "failed to initialize proxy");
 		}
 
-		return functionExecutionProxy;
+		return this.functionExecutionProxy;
 	}
 
 	@Override
@@ -112,11 +119,13 @@ public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, Met
 	}
 
 	protected void onInit() {
-		if (!initialized) {
-			ProxyFactory proxyFactory = new ProxyFactory(functionExecutionInterface, this);
-			functionExecutionProxy = proxyFactory.getProxy(beanClassLoader);
-			initialized = true;
+
+		if (!this.initialized) {
+
+			ProxyFactory proxyFactory = new ProxyFactory(this.functionExecutionInterface, this);
+
+			this.functionExecutionProxy = proxyFactory.getProxy(this.beanClassLoader);
+			this.initialized = true;
 		}
 	}
-
 }

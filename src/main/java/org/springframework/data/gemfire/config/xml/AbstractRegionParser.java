@@ -19,6 +19,7 @@ package org.springframework.data.gemfire.config.xml;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -66,7 +67,7 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 	@Override
 	protected String getParentName(Element element) {
 		String regionTemplate = element.getAttribute("template");
-		return (StringUtils.hasText(regionTemplate) ? regionTemplate : super.getParentName(element));
+		return StringUtils.hasText(regionTemplate) ? regionTemplate : super.getParentName(element);
 	}
 
 	/* (non-Javadoc) */
@@ -167,14 +168,14 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 				BeanDefinition templateRegionAttributes = getRegionAttributesBeanDefinition(templateRegion);
 
 				if (templateRegionAttributes != null) {
-					// NOTE we only need to merge the parent RegionAttributes with this since the parent will have
-					// already merged it's parent's RegionAttributes and so on...
+					// NOTE we only need to merge the parent's RegionAttributes with this since the parent
+					// will have already merged its parent's RegionAttributes and so on...
 					regionAttributesBuilder.getRawBeanDefinition().overrideFrom(templateRegionAttributes);
 				}
 			}
 			else {
 				parserContext.getReaderContext().error(String.format(
-					"The Region template [%1$s] must be 'defined before' the Region [%2$s] referring to the template!",
+					"The Region template [%1$s] must be defined before the Region [%2$s] referring to the template",
 						regionTemplateName, resolveId(element, regionBuilder.getRawBeanDefinition(), parserContext)),
 							element);
 			}
@@ -188,11 +189,13 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		Object regionAttributes = null;
 
 		if (region.getPropertyValues().contains("attributes")) {
-			PropertyValue attributesProperty = region.getPropertyValues().getPropertyValue("attributes");
-			regionAttributes = attributesProperty.getValue();
+			regionAttributes =
+				Optional.ofNullable(region.getPropertyValues().getPropertyValue("attributes"))
+					.map(PropertyValue::getValue)
+					.orElse(null);
 		}
 
-		return (regionAttributes instanceof BeanDefinition ? (BeanDefinition) regionAttributes : null);
+		return regionAttributes instanceof BeanDefinition ? (BeanDefinition) regionAttributes : null;
 	}
 
 	protected void parseCollectionOfCustomSubElements(Element element, ParserContext parserContext,

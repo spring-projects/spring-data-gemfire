@@ -23,11 +23,10 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * The AutoRegionLookupIntegrationTests class is a test suite of test cases testing the contract and functionality
- * of Spring Data GemFire's new auto Region lookup feature.
+ * Integration tests to test the contract and functionality of Spring Data GemFire's Auto Region Lookup functionality.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -36,7 +35,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @since 1.5.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @SuppressWarnings("unused")
 public class AutoRegionLookupIntegrationTests {
@@ -54,5 +53,4 @@ public class AutoRegionLookupIntegrationTests {
 		assertTrue(applicationContext.containsBean("/NativeReplicateParent/NativeReplicateChild"));
 		assertTrue(applicationContext.containsBean("/NativeReplicateParent/NativeReplicateChild/NativeReplicateGrandchild"));
 	}
-
 }

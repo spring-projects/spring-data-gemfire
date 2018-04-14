@@ -24,14 +24,10 @@ import java.util.Set;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValue;
-import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
-import org.springframework.data.gemfire.client.PoolFactoryBean;
 import org.springframework.data.gemfire.util.SpringUtils;
-import org.springframework.util.StringUtils;
 
 /**
  * {@link ClientRegionPoolBeanFactoryPostProcessor} is a Spring {@link BeanFactoryPostProcessor} implementation
@@ -44,7 +40,7 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.beans.factory.config.BeanFactoryPostProcessor
  * @since 1.8.2
  */
-public class ClientRegionPoolBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
+public class ClientRegionPoolBeanFactoryPostProcessor extends AbstractDependencyStructuringBeanFactoryPostProcessor {
 
 	protected static final String POOL_NAME_PROPERTY = "poolName";
 
@@ -82,35 +78,11 @@ public class ClientRegionPoolBeanFactoryPostProcessor implements BeanFactoryPost
 		});
 	}
 
-	boolean isBeanDefinitionOfType(BeanDefinition beanDefinition, Class<?> type) {
-
-		return Optional.of(beanDefinition)
-			.map(it -> beanDefinition.getBeanClassName())
-			.filter(StringUtils::hasText)
-			.map(beanClassName -> type.getName().equals(beanClassName))
-			.orElseGet(() ->
-				Optional.ofNullable(beanDefinition.getFactoryMethodName())
-					.filter(StringUtils::hasText)
-					.filter(it -> beanDefinition instanceof AnnotatedBeanDefinition)
-					.map(it -> ((AnnotatedBeanDefinition) beanDefinition).getFactoryMethodMetadata())
-					.map(methodMetadata -> type.getName().equals(methodMetadata.getReturnTypeName()))
-					.orElse(false)
-			);
-	}
-
-	/* (non-Javadoc)*/
-	boolean isClientRegionBean(BeanDefinition beanDefinition) {
-		return isBeanDefinitionOfType(beanDefinition, ClientRegionFactoryBean.class);
-	}
-
-	/* (non-Javadoc)*/
-	boolean isPoolBean(BeanDefinition beanDefinition) {
-		return isBeanDefinitionOfType(beanDefinition, PoolFactoryBean.class);
-	}
-
-	/* (non-Javadoc) */
 	String getPoolName(BeanDefinition clientRegionBean) {
-		PropertyValue poolNameProperty = clientRegionBean.getPropertyValues().getPropertyValue(POOL_NAME_PROPERTY);
-		return (poolNameProperty != null ? String.valueOf(poolNameProperty.getValue()) : null);
+
+		return Optional.ofNullable(clientRegionBean.getPropertyValues().getPropertyValue(POOL_NAME_PROPERTY))
+			.map(PropertyValue::getValue)
+			.map(String::valueOf)
+			.orElse(null);
 	}
 }

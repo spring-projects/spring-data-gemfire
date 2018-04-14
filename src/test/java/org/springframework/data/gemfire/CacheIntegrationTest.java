@@ -25,7 +25,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Integration test trying various basic configurations of GemFire through
@@ -36,21 +36,29 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author Costin Leau
  * @author John Blum
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(locations = "basic-cache.xml")
 public class CacheIntegrationTest {
 
-	@Autowired ApplicationContext ctx;
+	@Autowired
+	ApplicationContext applicationContext;
+
 	Cache cache;
+
+	@After
+	public void tearDown() {
+		GemfireUtils.close(this.cache);
+	}
 
 	@Test
 	public void testBasicCache() throws Exception {
-		cache = ctx.getBean("default-cache",Cache.class);
+		cache = applicationContext.getBean("default-cache",Cache.class);
 	}
 
 	@Test
 	public void testCacheWithProps() throws Exception {
-		cache = ctx.getBean("cache-with-props", Cache.class);
+		cache = applicationContext.getBean("cache-with-props", Cache.class);
+
 		// the name property seems to be ignored
 		assertEquals("cache-with-props", cache.getDistributedSystem().getName());
 		assertEquals("cache-with-props", cache.getName());
@@ -58,18 +66,15 @@ public class CacheIntegrationTest {
 
 	@Test
 	public void testNamedCache() throws Exception {
-		cache = ctx.getBean("named-cache", Cache.class);
+
+		cache = applicationContext.getBean("named-cache", Cache.class);
+
 		assertEquals("named-cache", cache.getDistributedSystem().getName());
 		assertEquals("named-cache", cache.getName());
 	}
 
 	@Test
 	public void testCacheWithXml() throws Exception {
-		ctx.getBean("cache-with-xml", Cache.class);
-	}
-
-	@After
-	public void tearDown() {
-		if (cache!=null) cache.close();
+		applicationContext.getBean("cache-with-xml", Cache.class);
 	}
 }

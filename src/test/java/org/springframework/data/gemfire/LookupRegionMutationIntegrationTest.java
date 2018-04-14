@@ -50,7 +50,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.StringUtils;
 
 /**
@@ -66,7 +66,7 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @since 1.7.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @SuppressWarnings("unused")
 public class LookupRegionMutationIntegrationTest {
@@ -74,7 +74,8 @@ public class LookupRegionMutationIntegrationTest {
 	@Resource(name = "Example")
 	private Region<?, ?> example;
 
-	protected void assertCacheListeners(CacheListener[] cacheListeners, Collection<String> expectedCacheListenerNames) {
+	private void assertCacheListeners(CacheListener[] cacheListeners, Collection<String> expectedCacheListenerNames) {
+
 		if (!expectedCacheListenerNames.isEmpty()) {
 			assertNotNull("CacheListeners must not be null!", cacheListeners);
 			assertEquals(expectedCacheListenerNames.size(), cacheListeners.length);
@@ -82,26 +83,55 @@ public class LookupRegionMutationIntegrationTest {
 		}
 	}
 
-	protected void assertEvictionAttributes(EvictionAttributes evictionAttributes, EvictionAction expectedAction, EvictionAlgorithm expectedAlgorithm, int expectedMaximum) {
+	private void assertEvictionAttributes(EvictionAttributes evictionAttributes, EvictionAction expectedAction,
+			EvictionAlgorithm expectedAlgorithm, int expectedMaximum) {
+
 		assertNotNull("EvictionAttributes must not be null!", evictionAttributes);
 		assertEquals(expectedAction, evictionAttributes.getAction());
 		assertEquals(expectedAlgorithm, evictionAttributes.getAlgorithm());
 		assertEquals(expectedMaximum, evictionAttributes.getMaximum());
 	}
 
-	protected void assertExpirationAttributes(ExpirationAttributes expirationAttributes,
+	private void assertExpirationAttributes(ExpirationAttributes expirationAttributes,
+
 		String description, int expectedTimeout, ExpirationAction expectedAction) {
+
 		assertNotNull(String.format("ExpirationAttributes for '%1$s' must not be null!", description), expirationAttributes);
 		assertEquals(expectedAction, expirationAttributes.getAction());
 		assertEquals(expectedTimeout, expirationAttributes.getTimeout());
 	}
 
-	protected void assertGemFireComponent(Object gemfireComponent, String expectedName) {
+	private void assertGatewaySenders(Region<?, ?> region, List<String> expectedGatewaySenderIds) {
+
+		assertNotNull(region.getAttributes());
+		assertNotNull(region.getAttributes().getGatewaySenderIds());
+		assertEquals(expectedGatewaySenderIds.size(), region.getAttributes().getGatewaySenderIds().size());
+		assertTrue(expectedGatewaySenderIds.containsAll(region.getAttributes().getGatewaySenderIds()));
+	}
+
+	private void assertGemFireComponent(Object gemfireComponent, String expectedName) {
+
 		assertNotNull("The GemFire component must not be null!", gemfireComponent);
 		assertEquals(expectedName, gemfireComponent.toString());
 	}
 
-	protected Collection<String> toStrings(Object[] objects) {
+	private void assertRegionAttributes(Region<?, ?> region, String expectedName, DataPolicy expectedDataPolicy) {
+		assertRegionAttributes(region, expectedName, String.format("%1$s%2$s", Region.SEPARATOR, expectedName),
+			expectedDataPolicy);
+	}
+
+	private void assertRegionAttributes(Region<?, ?> region, String expectedName, String expectedFullPath,
+			DataPolicy expectedDataPolicy) {
+
+		assertNotNull(String.format("'%1$s' Region was not properly initialized!", region));
+		assertEquals(expectedName, region.getName());
+		assertEquals(expectedFullPath, region.getFullPath());
+		assertNotNull(region.getAttributes());
+		assertEquals(expectedDataPolicy, region.getAttributes().getDataPolicy());
+	}
+
+	private Collection<String> toStrings(Object[] objects) {
+
 		List<String> cacheListenerNames = new ArrayList<String>(objects.length);
 
 		for (Object object : objects) {
@@ -113,11 +143,8 @@ public class LookupRegionMutationIntegrationTest {
 
 	@Test
 	public void testRegionConfiguration() {
-		assertNotNull("'/Example' Region was not properly initialized!", example);
-		assertEquals("Example", example.getName());
-		assertEquals("/Example", example.getFullPath());
-		assertNotNull(example.getAttributes());
-		assertEquals(DataPolicy.REPLICATE, example.getAttributes().getDataPolicy());
+
+		assertRegionAttributes(example, "Example", DataPolicy.REPLICATE);
 		assertEquals(13, example.getAttributes().getInitialCapacity());
 		assertEquals(0.85f, example.getAttributes().getLoadFactor(), 0.0f);
 		assertCacheListeners(example.getAttributes().getCacheListeners(), Arrays.asList("A", "B"));
@@ -232,11 +259,12 @@ public class LookupRegionMutationIntegrationTest {
 
 	public static final class TestCustomExpiry<K, V> extends AbstractNameable implements CustomExpiry<K, V> {
 
-		@Override public ExpirationAttributes getExpiry(Region.Entry<K, V> entry) {
+		@Override
+		public ExpirationAttributes getExpiry(Region.Entry<K, V> entry) {
 			throw new UnsupportedOperationException("Not Implemented!");
 		}
 
-		@Override public void close() { }
+		@Override
+		public void close() { }
 	}
-
 }

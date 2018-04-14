@@ -39,7 +39,9 @@ class GemfireDataNamespaceHandler extends NamespaceHandlerSupport {
 	 */
 	@Override
 	public void init() {
+
 		RepositoryConfigurationExtension extension = new GemfireRepositoryConfigurationExtension();
+
 		registerBeanDefinitionParser("datasource", new GemfireDataSourceParser());
 		registerBeanDefinitionParser("function-executions", new FunctionExecutionBeanDefinitionParser());
 		registerBeanDefinitionParser("json-region-autoproxy", new GemfireRegionAutoProxyParser());

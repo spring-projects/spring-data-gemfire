@@ -86,7 +86,7 @@ public class GemfireUtilsTest {
 	}
 
 	@Test
-	public void isDurableWhenNotDurableClientIsFalse() {
+	public void isDurableWithNonDurableClientIsFalse() {
 
 		ClientCache mockClientCache = mock(ClientCache.class);
 

@@ -17,6 +17,7 @@ package org.springframework.data.gemfire;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionFactory;
+import org.springframework.data.gemfire.util.RegionUtils;
 import org.springframework.util.Assert;
 
 /**
@@ -27,6 +28,7 @@ public class ReplicatedRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 
 	@Override
 	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, DataPolicy dataPolicy) {
+
 		if (dataPolicy == null) {
 			dataPolicy = (isPersistent() ? DataPolicy.PERSISTENT_REPLICATE : DataPolicy.REPLICATE);
 		}
@@ -41,7 +43,7 @@ public class ReplicatedRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 		}
 
 		// Validate that the data-policy and persistent attributes are compatible when both are specified!
-		assertDataPolicyAndPersistentAttributesAreCompatible(dataPolicy);
+		RegionUtils.assertDataPolicyAndPersistentAttributeAreCompatible(dataPolicy, persistent);
 
 		regionFactory.setDataPolicy(dataPolicy);
 		setDataPolicy(dataPolicy);
@@ -49,6 +51,7 @@ public class ReplicatedRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 
 	@Override
 	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, String dataPolicy) {
+
 		DataPolicy resolvedDataPolicy = null;
 
 		if (dataPolicy != null) {
@@ -58,5 +61,4 @@ public class ReplicatedRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 
 		resolveDataPolicy(regionFactory, persistent, resolvedDataPolicy);
 	}
-
 }

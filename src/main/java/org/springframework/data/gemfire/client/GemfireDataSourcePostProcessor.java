@@ -16,15 +16,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.management.internal.cli.domain.RegionInformation;
 import org.apache.geode.management.internal.cli.functions.GetRegionsFunction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -52,7 +51,7 @@ import org.springframework.util.ObjectUtils;
  */
 public class GemfireDataSourcePostProcessor implements BeanFactoryPostProcessor {
 
-	protected final Log logger = LogFactory.getLog(getClass());
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private final ClientCache clientCache;
 
@@ -64,7 +63,10 @@ public class GemfireDataSourcePostProcessor implements BeanFactoryPostProcessor 
 	 * @param clientCache the GemFire ClientCache instance.
 	 * @see org.apache.geode.cache.client.ClientCache
 	 */
-	public GemfireDataSourcePostProcessor(final ClientCache clientCache) {
+	public GemfireDataSourcePostProcessor(ClientCache clientCache) {
+
+		Assert.notNull(clientCache, "ClientCache must not be null");
+
 		this.clientCache = clientCache;
 	}
 
@@ -77,21 +79,24 @@ public class GemfireDataSourcePostProcessor implements BeanFactoryPostProcessor 
 		createClientRegionProxies(beanFactory, regionNames());
 	}
 
-	/* (non-Javadoc) */
-	// TODO remove this logic and delegate to o.s.d.g.config.remote.GemfireAdminOperations
+	// TODO: remove this logic and delegate to o.s.d.g.config.remote.GemfireAdminOperations
 	Iterable<String> regionNames() {
+
 		try {
 			return execute(new ListRegionsOnServerFunction());
 		}
 		catch (Exception ignore) {
 			try {
+
 				Object results = execute(new GetRegionsFunction());
+
 				List<String> regionNames = Collections.emptyList();
 
 				if (containsRegionInformation(results)) {
+
 					Object[] resultsArray = (Object[]) results;
 
-					regionNames = new ArrayList<String>(resultsArray.length);
+					regionNames = new ArrayList<>(resultsArray.length);
 
 					for (Object result : resultsArray) {
 						regionNames.add(((RegionInformation) result).getName());
@@ -100,39 +105,42 @@ public class GemfireDataSourcePostProcessor implements BeanFactoryPostProcessor 
 
 				return regionNames;
 			}
-			catch (Exception e) {
-				log("Failed to determine the Regions available on the Server: %n%1$s", e);
+			catch (Exception cause) {
+				log("Failed to determine the Regions available on the Server: %n%1$s", cause);
 				return Collections.emptyList();
 			}
 		}
 	}
 
-	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
 	<T> T execute(Function gemfireFunction, Object... arguments) {
-		return new GemfireOnServersFunctionTemplate(clientCache).executeAndExtract(gemfireFunction, arguments);
+		return new GemfireOnServersFunctionTemplate(this.clientCache).executeAndExtract(gemfireFunction, arguments);
 	}
 
-	/* (non-Javadoc) */
 	boolean containsRegionInformation(Object results) {
-		return (results instanceof Object[] && ((Object[]) results).length > 0
-			&& ((Object[]) results)[0] instanceof RegionInformation);
+		return results instanceof Object[] && ((Object[]) results).length > 0
+			&& ((Object[]) results)[0] instanceof RegionInformation;
 	}
 
-	/* (non-Javadoc) */
 	void createClientRegionProxies(ConfigurableListableBeanFactory beanFactory, Iterable<String> regionNames) {
+
 		if (regionNames.iterator().hasNext()) {
-			ClientRegionFactory<?, ?> clientRegionFactory = clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
+
+			ClientRegionFactory<?, ?> clientRegionFactory =
+				this.clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
 
 			for (String regionName : regionNames) {
+
 				boolean createRegion = true;
 
 				if (beanFactory.containsBean(regionName)) {
+
 					Object existingBean = beanFactory.getBean(regionName);
 
-					Assert.isTrue(existingBean instanceof Region, String.format(
-						"Cannot create a client PROXY Region bean named '%1$s'. A bean with this name of type '%2$s' already exists.",
-							regionName, ObjectUtils.nullSafeClassName(existingBean)));
+					if (logger.isWarnEnabled()) {
+						logger.warn("Cannot create a client PROXY Region bean named {}; A bean with name {} having type {} already exists",
+							regionName, regionName, ObjectUtils.nullSafeClassName(existingBean));
+					}
 
 					createRegion = false;
 				}
@@ -142,17 +150,15 @@ public class GemfireDataSourcePostProcessor implements BeanFactoryPostProcessor 
 					beanFactory.registerSingleton(regionName, clientRegionFactory.create(regionName));
 				}
 				else {
-					log("A Region with name '%s' is already defined.", regionName);
+					log("A Region with name '%s' is already defined", regionName);
 				}
 			}
 		}
 	}
 
-	/* (non-Javadoc) */
 	void log(String message, Object... arguments) {
 		if (logger.isDebugEnabled()) {
 			logger.debug(String.format(message, arguments));
 		}
 	}
-
 }

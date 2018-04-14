@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * The LookupSubRegionTest class is a test suite of test cases testing the contract and functionality of Region lookups
@@ -41,15 +41,16 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @since 1.3.3
  * @since 7.0.1 (GemFire)
  */
+@RunWith(SpringRunner.class)
 @ContextConfiguration("lookupSubRegion.xml")
-@RunWith(SpringJUnit4ClassRunner.class)
 @SuppressWarnings("unused")
 public class LookupSubRegionTest {
 
 	@Autowired
-	private ApplicationContext context;
+	private ApplicationContext applicationContext;
 
-	protected void assertRegionExists(final String expectedRegionName, final String expectedRegionPath, final Region region) {
+	private void assertRegionExists(final String expectedRegionName, final String expectedRegionPath, final Region region) {
+
 		assertNotNull(String.format("The Region with name (%1$s) at path (%2$s) was null!",
 			expectedRegionName, expectedRegionPath), region);
 		assertEquals(String.format("Expected Region name of %1$s; but was %2$s!", expectedRegionName, region.getName()),
@@ -60,37 +61,38 @@ public class LookupSubRegionTest {
 
 	@Test
 	public void testDirectLookup() {
-		Region accounts = context.getBean("/Customers/Accounts", Region.class);
+
+		Region accounts = applicationContext.getBean("/Customers/Accounts", Region.class);
 
 		assertRegionExists("Accounts", "/Customers/Accounts", accounts);
-		assertFalse(context.containsBean("Customers/Accounts"));
-		assertFalse(context.containsBean("/Customers"));
-		assertFalse(context.containsBean("Customers"));
+		assertFalse(applicationContext.containsBean("Customers/Accounts"));
+		assertFalse(applicationContext.containsBean("/Customers"));
+		assertFalse(applicationContext.containsBean("Customers"));
 
-		Region items = context.getBean("Customers/Accounts/Orders/Items", Region.class);
+		Region items = applicationContext.getBean("Customers/Accounts/Orders/Items", Region.class);
 
 		assertRegionExists("Items", "/Customers/Accounts/Orders/Items", items);
-		assertFalse(context.containsBean("/Customers/Accounts/Orders/Items"));
-		assertFalse(context.containsBean("/Customers/Accounts/Orders"));
-		assertFalse(context.containsBean("Customers/Accounts/Orders"));
+		assertFalse(applicationContext.containsBean("/Customers/Accounts/Orders/Items"));
+		assertFalse(applicationContext.containsBean("/Customers/Accounts/Orders"));
+		assertFalse(applicationContext.containsBean("Customers/Accounts/Orders"));
 	}
 
 	@Test
 	public void testNestedLookup() {
-		Region parent = context.getBean("Parent", Region.class);
+
+		Region parent = applicationContext.getBean("Parent", Region.class);
 
 		assertRegionExists("Parent", "/Parent", parent);
-		assertFalse(context.containsBean("/Parent"));
+		assertFalse(applicationContext.containsBean("/Parent"));
 
-		Region child = context.getBean("/Parent/Child", Region.class);
+		Region child = applicationContext.getBean("/Parent/Child", Region.class);
 
 		assertRegionExists("Child", "/Parent/Child", child);
-		assertFalse(context.containsBean("Parent/Child"));
+		assertFalse(applicationContext.containsBean("Parent/Child"));
 
-		Region grandchild = context.getBean("/Parent/Child/Grandchild", Region.class);
+		Region grandchild = applicationContext.getBean("/Parent/Child/Grandchild", Region.class);
 
 		assertRegionExists("Grandchild", "/Parent/Child/Grandchild", grandchild);
-		assertFalse(context.containsBean("Parent/Child/Grandchild"));
+		assertFalse(applicationContext.containsBean("Parent/Child/Grandchild"));
 	}
-
 }

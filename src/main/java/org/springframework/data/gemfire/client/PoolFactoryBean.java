@@ -21,6 +21,7 @@ import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
 import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeCollection;
 import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeIterable;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 
 import java.net.InetSocketAddress;
 import java.util.Arrays;
@@ -75,8 +76,8 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 	protected static final int DEFAULT_LOCATOR_PORT = DistributedSystemUtils.DEFAULT_LOCATOR_PORT;
 	protected static final int DEFAULT_SERVER_PORT = DistributedSystemUtils.DEFAULT_CACHE_SERVER_PORT;
 
-	// indicates whether the Pool has been created internally (by this FactoryBean) or not
-	volatile boolean springBasedPool = true;
+	// Indicates whether the Pool has been created by this FactoryBean, or not
+	volatile boolean springManagedPool = true;
 
 	// GemFire Pool Configuration Settings
 	private boolean keepAlive = false;
@@ -109,7 +110,7 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 	private volatile Pool pool;
 
 	private PoolConfigurer compositePoolConfigurer = (beanName, bean) ->
-		nullSafeCollection(poolConfigurers).forEach(poolConfigurer ->  poolConfigurer.configure(beanName, bean));
+		nullSafeCollection(poolConfigurers).forEach(poolConfigurer -> poolConfigurer.configure(beanName, bean));
 
 	private PoolFactoryInitializer poolFactoryInitializer;
 
@@ -123,33 +124,44 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 	 * @see org.apache.geode.cache.client.PoolManager
 	 * @see org.apache.geode.cache.client.PoolFactory
 	 * @see org.apache.geode.cache.client.Pool
+	 * @see #resolvePoolName()
 	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		init(Optional.ofNullable(PoolManager.find(validatePoolName())));
-	}
 
-	/* (non-Javadoc) */
-	@SuppressWarnings("all")
-	private void init(Optional<Pool> existingPool) {
+		Pool existingPool = find(resolvePoolName());
 
-		if (existingPool.isPresent()) {
-			this.pool = existingPool.get();
-			this.springBasedPool = false;
+		if (existingPool != null) {
 
-			logDebug(() -> String.format(
-				"Pool with name [%s] already exists; Using existing Pool; Pool Configurers [%d] will not be applied",
-				existingPool.get().getName(), this.poolConfigurers.size()));
+			this.pool = existingPool;
+			this.springManagedPool = false;
+
+			logDebug(() -> String.format("A Pool with name [%s] already exists; Using existing Pool",
+				this.pool.getName()));
+
+			logDebug("PoolConfigurers will not be applied");
 		}
 		else {
-			this.springBasedPool = true;
+			logDebug("Pool [%s] not found; Lazily creating new Pool...", getName());
 			applyPoolConfigurers();
-
-			logDebug("No Pool with name [%s] was found; Creating new Pool", getName());
 		}
 	}
 
-	/* (non-Javadoc) */
+	private String resolvePoolName() {
+
+		if (!StringUtils.hasText(getName())) {
+			setName(Optional.ofNullable(getBeanName())
+				.filter(StringUtils::hasText)
+				.orElseThrow(() -> newIllegalArgumentException("Pool name is required")));
+		}
+
+		return getName();
+	}
+
+	private Pool find(String name) {
+		return PoolManager.find(name);
+	}
+
 	private void applyPoolConfigurers() {
 		applyPoolConfigurers(getCompositePoolConfigurer());
 	}
@@ -179,17 +191,6 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 			.forEach(poolConfigurer -> poolConfigurer.configure(getName(), this));
 	}
 
-	/* (non-Javadoc) */
-	private String validatePoolName() {
-
-		if (!StringUtils.hasText(getName())) {
-			setName(Optional.ofNullable(getBeanName()).filter(StringUtils::hasText)
-				.orElseThrow(() -> newIllegalArgumentException("Pool name is required")));
-		}
-
-		return getName();
-	}
-
 	/**
 	 * Releases all system resources and destroys the {@link Pool} when created by this {@link PoolFactoryBean}.
 	 *
@@ -200,7 +201,7 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 	public void destroy() throws Exception {
 
 		Optional.ofNullable(this.pool)
-			.filter(pool -> this.springBasedPool)
+			.filter(pool -> this.springManagedPool)
 			.filter(pool -> !pool.isDestroyed())
 			.ifPresent(pool -> {
 				pool.releaseThreadLocalConnection();
@@ -208,17 +209,6 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 				setPool(null);
 				logDebug("Destroyed Pool [%s]", pool.getName());
 			});
-	}
-
-	/**
-	 * Returns a reference to the Composite {@link PoolConfigurer} used to apply additional configuration
-	 * to this {@link PoolFactoryBean} on Spring container initialization.
-	 *
-	 * @return the Composite {@link PoolConfigurer}.
-	 * @see org.springframework.data.gemfire.config.annotation.PoolConfigurer
-	 */
-	protected PoolConfigurer getCompositePoolConfigurer() {
-		return this.compositePoolConfigurer;
 	}
 
 	/**
@@ -233,26 +223,15 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 
 		return Optional.ofNullable(this.pool).orElseGet(() -> {
 
-			eagerlyInitializeClientCacheIfNotPresent();
+			eagerlyInitializeClientCache();
 
-			PoolFactory poolFactory = configure(initialize(createPoolFactory()));
+			Pool namedPool = find(getName());
 
-			this.pool = create(poolFactory, getName());
+			this.pool = namedPool != null ? namedPool
+				: postProcess(create(postProcess(configure(initialize(createPoolFactory()))), getName()));
 
 			return this.pool;
 		});
-	}
-
-	/**
-	 * Determines whether the {@link DistributedSystem} exists yet or not.
-	 *
-	 * @return a boolean value indicating whether the single, {@link DistributedSystem} has already been created.
-	 * @see org.springframework.data.gemfire.GemfireUtils#getDistributedSystem()
-	 * @see org.springframework.data.gemfire.GemfireUtils#isConnected(DistributedSystem)
-	 * @see org.apache.geode.distributed.DistributedSystem
-	 */
-	boolean isDistributedSystemPresent() {
-		return GemfireUtils.isConnected(GemfireUtils.getDistributedSystem());
 	}
 
 	/**
@@ -262,12 +241,31 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 	 * @see org.springframework.beans.factory.BeanFactory#getBean(Class)
 	 * @see org.apache.geode.cache.client.ClientCache
 	 * @see org.apache.geode.distributed.DistributedSystem
-	 * @see #isDistributedSystemPresent()
+	 * @see #isClientCachePresent()
 	 */
-	private void eagerlyInitializeClientCacheIfNotPresent() {
-		if (!isDistributedSystemPresent()) {
+	private void eagerlyInitializeClientCache() {
+
+		if (!isClientCachePresent()) {
 			getBeanFactory().getBean(ClientCache.class);
 		}
+	}
+
+	/**
+	 * Determines whether the {@link ClientCache} exists yet or not.
+	 *
+	 * @return a boolean value indicating whether the single {@link ClientCache} instance
+	 * has been created yet.
+	 * @see org.springframework.data.gemfire.GemfireUtils#getClientCache()
+	 * @see org.apache.geode.distributed.DistributedSystem
+	 * @see org.apache.geode.cache.client.ClientCache
+	 */
+	boolean isClientCachePresent() {
+
+		return Optional.ofNullable(GemfireUtils.getClientCache())
+			.filter(clientCache -> !clientCache.isClosed())
+			.map(ClientCache::getDistributedSystem)
+			.filter(GemfireUtils::isConnected)
+			.isPresent();
 	}
 
 	/**
@@ -337,6 +335,17 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 	}
 
 	/**
+	 * Post processes the fully configured {@link PoolFactory}.
+	 *
+	 * @param poolFactory {@link PoolFactory} to post process.
+	 * @return the post processed {@link PoolFactory}.
+	 * @see org.apache.geode.cache.client.PoolFactory
+	 */
+	protected PoolFactory postProcess(PoolFactory poolFactory) {
+		return poolFactory;
+	}
+
+	/**
 	 * Creates a {@link Pool} with the given {@link String name} using the provided {@link PoolFactory}.
 	 *
 	 * @param poolFactory {@link PoolFactory} used to create the {@link Pool}.
@@ -350,61 +359,77 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 	}
 
 	/**
-	 * Returns the {@link Class} type of the {@link Pool} produced by this {@link PoolFactoryBean}.
+	 * Post processes the {@link Pool} created by this {@link PoolFactoryBean}.
 	 *
-	 * @return the {@link Class} type of the {@link Pool} produced by this {@link PoolFactoryBean}.
+	 * @param pool {@link Pool} to post process.
+	 * @return the post processed {@link Pool}.
+	 * @see org.apache.geode.cache.client.Pool
+	 */
+	protected Pool postProcess(Pool pool) {
+		return pool;
+	}
+
+	/**
+	 * Returns the {@link Class type} of {@link Pool} produced by this {@link PoolFactoryBean}.
+	 *
+	 * @return the {@link Class type} of {@link Pool} produced by this {@link PoolFactoryBean}.
 	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public Class<?> getObjectType() {
-		return Optional.ofNullable(this.pool).map(Pool::getClass).orElse((Class) Pool.class);
+		return this.pool != null ? this.pool.getClass() : Pool.class;
 	}
 
-	/* (non-Javadoc) */
 	public void addLocators(ConnectionEndpoint... locators) {
 		this.locators.add(locators);
 	}
 
-	/* (non-Javadoc) */
 	public void addLocators(Iterable<ConnectionEndpoint> locators) {
 		this.locators.add(locators);
 	}
 
-	/* (non-Javadoc) */
 	public void addServers(ConnectionEndpoint... servers) {
 		this.servers.add(servers);
 	}
 
-	/* (non-Javadoc) */
 	public void addServers(Iterable<ConnectionEndpoint> servers) {
 		this.servers.add(servers);
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * Returns a reference to the Composite {@link PoolConfigurer} used to apply additional configuration
+	 * to this {@link PoolFactoryBean} on Spring container initialization.
+	 *
+	 * @return the Composite {@link PoolConfigurer}.
+	 * @see org.springframework.data.gemfire.config.annotation.PoolConfigurer
+	 */
+	protected PoolConfigurer getCompositePoolConfigurer() {
+		return this.compositePoolConfigurer;
+	}
+
 	public void setName(String name) {
 		this.name = name;
 	}
 
-	/* (non-Javadoc) */
 	protected String getName() {
 		return this.name;
 	}
 
-	/* (non-Javadoc) */
 	public void setPool(Pool pool) {
 		this.pool = pool;
 	}
 
-	/* (non-Javadoc) */
 	public Pool getPool() {
 
 		return Optional.ofNullable(this.pool).orElseGet(() -> new PoolAdapter() {
 
 			@Override
 			public boolean isDestroyed() {
+
 				Pool pool = PoolFactoryBean.this.pool;
-				return (pool != null && pool.isDestroyed());
+
+				return pool != null && pool.isDestroyed();
 			}
 
 			@Override
@@ -429,8 +454,10 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 
 			@Override
 			public List<InetSocketAddress> getOnlineLocators() {
-				return Optional.ofNullable(PoolFactoryBean.this.pool).map(Pool::getOnlineLocators)
-					.orElseThrow(() -> new IllegalStateException("The Pool has not been initialized"));
+
+				return Optional.ofNullable(PoolFactoryBean.this.pool)
+					.map(Pool::getOnlineLocators)
+					.orElseThrow(() -> newIllegalStateException("Pool [%s] has not been initialized", getName()));
 			}
 
 			@Override
@@ -450,14 +477,18 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 
 			@Override
 			public String getName() {
-				return Optional.ofNullable(PoolFactoryBean.this.getName()).filter(StringUtils::hasText)
+
+				return Optional.ofNullable(PoolFactoryBean.this.getName())
+					.filter(StringUtils::hasText)
 					.orElseGet(PoolFactoryBean.this::getBeanName);
 			}
 
 			@Override
 			public int getPendingEventCount() {
-				return Optional.ofNullable(PoolFactoryBean.this.pool).map(Pool::getPendingEventCount)
-					.orElseThrow(() -> new IllegalStateException("The Pool has not been initialized"));
+
+				return Optional.ofNullable(PoolFactoryBean.this.pool)
+					.map(Pool::getPendingEventCount)
+					.orElseThrow(() -> newIllegalStateException("Pool [%s] has not been initialized", getName()));
 			}
 
 			@Override
@@ -472,8 +503,10 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 
 			@Override
 			public QueryService getQueryService() {
-				return Optional.ofNullable(PoolFactoryBean.this.pool).map(Pool::getQueryService)
-					.orElseThrow(() -> new IllegalStateException("The Pool has not been initialized"));
+
+				return Optional.ofNullable(PoolFactoryBean.this.pool)
+					.map(Pool::getQueryService)
+					.orElseThrow(() -> newIllegalStateException("Pool [%s] has not been initialized", getName()));
 			}
 
 			@Override
@@ -543,6 +576,7 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 
 			@Override
 			public void destroy(boolean keepAlive) {
+
 				try {
 					PoolFactoryBean.this.destroy();
 				}
@@ -553,70 +587,58 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 
 			@Override
 			public void releaseThreadLocalConnection() {
-				Pool pool = PoolFactoryBean.this.pool;
 
-				if (pool != null) {
-					pool.releaseThreadLocalConnection();
-				}
-				else {
-					throw new IllegalStateException("The Pool has not been initialized");
-				}
+				Optional.ofNullable(PoolFactoryBean.this.pool)
+					.map(it -> {
+						it.releaseThreadLocalConnection();
+						return it;
+					})
+					.orElseThrow(() -> newIllegalStateException("Pool [%s] has not been initialized", getName()));
 			}
 		});
 	}
 
-	/* (non-Javadoc) */
 	public void setFreeConnectionTimeout(int freeConnectionTimeout) {
 		this.freeConnectionTimeout = freeConnectionTimeout;
 	}
 
-	/* (non-Javadoc) */
 	public void setIdleTimeout(long idleTimeout) {
 		this.idleTimeout = idleTimeout;
 	}
 
-	/* (non-Javadoc) */
 	public void setKeepAlive(boolean keepAlive) {
 		this.keepAlive = keepAlive;
 	}
 
-	/* (non-Javadoc) */
 	public void setLoadConditioningInterval(int loadConditioningInterval) {
 		this.loadConditioningInterval = loadConditioningInterval;
 	}
 
-	/* (non-Javadoc) */
 	public void setLocators(ConnectionEndpoint[] connectionEndpoints) {
 		setLocators(ConnectionEndpointList.from(connectionEndpoints));
 	}
 
-	/* (non-Javadoc) */
 	public void setLocators(Iterable<ConnectionEndpoint> connectionEndpoints) {
 		getLocators().clear();
 		getLocators().add(connectionEndpoints);
 	}
 
-	/* (non-Javadoc) */
 	ConnectionEndpointList getLocators() {
 		return locators;
 	}
 
-	/* (non-Javadoc) */
 	public void setMaxConnections(int maxConnections) {
 		this.maxConnections = maxConnections;
 	}
 
-	/* (non-Javadoc) */
 	public void setMinConnections(int minConnections) {
 		this.minConnections = minConnections;
 	}
 
-	/* (non-Javadoc) */
 	public void setMultiUserAuthentication(boolean multiUserAuthentication) {
 		this.multiUserAuthentication = multiUserAuthentication;
 	}
 
-	/* (non-Javadoc) */
 	public void setPingInterval(long pingInterval) {
 		this.pingInterval = pingInterval;
 	}
@@ -658,78 +680,63 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 		this.poolFactoryInitializer = poolFactoryInitializer;
 	}
 
-	/* (non-Javadoc) */
 	public void setPrSingleHopEnabled(boolean prSingleHopEnabled) {
 		this.prSingleHopEnabled = prSingleHopEnabled;
 	}
 
-	/* (non-Javadoc) */
 	public void setReadTimeout(int readTimeout) {
 		this.readTimeout = readTimeout;
 	}
 
-	/* (non-Javadoc) */
 	public void setRetryAttempts(int retryAttempts) {
 		this.retryAttempts = retryAttempts;
 	}
 
-	/* (non-Javadoc) */
 	public void setServerGroup(String serverGroup) {
 		this.serverGroup = serverGroup;
 	}
 
-	/* (non-Javadoc) */
 	public void setServers(ConnectionEndpoint[] connectionEndpoints) {
 		setServers(ConnectionEndpointList.from(connectionEndpoints));
 	}
 
-	/* (non-Javadoc) */
 	public void setServers(Iterable<ConnectionEndpoint> connectionEndpoints) {
 		getServers().clear();
 		getServers().add(connectionEndpoints);
 	}
 
-	/* (non-Javadoc) */
 	ConnectionEndpointList getServers() {
 		return servers;
 	}
 
-	/* (non-Javadoc) */
 	public void setSocketBufferSize(int socketBufferSize) {
 		this.socketBufferSize = socketBufferSize;
 	}
 
-	/* (non-Javadoc) */
 	public void setSocketConnectTimeout(int socketConnectTimeout) {
 		this.socketConnectTimeout = socketConnectTimeout;
 	}
 
-	/* (non-Javadoc) */
 	public void setStatisticInterval(int statisticInterval) {
 		this.statisticInterval = statisticInterval;
 	}
 
-	/* (non-Javadoc) */
 	public void setSubscriptionAckInterval(int subscriptionAckInterval) {
 		this.subscriptionAckInterval = subscriptionAckInterval;
 	}
 
-	/* (non-Javadoc) */
 	public void setSubscriptionEnabled(boolean subscriptionEnabled) {
 		this.subscriptionEnabled = subscriptionEnabled;
 	}
 
-	/* (non-Javadoc) */
 	public void setSubscriptionMessageTrackingTimeout(int subscriptionMessageTrackingTimeout) {
 		this.subscriptionMessageTrackingTimeout = subscriptionMessageTrackingTimeout;
 	}
 
-	/* (non-Javadoc) */
 	public void setSubscriptionRedundancy(int subscriptionRedundancy) {
 		this.subscriptionRedundancy = subscriptionRedundancy;
 	}
 
-	/* (non-Javadoc) */
 	public void setThreadLocalConnections(boolean threadLocalConnections) {
 		this.threadLocalConnections = threadLocalConnections;
 	}

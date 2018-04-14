@@ -71,7 +71,7 @@ import org.springframework.util.StringUtils;
 @SuppressWarnings("unused")
 public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 
-	private static final AtomicBoolean CLIENT_REGION_POOL_BEAN_FACTORY_POST_PROCESSOR_REGISTERED =
+	private static final AtomicBoolean INFRASTRUCTURE_COMPONENTS_REGISTERED =
 		new AtomicBoolean(false);
 
 	protected static final boolean DEFAULT_READY_FOR_EVENTS = false;
@@ -205,13 +205,18 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 
 		super.configureInfrastructure(importMetadata);
 
-		registerClientRegionPoolBeanFactoryPostProcessor(importMetadata);
+		registerInfrastructureComponents(importMetadata);
 	}
 
-	/* (non-Javadoc) */
-	private void registerClientRegionPoolBeanFactoryPostProcessor(AnnotationMetadata importMetadata) {
+	private void registerInfrastructureComponents(AnnotationMetadata importMetadata) {
 
-		if (CLIENT_REGION_POOL_BEAN_FACTORY_POST_PROCESSOR_REGISTERED.compareAndSet(false, true)) {
+		if (INFRASTRUCTURE_COMPONENTS_REGISTERED.compareAndSet(false, true)) {
+
+			/*
+			register(BeanDefinitionBuilder.rootBeanDefinition(ClientCachePoolBeanFactoryPostProcessor.class)
+				.setRole(BeanDefinition.ROLE_INFRASTRUCTURE).getBeanDefinition());
+			*/
+
 			register(BeanDefinitionBuilder.rootBeanDefinition(ClientRegionPoolBeanFactoryPostProcessor.class)
 				.setRole(BeanDefinition.ROLE_INFRASTRUCTURE).getBeanDefinition());
 		}

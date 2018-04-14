@@ -351,17 +351,17 @@ Building on our examples above, the client's `application.properties` would defi
 [source, java]
 ----
 spring.data.gemfire.cache.log-level=info
-spring.data.gemfire.pool.venus.servers=venus[48484]
-spring.data.gemfire.pool.venus.max-connections=200
-spring.data.gemfire.pool.venus.min-connections=50
-spring.data.gemfire.pool.venus.ping-interval=15000
-spring.data.gemfire.pool.venus.pr-single-hop-enabled=true
-spring.data.gemfire.pool.venus.read-timeout=20000
-spring.data.gemfire.pool.venus.subscription-enabled=true
-spring.data.gemfire.pool.saturn.locators=skullbox[20668]
-spring.data.gemfire.pool.saturn.subscription-enabled=true
-spring.data.gemfire.pool.neptune.servers=saturn[41414],neptune[42424]
-spring.data.gemfire.pool.neptune.min-connections=25
+spring.data.gemfire.pool.Venus.servers=venus[48484]
+spring.data.gemfire.pool.Venus.max-connections=200
+spring.data.gemfire.pool.Venus.min-connections=50
+spring.data.gemfire.pool.Venus.ping-interval=15000
+spring.data.gemfire.pool.Venus.pr-single-hop-enabled=true
+spring.data.gemfire.pool.Venus.read-timeout=20000
+spring.data.gemfire.pool.Venus.subscription-enabled=true
+spring.data.gemfire.pool.Saturn.locators=skullbox[20668]
+spring.data.gemfire.pool.Saturn.subscription-enabled=true
+spring.data.gemfire.pool.Neptune.servers=saturn[41414],neptune[42424]
+spring.data.gemfire.pool.Neptune.min-connections=25
 ----
 
 And, the server's application.properties would define...
@@ -384,9 +384,9 @@ Then, we can simplify the `@ClientCacheApplication` class to...
 @SpringBootApplication
 @ClientCacheApplication
 @EnablePools(pools = {
-    @EnablePool(name = "VenusPool"),
-    @EnablePool(name = "SaturnPool"),
-    @EnablePool(name = "NeptunePool")
+    @EnablePool(name = "Venus"),
+    @EnablePool(name = "Saturn"),
+    @EnablePool(name = "Neptune")
 })
 class ClientApplication { .. }
 ----

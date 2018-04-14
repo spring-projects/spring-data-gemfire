@@ -23,11 +23,9 @@
 
 	<bean class="org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor"/>
 
-	<util:properties id="gemfireProperties">
-		<prop key="log-level">warning</prop>
-	</util:properties>
+	<gfe:client-cache/>
 
-	<gfe:client-cache properties-ref="gemfireProperties"/>
+	<gfe:pool/>
 
 	<gfe:client-region id="simple" name="SimpleRegion"/>
 
@@ -81,9 +79,7 @@
 					   shortcut="CACHING_PROXY"
 					   value-constraint="java.lang.String"/>
 
-	<bean id="mockCache" class="org.springframework.data.gemfire.config.xml.ClientRegionNamespaceTest$MockCacheFactoryBean"/>
-
-	<gfe:client-region id="client-with-interests" ignore-if-exists="true" shortcut="PROXY" cache-ref="mockCache">
+	<gfe:client-region id="client-with-interests" ignore-if-exists="true" shortcut="PROXY">
 		<gfe:key-interest durable="${client.interests.durable}" receive-values="${client.interests.receive-values}"
 						  result-policy="${client.key.interests.result-policy}">
 			<bean class="java.lang.String">
@@ -95,7 +91,6 @@
 							result-policy="${client.regex.interests.result-policy}"/>
 	</gfe:client-region>
 
-	<bean id="gemfire-pool" class="java.lang.Object" lazy-init="true"/>
 	<bean id="c-listener" class="org.springframework.data.gemfire.SimpleCacheListener"/>
 	<bean id="testCompressor" class="org.springframework.data.gemfire.config.xml.ClientRegionNamespaceTest$TestCompressor" p:name="STD"/>
 

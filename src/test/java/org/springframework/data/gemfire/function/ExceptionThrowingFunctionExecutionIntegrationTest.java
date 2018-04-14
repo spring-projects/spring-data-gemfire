@@ -42,7 +42,7 @@ import org.springframework.data.gemfire.process.ProcessWrapper;
 import org.springframework.data.gemfire.test.support.FileSystemUtils;
 import org.springframework.data.gemfire.test.support.ThreadUtils;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.Assert;
 
 /**
@@ -63,34 +63,37 @@ import org.springframework.util.Assert;
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @since 1.7.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @SuppressWarnings("unused")
 public class ExceptionThrowingFunctionExecutionIntegrationTest {
 
-	private static ProcessWrapper serverProcess;
+	private static ProcessWrapper gemfireServer;
 
 	@Rule
-	public ExpectedException expectedException = ExpectedException.none();
+	public ExpectedException exception = ExpectedException.none();
 
 	@Autowired
 	private ExceptionThrowingFunctionExecution exceptionThrowingFunctionExecution;
 
 	@BeforeClass
-	public static void setup() throws IOException {
+	public static void startGemFireServer() throws IOException {
+
 		String serverName = ExceptionThrowingFunctionExecutionIntegrationTest.class.getSimpleName().concat("Server");
 
 		File serverWorkingDirectory = new File(FileSystemUtils.WORKING_DIRECTORY, serverName.toLowerCase());
 
-		Assert.isTrue(serverWorkingDirectory.isDirectory() || serverWorkingDirectory.mkdirs());
+		Assert.isTrue(serverWorkingDirectory.isDirectory() || serverWorkingDirectory.mkdirs(),
+			String.format("Failed to create working directory [%s]", serverWorkingDirectory));
 
 		List<String> arguments = new ArrayList<String>();
 
 		arguments.add("-Dgemfire.name=" + serverName);
+		arguments.add("-Dgemfire.log-level=error");
 		arguments.add(ExceptionThrowingFunctionExecutionIntegrationTest.class.getName().replace(".", "/")
 			.concat("-server-context.xml"));
 
-		serverProcess = ProcessExecutor.launch(serverWorkingDirectory, ServerProcess.class,
+		gemfireServer = ProcessExecutor.launch(serverWorkingDirectory, ServerProcess.class,
 			arguments.toArray(new String[arguments.size()]));
 
 		waitForServerStart(TimeUnit.SECONDS.toMillis(20));
@@ -99,34 +102,41 @@ public class ExceptionThrowingFunctionExecutionIntegrationTest {
 	}
 
 	private static void waitForServerStart(final long milliseconds) {
+
 		ThreadUtils.timedWait(milliseconds, TimeUnit.MILLISECONDS.toMillis(500), new ThreadUtils.WaitCondition() {
-			private File serverPidControlFile = new File(serverProcess.getWorkingDirectory(),
+
+			private File serverPidControlFile = new File(gemfireServer.getWorkingDirectory(),
 				ServerProcess.getServerProcessControlFilename());
 
-			@Override public boolean waiting() {
+			@Override
+			public boolean waiting() {
 				return !serverPidControlFile.isFile();
 			}
 		});
 	}
 
 	@AfterClass
-	public static void tearDown() {
-		serverProcess.shutdown();
+	public static void stopGemFireServer() {
+
+		gemfireServer.shutdown();
 
 		if (Boolean.valueOf(System.getProperty("spring.gemfire.fork.clean", Boolean.TRUE.toString()))) {
-			org.springframework.util.FileSystemUtils.deleteRecursively(serverProcess.getWorkingDirectory());
+			org.springframework.util.FileSystemUtils.deleteRecursively(gemfireServer.getWorkingDirectory());
 		}
 	}
 
 	@Test
 	public void exceptionThrowingFunctionExecutionRethrowsException() {
-		expectedException.expect(FunctionException.class);
-		expectedException.expectCause(isA(IllegalArgumentException.class));
-		expectedException.expectMessage(containsString("Execution of Function with ID 'exceptionThrowingFunction' failed"));
+
+		exception.expect(FunctionException.class);
+		exception.expectCause(isA(IllegalArgumentException.class));
+		exception.expectMessage(containsString("Execution of Function with ID [exceptionThrowingFunction] failed"));
+
 		exceptionThrowingFunctionExecution.exceptionThrowingFunction();
 	}
 
 	public static class ExceptionThrowingFunction extends FunctionAdapter {
+
 		@Override
 		public String getId() {
 			return "exceptionThrowingFunction";
@@ -136,5 +146,4 @@ public class ExceptionThrowingFunctionExecutionIntegrationTest {
 			context.getResultSender().sendException(new IllegalArgumentException("TEST"));
 		}
 	}
-
 }

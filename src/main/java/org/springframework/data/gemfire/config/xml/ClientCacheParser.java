@@ -45,14 +45,15 @@ class ClientCacheParser extends CacheParser {
 	 * {@inheritDoc}
 	 */
 	@Override
-	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
-		super.doParse(element, parserContext, builder);
+	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder clientCacheBuilder) {
 
-		ParsingUtils.setPropertyValue(element, builder, "durable-client-id");
-		ParsingUtils.setPropertyValue(element, builder, "durable-client-timeout");
-		ParsingUtils.setPropertyValue(element, builder, "keep-alive");
-		ParsingUtils.setPropertyValue(element, builder, "pool-name");
-		ParsingUtils.setPropertyValue(element, builder, "ready-for-events");
+		super.doParse(element, parserContext, clientCacheBuilder);
+
+		ParsingUtils.setPropertyValue(element, clientCacheBuilder, "durable-client-id");
+		ParsingUtils.setPropertyValue(element, clientCacheBuilder, "durable-client-timeout");
+		ParsingUtils.setPropertyValue(element, clientCacheBuilder, "keep-alive");
+		ParsingUtils.setPropertyValue(element, clientCacheBuilder, "pool-name");
+		ParsingUtils.setPropertyValue(element, clientCacheBuilder, "ready-for-events");
 	}
 
 	/**

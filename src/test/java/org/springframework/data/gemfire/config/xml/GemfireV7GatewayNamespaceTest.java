@@ -38,9 +38,7 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.Test;
-import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.RecreatingContextTest;
 import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.data.gemfire.TestUtils;
@@ -68,14 +66,6 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 	@Override
 	protected void configureContext() {
 		ctx.getBeanFactory().addBeanPostProcessor(new GemfireTestBeanPostProcessor());
-	}
-
-	@Before
-	@Override
-	public void createCtx() {
-		if (GemfireUtils.isGemfireVersion7OrAbove()) {
-			super.createCtx();
-		}
 	}
 
 	@AfterClass
@@ -272,5 +262,4 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 			return false;
 		}
 	}
-
 }

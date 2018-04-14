@@ -1,5 +1,9 @@
 /*
+<<<<<<< Updated upstream
  * Copyright 2002-2018 the original author or authors.
+=======
+ * Copyright 2002-2013 the original author or authors.
+>>>>>>> Stashed changes
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -10,59 +14,81 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
+
 package org.springframework.data.gemfire.function.config;
 
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
+
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.context.annotation.ScannedGenericBeanDefinition;
+import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+import org.w3c.dom.Element;
 
 /**
  * {@link ImportBeanDefinitionRegistrar} for {code} @EnableGemfireFunctionExecutions {code}
  * Scans for interfaces annotated with one of {code} @OnRegion, @OnServer, @OnServers, @OnMember, @OnMembers {code}
- * @author David Turanski
  *
+ * @author David Turanski
+ * @author John Blum
  */
 class FunctionExecutionBeanDefinitionRegistrar implements ImportBeanDefinitionRegistrar {
 
-	/* (non-Javadoc)
-	 * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar#registerBeanDefinitions(org.springframework.core.type.AnnotationMetadata, org.springframework.beans.factory.support.BeanDefinitionRegistry)
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar
+	 * 	#registerBeanDefinitions(org.springframework.core.type.AnnotationMetadata, org.springframework.beans.factory.support.BeanDefinitionRegistry)
 	 */
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry registry) {
-		AbstractFunctionExecutionConfigurationSource configurationSource = new AnnotationFunctionExecutionConfigurationSource(
-				annotationMetadata);
+
+		AbstractFunctionExecutionConfigurationSource configurationSource =
+			new AnnotationFunctionExecutionConfigurationSource(annotationMetadata);
 
 		registerBeanDefinitions(configurationSource, registry);
 
 	}
 
-	/*
-	 * This registers bean definitions from any function execution configuration source
+	void registerBeanDefinitions(Element element, ParserContext parserContext) {
+
+		AbstractFunctionExecutionConfigurationSource configurationSource =
+			new XmlFunctionExecutionConfigurationSource(element, parserContext);
+
+		registerBeanDefinitions(configurationSource, parserContext.getRegistry());
+	}
+
+	/**
+	 * Registers bean definitions from any {@link FunctionExecutionConfigurationSource}.
 	 */
 	void registerBeanDefinitions(AbstractFunctionExecutionConfigurationSource functionExecutionConfigurationSource,
 			BeanDefinitionRegistry registry) {
 
-		for (ScannedGenericBeanDefinition beanDefinition : functionExecutionConfigurationSource.getCandidates(
-				new DefaultResourceLoader())) {
+		Set<String> functionExecutionAnnotationTypeNames =
+			AbstractFunctionExecutionConfigurationSource.getFunctionExecutionAnnotationTypeNames();
 
-			String functionExecutionAnnotation = getFunctionExecutionAnnotation(beanDefinition,
-				AnnotationFunctionExecutionConfigurationSource.getFunctionExecutionAnnotationTypeNames());
+		for (ScannedGenericBeanDefinition beanDefinition : functionExecutionConfigurationSource
+				.getCandidates(new DefaultResourceLoader())) {
 
-			Assert.notNull(functionExecutionAnnotation);
+			String functionExecutionAnnotation =
+				Optional.ofNullable(getFunctionExecutionAnnotation(beanDefinition, functionExecutionAnnotationTypeNames))
+					.orElseThrow(() -> newIllegalStateException(String.format("No Function Execution Annotation [%1$s] found for type [%2$s]",
+						functionExecutionAnnotationTypeNames, beanDefinition.getBeanClassName())));
 
-			String beanName = (String) beanDefinition.getMetadata().getAnnotationAttributes(
-				functionExecutionAnnotation).get("id");
-
-			if (!StringUtils.hasText(beanName)) {
-				beanName = BeanDefinitionReaderUtils.generateBeanName(beanDefinition, registry);
-			}
+			String beanName = Optional.of(beanDefinition.getMetadata())
+				.map(annotationMetadata -> annotationMetadata.getAnnotationAttributes(functionExecutionAnnotation))
+				.map(AnnotationAttributes::fromMap)
+				.map(annotationAttributes -> annotationAttributes.getString("id"))
+				.filter(StringUtils::hasText)
+				.orElseGet(() -> BeanDefinitionReaderUtils.generateBeanName(beanDefinition, registry));
 
 			AbstractFunctionExecutionBeanDefinitionBuilder builder = FunctionExecutionBeanDefinitionBuilderFactory
 				.newInstance(new FunctionExecutionConfiguration(beanDefinition, functionExecutionAnnotation));
@@ -74,20 +100,19 @@ class FunctionExecutionBeanDefinitionRegistrar implements ImportBeanDefinitionRe
 	private String getFunctionExecutionAnnotation(ScannedGenericBeanDefinition beanDefinition,
 			Set<String> functionExecutionAnnotationTypeNames) {
 
-		Set<String> annotationTypes = beanDefinition.getMetadata().getAnnotationTypes();
+		String existingFunctionExecutionAnnotation = null;
 
-		String functionExecutionAnnotation = null;
-
-		for (String annotationType : annotationTypes) {
+		for (String annotationType : beanDefinition.getMetadata().getAnnotationTypes()) {
 			if (functionExecutionAnnotationTypeNames.contains(annotationType)) {
-				Assert.isNull(functionExecutionAnnotation, String.format(
-					"interface %1$s contains multiple Function Execution Annotations: %2$s, %3$s",
-						beanDefinition.getBeanClassName(), functionExecutionAnnotation, annotationType));
-				functionExecutionAnnotation = annotationType;
+
+				Assert.isNull(existingFunctionExecutionAnnotation,
+					String.format("interface [%1$s] contains multiple Function Execution Annotations: %2$s, %3$s",
+						beanDefinition.getBeanClassName(), existingFunctionExecutionAnnotation, annotationType));
+
+				existingFunctionExecutionAnnotation = annotationType;
 			}
 		}
 
-		return functionExecutionAnnotation;
+		return existingFunctionExecutionAnnotation;
 	}
-
 }

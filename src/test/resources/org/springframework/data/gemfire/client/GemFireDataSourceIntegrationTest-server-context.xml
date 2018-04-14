@@ -2,31 +2,19 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	   xmlns:context="http://www.springframework.org/schema/context"
 	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
-	   xmlns:util="http://www.springframework.org/schema/util"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="
-        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	   	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
         http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
-        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
-	<util:properties id="serverProperties">
-		<prop key="gemfire.cache.server.host">localhost</prop>
-		<prop key="gemfire.cache.server.port">42084</prop>
-	</util:properties>
+	<context:property-placeholder/>
 
-	<context:property-placeholder properties-ref="serverProperties"/>
+	<gfe:cache/>
 
-	<util:properties id="gemfireProperties">
-		<prop key="name">GemFireDataSourceIntegrationTestServer</prop>
-		<prop key="mcast-port">0</prop>
-		<prop key="log-level">warning</prop>
-	</util:properties>
-
-	<gfe:cache properties-ref="gemfireProperties"/>
-
-	<gfe:cache-server bind-address="${gemfire.cache.server.host}" port="${gemfire.cache.server.port}"
+	<gfe:cache-server bind-address="${spring.data.gemfire.cache.server.host:localhost}"
+					  port="${spring.data.gemfire.cache.server.port:40404}"
 					  auto-startup="true" max-connections="1"/>
 
 	<gfe:replicated-region id="ClientServerRegion" persistent="false"/>

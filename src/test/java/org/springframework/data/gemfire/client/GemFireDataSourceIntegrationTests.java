@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.fork.ServerProcess;
 import org.springframework.data.gemfire.process.ProcessWrapper;
 import org.springframework.data.gemfire.repository.sample.Person;
@@ -44,6 +45,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration
+// TODO: merge with o.s.d.g.client.GemfireDataSoruceIntegrationTest
 public class GemFireDataSourceIntegrationTests extends ClientServerIntegrationTestsSupport {
 
 	private static ProcessWrapper gemfireServer;
@@ -53,6 +55,7 @@ public class GemFireDataSourceIntegrationTests extends ClientServerIntegrationTe
 
 	@BeforeClass
 	public static void startGemFireServer() throws Exception {
+
 		int availablePort = findAvailablePort();
 
 		gemfireServer = run(ServerProcess.class,
@@ -70,11 +73,12 @@ public class GemFireDataSourceIntegrationTests extends ClientServerIntegrationTe
 		stop(gemfireServer);
 	}
 
-	protected void assertRegion(Region<?, ?> region, String name, DataPolicy dataPolicy) {
-		assertRegion(region, name, String.format("%1$s%2$s", Region.SEPARATOR, "simple"), dataPolicy);
+	private void assertRegion(Region<?, ?> region, String name, DataPolicy dataPolicy) {
+		assertRegion(region, name, GemfireUtils.toRegionPath("simple"), dataPolicy);
 	}
 
-	protected void assertRegion(Region<?, ?> region, String name, String fullPath, DataPolicy dataPolicy) {
+	private void assertRegion(Region<?, ?> region, String name, String fullPath, DataPolicy dataPolicy) {
+
 		assertThat(region).isNotNull();
 		assertThat(region.getName()).isEqualTo(name);
 		assertThat(region.getFullPath()).isEqualTo(fullPath);
@@ -84,33 +88,36 @@ public class GemFireDataSourceIntegrationTests extends ClientServerIntegrationTe
 
 	@Test
 	public void gemfireServerDataSourceCreated() {
-		Pool pool = applicationContext.getBean("gemfirePool", Pool.class);
+
+		Pool pool = this.applicationContext.getBean("gemfirePool", Pool.class);
 
 		assertThat(pool).isNotNull();
 		assertThat(pool.getSubscriptionEnabled()).isTrue();
 
-		List<String> regionList = Arrays.asList(applicationContext.getBeanNamesForType(Region.class));
+		List<String> regionList = Arrays.asList(this.applicationContext.getBeanNamesForType(Region.class));
 
 		assertThat(regionList).hasSize(3);
 		assertThat(regionList.contains("r1")).isTrue();
 		assertThat(regionList.contains("r2")).isTrue();
 		assertThat(regionList.contains("simple")).isTrue();
 
-		Region<?, ?> simple = applicationContext.getBean("simple", Region.class);
+		Region<?, ?> simple = this.applicationContext.getBean("simple", Region.class);
 
 		assertRegion(simple, "simple", DataPolicy.EMPTY);
 	}
 
 	@Test
 	public void repositoryCreatedAndFunctional() {
+
 		Person daveMathews = new Person(1L, "Dave", "Mathews");
-		PersonRepository repository = applicationContext.getBean(PersonRepository.class);
+
+		PersonRepository repository = this.applicationContext.getBean(PersonRepository.class);
 
 		assertThat(repository.save(daveMathews)).isSameAs(daveMathews);
 
 		Optional<Person> result = repository.findById(1L);
 
 		assertThat(result.isPresent()).isTrue();
-		assertThat(result.get().getFirstname()).isEqualTo("Dave");
+		assertThat(result.map(Person::getFirstname).orElse(null)).isEqualTo("Dave");
 	}
 }

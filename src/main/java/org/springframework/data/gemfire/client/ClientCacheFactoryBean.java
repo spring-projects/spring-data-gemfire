@@ -25,7 +25,6 @@ import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,9 +36,6 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.distributed.DistributedSystem;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ApplicationContextEvent;
@@ -122,21 +118,14 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 			clientCacheConfigurer.configure(beanName, bean));
 
 	/**
-	 * Post processes this {@link ClientCacheFactoryBean} before cache initialization.
+	 * Applies the composite {@link ClientCacheConfigurer ClientCacheConfigurers}
+	 * to this {@link ClientCacheFactoryBean}.
 	 *
-	 * This is also the point at which any configured {@link ClientCacheConfigurer} beans are called.
-	 *
-	 * @param gemfireProperties {@link Properties} used to configure Pivotal GemFire/Apache Geode.
-	 * @see org.springframework.data.gemfire.config.annotation.ClientCacheConfigurer
-	 * @see java.util.Properties
+	 * @see #getCompositeClientCacheConfigurer()
+	 * @see #applyClientCacheConfigurers(ClientCacheConfigurer...)
 	 */
 	@Override
-	protected void postProcessBeforeCacheInitialization(Properties gemfireProperties) {
-		applyClientCacheConfigurers();
-	}
-
-	/* (non-Javadoc) */
-	private void applyClientCacheConfigurers() {
+	protected void applyCacheConfigurers() {
 		applyClientCacheConfigurers(getCompositeClientCacheConfigurer());
 	}
 
@@ -221,12 +210,12 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 
 	/**
 	 * Constructs a new instance of {@link ClientCacheFactory} initialized with the given Pivotal GemFire/Apache Geode
-	 * {@link Properties} used to create an instance of a {@link ClientCache}.
+	 * {@link Properties} used to construct, configure and initialize an instance of a {@link ClientCache}.
 	 *
 	 * @param gemfireProperties {@link Properties} used by the {@link ClientCacheFactory}
 	 * to configure the {@link ClientCache}.
-	 * @return a new instance of {@link ClientCacheFactory} initialized with the given Pivotal GemFire/Apache Geode
-	 * {@link Properties}.
+	 * @return a new instance of {@link ClientCacheFactory} initialized with
+	 * the given Pivotal GemFire/Apache Geode {@link Properties}.
 	 * @see org.apache.geode.cache.client.ClientCacheFactory
 	 * @see java.util.Properties
 	 */
@@ -236,17 +225,19 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	}
 
 	/**
-	 * Prepares and initializes the {@link ClientCacheFactory} used to create the {@link ClientCache}.
+	 * Configures the {@link ClientCacheFactory} used to create the {@link ClientCache}.
 	 *
 	 * Sets PDX options specified by the user.
 	 *
+	 * Sets Pool options specified by the user.
+	 *
 	 * @param factory {@link ClientCacheFactory} used to create the {@link ClientCache}.
-	 * @return the prepared and initialized {@link ClientCacheFactory}.
-	 * @see #initializePdx(ClientCacheFactory)
+	 * @return the configured {@link ClientCacheFactory}.
+	 * @see #configurePdx(ClientCacheFactory)
 	 */
 	@Override
-	protected Object prepareFactory(Object factory) {
-		return initializePool(initializePdx((ClientCacheFactory) factory));
+	protected Object configureFactory(Object factory) {
+		return configurePool(configurePdx((ClientCacheFactory) factory));
 	}
 
 	/**
@@ -256,7 +247,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	 * @return the given {@link ClientCacheFactory}
 	 * @see org.apache.geode.cache.client.ClientCacheFactory
 	 */
-	ClientCacheFactory initializePdx(ClientCacheFactory clientCacheFactory) {
+	ClientCacheFactory configurePdx(ClientCacheFactory clientCacheFactory) {
 
 		Optional.ofNullable(getPdxSerializer()).ifPresent(clientCacheFactory::setPdxSerializer);
 
@@ -280,10 +271,10 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	 * @see org.apache.geode.cache.client.ClientCacheFactory
 	 * @see org.apache.geode.cache.client.Pool
 	 */
-	ClientCacheFactory initializePool(ClientCacheFactory clientCacheFactory) {
+	ClientCacheFactory configurePool(ClientCacheFactory clientCacheFactory) {
 
-		DefaultableDelegatingPoolAdapter pool = DefaultableDelegatingPoolAdapter.from(
-			DelegatingPoolAdapter.from(resolvePool())).preferDefault();
+		DefaultableDelegatingPoolAdapter pool =
+			DefaultableDelegatingPoolAdapter.from(DelegatingPoolAdapter.from(resolvePool())).preferDefault();
 
 		clientCacheFactory.setPoolFreeConnectionTimeout(pool.getFreeConnectionTimeout(getFreeConnectionTimeout()));
 		clientCacheFactory.setPoolIdleTimeout(pool.getIdleTimeout(getIdleTimeout()));
@@ -291,8 +282,8 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 		clientCacheFactory.setPoolMaxConnections(pool.getMaxConnections(getMaxConnections()));
 		clientCacheFactory.setPoolMinConnections(pool.getMinConnections(getMinConnections()));
 		clientCacheFactory.setPoolMultiuserAuthentication(pool.getMultiuserAuthentication(getMultiUserAuthentication()));
-		clientCacheFactory.setPoolPRSingleHopEnabled(pool.getPRSingleHopEnabled(getPrSingleHopEnabled()));
 		clientCacheFactory.setPoolPingInterval(pool.getPingInterval(getPingInterval()));
+		clientCacheFactory.setPoolPRSingleHopEnabled(pool.getPRSingleHopEnabled(getPrSingleHopEnabled()));
 		clientCacheFactory.setPoolReadTimeout(pool.getReadTimeout(getReadTimeout()));
 		clientCacheFactory.setPoolRetryAttempts(pool.getRetryAttempts(getRetryAttempts()));
 		clientCacheFactory.setPoolServerGroup(pool.getServerGroup(getServerGroup()));
@@ -305,13 +296,14 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 		clientCacheFactory.setPoolSubscriptionRedundancy(pool.getSubscriptionRedundancy(getSubscriptionRedundancy()));
 		clientCacheFactory.setPoolThreadLocalConnections(pool.getThreadLocalConnections(getThreadLocalConnections()));
 
-		final AtomicBoolean noServers = new AtomicBoolean(getServers().isEmpty());
+		AtomicBoolean noServers = new AtomicBoolean(getServers().isEmpty());
 
-		boolean hasServers = !noServers.get();
 		boolean noLocators = getLocators().isEmpty();
 		boolean hasLocators = !noLocators;
+		boolean hasServers = !noServers.get();
 
 		if (hasServers || noLocators) {
+
 			Iterable<InetSocketAddress> servers = pool.getServers(getServers().toInetSocketAddresses());
 
 			stream(servers.spliterator(), false).forEach(server -> {
@@ -321,6 +313,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 		}
 
 		if (hasLocators || noServers.get()) {
+
 			Iterable<InetSocketAddress> locators = pool.getLocators(getLocators().toInetSocketAddresses());
 
 			stream(locators.spliterator(), false).forEach(locator ->
@@ -331,61 +324,56 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	}
 
 	/**
-	 * Resolves an appropriate {@link Pool} from the Spring container that will be used to configure
-	 * the {@link ClientCache}.
+	 * Resolves the {@link Pool} used to configure the {@link ClientCache}, {@literal DEFAULT} {@link Pool}.
 	 *
-	 * @return the resolved {@link Pool}.
+	 * @return the resolved {@link Pool} used to configure the {@link ClientCache}, {@literal DEFAULT} {@link Pool}.
+	 * @see org.apache.geode.cache.client.PoolManager#find(String)
 	 * @see org.apache.geode.cache.client.Pool
+	 * @see #getPoolName()
+	 * @see #getPool()
 	 * @see #findPool(String)
+	 * @see #isPoolNameResolvable(String)
 	 */
 	Pool resolvePool() {
 
-		Pool localPool = getPool();
+		Pool pool = getPool();
 
-		if (localPool == null) {
+		if (pool == null) {
 
-			String poolName = Optional.ofNullable(getPoolName()).filter(StringUtils::hasText)
-				.orElse(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME);
+			String poolName = resolvePoolName();
 
-			localPool = findPool(poolName);
+			pool = findPool(poolName);
 
-			if (localPool == null) {
+			if (pool == null && isPoolNameResolvable(poolName)) {
 
-				BeanFactory beanFactory = getBeanFactory();
+				String dereferencedPoolName = SpringUtils.dereferenceBean(poolName);
 
-				if (beanFactory instanceof ListableBeanFactory) {
-					try {
-						Map<String, PoolFactoryBean> poolFactoryBeanMap =
-							((ListableBeanFactory) beanFactory).getBeansOfType(PoolFactoryBean.class, false, false);
+				PoolFactoryBean poolFactoryBean =
+					getBeanFactory().getBean(dereferencedPoolName, PoolFactoryBean.class);
 
-						String dereferencedPoolName = SpringUtils.dereferenceBean(poolName);
-
-						if (poolFactoryBeanMap.containsKey(dereferencedPoolName)) {
-							return poolFactoryBeanMap.get(dereferencedPoolName).getPool();
-						}
-					}
-					catch (BeansException e) {
-						logInfo("Unable to resolve bean of type [%1$s] with name [%2$s]",
-							PoolFactoryBean.class.getName(), poolName);
-					}
-				}
+				return poolFactoryBean.getPool();
 			}
 		}
 
-		return localPool;
+		return pool;
 	}
 
-	/**
-	 * Attempts to find a {@link Pool} with the given {@link String name}.
-	 *
-	 * @param name {@link String} containing the name of the {@link Pool} to find.
-	 * @return a {@link Pool} instance with the given {@link String name} registered in GemFire/Geode
-	 * or {@literal null} if no {@link Pool} with the given {@link String name} exists.
-	 * @see org.apache.geode.cache.client.PoolManager#find(String)
-	 * @see org.apache.geode.cache.client.Pool
-	 */
+	String resolvePoolName() {
+
+		return Optional.ofNullable(getPoolName())
+			.filter(StringUtils::hasText)
+			.orElse(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME);
+	}
+
 	Pool findPool(String name) {
 		return PoolManager.find(name);
+	}
+
+	private boolean isPoolNameResolvable(String poolName) {
+
+		return Optional.ofNullable(poolName)
+			.filter(getBeanFactory()::containsBean)
+			.isPresent();
 	}
 
 	/**
@@ -420,7 +408,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 				this.<ClientCache>fetchCache().readyForEvents();
 			}
 			catch (IllegalStateException | CacheClosedException ignore) {
-				// thrown if clientCache.readyForEvents() is called on a non-durable client
+				// Thrown when clientCache.readyForEvents() is called on a non-durable client
 			}
 		}
 	}
@@ -449,22 +437,18 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 		return Optional.ofNullable(getCache()).map(Object::getClass).orElse((Class) ClientCache.class);
 	}
 
-	/* (non-Javadoc) */
 	public void addLocators(ConnectionEndpoint... locators) {
 		this.locators.add(locators);
 	}
 
-	/* (non-Javadoc) */
 	public void addLocators(Iterable<ConnectionEndpoint> locators) {
 		this.locators.add(locators);
 	}
 
-	/* (non-Javadoc) */
 	public void addServers(ConnectionEndpoint... servers) {
 		this.servers.add(servers);
 	}
 
-	/* (non-Javadoc) */
 	public void addServers(Iterable<ConnectionEndpoint> servers) {
 		this.servers.add(servers);
 	}
@@ -546,40 +530,30 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 		return this.durableClientTimeout;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	public final void setEnableAutoReconnect(Boolean enableAutoReconnect) {
 		throw new UnsupportedOperationException("Auto-reconnect does not apply to clients");
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	public final Boolean getEnableAutoReconnect() {
 		return Boolean.FALSE;
 	}
 
-	/* (non-Javadoc) */
 	public void setFreeConnectionTimeout(Integer freeConnectionTimeout) {
 		this.freeConnectionTimeout = freeConnectionTimeout;
 	}
 
-	/* (non-Javadoc) */
 	public Integer getFreeConnectionTimeout() {
-		return freeConnectionTimeout;
+		return this.freeConnectionTimeout;
 	}
 
-	/* (non-Javadoc) */
 	public void setIdleTimeout(Long idleTimeout) {
 		this.idleTimeout = idleTimeout;
 	}
 
-	/* (non-Javadoc) */
 	public Long getIdleTimeout() {
-		return idleTimeout;
+		return this.idleTimeout;
 	}
 
 	/**
@@ -599,7 +573,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	 * @return a boolean value indicating whether the server should keep the durable client's queues alive.
 	 */
 	public Boolean getKeepAlive() {
-		return keepAlive;
+		return this.keepAlive;
 	}
 
 	/**
@@ -612,60 +586,49 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 		return Boolean.TRUE.equals(getKeepAlive());
 	}
 
-	/* (non-Javadoc) */
 	public void setLoadConditioningInterval(Integer loadConditioningInterval) {
 		this.loadConditioningInterval = loadConditioningInterval;
 	}
 
-	/* (non-Javadoc) */
 	public Integer getLoadConditioningInterval() {
-		return loadConditioningInterval;
+		return this.loadConditioningInterval;
 	}
 
-	/* (non-Javadoc) */
 	public void setLocators(ConnectionEndpoint[] locators) {
 		setLocators(ConnectionEndpointList.from(locators));
 	}
 
-	/* (non-Javadoc) */
 	public void setLocators(Iterable<ConnectionEndpoint> locators) {
 		getLocators().clear();
 		addLocators(locators);
 	}
 
-	/* (non-Javadoc) */
 	protected ConnectionEndpointList getLocators() {
-		return locators;
+		return this.locators;
 	}
 
-	/* (non-Javadoc) */
 	public void setMaxConnections(Integer maxConnections) {
 		this.maxConnections = maxConnections;
 	}
 
-	/* (non-Javadoc) */
 	public Integer getMaxConnections() {
-		return maxConnections;
+		return this.maxConnections;
 	}
 
-	/* (non-Javadoc) */
 	public void setMinConnections(Integer minConnections) {
 		this.minConnections = minConnections;
 	}
 
-	/* (non-Javadoc) */
 	public Integer getMinConnections() {
-		return minConnections;
+		return this.minConnections;
 	}
 
-	/* (non-Javadoc) */
 	public void setMultiUserAuthentication(Boolean multiUserAuthentication) {
 		this.multiUserAuthentication = multiUserAuthentication;
 	}
 
-	/* (non-Javadoc) */
 	public Boolean getMultiUserAuthentication() {
-		return multiUserAuthentication;
+		return this.multiUserAuthentication;
 	}
 
 	/**
@@ -705,37 +668,31 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	 * @return the name of the GemFire {@link Pool} used by this GemFire cache client.
 	 */
 	public String getPoolName() {
-		return poolName;
+		return this.poolName;
 	}
 
-	/* (non-Javadoc) */
 	public void setPingInterval(Long pingInterval) {
 		this.pingInterval = pingInterval;
 	}
 
-	/* (non-Javadoc) */
 	public Long getPingInterval() {
-		return pingInterval;
+		return this.pingInterval;
 	}
 
-	/* (non-Javadoc) */
 	public void setPrSingleHopEnabled(Boolean prSingleHopEnabled) {
 		this.prSingleHopEnabled = prSingleHopEnabled;
 	}
 
-	/* (non-Javadoc) */
 	public Boolean getPrSingleHopEnabled() {
-		return prSingleHopEnabled;
+		return this.prSingleHopEnabled;
 	}
 
-	/* (non-Javadoc) */
 	public void setReadTimeout(Integer readTimeout) {
 		this.readTimeout = readTimeout;
 	}
 
-	/* (non-Javadoc) */
 	public Integer getReadTimeout() {
-		return readTimeout;
+		return this.readTimeout;
 	}
 
 	/**
@@ -756,7 +713,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	 * @return a boolean value indicating the state of the 'readyForEvents' property.
 	 */
 	public Boolean getReadyForEvents(){
-		return readyForEvents;
+		return this.readyForEvents;
 	}
 
 	/**
@@ -784,133 +741,104 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 		}
 	}
 
-	/* (non-Javadoc) */
 	public void setRetryAttempts(Integer retryAttempts) {
 		this.retryAttempts = retryAttempts;
 	}
 
-	/* (non-Javadoc) */
 	public Integer getRetryAttempts() {
-		return retryAttempts;
+		return this.retryAttempts;
 	}
 
-	/* (non-Javadoc) */
 	public void setServerGroup(String serverGroup) {
 		this.serverGroup = serverGroup;
 	}
 
-	/* (non-Javadoc) */
 	public String getServerGroup() {
-		return serverGroup;
+		return this.serverGroup;
 	}
 
-	/* (non-Javadoc) */
 	public void setServers(ConnectionEndpoint[] servers) {
 		setServers(ConnectionEndpointList.from(servers));
 	}
 
-	/* (non-Javadoc) */
 	public void setServers(Iterable<ConnectionEndpoint> servers) {
 		getServers().clear();
 		addServers(servers);
 	}
 
-	/* (non-Javadoc) */
 	protected ConnectionEndpointList getServers() {
-		return servers;
+		return this.servers;
 	}
 
-	/* (non-Javadoc) */
 	public void setSocketBufferSize(Integer socketBufferSize) {
 		this.socketBufferSize = socketBufferSize;
 	}
 
-	/* (non-Javadoc) */
 	public Integer getSocketBufferSize() {
-		return socketBufferSize;
+		return this.socketBufferSize;
 	}
 
-	/* (non-Javadoc) */
 	public void setSocketConnectTimeout(Integer socketConnectTimeout) {
 		this.socketConnectTimeout = socketConnectTimeout;
 	}
 
-	/* (non-Javadoc) */
 	public Integer getSocketConnectTimeout() {
 		return this.socketConnectTimeout;
 	}
 
-	/* (non-Javadoc) */
 	public void setStatisticsInterval(Integer statisticsInterval) {
 		this.statisticsInterval = statisticsInterval;
 	}
 
-	/* (non-Javadoc) */
 	public Integer getStatisticsInterval() {
-		return statisticsInterval;
+		return this.statisticsInterval;
 	}
 
-	/* (non-Javadoc) */
 	public void setSubscriptionAckInterval(Integer subscriptionAckInterval) {
 		this.subscriptionAckInterval = subscriptionAckInterval;
 	}
 
-	/* (non-Javadoc) */
 	public Integer getSubscriptionAckInterval() {
-		return subscriptionAckInterval;
+		return this.subscriptionAckInterval;
 	}
 
-	/* (non-Javadoc) */
 	public void setSubscriptionEnabled(Boolean subscriptionEnabled) {
 		this.subscriptionEnabled = subscriptionEnabled;
 	}
 
-	/* (non-Javadoc) */
 	public Boolean getSubscriptionEnabled() {
-		return subscriptionEnabled;
+		return this.subscriptionEnabled;
 	}
 
-	/* (non-Javadoc) */
 	public void setSubscriptionMessageTrackingTimeout(Integer subscriptionMessageTrackingTimeout) {
 		this.subscriptionMessageTrackingTimeout = subscriptionMessageTrackingTimeout;
 	}
 
-	/* (non-Javadoc) */
 	public Integer getSubscriptionMessageTrackingTimeout() {
-		return subscriptionMessageTrackingTimeout;
+		return this.subscriptionMessageTrackingTimeout;
 	}
 
-	/* (non-Javadoc) */
 	public void setSubscriptionRedundancy(Integer subscriptionRedundancy) {
 		this.subscriptionRedundancy = subscriptionRedundancy;
 	}
 
-	/* (non-Javadoc) */
 	public Integer getSubscriptionRedundancy() {
-		return subscriptionRedundancy;
+		return this.subscriptionRedundancy;
 	}
 
-	/* (non-Javadoc) */
 	public void setThreadLocalConnections(Boolean threadLocalConnections) {
 		this.threadLocalConnections = threadLocalConnections;
 	}
 
-	/* (non-Javadoc) */
 	public Boolean getThreadLocalConnections() {
-		return threadLocalConnections;
+		return this.threadLocalConnections;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	public final void setUseClusterConfiguration(Boolean useClusterConfiguration) {
 		throw new UnsupportedOperationException("Cluster-based Configuration is not applicable for clients");
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	public final Boolean getUseClusterConfiguration() {
 		return Boolean.FALSE;

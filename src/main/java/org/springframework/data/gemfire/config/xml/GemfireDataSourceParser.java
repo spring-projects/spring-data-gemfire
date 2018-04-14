@@ -13,8 +13,8 @@
 
 package org.springframework.data.gemfire.config.xml;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -40,17 +40,35 @@ class GemfireDataSourceParser extends AbstractBeanDefinitionParser {
 	static final String SUBSCRIPTION_ENABLED_ATTRIBUTE_NAME = "subscription-enabled";
 	static final String SUBSCRIPTION_ENABLED_PROPERTY_NAME = "subscriptionEnabled";
 
-	protected final Log log = LogFactory.getLog(getClass());
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	protected AbstractBeanDefinition parseInternal(Element element, ParserContext parserContext) {
+
+		parseAndRegisterClientCache(element, parserContext);
+		parseAndRegisterPool(element, parserContext);
+		registerGemFireDataSourcePostProcessor(parserContext);
+
+		return null;
+	}
+
+	private void parseAndRegisterClientCache(Element element, ParserContext parserContext) {
+
 		BeanDefinition clientCacheDefinition = new ClientCacheParser().parse(element, parserContext);
 
-		parserContext.getRegistry().registerBeanDefinition(GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME,
-			clientCacheDefinition);
+		parserContext.getRegistry()
+			.registerBeanDefinition(GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME, clientCacheDefinition);
+
+		if (logger.isDebugEnabled()) {
+			logger.debug(String.format("Registered GemFire ClientCache bean [%1$s] of type [%2$s]%n",
+				GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME, clientCacheDefinition.getBeanClassName()));
+		}
+	}
+
+	private void parseAndRegisterPool(Element element, ParserContext parserContext) {
 
 		BeanDefinition poolDefinition = new PoolParser().parse(element, parserContext);
 
@@ -61,19 +79,15 @@ class GemfireDataSourceParser extends AbstractBeanDefinitionParser {
 		}
 
 		parserContext.getRegistry().registerBeanDefinition(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME, poolDefinition);
+	}
 
-		if (log.isDebugEnabled()) {
-			log.debug(String.format("Registered GemFire ClientCache bean [%1$s] of type [%2$s]%n",
-				GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME, clientCacheDefinition.getBeanClassName()));
-		}
+	private void registerGemFireDataSourcePostProcessor(ParserContext parserContext) {
 
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(
-			GemfireDataSourcePostProcessor.class);
+		BeanDefinitionBuilder builder =
+			BeanDefinitionBuilder.genericBeanDefinition(GemfireDataSourcePostProcessor.class);
 
 		builder.addConstructorArgReference(GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
 
 		BeanDefinitionReaderUtils.registerWithGeneratedName(builder.getBeanDefinition(), parserContext.getRegistry());
-
-		return null;
 	}
 }

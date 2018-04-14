@@ -16,35 +16,37 @@
 
 package org.springframework.data.gemfire;
 
-import org.apache.geode.cache.AttributesMutator;
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+
+import java.util.Arrays;
+import java.util.Optional;
+
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CustomExpiry;
-import org.apache.geode.cache.EvictionAttributesMutator;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
 
 /**
  * The LookupRegionFactoryBean class is a concrete implementation of RegionLookupFactoryBean for handling
  * &gt;gfe:lookup-region/&lt; SDG XML namespace (XSD) elements.
  *
  * @author John Blum
- * @see org.springframework.data.gemfire.RegionLookupFactoryBean
+ * @see RegionLookupFactoryBean
  * @see org.apache.geode.cache.AttributesMutator
  * @since 1.6.0
  */
 @SuppressWarnings("unused")
 public class LookupRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> {
 
+	private AsyncEventQueue[] asyncEventQueues;
+
 	private Boolean cloningEnabled;
 	private Boolean enableStatistics;
-
-	private AsyncEventQueue[] asyncEventQueues;
 
 	private CacheListener<K, V>[] cacheListeners;
 
@@ -66,166 +68,123 @@ public class LookupRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
+
 		super.afterPropertiesSet();
 
-		AttributesMutator<K, V> attributesMutator = getRegion().getAttributesMutator();
+		Optional.ofNullable(getRegion().getAttributesMutator()).ifPresent(attributesMutator -> {
 
-		if (!ObjectUtils.isEmpty(asyncEventQueues)) {
-			for (AsyncEventQueue asyncEventQueue : asyncEventQueues) {
-				attributesMutator.addAsyncEventQueueId(asyncEventQueue.getId());
-			}
-		}
+			Arrays.stream(nullSafeArray(this.asyncEventQueues, AsyncEventQueue.class))
+				.map(AsyncEventQueue::getId)
+				.forEach(attributesMutator::addAsyncEventQueueId);
 
-		if (!ObjectUtils.isEmpty(cacheListeners)) {
-			for (CacheListener<K, V> cacheListener : cacheListeners) {
-				attributesMutator.addCacheListener(cacheListener);
-			}
-		}
+			Arrays.stream(nullSafeArray(this.cacheListeners, CacheListener.class))
+				.forEach(attributesMutator::addCacheListener);
 
-		if (cacheLoader != null) {
-			attributesMutator.setCacheLoader(cacheLoader);
-		}
+			Optional.ofNullable(this.cacheLoader).ifPresent(attributesMutator::setCacheLoader);
+			Optional.ofNullable(this.cacheWriter).ifPresent(attributesMutator::setCacheWriter);
+			Optional.ofNullable(this.cloningEnabled).ifPresent(attributesMutator::setCloningEnabled);
 
-		if (cacheWriter != null) {
-			attributesMutator.setCacheWriter(cacheWriter);
-		}
+			// Eviction
+			Optional.ofNullable(attributesMutator.getEvictionAttributesMutator())
+				.ifPresent(evictionAttributesMutator -> Optional.ofNullable(this.evictionMaximum)
+					.ifPresent(evictionAttributesMutator::setMaximum));
 
-		if (cloningEnabled != null) {
-			attributesMutator.setCloningEnabled(cloningEnabled);
-		}
+			// Expiration
+			if (isStatisticsEnabled()) {
 
-		if (isStatisticsEnabled()) {
-			assertStatisticsEnabled();
+				assertStatisticsEnabled();
 
-			if (customEntryIdleTimeout != null) {
-				attributesMutator.setCustomEntryIdleTimeout(customEntryIdleTimeout);
+				Optional.ofNullable(this.customEntryIdleTimeout).ifPresent(attributesMutator::setCustomEntryIdleTimeout);
+				Optional.ofNullable(this.customEntryTimeToLive).ifPresent(attributesMutator::setCustomEntryTimeToLive);
+				Optional.ofNullable(this.entryIdleTimeout).ifPresent(attributesMutator::setEntryIdleTimeout);
+				Optional.ofNullable(this.entryTimeToLive).ifPresent(attributesMutator::setEntryTimeToLive);
+				Optional.ofNullable(this.regionIdleTimeout).ifPresent(attributesMutator::setRegionIdleTimeout);
+				Optional.ofNullable(this.regionTimeToLive).ifPresent(attributesMutator::setRegionTimeToLive);
 			}
 
-			if (customEntryTimeToLive != null) {
-				attributesMutator.setCustomEntryTimeToLive(customEntryTimeToLive);
-			}
-
-			if (entryIdleTimeout != null) {
-				attributesMutator.setEntryIdleTimeout(entryIdleTimeout);
-			}
-
-			if (entryTimeToLive != null) {
-				attributesMutator.setEntryTimeToLive(entryTimeToLive);
-			}
-
-			if (regionIdleTimeout != null) {
-				attributesMutator.setRegionIdleTimeout(regionIdleTimeout);
-			}
-
-			if (regionTimeToLive != null) {
-				attributesMutator.setRegionTimeToLive(regionTimeToLive);
-			}
-		}
-
-		if (evictionMaximum != null) {
-			EvictionAttributesMutator evictionAttributesMutator = attributesMutator.getEvictionAttributesMutator();
-			evictionAttributesMutator.setMaximum(evictionMaximum);
-		}
-
-		if (!ObjectUtils.isEmpty(gatewaySenders)) {
-			for (GatewaySender gatewaySender : gatewaySenders) {
-				attributesMutator.addGatewaySenderId(gatewaySender.getId());
-			}
-		}
+			Arrays.stream(nullSafeArray(this.gatewaySenders, GatewaySender.class))
+				.map(GatewaySender::getId)
+				.forEach(attributesMutator::addGatewaySenderId);
+		});
 	}
 
 	@Override
-	final boolean isLookupEnabled() {
+	public final boolean isLookupEnabled() {
 		return true;
 	}
 
-	/* (non-Javadoc) */
 	public void setAsyncEventQueues(AsyncEventQueue[] asyncEventQueues) {
 		this.asyncEventQueues = asyncEventQueues;
 	}
 
-	/* (non-Javadoc) */
 	public void setCacheListeners(CacheListener<K, V>[] cacheListeners) {
 		this.cacheListeners = cacheListeners;
 	}
 
-	/* (non-Javadoc) */
 	public void setCacheLoader(CacheLoader<K, V> cacheLoader) {
 		this.cacheLoader = cacheLoader;
 	}
 
-	/* (non-Javadoc) */
 	public void setCacheWriter(CacheWriter<K, V> cacheWriter) {
 		this.cacheWriter = cacheWriter;
 	}
 
-	/* (non-Javadoc) */
 	public void setCloningEnabled(Boolean cloningEnabled) {
 		this.cloningEnabled = cloningEnabled;
 	}
 
-	/* (non-Javadoc) */
 	public void setCustomEntryIdleTimeout(CustomExpiry<K, V> customEntryIdleTimeout) {
 		setStatisticsEnabled(customEntryIdleTimeout != null);
 		this.customEntryIdleTimeout = customEntryIdleTimeout;
 	}
 
-	/* (non-Javadoc) */
 	public void setCustomEntryTimeToLive(CustomExpiry<K, V> customEntryTimeToLive) {
 		setStatisticsEnabled(customEntryTimeToLive != null);
 		this.customEntryTimeToLive = customEntryTimeToLive;
 	}
 
-	/* (non-Javadoc) */
 	public void setEntryIdleTimeout(ExpirationAttributes entryIdleTimeout) {
 		setStatisticsEnabled(entryIdleTimeout != null);
 		this.entryIdleTimeout = entryIdleTimeout;
 	}
 
-	/* (non-Javadoc) */
 	public void setEntryTimeToLive(ExpirationAttributes entryTimeToLive) {
 		setStatisticsEnabled(entryTimeToLive != null);
 		this.entryTimeToLive = entryTimeToLive;
 	}
 
-	/* (non-Javadoc) */
 	public void setEvictionMaximum(final Integer evictionMaximum) {
 		this.evictionMaximum = evictionMaximum;
 	}
 
-	/* (non-Javadoc) */
 	public void setGatewaySenders(GatewaySender[] gatewaySenders) {
 		this.gatewaySenders = gatewaySenders;
 	}
 
-	/* (non-Javadoc) */
 	public void setRegionIdleTimeout(ExpirationAttributes regionIdleTimeout) {
 		setStatisticsEnabled(regionIdleTimeout != null);
 		this.regionIdleTimeout = regionIdleTimeout;
 	}
 
-	/* (non-Javadoc) */
 	public void setRegionTimeToLive(ExpirationAttributes regionTimeToLive) {
 		setStatisticsEnabled(regionTimeToLive != null);
 		this.regionTimeToLive = regionTimeToLive;
 	}
 
-	/* (non-Javadoc) */
 	public void setStatisticsEnabled(Boolean enableStatistics) {
 		this.enableStatistics = enableStatistics;
 	}
 
-	/* (non-Javadoc) */
 	protected boolean isStatisticsEnabled() {
 		return Boolean.TRUE.equals(this.enableStatistics);
 	}
 
-	/* (non-Javadoc) */
 	private void assertStatisticsEnabled() {
+
 		Region localRegion = getRegion();
-		Assert.state(localRegion.getAttributes().getStatisticsEnabled(), String.format(
-			"Statistics for Region '%1$s' must be enabled to change Entry & Region TTL/TTI Expiration settings",
+
+		Assert.state(localRegion.getAttributes().getStatisticsEnabled(),
+			String.format("Statistics for Region [%s] must be enabled to change Entry & Region TTL/TTI Expiration settings",
 				localRegion.getFullPath()));
 	}
-
 }

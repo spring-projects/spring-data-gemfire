@@ -1,5 +1,9 @@
 /*
+<<<<<<< Updated upstream
  * Copyright 2002-2018 the original author or authors.
+=======
+ * Copyright 2002-2013 the original author or authors.
+>>>>>>> Stashed changes
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -34,37 +38,32 @@ abstract class AbstractFunctionExecutionBeanDefinitionBuilder {
 
 	protected final Log log = LogFactory.getLog(getClass());
 
-	/**
-	 *
-	 * @param configuration the configuration values
-	 */
 	 AbstractFunctionExecutionBeanDefinitionBuilder(FunctionExecutionConfiguration configuration) {
-		Assert.notNull(configuration);
+
+		Assert.notNull(configuration, "FunctionExecutionConfiguration must not be null");
+
 		this.configuration = configuration;
 	}
 
-	/**
-	 * Build the bean definition
-	 * @param registry
-	 * @return
-	 */
 	 BeanDefinition build(BeanDefinitionRegistry registry) {
-		BeanDefinitionBuilder functionProxyFactoryBeanBuilder = BeanDefinitionBuilder.rootBeanDefinition(
-			getFunctionProxyFactoryBeanClass());
 
-		functionProxyFactoryBeanBuilder.addConstructorArgValue(configuration.getFunctionExecutionInterface());
-		functionProxyFactoryBeanBuilder.addConstructorArgReference(BeanDefinitionReaderUtils.registerWithGeneratedName(
-			buildGemfireFunctionOperations(registry), registry));
+		BeanDefinitionBuilder functionProxyFactoryBeanBuilder =
+			BeanDefinitionBuilder.rootBeanDefinition(getFunctionProxyFactoryBeanClass());
+
+		functionProxyFactoryBeanBuilder.addConstructorArgValue(this.configuration.getFunctionExecutionInterface());
+		functionProxyFactoryBeanBuilder.addConstructorArgReference(BeanDefinitionReaderUtils
+			.registerWithGeneratedName(buildGemfireFunctionOperations(registry), registry));
 
 		return functionProxyFactoryBeanBuilder.getBeanDefinition();
 	}
 
 	protected AbstractBeanDefinition buildGemfireFunctionOperations(BeanDefinitionRegistry registry) {
+
 		BeanDefinitionBuilder functionTemplateBuilder = getGemfireFunctionOperationsBeanDefinitionBuilder(registry);
 
 		functionTemplateBuilder.setLazyInit(true);
 
-		String resultCollectorReference = (String) configuration.getAttribute("resultCollector");
+		String resultCollectorReference = (String) this.configuration.getAttribute("resultCollector");
 
 		if (StringUtils.hasText(resultCollectorReference)){
 			functionTemplateBuilder.addPropertyReference("resultCollector", resultCollectorReference);
@@ -73,10 +72,8 @@ abstract class AbstractFunctionExecutionBeanDefinitionBuilder {
 		return functionTemplateBuilder.getBeanDefinition();
 	}
 
-	/* Subclasses implement to specify the types to uses. */
 	protected abstract Class<?> getFunctionProxyFactoryBeanClass();
 
-	protected abstract BeanDefinitionBuilder getGemfireFunctionOperationsBeanDefinitionBuilder(
-		BeanDefinitionRegistry registry);
+	protected abstract BeanDefinitionBuilder getGemfireFunctionOperationsBeanDefinitionBuilder(BeanDefinitionRegistry registry);
 
 }

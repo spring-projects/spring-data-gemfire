@@ -26,12 +26,11 @@ import org.springframework.util.CollectionUtils;
  */
 class RegionFunctionExecution extends AbstractFunctionExecution {
 
-
 	private final Region<?, ?> region;
+
 	private volatile Set<?> keys;
 
 	public RegionFunctionExecution(Region<?, ?> region) {
-		super();
 		this.region = region;
 	}
 
@@ -48,11 +47,17 @@ class RegionFunctionExecution extends AbstractFunctionExecution {
 	 * @see org.springframework.data.gemfire.function.FunctionExecution#getExecution()
 	 */
 	@Override
+	@SuppressWarnings("unchecked")
 	protected Execution getExecution() {
-		Execution execution = FunctionService.onRegion(region);
-		if (!CollectionUtils.isEmpty(this.keys) ) {
+
+		Execution execution = FunctionService.onRegion(this.region);
+
+		Set<?> keys = getKeys();
+
+		if (!CollectionUtils.isEmpty(keys) ) {
 			execution = execution.withFilter(keys);
 		}
+
 		return execution;
 	}
 }

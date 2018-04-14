@@ -69,7 +69,8 @@ public class ReplicatedRegionNamespaceTest {
 
 		assertTrue(applicationContext.containsBean("simple"));
 
-		RegionFactoryBean simpleRegionFactoryBean = applicationContext.getBean("&simple", RegionFactoryBean.class);
+		RegionFactoryBean simpleRegionFactoryBean =
+			applicationContext.getBean("&simple", RegionFactoryBean.class);
 
 		assertEquals("simple", TestUtils.readField("beanName", simpleRegionFactoryBean));
 		assertEquals(false, TestUtils.readField("close", simpleRegionFactoryBean));
@@ -89,7 +90,8 @@ public class ReplicatedRegionNamespaceTest {
 
 		assertTrue(applicationContext.containsBean("pub"));
 
-		RegionFactoryBean publisherRegionFactoryBean = applicationContext.getBean("&pub", RegionFactoryBean.class);
+		RegionFactoryBean publisherRegionFactoryBean =
+			applicationContext.getBean("&pub", RegionFactoryBean.class);
 
 		assertTrue(publisherRegionFactoryBean instanceof ReplicatedRegionFactoryBean);
 		assertEquals("publisher", TestUtils.readField("name", publisherRegionFactoryBean));
@@ -107,7 +109,8 @@ public class ReplicatedRegionNamespaceTest {
 
 		assertTrue(applicationContext.containsBean("complex"));
 
-		RegionFactoryBean complexRegionFactoryBean = applicationContext.getBean("&complex", RegionFactoryBean.class);
+		RegionFactoryBean complexRegionFactoryBean =
+			applicationContext.getBean("&complex", RegionFactoryBean.class);
 
 		assertNotNull(complexRegionFactoryBean);
 		assertEquals("complex", TestUtils.readField("beanName", complexRegionFactoryBean));
@@ -179,7 +182,8 @@ public class ReplicatedRegionNamespaceTest {
 
 		assertTrue(applicationContext.containsBean("lookup"));
 
-		RegionLookupFactoryBean regionLookupFactoryBean = applicationContext.getBean("&lookup", RegionLookupFactoryBean.class);
+		RegionLookupFactoryBean regionLookupFactoryBean =
+			applicationContext.getBean("&lookup", RegionLookupFactoryBean.class);
 
 		assertNotNull(regionLookupFactoryBean);
 		assertEquals("existing", TestUtils.readField("name", regionLookupFactoryBean));

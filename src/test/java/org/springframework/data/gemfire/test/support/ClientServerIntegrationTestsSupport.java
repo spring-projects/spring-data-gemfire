@@ -190,7 +190,7 @@ public class ClientServerIntegrationTestsSupport {
 
 	/* (non-Javadoc) */
 	protected static ProcessWrapper run(File workingDirectory, Class<?> type, String... arguments) throws IOException {
-		return (isProcessRunAuto() ? launch(createDirectory(workingDirectory), type, arguments) : null);
+		return isProcessRunAuto() ? launch(createDirectory(workingDirectory), type, arguments) : null;
 	}
 
 	/* (non-Javadoc) */
@@ -202,7 +202,7 @@ public class ClientServerIntegrationTestsSupport {
 	protected static ProcessWrapper run(File workingDirectory, String classpath, Class<?> type, String... arguments)
 			throws IOException {
 
-		return (isProcessRunAuto() ? launch(createDirectory(workingDirectory), classpath, type, arguments) : null);
+		return isProcessRunAuto() ? launch(createDirectory(workingDirectory), classpath, type, arguments) : null;
 	}
 
 	/* (non-Javadoc) */

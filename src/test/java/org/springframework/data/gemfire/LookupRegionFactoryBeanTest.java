@@ -196,7 +196,7 @@ public class LookupRegionFactoryBeanTest {
 			factoryBean.afterPropertiesSet();
 		}
 		catch (IllegalStateException expected) {
-			assertEquals("Statistics for Region '/Example' must be enabled to change Entry & Region TTL/TTI Expiration settings",
+			assertEquals("Statistics for Region [/Example] must be enabled to change Entry & Region TTL/TTI Expiration settings",
 				expected.getMessage());
 			throw expected;
 		}

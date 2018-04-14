@@ -1,22 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:context="http://www.springframework.org/schema/context"
 	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
 	   xmlns:util="http://www.springframework.org/schema/util"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
         http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
 ">
 
+	<context:property-placeholder/>
+
 	<util:properties id="gemfireProperties">
 		<prop key="name">CacheUsingSharedConfigurationIntegrationTest</prop>
 		<prop key="mcast-port">0</prop>
-		<prop key="log-level">warning</prop>
-		<prop key="locators">localhost[20668]</prop>
+		<prop key="log-level">error</prop>
+		<prop key="locators">localhost[${spring.data.gemfire.locator.port:20668}]</prop>
 	</util:properties>
 
-	<gfe:cache cache-xml-location="/clusterconfig-cache.xml" properties-ref="gemfireProperties"
+	<gfe:cache cache-xml-location="/non-cluster-config-cache.xml" properties-ref="gemfireProperties"
 			   use-bean-factory-locator="false" use-cluster-configuration="true"/>
 
 	<gfe:lookup-region id="ClusterConfigRegion"/>

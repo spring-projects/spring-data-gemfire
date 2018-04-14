@@ -12,7 +12,7 @@
  */
 package org.springframework.data.gemfire.function.execution;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -25,7 +25,6 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 /**
  * Base class for * Creating a GemFire {@link Execution} using {@link FunctionService}.  Protected setters support
@@ -51,14 +50,18 @@ abstract class AbstractFunctionExecution {
 	private String functionId;
 
 	public AbstractFunctionExecution(Function function, Object... args) {
-		Assert.notNull(function, "function cannot be null");
+
+		Assert.notNull(function, "Function cannot be null");
+
 		this.function = function;
 		this.functionId = function.getId();
 		this.args = args;
 	}
 
 	public AbstractFunctionExecution(String functionId, Object... args) {
-		Assert.isTrue(StringUtils.hasLength(functionId), "functionId cannot be null or empty");
+
+		Assert.hasText(functionId, "FunctionId cannot be null or empty");
+
 		this.functionId = functionId;
 		this.args = args;
 	}
@@ -67,23 +70,23 @@ abstract class AbstractFunctionExecution {
 	}
 
 	Object[] getArgs() {
-		return args;
+		return this.args;
 	}
 
 	ResultCollector<?, ?> getCollector() {
-		return resultCollector;
+		return this.resultCollector;
 	}
 
 	Function getFunction() {
-		return function;
+		return this.function;
 	}
 
 	String getFunctionId() {
-		return functionId;
+		return this.functionId;
 	}
 
 	long getTimeout() {
-		return timeout;
+		return this.timeout;
 	}
 
 	<T> Iterable<T> execute() {
@@ -92,21 +95,22 @@ abstract class AbstractFunctionExecution {
 
 	@SuppressWarnings("unchecked")
 	<T> Iterable<T> execute(Boolean returnResult) {
+
 		Execution execution = getExecution();
 
-		execution = execution.withArgs(getArgs());
-		execution = (getCollector() == null ? execution : execution.withCollector(getCollector()));
-		execution = (getKeys() == null ? execution : execution.withFilter(getKeys()));
+		execution = execution.setArguments(getArgs());
+		execution = getCollector() != null ? execution.withCollector(getCollector()) : execution;
+		execution = getKeys() != null ? execution.withFilter(getKeys()) : execution;
 
 		ResultCollector<?, ?> resultCollector;
 
 		if (isRegisteredFunction()) {
-			resultCollector = execution.execute(functionId);
+			resultCollector = execution.execute(this.functionId);
 		}
 		else {
-			resultCollector = execution.execute(function);
+			resultCollector = execution.execute(this.function);
 
-			if (!function.hasResult()) {
+			if (!this.function.hasResult()) {
 				return null;
 			}
 		}
@@ -116,7 +120,7 @@ abstract class AbstractFunctionExecution {
 		}
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("using ResultsCollector " + resultCollector.getClass().getName());
+			logger.debug("Using ResultsCollector " + resultCollector.getClass().getName());
 		}
 
 		Iterable<T> results = null;
@@ -126,11 +130,8 @@ abstract class AbstractFunctionExecution {
 				try {
 					results = (Iterable<T>) resultCollector.getResult(this.timeout, TimeUnit.MILLISECONDS);
 				}
-				catch (FunctionException e) {
-					throw new RuntimeException(e);
-				}
-				catch (InterruptedException e) {
-					throw new RuntimeException(e);
+				catch (FunctionException | InterruptedException cause) {
+					throw new RuntimeException(cause);
 				}
 			}
 			else {
@@ -139,10 +140,10 @@ abstract class AbstractFunctionExecution {
 
 			return replaceSingletonNullCollectionWithEmptyList(results);
 		}
-		catch (FunctionException e) {
-			//TODO Come up with a better way to determine that the function should not return a result;
-			if (!e.getMessage().equals(NO_RESULT_MESSAGE)) {
-				throw e;
+		catch (FunctionException cause) {
+			// TODO Come up with a better way to determine that the function should not return a result;
+			if (!cause.getMessage().equals(NO_RESULT_MESSAGE)) {
+				throw cause;
 			}
 		}
 
@@ -151,6 +152,7 @@ abstract class AbstractFunctionExecution {
 
 	@SuppressWarnings("unchecked")
 	<T> T executeAndExtract() {
+
 		Iterable<T> results = execute();
 
 		if (results == null || !results.iterator().hasNext()) {
@@ -160,9 +162,9 @@ abstract class AbstractFunctionExecution {
 		Object result = results.iterator().next();
 
 		if (result instanceof Throwable) {
-			throw new FunctionException(String.format("Execution of Function %1$s failed",
-				(function != null ? function.getClass().getName() : String.format("with ID '%1$s'", functionId))),
-					(Throwable) result);
+			throw new FunctionException(String.format("Execution of Function %s failed",
+				(this.function != null ? this.function.getClass().getName()
+					: String.format("with ID [%s]", this.functionId))), (Throwable) result);
 		}
 
 		return (T) result;
@@ -200,11 +202,13 @@ abstract class AbstractFunctionExecution {
 	}
 
 	private boolean isRegisteredFunction() {
-		return function == null;
+		return this.function == null;
 	}
 
 	private <T> Iterable<T> replaceSingletonNullCollectionWithEmptyList(Iterable<T> results) {
+
 		if (results != null) {
+
 			Iterator<T> it = results.iterator();
 
 			if (!it.hasNext()) {
@@ -212,11 +216,10 @@ abstract class AbstractFunctionExecution {
 			}
 
 			if (it.next() == null && !it.hasNext()) {
-				return new ArrayList<T>();
+				return Collections.emptyList();
 			}
 		}
 
 		return results;
 	}
-
 }

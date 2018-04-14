@@ -66,17 +66,22 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 	static final String SERVER_ELEMENT_NAME = "server";
 	static final String SERVERS_ATTRIBUTE_NAME = "servers";
 
-	/* (non-Javadoc) */
 	private static void registerInfrastructureComponents(ParserContext parserContext) {
 
 		if (INFRASTRUCTURE_COMPONENTS_REGISTERED.compareAndSet(false, true)) {
 
-			AbstractBeanDefinition beanDefinition = BeanDefinitionBuilder
-				.rootBeanDefinition(ClientRegionPoolBeanFactoryPostProcessor.class)
+			// Be careful to not to register this infrastructure component (just yet; requires more thought)
+			/*
+			BeanDefinitionReaderUtils.registerWithGeneratedName(
+				BeanDefinitionBuilder.rootBeanDefinition(ClientCachePoolBeanFactoryPostProcessor.class)
 				.setRole(BeanDefinition.ROLE_INFRASTRUCTURE)
-				.getBeanDefinition();
+				.getBeanDefinition(), parserContext.getRegistry());
+			*/
 
-			BeanDefinitionReaderUtils.registerWithGeneratedName(beanDefinition, parserContext.getRegistry());
+			BeanDefinitionReaderUtils.registerWithGeneratedName(
+				BeanDefinitionBuilder.rootBeanDefinition(ClientRegionPoolBeanFactoryPostProcessor.class)
+				.setRole(BeanDefinition.ROLE_INFRASTRUCTURE)
+				.getBeanDefinition(), parserContext.getRegistry());
 		}
 	}
 
@@ -92,30 +97,33 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 	 * {@inheritDoc}
 	 */
 	@Override
-	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder poolBuilder) {
 
 		registerInfrastructureComponents(parserContext);
 
-		ParsingUtils.setPropertyValue(element, builder, "free-connection-timeout");
-		ParsingUtils.setPropertyValue(element, builder, "idle-timeout");
-		ParsingUtils.setPropertyValue(element, builder, "keep-alive");
-		ParsingUtils.setPropertyValue(element, builder, "load-conditioning-interval");
-		ParsingUtils.setPropertyValue(element, builder, "max-connections");
-		ParsingUtils.setPropertyValue(element, builder, "min-connections");
-		ParsingUtils.setPropertyValue(element, builder, "multi-user-authentication");
-		ParsingUtils.setPropertyValue(element, builder, "ping-interval");
-		ParsingUtils.setPropertyValue(element, builder, "pr-single-hop-enabled");
-		ParsingUtils.setPropertyValue(element, builder, "read-timeout");
-		ParsingUtils.setPropertyValue(element, builder, "retry-attempts");
-		ParsingUtils.setPropertyValue(element, builder, "server-group");
-		ParsingUtils.setPropertyValue(element, builder, "socket-buffer-size");
-		ParsingUtils.setPropertyValue(element, builder, "socket-connect-timeout");
-		ParsingUtils.setPropertyValue(element, builder, "statistic-interval");
-		ParsingUtils.setPropertyValue(element, builder, "subscription-ack-interval");
-		ParsingUtils.setPropertyValue(element, builder, "subscription-enabled");
-		ParsingUtils.setPropertyValue(element, builder, "subscription-message-tracking-timeout");
-		ParsingUtils.setPropertyValue(element, builder, "subscription-redundancy");
-		ParsingUtils.setPropertyValue(element, builder, "thread-local-connections");
+		// Be careful not to enable this dependency
+		//poolBuilder.addDependsOn(GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
+
+		ParsingUtils.setPropertyValue(element, poolBuilder, "free-connection-timeout");
+		ParsingUtils.setPropertyValue(element, poolBuilder, "idle-timeout");
+		ParsingUtils.setPropertyValue(element, poolBuilder, "keep-alive");
+		ParsingUtils.setPropertyValue(element, poolBuilder, "load-conditioning-interval");
+		ParsingUtils.setPropertyValue(element, poolBuilder, "max-connections");
+		ParsingUtils.setPropertyValue(element, poolBuilder, "min-connections");
+		ParsingUtils.setPropertyValue(element, poolBuilder, "multi-user-authentication");
+		ParsingUtils.setPropertyValue(element, poolBuilder, "ping-interval");
+		ParsingUtils.setPropertyValue(element, poolBuilder, "pr-single-hop-enabled");
+		ParsingUtils.setPropertyValue(element, poolBuilder, "read-timeout");
+		ParsingUtils.setPropertyValue(element, poolBuilder, "retry-attempts");
+		ParsingUtils.setPropertyValue(element, poolBuilder, "server-group");
+		ParsingUtils.setPropertyValue(element, poolBuilder, "socket-buffer-size");
+		ParsingUtils.setPropertyValue(element, poolBuilder, "socket-connect-timeout");
+		ParsingUtils.setPropertyValue(element, poolBuilder, "statistic-interval");
+		ParsingUtils.setPropertyValue(element, poolBuilder, "subscription-ack-interval");
+		ParsingUtils.setPropertyValue(element, poolBuilder, "subscription-enabled");
+		ParsingUtils.setPropertyValue(element, poolBuilder, "subscription-message-tracking-timeout");
+		ParsingUtils.setPropertyValue(element, poolBuilder, "subscription-redundancy");
+		ParsingUtils.setPropertyValue(element, poolBuilder, "thread-local-connections");
 
 		List<Element> childElements = DomUtils.getChildElements(element);
 
@@ -137,8 +145,8 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 
 		BeanDefinitionRegistry registry = resolveRegistry(parserContext);
 
-		boolean locatorsSet = parseLocators(element, builder, registry);
-		boolean serversSet = parseServers(element, builder, registry);
+		boolean locatorsSet = parseLocators(element, poolBuilder, registry);
+		boolean serversSet = parseServers(element, poolBuilder, registry);
 
 		// If neither Locators nor Servers were explicitly configured, then setup a connection to a CacheServer
 		// running on localhost, listening on the default CacheServer port, 40404
@@ -147,20 +155,18 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 		}
 
 		if (!locators.isEmpty()) {
-			builder.addPropertyValue("locators", locators);
+			poolBuilder.addPropertyValue("locators", locators);
 		}
 
 		if (!servers.isEmpty()) {
-			builder.addPropertyValue("servers", servers);
+			poolBuilder.addPropertyValue("servers", servers);
 		}
 	}
 
-	/* (non-Javadoc) */
 	BeanDefinitionRegistry resolveRegistry(ParserContext parserContext) {
 		return parserContext.getRegistry();
 	}
 
-	/* (non-Javadoc) */
 	BeanDefinition buildConnection(String host, String port, boolean server) {
 
 		BeanDefinitionBuilder connectionEndpointBuilder =
@@ -172,7 +178,6 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 		return connectionEndpointBuilder.getBeanDefinition();
 	}
 
-	/* (non-Javadoc) */
 	BeanDefinition buildConnections(String expression, boolean server) {
 
 		BeanDefinitionBuilder connectionEndpointListBuilder =
@@ -185,27 +190,23 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 		return connectionEndpointListBuilder.getBeanDefinition();
 	}
 
-	/* (non-Javadoc) */
 	String defaultHost(String host) {
 
 		return (StringUtils.hasText(host) ? host : DEFAULT_HOST);
 	}
 
-	/* (non-Javadoc) */
 	String defaultPort(String port, boolean server) {
 
 		return (StringUtils.hasText(port) ? port
 			: (server ? String.valueOf(DEFAULT_SERVER_PORT) : String.valueOf(DEFAULT_LOCATOR_PORT)));
 	}
 
-	/* (non-Javadoc) */
 	BeanDefinition parseLocator(Element element) {
 
 		return buildConnection(element.getAttribute(HOST_ATTRIBUTE_NAME),
 			element.getAttribute(PORT_ATTRIBUTE_NAME), false);
 	}
 
-	/* (non-Javadoc) */
 	boolean parseLocators(Element element, BeanDefinitionBuilder poolBuilder, BeanDefinitionRegistry registry) {
 
 		String locatorsAttributeValue = element.getAttribute(LOCATORS_ATTRIBUTE_NAME);
@@ -232,14 +233,12 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 		return false;
 	}
 
-	/* (non-Javadoc) */
 	BeanDefinition parseServer(Element element) {
 
 		return buildConnection(element.getAttribute(HOST_ATTRIBUTE_NAME),
 			element.getAttribute(PORT_ATTRIBUTE_NAME), true);
 	}
 
-	/* (non-Javadoc) */
 	boolean parseServers(Element element, BeanDefinitionBuilder poolBuilder, BeanDefinitionRegistry registry) {
 
 		String serversAttributeValue = element.getAttribute(SERVERS_ATTRIBUTE_NAME);
@@ -266,19 +265,16 @@ class PoolParser extends AbstractSingleBeanDefinitionParser {
 		return false;
 	}
 
-	/* (non-Javadoc) */
 	String resolveId(Element element) {
 
 		return Optional.ofNullable(element.getAttribute(ID_ATTRIBUTE)).filter(StringUtils::hasText)
 			.orElse(GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME);
 	}
 
-	/* (non-Javadoc) */
 	String resolveDereferencedId(Element element) {
 		return SpringUtils.dereferenceBean(resolveId(element));
 	}
 
-	/* (non-Javadoc) */
 	@Override
 	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)
 			throws BeanDefinitionStoreException {

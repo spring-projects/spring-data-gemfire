@@ -42,18 +42,21 @@ public class InvalidRegionDefinitionUsingBeansNamespaceTest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testInvalidDataPolicyPersistentAttributeSettings() {
+
 		try {
 			new ClassPathXmlApplicationContext(CONFIG_LOCATION);
 		}
 		catch (BeanCreationException expected) {
+
 			assertTrue(expected.getCause() instanceof IllegalArgumentException);
-			assertEquals("Data Policy [REPLICATE] is invalid when persistent is true.", expected.getCause().getMessage());
+			assertEquals("Data Policy [REPLICATE] is not valid when persistent is true",
+				expected.getCause().getMessage());
 
 			throw (IllegalArgumentException) expected.getCause();
 		}
 	}
 
 	@SuppressWarnings("unused")
-	public static final class TestRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
-	}
+	public static final class TestRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> { }
+
 }

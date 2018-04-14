@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire.config.xml;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.geode.internal.datasource.ConfigProperty;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
@@ -30,6 +31,7 @@ import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.config.support.CustomEditorBeanFactoryPostProcessor;
+import org.springframework.data.gemfire.config.support.GemfireFeature;
 import org.springframework.data.gemfire.config.support.PdxDiskStoreAwareBeanFactoryPostProcessor;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -45,8 +47,13 @@ import org.w3c.dom.NamedNodeMap;
  * @author Oliver Gierke
  * @author David Turanski
  * @author John Blum
+ * @see org.springframework.beans.factory.support.AbstractBeanDefinition
+ * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
+ * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
  * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser
+ * @see org.springframework.beans.factory.xml.ParserContext
  * @see org.springframework.data.gemfire.CacheFactoryBean
+ * @see org.w3c.dom.Element
  */
 class CacheParser extends AbstractSingleBeanDefinitionParser {
 
@@ -62,79 +69,79 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 	 * {@inheritDoc}
 	 */
 	@Override
-	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder cacheBuilder) {
 
-		super.doParse(element, builder);
+		super.doParse(element, cacheBuilder);
 
 		registerGemFireBeanFactoryPostProcessors(getRegistry(parserContext));
 
-		ParsingUtils.setPropertyValue(element, builder, "cache-xml-location", "cacheXml");
-		ParsingUtils.setPropertyReference(element, builder, "properties-ref", "properties");
-		ParsingUtils.setPropertyValue(element, builder, "use-bean-factory-locator");
-		ParsingUtils.setPropertyValue(element, builder, "close");
-		ParsingUtils.setPropertyValue(element, builder, "copy-on-read");
-		ParsingUtils.setPropertyValue(element, builder, "critical-heap-percentage");
-		ParsingUtils.setPropertyValue(element, builder, "critical-off-heap-percentage");
-		ParsingUtils.setPropertyValue(element, builder, "eviction-heap-percentage");
-		ParsingUtils.setPropertyValue(element, builder, "eviction-off-heap-percentage");
-		ParsingUtils.setPropertyValue(element, builder, "enable-auto-reconnect");
-		ParsingUtils.setPropertyValue(element, builder, "lock-lease");
-		ParsingUtils.setPropertyValue(element, builder, "lock-timeout");
-		ParsingUtils.setPropertyValue(element, builder, "message-sync-interval");
-		parsePdxDiskStore(element, parserContext, builder);
-		ParsingUtils.setPropertyValue(element, builder, "pdx-ignore-unread-fields");
-		ParsingUtils.setPropertyValue(element, builder, "pdx-read-serialized");
-		ParsingUtils.setPropertyValue(element, builder, "pdx-persistent");
-		ParsingUtils.setPropertyReference(element, builder, "pdx-serializer-ref", "pdxSerializer");
-		ParsingUtils.setPropertyValue(element, builder, "search-timeout");
-		ParsingUtils.setPropertyValue(element, builder, "use-cluster-configuration");
+		ParsingUtils.setPropertyValue(element, cacheBuilder, "cache-xml-location", "cacheXml");
+		ParsingUtils.setPropertyReference(element, cacheBuilder, "properties-ref", "properties");
+		ParsingUtils.setPropertyValue(element, cacheBuilder, "use-bean-factory-locator");
+		ParsingUtils.setPropertyValue(element, cacheBuilder, "close");
+		ParsingUtils.setPropertyValue(element, cacheBuilder, "copy-on-read");
+		ParsingUtils.setPropertyValue(element, cacheBuilder, "critical-heap-percentage");
+		ParsingUtils.setPropertyValue(element, cacheBuilder, "critical-off-heap-percentage");
+		ParsingUtils.setPropertyValue(element, cacheBuilder, "eviction-heap-percentage");
+		ParsingUtils.setPropertyValue(element, cacheBuilder, "eviction-off-heap-percentage");
+		ParsingUtils.setPropertyValue(element, cacheBuilder, "enable-auto-reconnect");
+		ParsingUtils.setPropertyValue(element, cacheBuilder, "lock-lease");
+		ParsingUtils.setPropertyValue(element, cacheBuilder, "lock-timeout");
+		ParsingUtils.setPropertyValue(element, cacheBuilder, "message-sync-interval");
+		parsePdxDiskStore(element, parserContext, cacheBuilder);
+		ParsingUtils.setPropertyValue(element, cacheBuilder, "pdx-ignore-unread-fields");
+		ParsingUtils.setPropertyValue(element, cacheBuilder, "pdx-read-serialized");
+		ParsingUtils.setPropertyValue(element, cacheBuilder, "pdx-persistent");
+		ParsingUtils.setPropertyReference(element, cacheBuilder, "pdx-serializer-ref", "pdxSerializer");
+		ParsingUtils.setPropertyValue(element, cacheBuilder, "search-timeout");
+		ParsingUtils.setPropertyValue(element, cacheBuilder, "use-cluster-configuration");
 
 		List<Element> txListeners = DomUtils.getChildElementsByTagName(element, "transaction-listener");
 
 		if (!CollectionUtils.isEmpty(txListeners)) {
-			ManagedList<Object> transactionListeners = new ManagedList<Object>();
+
+			ManagedList<Object> transactionListeners = new ManagedList<>();
 
 			for (Element txListener : txListeners) {
 				transactionListeners.add(ParsingUtils.parseRefOrNestedBeanDeclaration(
-					txListener, parserContext, builder));
+					txListener, parserContext, cacheBuilder));
 			}
 
-			builder.addPropertyValue("transactionListeners", transactionListeners);
+			cacheBuilder.addPropertyValue("transactionListeners", transactionListeners);
 		}
 
 		Element txWriter = DomUtils.getChildElementByTagName(element, "transaction-writer");
 
 		if (txWriter != null) {
-			builder.addPropertyValue("transactionWriter", ParsingUtils.parseRefOrNestedBeanDeclaration(
-				txWriter, parserContext, builder));
+			cacheBuilder.addPropertyValue("transactionWriter",
+				ParsingUtils.parseRefOrNestedBeanDeclaration(txWriter, parserContext, cacheBuilder));
 		}
 
-		Element gatewayConflictResolver = DomUtils.getChildElementByTagName(element, "gateway-conflict-resolver");
+		Element gatewayConflictResolver =
+			DomUtils.getChildElementByTagName(element, "gateway-conflict-resolver");
 
 		if (gatewayConflictResolver != null) {
-			ParsingUtils.throwExceptionIfNotGemfireV7(element.getLocalName(), "gateway-conflict-resolver", parserContext);
-			builder.addPropertyValue("gatewayConflictResolver", ParsingUtils.parseRefOrSingleNestedBeanDeclaration(
-				gatewayConflictResolver, parserContext, builder));
+			ParsingUtils.throwExceptionWhenGemFireFeatureUnavailable(GemfireFeature.WAN, element.getLocalName(),
+				"gateway-conflict-resolver", parserContext);
+			cacheBuilder.addPropertyValue("gatewayConflictResolver", ParsingUtils.parseRefOrSingleNestedBeanDeclaration(
+				gatewayConflictResolver, parserContext, cacheBuilder));
 		}
 
-		parseDynamicRegionFactory(element, builder);
-		parseJndiBindings(element, builder);
+		parseDynamicRegionFactory(element, cacheBuilder);
+		parseJndiBindings(element, cacheBuilder);
 	}
 
-	/* (non-Javadoc) */
 	protected BeanDefinitionRegistry getRegistry(ParserContext parserContext) {
 		return parserContext.getRegistry();
 	}
 
-	/* (non-Javadoc) */
-	void registerGemFireBeanFactoryPostProcessors(BeanDefinitionRegistry registry) {
+	private void registerGemFireBeanFactoryPostProcessors(BeanDefinitionRegistry registry) {
 
 		BeanDefinitionReaderUtils.registerWithGeneratedName(
 			BeanDefinitionBuilder.genericBeanDefinition(CustomEditorBeanFactoryPostProcessor.class)
 				.getBeanDefinition(), registry);
 	}
 
-	/* (non-Javadoc) */
 	private void parsePdxDiskStore(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
 
 		ParsingUtils.setPropertyValue(element, builder, "pdx-disk-store", "pdxDiskStoreName");
@@ -146,15 +153,15 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 		}
 	}
 
-	/* (non-Javadoc) */
-	void registerPdxDiskStoreAwareBeanFactoryPostProcessor(BeanDefinitionRegistry registry, String pdxDiskStoreName) {
+	private void registerPdxDiskStoreAwareBeanFactoryPostProcessor(BeanDefinitionRegistry registry,
+			String pdxDiskStoreName) {
 
 		BeanDefinitionReaderUtils.registerWithGeneratedName(
 			createPdxDiskStoreAwareBeanFactoryPostProcessorBeanDefinition(pdxDiskStoreName), registry);
 	}
 
-	/* (non-Javadoc) */
-	private AbstractBeanDefinition createPdxDiskStoreAwareBeanFactoryPostProcessorBeanDefinition(String pdxDiskStoreName) {
+	private AbstractBeanDefinition createPdxDiskStoreAwareBeanFactoryPostProcessorBeanDefinition(
+			String pdxDiskStoreName) {
 
 		BeanDefinitionBuilder builder =
 			BeanDefinitionBuilder.genericBeanDefinition(PdxDiskStoreAwareBeanFactoryPostProcessor.class);
@@ -164,25 +171,26 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 		return builder.getBeanDefinition();
 	}
 
-	/* (non-Javadoc) */
-	private void parseDynamicRegionFactory(Element element, BeanDefinitionBuilder builder) {
+	private void parseDynamicRegionFactory(Element element, BeanDefinitionBuilder cacheBuilder) {
 
-		Element dynamicRegionFactory = DomUtils.getChildElementByTagName(element, "dynamic-region-factory");
+		Element dynamicRegionFactory =
+			DomUtils.getChildElementByTagName(element, "dynamic-region-factory");
 
 		if (dynamicRegionFactory != null) {
+
 			BeanDefinitionBuilder dynamicRegionSupport = buildDynamicRegionSupport(dynamicRegionFactory);
+
 			postProcessDynamicRegionSupport(element, dynamicRegionSupport);
-			builder.addPropertyValue("dynamicRegionSupport", dynamicRegionSupport.getBeanDefinition());
+			cacheBuilder.addPropertyValue("dynamicRegionSupport", dynamicRegionSupport.getBeanDefinition());
 		}
 	}
 
-	/* (non-Javadoc) */
 	private BeanDefinitionBuilder buildDynamicRegionSupport(Element dynamicRegionFactory) {
 
 		if (dynamicRegionFactory != null) {
 
-			BeanDefinitionBuilder dynamicRegionSupport = BeanDefinitionBuilder.genericBeanDefinition(
-				CacheFactoryBean.DynamicRegionSupport.class);
+			BeanDefinitionBuilder dynamicRegionSupport =
+				BeanDefinitionBuilder.genericBeanDefinition(CacheFactoryBean.DynamicRegionSupport.class);
 
 			String diskDirectory = dynamicRegionFactory.getAttribute("disk-dir");
 
@@ -211,17 +219,15 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 	/**
 	 * @param dynamicRegionSupport {@link BeanDefinitionBuilder} for &lt;gfe:dynamic-region-factory&gt; element.
 	 */
-	protected void postProcessDynamicRegionSupport(Element element, BeanDefinitionBuilder dynamicRegionSupport) {
-	}
+	protected void postProcessDynamicRegionSupport(Element element, BeanDefinitionBuilder dynamicRegionSupport) { }
 
-	/* (non-Javadoc) */
-	private void parseJndiBindings(Element element, BeanDefinitionBuilder builder) {
+	private void parseJndiBindings(Element element, BeanDefinitionBuilder cacheBuilder) {
 
 		List<Element> jndiBindings = DomUtils.getChildElementsByTagName(element, "jndi-binding");
 
 		if (!CollectionUtils.isEmpty(jndiBindings)) {
 
-			ManagedList<Object> jndiDataSources = new ManagedList<Object>(jndiBindings.size());
+			ManagedList<Object> jndiDataSources = new ManagedList<>(jndiBindings.size());
 
 			for (Element jndiBinding : jndiBindings) {
 
@@ -231,7 +237,7 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 				// NOTE 'jndi-name' and 'type' are required by the XSD so we should have at least 2 attributes.
 				NamedNodeMap attributes = jndiBinding.getAttributes();
 
-				ManagedMap<String, String> jndiAttributes = new ManagedMap<String, String>(attributes.getLength());
+				ManagedMap<String, String> jndiAttributes = new ManagedMap<>(attributes.getLength());
 
 				for (int index = 0, length = attributes.getLength(); index < length; index++) {
 					Attr attribute = (Attr) attributes.item(index);
@@ -243,9 +249,11 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 				List<Element> jndiProps = DomUtils.getChildElementsByTagName(jndiBinding, "jndi-prop");
 
 				if (!CollectionUtils.isEmpty(jndiProps)) {
-					ManagedList<Object> props = new ManagedList<Object>(jndiProps.size());
+
+					ManagedList<Object> props = new ManagedList<>(jndiProps.size());
 
 					for (Element jndiProp : jndiProps) {
+
 						String key = jndiProp.getAttribute("key");
 						String type = jndiProp.getAttribute("type");
 						String value = jndiProp.getTextContent();
@@ -265,7 +273,7 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 				jndiDataSources.add(jndiDataSource.getBeanDefinition());
 			}
 
-			builder.addPropertyValue("jndiDataSources", jndiDataSources);
+			cacheBuilder.addPropertyValue("jndiDataSources", jndiDataSources);
 		}
 	}
 
@@ -276,11 +284,12 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 	protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext)
 		throws BeanDefinitionStoreException {
 
-		String name = super.resolveId(element, definition, parserContext);
+		String name = Optional.of(super.resolveId(element, definition, parserContext))
+			.filter(StringUtils::hasText)
+			.map(StringUtils::trimWhitespace)
+			.orElse(GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
 
-		if (!StringUtils.hasText(name)) {
-			name = GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME;
-			// Set Cache bean alias for backwards compatibility...
+		if (!"gemfire-cache".equals(name)) {
 			parserContext.getRegistry().registerAlias(name, "gemfire-cache");
 		}
 

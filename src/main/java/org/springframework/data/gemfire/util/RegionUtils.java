@@ -18,10 +18,14 @@ package org.springframework.data.gemfire.util;
 
 import java.util.Optional;
 
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.springframework.data.gemfire.client.ClientRegionShortcutWrapper;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
@@ -35,6 +39,53 @@ import org.springframework.util.StringUtils;
 @SuppressWarnings("unused")
 public abstract class RegionUtils extends CacheUtils {
 
+	/**
+	 * Assert that the configuration settings for {@link ClientRegionShortcut} and the {@literal persistent} attribute
+	 * in &lt;gfe:*-region&gt; elements are compatible.
+	 *
+	 * @param resolvedShortcut {@link ClientRegionShortcut} resolved from the SDG XML namespace.
+	 * @param persistent boolean indicating the value of the {@literal persistent} configuration attribute.
+	 * @see org.springframework.data.gemfire.client.ClientRegionShortcutWrapper
+	 * @see org.apache.geode.cache.client.ClientRegionShortcut
+	 */
+	public static void assertClientRegionShortcutAndPersistentAttributeAreCompatible(
+			ClientRegionShortcut resolvedShortcut, Boolean persistent) {
+
+		boolean persistentUnspecified = persistent == null;
+
+		if (ClientRegionShortcutWrapper.valueOf(resolvedShortcut).isPersistent()) {
+			Assert.isTrue(persistentUnspecified || Boolean.TRUE.equals(persistent),
+				String.format("Client Region Shortcut [%s] is not valid when persistent is false", resolvedShortcut));
+		}
+		else {
+			Assert.isTrue(persistentUnspecified || Boolean.FALSE.equals(persistent),
+				String.format("Client Region Shortcut [%s] is not valid when persistent is true", resolvedShortcut));
+		}
+	}
+
+	/**
+	 * Assert that the configuration settings for {@link DataPolicy} and the {@literal persistent} attribute
+	 * in &lt;gfe:*-region&gt; elements are compatible.
+	 *
+	 * @param resolvedDataPolicy {@link DataPolicy} resolved from the SDG XML namespace.
+	 * @param persistent boolean indicating the value of the {@literal persistent} configuration attribute.
+	 * @see org.apache.geode.cache.DataPolicy
+	 */
+	public static void assertDataPolicyAndPersistentAttributeAreCompatible(
+			DataPolicy resolvedDataPolicy, Boolean persistent) {
+
+		boolean persistentUnspecified = persistent == null;
+
+		if (resolvedDataPolicy.withPersistence()) {
+			Assert.isTrue(persistentUnspecified || Boolean.TRUE.equals(persistent),
+				String.format("Data Policy [%s] is not valid when persistent is false", resolvedDataPolicy));
+		}
+		else {
+			Assert.isTrue(persistentUnspecified || Boolean.FALSE.equals(persistent),
+				String.format("Data Policy [%s] is not valid when persistent is true", resolvedDataPolicy));
+		}
+	}
+
 	public static boolean isClient(Region region) {
 
 		return Optional.ofNullable(region)
@@ -44,13 +95,11 @@ public abstract class RegionUtils extends CacheUtils {
 			.isPresent();
 	}
 
-	/* (non-Javadoc) */
 	@Nullable
 	public static String toRegionName(@Nullable Region<?, ?> region) {
 		return Optional.ofNullable(region).map(Region::getName).orElse(null);
 	}
 
-	/* (non-Javadoc) */
 	@Nullable
 	public static String toRegionName(String regionPath) {
 
@@ -63,13 +112,11 @@ public abstract class RegionUtils extends CacheUtils {
 			.orElse(regionPath);
 	}
 
-	/* (non-Javadoc) */
 	@Nullable
 	public static String toRegionPath(@Nullable Region<?, ?> region) {
 		return Optional.ofNullable(region).map(Region::getFullPath).orElse(null);
 	}
 
-	/* (non-Javadoc) */
 	@NonNull
 	public static String toRegionPath(String regionName) {
 		return String.format("%1$s%2$s", Region.SEPARATOR, regionName);
