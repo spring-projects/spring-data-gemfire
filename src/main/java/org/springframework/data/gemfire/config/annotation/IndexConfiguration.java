@@ -199,7 +199,7 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 
 			indexFactoryBeanBuilder.addPropertyReference("cache", GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
 
-			indexFactoryBeanBuilder.addPropertyValue("define", resolveDefine(enableIndexingAttributes));
+			indexFactoryBeanBuilder.addPropertyValue("define", hasDefine(enableIndexingAttributes));
 
 			indexFactoryBeanBuilder.addPropertyValue("expression",
 				resolveExpression(persistentEntity, persistentProperty, indexedAttributes));
@@ -318,7 +318,7 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 	}
 
 	/* (non-Javadoc) */
-	private boolean resolveDefine(AnnotationAttributes enableIndexingAttributes) {
+	private boolean hasDefine(AnnotationAttributes enableIndexingAttributes) {
 		return (enableIndexingAttributes.containsKey("define")
 			&& enableIndexingAttributes.getBoolean("define"));
 	}
