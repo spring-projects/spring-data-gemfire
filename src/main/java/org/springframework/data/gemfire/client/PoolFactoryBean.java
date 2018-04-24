@@ -234,9 +234,10 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 
 			eagerlyInitializeClientCacheIfNotPresent();
 
-			PoolFactory poolFactory = configure(initialize(createPoolFactory()));
+			Pool namedPool = PoolManager.find(getName());
 
-			this.pool = create(poolFactory, getName());
+			this.pool = namedPool != null ? namedPool
+				: create(configure(initialize(createPoolFactory())), getName());
 
 			return this.pool;
 		});
