@@ -164,45 +164,51 @@ public class PoolFactoryBean implements FactoryBean<Pool>, InitializingBean, Dis
 		}
 	}
 
-	/* (non-Javadoc) */
 	@Override
 	public Pool getObject() throws Exception {
+
 		if (this.pool == null) {
+
 			eagerlyInitializeClientCacheIfNotPresent();
 
-			PoolFactory poolFactory = createPoolFactory();
+			this.pool = PoolManager.find(getName());
 
-			poolFactory.setFreeConnectionTimeout(freeConnectionTimeout);
-			poolFactory.setIdleTimeout(idleTimeout);
-			poolFactory.setLoadConditioningInterval(loadConditioningInterval);
-			poolFactory.setMaxConnections(maxConnections);
-			poolFactory.setMinConnections(minConnections);
-			poolFactory.setMultiuserAuthentication(multiUserAuthentication);
-			poolFactory.setPingInterval(pingInterval);
-			poolFactory.setPRSingleHopEnabled(prSingleHopEnabled);
-			poolFactory.setReadTimeout(readTimeout);
-			poolFactory.setRetryAttempts(retryAttempts);
-			poolFactory.setServerGroup(serverGroup);
-			poolFactory.setSocketBufferSize(socketBufferSize);
-			poolFactory.setStatisticInterval(statisticInterval);
-			poolFactory.setSubscriptionAckInterval(subscriptionAckInterval);
-			poolFactory.setSubscriptionEnabled(subscriptionEnabled);
-			poolFactory.setSubscriptionMessageTrackingTimeout(subscriptionMessageTrackingTimeout);
-			poolFactory.setSubscriptionRedundancy(subscriptionRedundancy);
-			poolFactory.setThreadLocalConnections(threadLocalConnections);
+			if (this.pool == null) {
 
-			for (ConnectionEndpoint locator : this.locators) {
-				poolFactory.addLocator(locator.getHost(), locator.getPort());
+				PoolFactory poolFactory = createPoolFactory();
+
+				poolFactory.setFreeConnectionTimeout(freeConnectionTimeout);
+				poolFactory.setIdleTimeout(idleTimeout);
+				poolFactory.setLoadConditioningInterval(loadConditioningInterval);
+				poolFactory.setMaxConnections(maxConnections);
+				poolFactory.setMinConnections(minConnections);
+				poolFactory.setMultiuserAuthentication(multiUserAuthentication);
+				poolFactory.setPingInterval(pingInterval);
+				poolFactory.setPRSingleHopEnabled(prSingleHopEnabled);
+				poolFactory.setReadTimeout(readTimeout);
+				poolFactory.setRetryAttempts(retryAttempts);
+				poolFactory.setServerGroup(serverGroup);
+				poolFactory.setSocketBufferSize(socketBufferSize);
+				poolFactory.setStatisticInterval(statisticInterval);
+				poolFactory.setSubscriptionAckInterval(subscriptionAckInterval);
+				poolFactory.setSubscriptionEnabled(subscriptionEnabled);
+				poolFactory.setSubscriptionMessageTrackingTimeout(subscriptionMessageTrackingTimeout);
+				poolFactory.setSubscriptionRedundancy(subscriptionRedundancy);
+				poolFactory.setThreadLocalConnections(threadLocalConnections);
+
+				for (ConnectionEndpoint locator : this.locators) {
+					poolFactory.addLocator(locator.getHost(), locator.getPort());
+				}
+
+				for (ConnectionEndpoint server : this.servers) {
+					poolFactory.addServer(server.getHost(), server.getPort());
+				}
+
+				this.pool = poolFactory.create(name);
 			}
-
-			for (ConnectionEndpoint server : this.servers) {
-				poolFactory.addServer(server.getHost(), server.getPort());
-			}
-
-			pool = poolFactory.create(name);
 		}
 
-		return pool;
+		return this.pool;
 	}
 
 	/**
