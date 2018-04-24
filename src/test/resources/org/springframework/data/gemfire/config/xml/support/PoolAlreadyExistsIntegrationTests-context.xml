@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:util="http://www.springframework.org/schema/util"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+">
+
+	<context:property-placeholder/>
+
+	<util:properties id="gemfireProperties">
+		<prop key="log-level">${gemfire.log-level:error}</prop>
+	</util:properties>
+
+	<gfe:client-cache properties-ref="gemfireProperties" pool-name="TestPool"/>
+
+	<gfe:pool id="TestPool">
+		<gfe:locator host="localhost" port="${gemfire.locator.port:10334}"/>
+	</gfe:pool>
+
+	<gfe:client-region id="RegionOne" shortcut="PROXY" pool-name="TestPool"/>
+	<gfe:client-region id="RegionTwo" shortcut="PROXY" pool-name="TestPool"/>
+
+	<bean id="RegionTwoFunctionTemplate" class="org.springframework.data.gemfire.function.execution.GemfireOnRegionFunctionTemplate">
+		<constructor-arg index="0" ref="RegionTwo"/>
+	</bean>
+
+	<bean class="org.springframework.data.gemfire.function.execution.OnRegionFunctionProxyFactoryBean">
+		<constructor-arg index="0" value="org.springframework.data.gemfire.config.xml.support.PoolAlreadyExistsIntegrationTests$TestFunctionExecution"/>
+		<constructor-arg index="1" ref="RegionTwoFunctionTemplate"/>
+	</bean>
+
+</beans>
