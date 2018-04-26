@@ -18,8 +18,6 @@
 package org.springframework.data.gemfire.search.lucene;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -43,14 +41,13 @@ import org.apache.geode.cache.lucene.LuceneIndexFactory;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.lucene.analysis.Analyzer;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.data.gemfire.GemfireUtils;
 
 /**
  * Unit tests for {@link LuceneIndexFactoryBean}.
@@ -68,9 +65,6 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class LuceneIndexFactoryBeanUnitTests {
-
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
 
 	@Mock
 	private Analyzer mockAnalyzer;
@@ -98,6 +92,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 	@Before
 	@SuppressWarnings("unchecked")
 	public void setup() {
+
 		factoryBean = spy(new LuceneIndexFactoryBean());
 
 		doReturn(mockLuceneService).when(factoryBean).resolveLuceneService(eq(mockCache));
@@ -108,6 +103,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 
 	@Test
 	public void afterPropertiesSetResolvesCacheLuceneServiceRegionPathAndCreatesLuceneIndex() throws Exception {
+
 		doReturn(mockCache).when(factoryBean).resolveCache();
 		doReturn(mockLuceneService).when(factoryBean).resolveLuceneService();
 		doReturn("/Example").when(factoryBean).resolveRegionPath();
@@ -128,17 +124,24 @@ public class LuceneIndexFactoryBeanUnitTests {
 			.createLuceneIndex(eq("ExampleIndex"), eq("/Example"));
 	}
 
-	@Test
+	@Test(expected = IllegalStateException.class)
 	public void afterPropertiesSetThrowsIllegalStateExceptionWhenIndexNameNotSet() throws Exception {
-		exception.expect(IllegalStateException.class);
-		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("indexName was not properly initialized");
 
-		factoryBean.afterPropertiesSet();
+		try {
+			factoryBean.afterPropertiesSet();
+		}
+		catch (IllegalStateException expected) {
+
+			assertThat(expected).hasMessageContaining("indexName was not properly initialized");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
 	}
 
 	@Test
 	public void createLuceneIndexWithAllFields() {
+
 		factoryBean.setLuceneService(mockLuceneService);
 
 		when(mockLuceneService.getIndex(eq("ExampleIndex"), eq("/Example"))).thenReturn(mockLuceneIndex);
@@ -148,6 +151,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 		assertThat(factoryBean.getLuceneService()).isSameAs(mockLuceneService);
 		assertThat(factoryBean.createLuceneIndex("ExampleIndex", "/Example")).isEqualTo(mockLuceneIndex);
 
+		verify(factoryBean, times(1)).postProcess(eq(mockLuceneIndexFactory));
 		verify(mockLuceneService, times(1)).createIndexFactory();
 		verify(mockLuceneIndexFactory, times(1))
 			.setFields(eq(LuceneService.REGION_VALUE_FIELD));
@@ -158,7 +162,8 @@ public class LuceneIndexFactoryBeanUnitTests {
 	}
 
 	@Test
-	public void createLuceneIndexWithFieldAnalyzers() {
+	public void createLuceneIndexWithFieldAnalyzerMapping() {
+
 		Map<String, Analyzer> fieldAnalyzers = Collections.singletonMap("fieldOne", mockAnalyzer);
 
 		factoryBean.setFieldAnalyzers(fieldAnalyzers);
@@ -171,6 +176,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 		assertThat(factoryBean.getLuceneService()).isSameAs(mockLuceneService);
 		assertThat(factoryBean.createLuceneIndex("ExampleIndex", "/Example")).isEqualTo(mockLuceneIndex);
 
+		verify(factoryBean, times(1)).postProcess(eq(mockLuceneIndexFactory));
 		verify(mockLuceneService, times(1)).createIndexFactory();
 		verify(mockLuceneIndexFactory, times(1)).setFields(eq(fieldAnalyzers));
 		verify(mockLuceneIndexFactory, times(1))
@@ -181,6 +187,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 
 	@Test
 	public void createLuceneIndexWithTargetedFields() {
+
 		factoryBean.setFields("fieldOne", "fieldTwo");
 		factoryBean.setLuceneService(mockLuceneService);
 
@@ -191,6 +198,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 		assertThat(factoryBean.getLuceneService()).isSameAs(mockLuceneService);
 		assertThat(factoryBean.createLuceneIndex("ExampleIndex", "/Example")).isEqualTo(mockLuceneIndex);
 
+		verify(factoryBean, times(1)).postProcess(eq(mockLuceneIndexFactory));
 		verify(mockLuceneService, times(1)).createIndexFactory();
 		verify(mockLuceneIndexFactory, times(1))
 			.setFields(eq("fieldOne"), eq("fieldTwo"));
@@ -201,8 +209,29 @@ public class LuceneIndexFactoryBeanUnitTests {
 	}
 
 	@Test
+	public void resolveLuceneIndexPostProcessesLuceneIndexOnCreate() {
+
+		doReturn(mockLuceneService).when(factoryBean).resolveLuceneService();
+		when(mockLuceneService.getIndex(anyString(), anyString())).thenReturn(null);
+		doReturn(mockLuceneIndex).when(factoryBean).createLuceneIndex(anyString(), anyString());
+
+		assertThat(factoryBean.resolveLuceneIndex("TestIndex",
+			GemfireUtils.toRegionPath("TestRegion")))
+				.isEqualTo(mockLuceneIndex);
+
+		verify(factoryBean, times(1)).resolveLuceneService();
+		verify(mockLuceneService, times(1))
+			.getIndex(eq("TestIndex"), eq(GemfireUtils.toRegionPath("TestRegion")));
+		verify(factoryBean, times(1))
+			.createLuceneIndex(eq("TestIndex"), eq(GemfireUtils.toRegionPath("TestRegion")));
+		verify(factoryBean, times(1)).postProcess(eq(mockLuceneIndex));
+		verify(factoryBean, times(1)).getLuceneIndex();
+	}
+
+	@Test
 	@SuppressWarnings("deprecation")
 	public void destroyIsSuccessful() throws Exception {
+
 		factoryBean.setDestroy(true);
 		factoryBean.setLuceneService(mockLuceneService);
 
@@ -223,6 +252,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 	@Test
 	@SuppressWarnings("deprecation")
 	public void destroyDoesNothingWhenDestroyIsFalse() throws Exception {
+
 		factoryBean.setDestroy(false);
 		factoryBean.setLuceneService(mockLuceneService);
 
@@ -240,6 +270,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 	@Test
 	@SuppressWarnings("deprecation")
 	public void destroyDoesNothingWhenLuceneIndexIsNull() throws Exception {
+
 		factoryBean.setDestroy(true);
 		factoryBean.setLuceneService(mockLuceneService);
 
@@ -256,6 +287,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 
 	@Test
 	public void isLuceneIndexDestroyableReturnsTrue() {
+
 		factoryBean.setDestroy(true);
 
 		assertThat(factoryBean.isDestroy()).isTrue();
@@ -264,6 +296,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 
 	@Test
 	public void isLuceneIndexDestroyableWhenDestroyIsFalseReturnsFalse() {
+
 		factoryBean.setDestroy(false);
 
 		assertThat(factoryBean.isDestroy()).isFalse();
@@ -272,6 +305,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 
 	@Test
 	public void isLuceneIndexDestroyableWhenLuceneIndexIsNullReturnsFalse() {
+
 		factoryBean.setDestroy(true);
 
 		assertThat(factoryBean.isDestroy()).isTrue();
@@ -280,6 +314,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 
 	@Test
 	public void getObjectReturnsLuceneIndexFromLuceneService() throws Exception {
+
 		factoryBean.setCache(mockCache);
 		factoryBean.setIndexName("ExampleIndex");
 		factoryBean.setLuceneService(mockLuceneService);
@@ -299,6 +334,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 
 	@Test
 	public void getObjectReturnsExistingLuceneIndex() throws Exception {
+
 		factoryBean.setLuceneIndex(mockLuceneIndex);
 		factoryBean.setLuceneService(mockLuceneService);
 
@@ -309,6 +345,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 
 	@Test
 	public void getObjectReturnsNullWhenLuceneServiceIsNull() throws Exception {
+
 		factoryBean.setCache(mockCache);
 		factoryBean.setRegionPath("/Example");
 
@@ -340,6 +377,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 
 	@Test
 	public void resolveCacheReturnsConfiguredCache() {
+
 		factoryBean.setCache(mockCache);
 
 		assertThat(factoryBean.getCache()).isSameAs(mockCache);
@@ -348,6 +386,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 
 	@Test
 	public void resolveFieldsReturnsGivenFields() {
+
 		List<String> expectedFields = Arrays.asList("fieldOne", "fieldTwo");
 
 		assertThat(factoryBean.resolveFields(expectedFields)).isSameAs(expectedFields);
@@ -367,6 +406,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 
 	@Test
 	public void resolveLuceneIndexFactoryCallsLuceneServiceCreateIndexFactory() {
+
 		factoryBean.setCache(mockCache);
 
 		doReturn(mockLuceneIndexFactory).when(mockLuceneService).createIndexFactory();
@@ -378,6 +418,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 
 	@Test
 	public void resolveLuceneServiceReturnsConfiguredLuceneService() {
+
 		factoryBean.setBeanFactory(mockBeanFactory);
 		factoryBean.setCache(mockCache);
 		factoryBean.setLuceneService(mockLuceneService);
@@ -394,6 +435,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 
 	@Test
 	public void resolveLuceneServiceFromBeanFactory() {
+
 		factoryBean.setBeanFactory(mockBeanFactory);
 		factoryBean.setCache(mockCache);
 
@@ -411,6 +453,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 
 	@Test
 	public void resolveLuceneServiceFromGemFireCache() {
+
 		factoryBean.setCache(mockCache);
 
 		doReturn(mockLuceneService).when(factoryBean).resolveLuceneService(eq(mockCache));
@@ -427,6 +470,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void resolveLuceneServiceFromGemFireCacheWithBeanFactoryThrowinBeansException() {
+
 		factoryBean.setBeanFactory(mockBeanFactory);
 		factoryBean.setCache(mockCache);
 
@@ -443,18 +487,25 @@ public class LuceneIndexFactoryBeanUnitTests {
 		verify(factoryBean, times(1)).resolveLuceneService(eq(mockCache));
 	}
 
-	@Test
+	@Test(expected = IllegalArgumentException.class)
 	public void resolveLuceneServiceThrowsIllegalArgumentExceptionWhenGemFireCacheIsNotConfigured() {
-		exception.expect(IllegalArgumentException.class);
-		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("A reference to the GemFireCache was not properly configured");
 
-		factoryBean.resolveLuceneService(null);
+		try {
+			factoryBean.resolveLuceneService(null);
+		}
+		catch (IllegalArgumentException expected) {
+
+			assertThat(expected).hasMessageContaining("A reference to the GemFireCache was not properly configured");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
 	}
 
 	@Test
 	@SuppressWarnings("all")
 	public void resolveRegionReturnsConfiguredRegion() {
+
 		factoryBean.setRegion(mockRegion);
 
 		assertThat(factoryBean.resolveRegion()).isSameAs(mockRegion);
@@ -467,6 +518,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 	@Test
 	@SuppressWarnings("all")
 	public void resolveRegionReturnsRegionFromCache() {
+
 		factoryBean.setRegionPath("/Example");
 
 		doReturn(mockCache).when(factoryBean).resolveCache();
@@ -483,6 +535,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 	@Test
 	@SuppressWarnings("all")
 	public void resolveRegionReturnsNullWhenCacheNotConfigured() {
+
 		factoryBean.setRegionPath("/Example");
 
 		doReturn(null).when(factoryBean).resolveCache();
@@ -497,6 +550,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 	@Test
 	@SuppressWarnings("all")
 	public void resolveRegionReturnsNullWhenRegionPathNotConfigured() {
+
 		factoryBean.setCache(mockCache);
 		factoryBean.setRegionPath("  ");
 
@@ -511,6 +565,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 	@Test
 	@SuppressWarnings("all")
 	public void resolveRegionPathReturnsConfiguredRegionPath() {
+
 		factoryBean.setRegionPath("/Example");
 
 		doReturn(null).when(factoryBean).resolveRegion();
@@ -524,6 +579,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 	@Test
 	@SuppressWarnings("all")
 	public void resolveRegionPathReturnsRegionFullPath() {
+
 		doReturn(mockRegion).when(factoryBean).resolveRegion();
 		when(mockRegion.getFullPath()).thenReturn("/Example");
 
@@ -534,19 +590,23 @@ public class LuceneIndexFactoryBeanUnitTests {
 		verify(mockRegion, times(1)).getFullPath();
 	}
 
-	@Test
+	@Test(expected = IllegalStateException.class)
 	@SuppressWarnings("all")
 	public void resolveRegionPathThrowsIllegalStateException() {
+
 		doReturn(null).when(factoryBean).resolveRegion();
 
 		factoryBean.setRegionPath(null);
 
 		try {
-			exception.expect(IllegalStateException.class);
-			exception.expectCause(is(nullValue(Throwable.class)));
-			exception.expectMessage("Either Region or regionPath must be specified");
-
 			factoryBean.resolveRegionPath();
+		}
+		catch (IllegalStateException expected) {
+
+			assertThat(expected).hasMessageContaining("Either Region or regionPath must be specified");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
 		}
 		finally {
 			verify(factoryBean, times(1)).resolveRegion();
@@ -556,6 +616,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 
 	@Test
 	public void setAndGetFieldAnalyzers() {
+
 		Map<String, Analyzer> fieldAnalyzers = factoryBean.getFieldAnalyzers();
 
 		assertThat(fieldAnalyzers).isNotNull();
@@ -575,6 +636,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 
 	@Test
 	public void setAndGetFields() {
+
 		List<String> fields = factoryBean.getFields();
 
 		assertThat(fields).isNotNull();
@@ -593,6 +655,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 
 	@Test
 	public void setAndGetIndexName() {
+
 		factoryBean.setBeanName("IndexOne");
 
 		assertThat(factoryBean.getIndexName()).isEqualTo("IndexOne");
@@ -604,17 +667,24 @@ public class LuceneIndexFactoryBeanUnitTests {
 		factoryBean.setIndexName(null);
 	}
 
-	@Test
+	@Test(expected = IllegalStateException.class)
 	public void getUninitializedIndexName() {
-		exception.expect(IllegalStateException.class);
-		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("indexName was not properly initialized");
 
-		factoryBean.getIndexName();
+		try {
+			factoryBean.getIndexName();
+		}
+		catch (IllegalStateException expected) {
+
+			assertThat(expected).hasMessageContaining("indexName was not properly initialized");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
 	}
 
 	@Test
 	public void factoryBeanInitializationIsSuccessful() {
+
 		factoryBean.setCache(mockCache);
 		factoryBean.setDestroy(true);
 		factoryBean.setFieldAnalyzers(Collections.singletonMap("fieldThree", mockAnalyzer));
