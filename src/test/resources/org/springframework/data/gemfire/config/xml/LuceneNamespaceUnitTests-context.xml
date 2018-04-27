@@ -41,6 +41,9 @@
 				</entry>
 			</map>
 		</gfe:field-analyzers>
+		<gfe:lucene-serializer>
+			<bean class="org.springframework.data.gemfire.config.xml.LuceneNamespaceUnitTests$MockLuceneSerializerFactoryBean"/>
+		</gfe:lucene-serializer>
 	</gfe:lucene-index>
 
 	<gfe:lucene-index id="IndexThree" fields="singleField" lucene-service-ref="luceneService" region-ref="Example"/>
@@ -52,8 +55,11 @@
 		</entry>
 	</util:map>
 
+	<bean id="MockLuceneSerializer" class="org.springframework.data.gemfire.config.xml.LuceneNamespaceUnitTests$MockLuceneSerializerFactoryBean"/>
+
 	<gfe:lucene-index id="IndexFour" lucene-service-ref="luceneService" region-path="/YetAnotherExample">
 		<gfe:field-analyzers ref="indexFourFieldAnalyzers"/>
+		<gfe:lucene-serializer ref="MockLuceneSerializer"/>
 	</gfe:lucene-index>
 
 </beans>

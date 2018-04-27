@@ -38,6 +38,7 @@ import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneIndexFactory;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.lucene.analysis.Analyzer;
 import org.junit.Before;
@@ -80,6 +81,9 @@ public class LuceneIndexFactoryBeanUnitTests {
 
 	@Mock
 	private LuceneIndexFactory mockLuceneIndexFactory;
+
+	@Mock
+	private LuceneSerializer mockLuceneSerializer;
 
 	@Mock
 	private LuceneService mockLuceneService;
@@ -155,6 +159,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 		verify(mockLuceneService, times(1)).createIndexFactory();
 		verify(mockLuceneIndexFactory, times(1))
 			.setFields(eq(LuceneService.REGION_VALUE_FIELD));
+		verify(mockLuceneIndexFactory, never()).setLuceneSerializer(any(LuceneSerializer.class));
 		verify(mockLuceneIndexFactory, times(1))
 			.create(eq("ExampleIndex"), eq("/Example"));
 		verify(mockLuceneService, times(1))
@@ -167,6 +172,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 		Map<String, Analyzer> fieldAnalyzers = Collections.singletonMap("fieldOne", mockAnalyzer);
 
 		factoryBean.setFieldAnalyzers(fieldAnalyzers);
+		factoryBean.setLuceneSerializer(mockLuceneSerializer);
 		factoryBean.setLuceneService(mockLuceneService);
 
 		when(mockLuceneService.getIndex(eq("ExampleIndex"), eq("/Example"))).thenReturn(mockLuceneIndex);
@@ -174,11 +180,13 @@ public class LuceneIndexFactoryBeanUnitTests {
 		assertThat(factoryBean.getFieldAnalyzers()).isEqualTo(fieldAnalyzers);
 		assertThat(factoryBean.getFields()).isEmpty();
 		assertThat(factoryBean.getLuceneService()).isSameAs(mockLuceneService);
-		assertThat(factoryBean.createLuceneIndex("ExampleIndex", "/Example")).isEqualTo(mockLuceneIndex);
+		assertThat(factoryBean.createLuceneIndex("ExampleIndex", "/Example"))
+			.isEqualTo(mockLuceneIndex);
 
 		verify(factoryBean, times(1)).postProcess(eq(mockLuceneIndexFactory));
 		verify(mockLuceneService, times(1)).createIndexFactory();
 		verify(mockLuceneIndexFactory, times(1)).setFields(eq(fieldAnalyzers));
+		verify(mockLuceneIndexFactory, times(1)).setLuceneSerializer(eq(mockLuceneSerializer));
 		verify(mockLuceneIndexFactory, times(1))
 			.create(eq("ExampleIndex"), eq("/Example"));
 		verify(mockLuceneService, times(1))
@@ -189,6 +197,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 	public void createLuceneIndexWithTargetedFields() {
 
 		factoryBean.setFields("fieldOne", "fieldTwo");
+		factoryBean.setLuceneSerializer(mockLuceneSerializer);
 		factoryBean.setLuceneService(mockLuceneService);
 
 		when(mockLuceneService.getIndex(eq("ExampleIndex"), eq("/Example"))).thenReturn(mockLuceneIndex);
@@ -202,6 +211,7 @@ public class LuceneIndexFactoryBeanUnitTests {
 		verify(mockLuceneService, times(1)).createIndexFactory();
 		verify(mockLuceneIndexFactory, times(1))
 			.setFields(eq("fieldOne"), eq("fieldTwo"));
+		verify(mockLuceneIndexFactory, times(1)).setLuceneSerializer(eq(mockLuceneSerializer));
 		verify(mockLuceneIndexFactory, times(1))
 			.create(eq("ExampleIndex"), eq("/Example"));
 		verify(mockLuceneService, times(1))
@@ -665,6 +675,16 @@ public class LuceneIndexFactoryBeanUnitTests {
 		assertThat(factoryBean.getIndexName()).isEqualTo("IndexTwo");
 
 		factoryBean.setIndexName(null);
+	}
+
+	@Test
+	public void setAndGetLuceneSerializer() {
+
+		assertThat(factoryBean.getLuceneSerializer()).isNull();
+
+		factoryBean.setLuceneSerializer(mockLuceneSerializer);
+
+		assertThat(factoryBean.getLuceneSerializer()).isEqualTo(mockLuceneSerializer);
 	}
 
 	@Test(expected = IllegalStateException.class)

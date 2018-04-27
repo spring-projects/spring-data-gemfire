@@ -2325,8 +2325,17 @@ Defines a GemFire Lucene index.
 				<xsd:element name="field-analyzers" type="beanDeclarationType" minOccurs="0" maxOccurs="1">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
-Mapping of field names to Lucene (per field) Analyzers.
+Mapping of field names to Lucene (per field) org.apache.lucene.analysis.Analyzers.
 					]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="lucene-serializer" type="beanDeclarationType" minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Registers a bean as a LuceneSerializer with this Lucene Index bean definition, which will be used to convert objects
+into Lucene documents for this index. The bean must implement org.apache.geode.cache.lucene.LuceneSerializer
+and may be nested or referred to as a reference.
+			]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:element>
 			</xsd:sequence>

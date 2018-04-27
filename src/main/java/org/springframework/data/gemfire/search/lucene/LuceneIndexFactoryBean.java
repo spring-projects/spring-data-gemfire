@@ -36,6 +36,7 @@ import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneIndexFactory;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.lucene.analysis.Analyzer;
@@ -84,13 +85,16 @@ public class LuceneIndexFactoryBean extends AbstractFactoryBeanSupport<LuceneInd
 
 		@Override
 		public void configure(String beanName, LuceneIndexFactoryBean bean) {
-			nullSafeCollection(indexConfigurers).forEach(indexConfigurer -> indexConfigurer.configure(beanName, bean));
+			nullSafeCollection(indexConfigurers)
+				.forEach(indexConfigurer -> indexConfigurer.configure(beanName, bean));
 		}
 	};
 
 	private List<String> fields;
 
 	private LuceneIndex luceneIndex;
+
+	private LuceneSerializer luceneSerializer;
 
 	private LuceneService luceneService;
 
@@ -101,9 +105,6 @@ public class LuceneIndexFactoryBean extends AbstractFactoryBeanSupport<LuceneInd
 	private String indexName;
 	private String regionPath;
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
 
@@ -189,6 +190,8 @@ public class LuceneIndexFactoryBean extends AbstractFactoryBeanSupport<LuceneInd
 		else {
 			indexFactory.setFields(fieldAnalyzers);
 		}
+
+		Optional.ofNullable(getLuceneSerializer()).ifPresent(indexFactory::setLuceneSerializer);
 
 		indexFactory = postProcess(indexFactory);
 		indexFactory.create(indexName, regionPath);
@@ -607,7 +610,32 @@ public class LuceneIndexFactoryBean extends AbstractFactoryBeanSupport<LuceneInd
 	}
 
 	/**
-	 * Sets a reference to the {@link LuceneService} used by this {@link FactoryBean} to create the {@link LuceneIndex}.
+	 * Configures a reference to the {@link LuceneSerializer} used to convert {@link Object objects}
+	 * to Lucene documents for the {@link LuceneIndex} created by this {@link LuceneIndexFactoryBean}.
+	 *
+	 * @param luceneSerializer {@link LuceneSerializer} used to convert {@link Object objects}
+	 * to Lucene documents for the {@link LuceneIndex}.
+	 * @see org.apache.geode.cache.lucene.LuceneSerializer
+	 */
+	public void setLuceneSerializer(LuceneSerializer luceneSerializer) {
+		this.luceneSerializer = luceneSerializer;
+	}
+
+	/**
+	 * Returns a reference to the {@link LuceneSerializer} used to convert {@link Object objects}
+	 * to Lucene documents for the {@link LuceneIndex} created by this {@link LuceneIndexFactoryBean}.
+	 *
+	 * @return a {@link LuceneSerializer} used to convert {@link Object objects}
+	 * to Lucene documents for the {@link LuceneIndex}.
+	 * @see org.apache.geode.cache.lucene.LuceneSerializer
+	 */
+	protected LuceneSerializer getLuceneSerializer() {
+		return this.luceneSerializer;
+	}
+
+	/**
+	 * Configures a reference to the {@link LuceneService} used by this {@link FactoryBean}
+	 * to create the {@link LuceneIndex}.
 	 *
 	 * @param luceneService {@link LuceneService} used to create the {@link LuceneIndex}.
 	 * @see org.apache.geode.cache.lucene.LuceneService

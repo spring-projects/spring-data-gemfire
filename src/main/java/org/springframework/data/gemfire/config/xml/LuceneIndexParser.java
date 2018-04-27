@@ -53,22 +53,27 @@ class LuceneIndexParser extends AbstractSingleBeanDefinitionParser {
 	 */
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+
 		super.doParse(element, parserContext, builder);
 
 		ParsingUtils.setCacheReference(element, builder);
-		ParsingUtils.setPropertyValue(element, builder, "name", "indexName");
 		ParsingUtils.setPropertyValue(element, builder, "destroy");
 		ParsingUtils.setPropertyReference(element, builder, "lucene-service-ref", "luceneService");
+		ParsingUtils.setPropertyValue(element, builder, "name", "indexName");
 		ParsingUtils.setPropertyReference(element, builder, "region-ref", "region");
 		ParsingUtils.setPropertyValue(element, builder, "region-path");
 
-		Optional.ofNullable(element.getAttribute("fields")).filter(StringUtils::hasText).ifPresent((fields) -> {
-			builder.addPropertyValue("fields", Arrays.stream(fields.split(","))
-				.map(String::trim).collect(Collectors.toList()));
-		});
+		Optional.ofNullable(element.getAttribute("fields"))
+			.filter(StringUtils::hasText)
+			.ifPresent(fields -> builder.addPropertyValue("fields",
+				Arrays.stream(fields.split(",")).map(String::trim).collect(Collectors.toList())));
 
 		Optional.ofNullable(DomUtils.getChildElementByTagName(element, "field-analyzers"))
-			.ifPresent((fieldAnalyzersElement) -> builder.addPropertyValue("fieldAnalyzers",
+			.ifPresent(fieldAnalyzersElement -> builder.addPropertyValue("fieldAnalyzers",
 				ParsingUtils.parseRefOrSingleNestedBeanDeclaration(fieldAnalyzersElement, parserContext, builder)));
+
+		Optional.ofNullable(DomUtils.getChildElementByTagName(element, "lucene-serializer"))
+			.ifPresent(luceneSerializerElement -> builder.addPropertyValue("luceneSerializer",
+				ParsingUtils.parseRefOrSingleNestedBeanDeclaration(luceneSerializerElement, parserContext, builder)));
 	}
 }
