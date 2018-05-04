@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -49,6 +50,14 @@ public abstract class SpringUtils {
 		bean.setDependsOn(dependsOnList.toArray(new String[dependsOnList.size()]));
 
 		return bean;
+	}
+
+	public static Optional<Object> getPropertyValue(BeanDefinition beanDefinition, String propertyName) {
+
+		return Optional.ofNullable(beanDefinition)
+			.map(it -> it.getPropertyValues())
+			.map(propertyValues -> propertyValues.getPropertyValue(propertyName))
+			.map(propertyValue -> propertyValue.getValue());
 	}
 
 	public static BeanDefinition setPropertyReference(BeanDefinition beanDefinition,

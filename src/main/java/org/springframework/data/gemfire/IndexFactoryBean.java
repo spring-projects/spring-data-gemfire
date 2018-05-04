@@ -102,9 +102,6 @@ public class IndexFactoryBean extends AbstractFactoryBeanSupport<Index> implemen
 	private String indexName;
 	private String name;
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
 
