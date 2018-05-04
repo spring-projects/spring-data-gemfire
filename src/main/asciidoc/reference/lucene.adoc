@@ -5,12 +5,12 @@ https://pivotal.io/pivotal-gemfire[Pivotal GemFire] integrates with http://lucen
 to index and search on data stored in Pivotal GemFire using Lucene queries.  Search-based queries also includes
 the capability to page through query results.
 
-Additionally, _Spring Data GemFire_ adds support for query projections based on _Spring Data Commons_
+Additionally, _Spring Data for Pivotal GemFire_ adds support for query projections based on _Spring Data Commons_
 Projection infrastructure.  This feature enables the query results to be projected into first-class,
 application domain types as needed or required by the application use case.
 
-However, a Lucene `Index` must be created first before any Lucene search-based query can be ran.  A `LuceneIndex`
-can be created in _Spring (Data GemFire)_ XML config like so...
+However, a Lucene `Index` must be created before any Lucene search-based query can be ran.  A `LuceneIndex`
+can be created in _Spring (Data for Pivotal GemFire)_ XML config like so...
 
 [source,xml]
 ----
@@ -38,16 +38,46 @@ and can be configured using...
 ----
 
 Of course, the `Map` can be specified as a top-level bean definition and referenced using the `ref` attribute
-on the nested `<gfe:field-analyzers>` element like this, `<gfe-field-analyzers ref="refToTopLevelMapBeanDefinition"/>`.
+in the nested `<gfe:field-analyzers>` element like this, `<gfe-field-analyzers ref="refToTopLevelMapBeanDefinition"/>`.
 
-Alternatively, a `LuceneIndex` can be declared in _Spring_ Java config, inside a `@Configuration` class with...
+Spring Data for Pivotal GemFire's `LuceneIndexFactoryBean` API and SDG's XML namespace also allows the addition of a
+http://gemfire-95-javadocs.docs.pivotal.io/org/apache/geode/cache/lucene/LuceneSerializer.html[`org.apache.geode.cache.lucene.LuceneSerializer`]
+to be specified when creating the `LuceneIndex`.  The `LuceneSerializer` is used to configure the way objects
+are converted to Lucene documents for the index when the object is indexed.
+
+To add an `LuceneSerializer` to the `LuceneIndex`, you only need to...
+
+[source,xml]
+----
+<bean id="MyLuceneSerializer" class="example.CustomLuceneSerializer"/>
+
+<gfe:lucene-index id="IndexThree" lucene-service-ref="luceneService" region-path="/YetAnotherExample">
+    <gfe:lucene-serializer ref="MyLuceneSerializer">
+</gfe:lucene-index>
+----
+
+Of course, you may specify the `LuceneSerializer` as a anonymous, nested bean definition as well, like so...
+
+[source,xml]
+----
+<gfe:lucene-index id="IndexThree" lucene-service-ref="luceneService" region-path="/YetAnotherExample">
+    <gfe:lucene-serializer>
+        <bean class="example.CustomLuceneSerializer"/>
+    </gfe:lucene-serializer>
+</gfe:lucene-index>
+----
+
+Alternatively, a developer may declare or define a `LuceneIndex` in Spring Java config,
+inside a `@Configuration` class with...
 
 [source,java]
 ----
-@Bean(name = "People")
-@DependsOn("personTitleIndex")
-PartitionedRegionFactoryBean<Long, Person> peopleRegion(GemFireCache gemfireCache) {
-    PartitionedRegionFactoryBean<Long, Person> peopleRegion = new PartitionedRegionFactoryBean<>();
+@Bean(name = "Books")
+@DependsOn("bookTitleIndex")
+PartitionedRegionFactoryBean<Long, Book> booksRegion(GemFireCache gemfireCache) {
+
+    PartitionedRegionFactoryBean<Long, Book> peopleRegion =
+        new PartitionedRegionFactoryBean<>();
 
     peopleRegion.setCache(gemfireCache);
     peopleRegion.setClose(false);
@@ -57,37 +87,60 @@ PartitionedRegionFactoryBean<Long, Person> peopleRegion(GemFireCache gemfireCach
 }
 
 @Bean
-LuceneIndexFactoryBean personTitleIndex(GemFireCache gemFireCache) {
+LuceneIndexFactoryBean bookTitleIndex(GemFireCache gemFireCache,
+        LuceneSerializer luceneSerializer) {
+
     LuceneIndexFactoryBean luceneIndex = new LuceneIndexFactoryBean();
 
     luceneIndex.setCache(gemFireCache);
     luceneIndex.setFields("title");
-    luceneIndex.setRegionPath("/People");
+    luceneIndex.setLuceneSerializer(luceneSerializer);
+    luceneIndex.setRegionPath("/Books");
 
     return luceneIndex;
 }
+
+@Bean
+CustomLuceneSerializer myLuceneSerialier() {
+    return new CustomeLuceneSerializer();
+}
 ----
 
-There are a few limitations of Pivotal GemFire's, Apache Lucene integration support.  First, a `LuceneIndex` can only
-be created on a GemFire `PARTITION` Region.  Second, all `LuceneIndexes` must be created before the the Region on which
-the `LuceneIndex` is applied.
+There are a few limitations of Pivotal GemFire's, Apache Lucene integration and support.
+
+First, a `LuceneIndex` can only be created on an Pivotal GemFire `PARTITION` Region.
+
+Second, all `LuceneIndexes` must be created before the Region to which the `LuceneIndex` applies.
+
+NOTE: To help ensure that all declared `LuceneIndexes` defined in a Spring context are created before the Regions
+on which they apply, SDG includes the `org.springframework.data.gemfire.config.support.LuceneIndexRegionBeanFactoryPostProcessor`.
+You may register this Spring https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/beans/factory/config/BeanFactoryPostProcessor.html[`BeanFactoryPostProcessor`]
+in XML config using `<bean class="org.springframework.data.gemfire.config.support.LuceneIndexRegionBeanFactoryPostProcessor"/>`
+The `o.s.d.g.config.support.LuceneIndexRegionBeanFactoryPostProcessor` may only be used when using SDG XML config.
+More details about Spring's `BeanFactoryPostProcessors` can be found https://docs.spring.io/spring/docs/current/spring-framework-reference/core.html#beans-factory-extension-factory-postprocessors[here].
 
 It is possible that these Pivotal GemFire restrictions will not apply in a future release which is why
 the SDG `LuceneIndexFactoryBean` API takes a reference to the Region directly as well, rather than just the Region path.
 
 This is more ideal if think about the case in which users may want to define a `LuceneIndex` on an existing Region
 with data at a later point during the application's lifecycle and as requirements demand.  Where possible, SDG strives
-to stick to strongly-typed objects.
+to adhere to strongly-typed objects.  However, for the time being, you must use the `regionPath` property
+to specify the Region to which the `LuceneIndex` will be applied.
+
+NOTE: Additional, in the example above, you will notice the presence of Spring's `@DependsOn` annotation
+on the "Books" Region bean definition.  This is used to create a dependency from the "Books" Region bean
+to the "bookTitleIndex" LuceneIndex bean definition ensuring that the `LuceneIndex` will be created before
+the Region on which it applies.
 
 Now that we have a `LuceneIndex` we can perform Lucene based data access operations, such as queries.
 
 == Lucene Template Data Accessors
 
-_Spring Data GemFire_ provides 2 primary templates for Lucene data access operations, depending on how low a level
-your application is prepared to deal with.
+_Spring Data for Pivotal GemFire_ provides 2 primary templates for Lucene data access operations, depending on
+how low of a level your application is prepared to deal with.
 
 The `LuceneOperations` interface defines query operations using Pivotal GemFire
-http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/lucene/package-frame.html[Lucene types].
+http://gemfire-95-javadocs.docs.pivotal.io/org/apache/geode/cache/lucene/package-summary.html[Lucene types].
 
 [source,java]
 ----
@@ -118,18 +171,18 @@ public interface LuceneOperations {
 NOTE: The `[, int resultLimit]` indicates that the `resultLimit` parameter is optional.
 
 The operations in the `LuceneOperations` interface match the operations provided by the Pivotal GemFire's
-http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/lucene/LuceneQuery.html[LuceneQuery] interface.
-However, SDG has the added value of translating proprietary GemFire or Lucene `Exceptions` into _Spring's_ highly
-consistent and expressive DAO
+http://gemfire-95-javadocs.docs.pivotal.io/org/apache/geode/cache/lucene/LuceneQuery.html[LuceneQuery] interface.
+However, SDG has the added value of translating proprietary Pivotal GemFire or Apache Lucene `Exceptions`
+into _Spring's_ highly consistent and expressive DAO
 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#dao-exceptions[Exception Hierarchy],
 particularly as many modern data access operations involve more than single store or repository.
 
 Additionally, SDG's `LuceneOperations` interface can shield your application from interface breaking changes
 introduced by the underlying Pivotal GemFire or Apache Lucene APIs when they do and will occur.
 
-However, it would be remorse to only offer a Lucene Data Access Object that only uses Pivotal GemFire and Apache Lucene
-data types (e.g. GemFire's `LuceneResultStruct`), therefore SDG gives you the `ProjectingLuceneOperations` interface
-to remedy these important application concerns.
+However, it would be remorse to only offer a Lucene Data Access Object (DAO) that only uses Pivotal GemFire
+and Apache Lucene data types (e.g. Pivotal GemFire's `LuceneResultStruct`), therefore SDG gives you the
+`ProjectingLuceneOperations` interface to remedy these important application concerns.
 
 [source,java]
 ----
@@ -145,14 +198,13 @@ public interface ProjectingLuceneOperations {
 }
 ----
 
-The `ProjectingLuceneOperations` interface primarily uses application domain object types to work with
-your application data.  The `query` method variants accept a projection type and the template applies
-the query results to instances of the given projection type using the _Spring Data Commons_
-Projection infrastructure.
+The `ProjectingLuceneOperations` interface primarily uses application domain object types allowing you to work with
+your application data.  The `query` method variants accept a projection type and the template applies the query results
+to instances of the given projection type using the _Spring Data Commons_ Projection infrastructure.
 
 Additionally, the template wraps the paged Lucene query results in an instance of the _Spring Data Commons_
-abstraction representing a `Page`.  The same projection logic can still be applied to the results in the page
-and are lazily projected as each page in the collection is accessed.
+`Page` abstraction.  The same projection logic can still be applied to the results in the page and are lazily projected
+as each page in the collection is accessed.
 
 By way of example, suppose I have a class representing a `Person` like so...
 
@@ -182,6 +234,7 @@ Additionally, I might have a single interface to represent people as `Customers`
 interface Customer {
 
     String getName()
+
 }
 ----
 
@@ -191,7 +244,9 @@ If I define the following `LuceneIndex`...
 ----
 @Bean
 LuceneIndexFactoryBean personLastNameIndex(GemFireCache gemfireCache) {
-    LuceneIndexFactoryBean personLastNameIndex = new LuceneIndexFactoryBean();
+
+    LuceneIndexFactoryBean personLastNameIndex =
+        new LuceneIndexFactoryBean();
 
     personLastNameIndex.setCache(gemfireCache);
     personLastNameIndex.setFields("lastName");
@@ -215,7 +270,7 @@ Or as a `Page` of type `Customer`...
 Page<Customer> customers = luceneTemplate.query("lastName: D*", "lastName", 100, 20, Customer.class);
 ----
 
-The `Page` can then be used to fetch individual pages of results...
+The `Page` can then be used to fetch individual pages of the results...
 
 [source,java]
 ----
@@ -223,7 +278,7 @@ List<Customer> firstPage = customers.getContent();
 ----
 
 Conveniently, the _Spring Data Commons_ `Page` interface implements `java.lang.Iterable<T>` too making it very easy
-to iterate over the content as well.
+to iterate over the contents.
 
 The only restriction to the _Spring Data Commons_ Projection infrastructure is that the projection type
 must be an interface.  However, it is possible to extend the provided, out-of-the-box (OOTB)
@@ -235,9 +290,9 @@ A custom `ProjectionFactory` can be set on a Lucene template using `setProjectio
 
 == Annotation configuration support
 
-Finally, _Spring Data GemFire_ provides Annotation configuration support for `LuceneIndexes`. Eventually, the SDG Lucene
-support will find its way into the _Repository_ infrastructure extension for Pivotal GemFire so that Lucene queries
-can be expressed as methods on an application `Repository` interface, much like the
+Finally, _Spring Data for Pivotal GemFire_ provides Annotation configuration support for `LuceneIndexes`.
+Eventually, the SDG Lucene support will find its way into the _Repository_ infrastructure extension for Pivotal GemFire
+so that Lucene queries can be expressed as methods on an application `Repository` interface, much like the
 http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/#gemfire-repositories.executing-queries[OQL support]
 today.
 
@@ -263,8 +318,8 @@ class Person {
 }
 ----
 
-You must be using the SDG Annotation configuration support along with the `@EnableEntityDefineRegions`
-and `@EnableIndexing` Annotations to enable this feature...
+You must use SDG's Annotation configuration support along with the `@EnableEntityDefineRegions` and `@EnableIndexing`
+Annotations to enable this feature...
 
 [source,java]
 ----
@@ -277,9 +332,12 @@ class ApplicationConfiguration {
 }
 ----
 
+NOTE: Keep in mind that `LuceneIndexes` can only be created on Apache Geode Servers since `LuceneIndexes` only apply
+to `PARTTION` Regions.
+
 Given our definition of the `Person` class above, the SDG Annotation configuration support
 will find the `Person` entity class definition, determine that people will be stored in
-a `PARTITION` Region called "People" and that the Person will have an OQL `Index` on `birthDate`
+a `PARTITION` Region called "People" and that the `Person` will have an OQL `Index` on `birthDate`
 along with a `LuceneIndex` on `lastName`.
 
 More will be described with this feature in subsequent releases.

@@ -42,7 +42,6 @@ import org.springframework.util.StringUtils;
 // TODO rename this utility class using a more descriptive, intuitive and meaningful name
 public abstract class SpringUtils {
 
-	/* (non-Javadoc) */
 	public static BeanDefinition addDependsOn(BeanDefinition bean, String... beanNames) {
 
 		List<String> dependsOnList = new ArrayList<>();
@@ -54,7 +53,14 @@ public abstract class SpringUtils {
 		return bean;
 	}
 
-	/* (non-Javadoc) */
+	public static Optional<Object> getPropertyValue(BeanDefinition beanDefinition, String propertyName) {
+
+		return Optional.ofNullable(beanDefinition)
+			.map(it -> it.getPropertyValues())
+			.map(propertyValues -> propertyValues.getPropertyValue(propertyName))
+			.map(propertyValue -> propertyValue.getValue());
+	}
+
 	public static BeanDefinition setPropertyReference(BeanDefinition beanDefinition,
 			String propertyName, String beanName) {
 
@@ -63,7 +69,6 @@ public abstract class SpringUtils {
 		return beanDefinition;
 	}
 
-	/* (non-Javadoc) */
 	public static BeanDefinition setPropertyValue(BeanDefinition beanDefinition,
 			String propertyName, Object propertyValue) {
 
@@ -72,57 +77,46 @@ public abstract class SpringUtils {
 		return beanDefinition;
 	}
 
-	/* (non-Javadoc) */
 	public static String defaultIfEmpty(String value, String defaultValue) {
 		return (StringUtils.hasText(value) ? value : defaultValue);
 	}
 
-	/* (non-Javadoc) */
 	public static <T> T defaultIfNull(T value, T defaultValue) {
 		return Optional.ofNullable(value).orElse(defaultValue);
 	}
 
-	/* (non-Javadoc) */
 	public static <T> T defaultIfNull(T value, Supplier<T> supplier) {
 		return Optional.ofNullable(value).orElseGet(supplier);
 	}
 
-	/* (non-Javadoc) */
 	public static String dereferenceBean(String beanName) {
 		return String.format("%1$s%2$s", BeanFactory.FACTORY_BEAN_PREFIX, beanName);
 	}
 
-	/* (non-Javadoc) */
 	public static boolean equalsIgnoreNull(Object obj1, Object obj2) {
 		return (obj1 == null ? obj2 == null : obj1.equals(obj2));
 	}
 
-	/* (non-Javadoc) */
 	public static boolean nullOrEquals(Object obj1, Object obj2) {
 		return (obj1 == null || obj1.equals(obj2));
 	}
 
-	/* (non-Javadoc) */
 	public static boolean nullSafeEquals(Object obj1, Object obj2) {
 		return (obj1 != null && obj1.equals(obj2));
 	}
 
-	/* (non-Javadoc) */
 	public static <T> T safeGetValue(Supplier<T> valueSupplier) {
 		return safeGetValue(valueSupplier, (T) null);
 	}
 
-	/* (non-Javadoc) */
 	public static <T> T safeGetValue(Supplier<T> valueSupplier, T defaultValue) {
 		return safeGetValue(valueSupplier, (Supplier<T>) () -> defaultValue);
 	}
 
-	/* (non-Javadoc) */
 	public static <T> T safeGetValue(Supplier<T> valueSupplier, Supplier<T> defaultValueSupplier) {
 		return safeGetValue(valueSupplier, (Function<Throwable, T>) exception -> defaultValueSupplier.get());
 	}
 
-	/* (non-Javadoc) */
 	public static <T> T safeGetValue(Supplier<T> valueSupplier, Function<Throwable, T> exceptionHandler) {
 		try {
 			return valueSupplier.get();

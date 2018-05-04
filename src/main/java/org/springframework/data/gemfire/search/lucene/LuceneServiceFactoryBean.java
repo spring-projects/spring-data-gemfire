@@ -24,6 +24,7 @@ import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.data.gemfire.support.AbstractFactoryBeanSupport;
 import org.springframework.util.Assert;
 
 /**
@@ -38,7 +39,7 @@ import org.springframework.util.Assert;
  * @since 1.1.0
  */
 @SuppressWarnings("unused")
-public class LuceneServiceFactoryBean implements FactoryBean<LuceneService>, InitializingBean {
+public class LuceneServiceFactoryBean extends AbstractFactoryBeanSupport<LuceneService> implements InitializingBean {
 
 	private GemFireCache gemfireCache;
 
@@ -49,6 +50,7 @@ public class LuceneServiceFactoryBean implements FactoryBean<LuceneService>, Ini
 	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
+
 		GemFireCache gemfireCache = getCache();
 
 		Assert.state(gemfireCache != null,
@@ -83,15 +85,10 @@ public class LuceneServiceFactoryBean implements FactoryBean<LuceneService>, Ini
 	 */
 	@Override
 	public Class<?> getObjectType() {
-		return Optional.ofNullable(this.luceneService).<Class<?>>map(LuceneService::getClass).orElse(LuceneService.class);
-	}
 
-	/**
-	 * @inheritDoc
-	 */
-	@Override
-	public boolean isSingleton() {
-		return true;
+		return Optional.ofNullable(this.luceneService)
+			.<Class<?>>map(LuceneService::getClass)
+			.orElse(LuceneService.class);
 	}
 
 	/**

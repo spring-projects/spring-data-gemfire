@@ -31,6 +31,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
 import static org.springframework.data.gemfire.util.CollectionUtils.asSet;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeMap;
 import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeSet;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.NOT_SUPPORTED;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
@@ -55,6 +56,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -97,6 +99,12 @@ import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.execute.RegionFunctionContext;
+import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.LuceneIndexFactory;
+import org.apache.geode.cache.lucene.LuceneQuery;
+import org.apache.geode.cache.lucene.LuceneQueryFactory;
+import org.apache.geode.cache.lucene.LuceneQueryProvider;
+import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.query.CqAttributes;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.Index;
@@ -118,6 +126,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.pdx.PdxSerializer;
+import org.apache.lucene.analysis.Analyzer;
 import org.mockito.ArgumentMatchers;
 import org.mockito.stubbing.Answer;
 import org.springframework.data.gemfire.IndexType;
@@ -277,6 +286,20 @@ public abstract class GemFireMockObjectsSupport extends MockObjectsSupport {
 		}
 	}
 
+	private static <T> T doSafeOperation(ExceptionThrowingOperation<T> operation) {
+		return doSafeOperation(operation, null);
+	}
+
+	private static <T> T doSafeOperation(ExceptionThrowingOperation<T> operation, T defaultValue) {
+
+		try {
+			return operation.doExceptionThrowingOperation();
+		}
+		catch (Exception ignore) {
+			return defaultValue;
+		}
+	}
+
 	/**
 	 * Determines whether the given {@link Region} is a root {@link Region}.
 	 *
@@ -398,6 +421,19 @@ public abstract class GemFireMockObjectsSupport extends MockObjectsSupport {
 
 		return (RegionAttributes<K, V>) Optional.ofNullable(regionAttributes.get(regionAttributesId)).orElseThrow(() ->
 			newIllegalStateException("RegionAttributes with ID [%s] cannot be found", regionAttributesId));
+	}
+
+	private static <T> T rethrowAsRuntimeException(ExceptionThrowingOperation<T> operation) {
+
+		try {
+			return operation.doExceptionThrowingOperation();
+		}
+		catch (RuntimeException cause) {
+			throw cause;
+		}
+		catch (Exception cause) {
+			throw new RuntimeException(cause);
+		}
 	}
 
 	/**
@@ -1772,6 +1808,186 @@ public abstract class GemFireMockObjectsSupport extends MockObjectsSupport {
 		return mock(IndexStatistics.class, mockObjectIdentifier(name));
 	}
 
+	public static LuceneIndexFactory mockLuceneIndexFactory() {
+		return mockLuceneIndexFactory(null);
+	}
+
+	private static LuceneIndexFactory mockLuceneIndexFactory(Map<LuceneIndexKey, LuceneIndex> luceneIndexes) {
+
+		LuceneIndexFactory mockLuceneIndexFactory = mock(LuceneIndexFactory.class);
+
+		Map<String, Analyzer> fieldAnalyzers = new ConcurrentHashMap<>();
+
+		Set<String> fields = new CopyOnWriteArraySet<>();
+
+		when(mockLuceneIndexFactory.addField(anyString())).thenAnswer(invocation -> {
+
+			String fieldName = invocation.getArgument(0);
+
+			fields.add(fieldName);
+
+			return mockLuceneIndexFactory;
+		});
+
+		when(mockLuceneIndexFactory.addField(anyString(), any(Analyzer.class))).thenAnswer(invocation -> {
+
+			String fieldName = invocation.getArgument(0);
+			Analyzer analyzer = invocation.getArgument(1);
+
+			fieldAnalyzers.put(fieldName, analyzer);
+
+			return mockLuceneIndexFactory;
+		});
+
+		when(mockLuceneIndexFactory.setFields(ArgumentMatchers.<String[]>any())).thenAnswer(invocation -> {
+
+			Object[] fieldsArgument = invocation.getArguments();
+
+			fields.clear();
+
+			Arrays.stream(nullSafeArray(fieldsArgument, Object.class))
+				.filter(field -> field instanceof String)
+				.map(String::valueOf)
+				.forEach(fields::add);
+
+			return mockLuceneIndexFactory;
+		});
+
+		when(mockLuceneIndexFactory.setFields(any(Map.class))).thenAnswer(invocation -> {
+
+			Map<String, Analyzer> fieldAnalyzersArgument = invocation.getArgument(0);
+
+			fieldAnalyzers.clear();
+			fieldAnalyzers.putAll(nullSafeMap(fieldAnalyzers));
+
+			return mockLuceneIndexFactory;
+		});
+
+		doAnswer(invocation -> {
+
+			String indexName = invocation.getArgument(0);
+			String regionPath = invocation.getArgument(1);
+
+			LuceneIndexKey key = LuceneIndexKey.of(indexName, regionPath);
+
+			LuceneIndex mockLuceneIndex = mock(LuceneIndex.class, key.toString());
+
+			when(mockLuceneIndex.getFieldAnalyzers()).thenReturn(Collections.unmodifiableMap(fieldAnalyzers));
+			when(mockLuceneIndex.getFieldNames()).thenAnswer(in -> fields.toArray(new String[fields.size()]));
+			when(mockLuceneIndex.getName()).thenReturn(indexName);
+			when(mockLuceneIndex.getRegionPath()).thenReturn(regionPath);
+
+			Optional.ofNullable(luceneIndexes).ifPresent(it -> it.put(key, mockLuceneIndex));
+
+			return null;
+
+		}).when(mockLuceneIndexFactory).create(anyString(), anyString());
+
+		return mockLuceneIndexFactory;
+	}
+
+	public static LuceneQueryFactory mockLuceneQueryFactory() {
+
+		LuceneQueryFactory mockLuceneQueryFactory = mock(LuceneQueryFactory.class);
+
+		AtomicInteger limit = new AtomicInteger(LuceneQueryFactory.DEFAULT_LIMIT);
+		AtomicInteger pageSize = new AtomicInteger(LuceneQueryFactory.DEFAULT_PAGESIZE);
+
+		when(mockLuceneQueryFactory.setLimit(anyInt())).thenAnswer(invocation -> {
+			limit.set(invocation.getArgument(0));
+			return mockLuceneQueryFactory;
+		});
+
+		when(mockLuceneQueryFactory.setPageSize(anyInt())).thenAnswer(invocation -> {
+			pageSize.set(invocation.getArgument(0));
+			return mockLuceneQueryFactory;
+		});
+
+		when(mockLuceneQueryFactory.create(anyString(), anyString(), any(LuceneQueryProvider.class)))
+			.thenAnswer(invocation -> mockLuceneQuery(limit.get(), pageSize.get()));
+
+		when(mockLuceneQueryFactory.create(anyString(), anyString(), anyString(), anyString()))
+			.thenAnswer(invocation -> mockLuceneQuery(limit.get(), pageSize.get()));
+
+		return mockLuceneQueryFactory;
+	}
+
+	private static LuceneQuery mockLuceneQuery(int limit, int pageSize) {
+
+		LuceneQuery mockLuceneQuery = mock(LuceneQuery.class);
+
+		when(mockLuceneQuery.getLimit()).thenReturn(limit);
+		when(mockLuceneQuery.getPageSize()).thenReturn(pageSize);
+
+		doSafeOperation(() -> when(mockLuceneQuery.findKeys())
+			.thenReturn(Collections.emptySet()), Collections.emptySet());
+
+		rethrowAsRuntimeException(() -> when(mockLuceneQuery.findPages())
+			.thenThrow(newUnsupportedOperationException("Operation Not Supported!")));
+
+		doSafeOperation(() -> when(mockLuceneQuery.findResults())
+			.thenReturn(Collections.emptyList()), Collections.emptyList());
+
+		doSafeOperation(() -> when(mockLuceneQuery.findValues())
+			.thenReturn(Collections.emptyList()), Collections.emptyList());
+
+		return mockLuceneQuery;
+	}
+
+	public static LuceneService mockLuceneService(Cache mockCache) {
+
+		LuceneService mockLuceneService = mock(LuceneService.class);
+
+		Map<LuceneIndexKey, LuceneIndex> luceneIndexes = new ConcurrentHashMap<>();
+
+		when(mockLuceneService.createIndexFactory())
+			.thenAnswer(invocation -> mockLuceneIndexFactory(luceneIndexes));
+
+		when(mockLuceneService.createLuceneQueryFactory())
+			.thenAnswer(invocation -> mockLuceneQueryFactory());
+
+		doAnswer(invocation -> {
+
+			String indexName = invocation.getArgument(0);
+			String regionName = invocation .getArgument(1);
+
+			luceneIndexes.remove(LuceneIndexKey.of(indexName, regionName));
+
+			return null;
+
+		}).when(mockLuceneService).destroyIndex(anyString(), anyString());
+
+		doAnswer(invocation -> {
+
+			String regionPath = invocation.getArgument(0);
+
+			luceneIndexes.keySet().stream().filter(key -> key.getRegionPath().equals(regionPath))
+				.collect(Collectors.toSet()).forEach(key -> luceneIndexes.remove(key));
+
+			return null;
+
+		}).when(mockLuceneService).destroyIndexes(anyString());
+
+		when(mockLuceneService.getAllIndexes()).thenAnswer(invocation ->
+			Collections.unmodifiableCollection(luceneIndexes.values()));
+
+		when(mockLuceneService.getCache()).thenReturn(mockCache);
+
+		when(mockLuceneService.getIndex(anyString(), anyString())).thenAnswer(invocation -> {
+
+			String indexName = invocation.getArgument(0);
+			String regionPath = invocation.getArgument(1);
+
+			return luceneIndexes.get(LuceneIndexKey.of(indexName, regionPath));
+		});
+
+		doSafeOperation(() ->
+			when(mockLuceneService.waitUntilFlushed(anyString(), anyString(), anyLong(), any(TimeUnit.class)))
+				.thenReturn(true));
+
+		return mockLuceneService;
+	}
+
 	@SuppressWarnings("unchecked")
 	public static <K, V> Region<K, V> mockRegion(RegionService regionService, String name,
 		RegionAttributes<K, V> regionAttributes) {
@@ -2550,7 +2766,78 @@ public abstract class GemFireMockObjectsSupport extends MockObjectsSupport {
 		return clientCacheFactorySpy;
 	}
 
+	protected interface ExceptionThrowingOperation<T> {
+		T doExceptionThrowingOperation() throws Exception;
+	}
+
 	protected interface IoExceptionThrowingOperation {
 		void doIo() throws IOException;
+	}
+
+	public static class LuceneIndexKey {
+
+		private final String indexName;
+		private final String regionPath;
+
+		public static LuceneIndexKey of(String indexName, Region<?, ?> region) {
+
+			Assert.notNull(region, "Region is required");
+
+			return of(indexName, region.getFullPath());
+		}
+
+		public static LuceneIndexKey of(String indexName, String regionPath) {
+			return new LuceneIndexKey(indexName, regionPath);
+		}
+
+		private LuceneIndexKey(String indexName, String regionPath) {
+
+			Assert.hasText(indexName, String.format("LuceneIndex name [%s] is required", indexName));
+			Assert.hasText(regionPath, String.format("Region path [%s] is required", regionPath));
+
+			this.indexName = indexName;
+			this.regionPath = regionPath;
+		}
+
+		protected String getIndexName() {
+			return this.indexName;
+		}
+
+		protected String getRegionPath() {
+			return this.regionPath;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+
+			if (obj == this) {
+				return true;
+			}
+
+			if (!(obj instanceof LuceneIndexKey)) {
+				return false;
+			}
+
+			LuceneIndexKey that = (LuceneIndexKey) obj;
+
+			return this.getIndexName().equals(that.getIndexName())
+				&& this.getRegionPath().equals(that.getRegionPath());
+		}
+
+		@Override
+		public int hashCode() {
+
+			int hashValue = 17;
+
+			hashValue = 37 * hashValue + getIndexName().hashCode();
+			hashValue = 37 * hashValue + getRegionPath().hashCode();
+
+			return hashValue;
+		}
+
+		@Override
+		public String toString() {
+			return String.format("%1$s.%2$s", getRegionPath(), getIndexName());
+		}
 	}
 }

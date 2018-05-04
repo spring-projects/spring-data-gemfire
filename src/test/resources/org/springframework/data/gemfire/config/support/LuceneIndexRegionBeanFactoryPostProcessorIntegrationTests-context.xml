@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+">
+
+	<gfe:cache/>
+
+	<bean class="org.springframework.data.gemfire.config.support.LuceneIndexRegionBeanFactoryPostProcessor"/>
+
+	<bean class="org.springframework.data.gemfire.config.support.LuceneIndexRegionBeanFactoryPostProcessorIntegrationTests.BeanProcessingOrderRecordingBeanPostProcessor"/>
+
+	<bean id="MockLuceneService" class="org.springframework.data.gemfire.test.mock.GemFireMockObjectsSupport"
+		  factory-method="mockLuceneService">
+		<constructor-arg index="0" ref="gemfireCache"/>
+	</bean>
+
+	<gfe:partitioned-region id="Books" persistent="false"/>
+	<gfe:partitioned-region id="Contracts" persistent="false"/>
+	<gfe:partitioned-region id="People" persistent="false"/>
+
+	<gfe:lucene-index id="BookTitleLuceneIndex" lucene-service-ref="MockLuceneService"
+					  fields="title" region-path="/Books"/>
+
+	<gfe:lucene-index id="ContractDescriptionLuceneIndex" lucene-service-ref="MockLuceneService"
+					  fields="description" region-path="/Contracts"/>
+
+	<gfe:disk-store id="MockDiskStore"/>
+
+</beans>
