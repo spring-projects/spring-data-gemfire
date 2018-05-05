@@ -23,7 +23,7 @@ import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.TransactionListener;
 import org.apache.geode.cache.TransactionWriter;
 
-public class StubCacheTransactionMananger implements CacheTransactionManager {
+public class StubCacheTransactionManager implements CacheTransactionManager {
 
 	private boolean distributed = false;
 

@@ -153,13 +153,8 @@ public class LookupRegionMutationIntegrationTest {
 		assertCacheListeners(example.getAttributes().getCacheListeners(), Arrays.asList("A", "B"));
 		assertGemFireComponent(example.getAttributes().getCacheLoader(), "C");
 		assertGemFireComponent(example.getAttributes().getCacheWriter(), "D");
-		// TODO: re-instate the original assertion after Apache Geode fixes bug GEODE-5039!
-		/*
 		assertEvictionAttributes(example.getAttributes().getEvictionAttributes(), EvictionAction.OVERFLOW_TO_DISK,
 			EvictionAlgorithm.LRU_ENTRY, 1000);
-		*/
-		assertEvictionAttributes(example.getAttributes().getEvictionAttributes(), EvictionAction.OVERFLOW_TO_DISK,
-			EvictionAlgorithm.LRU_ENTRY, 500);
 		assertExpirationAttributes(example.getAttributes().getRegionTimeToLive(), "Region TTL",
 			120, ExpirationAction.LOCAL_DESTROY);
 		assertExpirationAttributes(example.getAttributes().getRegionIdleTimeout(), "Region TTI",
