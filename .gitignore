@@ -11,3 +11,5 @@ sample-pages
 .bak
 .gradle
 build
+src
+target
