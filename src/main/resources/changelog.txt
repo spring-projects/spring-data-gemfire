@@ -3,6 +3,14 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.9.12.RELEASE (2018-05-08)
+----------------------------------------------
+* SGF-740 - Upgrade to Pivotal GemFire 8.2.11.
+* SGF-738 - Avoid Pool Already Exists Exception on Spring container initialization.
+* SGF-736 - Upgrade to Pivotal GemFire 8.2.10.
+* SGF-730 - Release 1.9.12 (Ingalls SR12).
+
+
 Changes in version 2.1.0.M2 (2018-04-13)
 ----------------------------------------
 * SGF-735 - RegionAttributes.offHeap is improperly overridden by RegionFactoryBean.offHeap.
