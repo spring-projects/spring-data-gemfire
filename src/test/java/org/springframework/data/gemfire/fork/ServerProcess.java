@@ -28,8 +28,8 @@ import org.springframework.data.gemfire.test.support.FileSystemUtils;
 import org.springframework.util.Assert;
 
 /**
- * The ServerProcess class is a main Java class using Spring Data GemFire to configure and bootstrap
- * a GemFire Cache Server process.
+ * The ServerProcess class is a main Java class using SDG to configure and bootstrap
+ * a Pivotal GemFireCache Server process.
  *
  * @author John Blum
  * @see org.springframework.context.ConfigurableApplicationContext

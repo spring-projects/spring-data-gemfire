@@ -28,7 +28,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
- * Integration test trying various basic configurations of GemFire through
+ * Integration test trying various basic configurations of Pivotal GemFirethrough
  * Spring.
  *
  * Made abstract to avoid multiple caches running at the same time.

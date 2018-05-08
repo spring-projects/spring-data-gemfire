@@ -33,8 +33,8 @@ import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.support.GemfireBeanFactoryLocator;
 
 /**
- * The {@link ClientCacheApplication} annotation enables a Spring Data GemFire based application to become
- * a GemFire cache client (i.e. {@link org.apache.geode.cache.client.ClientCache}).
+ * The {@link ClientCacheApplication} annotation enables a SDG based application to become a
+ * Pivotal GemFire cache client (i.e. {@link org.apache.geode.cache.client.ClientCache}).
  *
  * @author John Blum
  * @see org.apache.geode.cache.client.PoolFactory
@@ -163,7 +163,7 @@ public @interface ClientCacheApplication {
 	int loadConditioningInterval() default PoolFactory.DEFAULT_LOAD_CONDITIONING_INTERVAL;
 
 	/**
-	 * Configures the GemFire {@link org.apache.geode.distributed.Locator Locators} to which
+	 * Configures the Pivotal GemFire {@link org.apache.geode.distributed.Locator Locators} to which
 	 * this cache client will connect.
 	 *
 	 * Use either the {@literal spring.data.gemfire.pool.default.locators} property
@@ -172,7 +172,7 @@ public @interface ClientCacheApplication {
 	Locator[] locators() default {};
 
 	/**
-	 * Configures the log level used to output log messages at GemFire cache runtime.
+	 * Configures the log level used to output log messages at Pivotal GemFire cache runtime.
 	 *
 	 * Defaults to {@literal config}.
 	 *
@@ -212,7 +212,7 @@ public @interface ClientCacheApplication {
 	boolean multiUserAuthentication() default PoolFactory.DEFAULT_MULTIUSER_AUTHENTICATION;
 
 	/**
-	 * Configures the name of this GemFire member in the cluster (distributed system).
+	 * Configures the name of this Pivotal GemFire member in the cluster (distributed system).
 	 *
 	 * Defaults to {@literal SpringBasedCacheClientApplication}.
 	 *
@@ -284,7 +284,7 @@ public @interface ClientCacheApplication {
 	String serverGroup() default PoolFactory.DEFAULT_SERVER_GROUP;
 
 	/**
-	 * Configures the GemFire {@link org.apache.geode.cache.server.CacheServer CacheServers} to which
+	 * Configures the Pivotal GemFire {@link org.apache.geode.cache.server.CacheServer CacheServers} to which
 	 * this cache client will connect.
 	 *
 	 * Use either the {@literal spring.data.gemfire.pool.default.servers} property
@@ -369,8 +369,8 @@ public @interface ClientCacheApplication {
 
 	/**
 	 * Determines whether the {@link GemfireBeanFactoryLocator} should be enabled to lookup
-	 * the Spring {@link BeanFactory} to auto-wire and configure/initialize GemFire components
-	 * created in a non-Spring managed, GemFire context.
+	 * the Spring {@link BeanFactory} to auto-wire and configure/initialize Pivotal GemFire components
+	 * created in a non-Spring managed, Pivotal GemFire context.
 	 *
 	 * Defaults to {@literal false}.
 	 *

@@ -35,7 +35,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * GemFire specific {@link QueryMethod}.
+ * Pivotal GemFire specific {@link QueryMethod}.
  *
  * @author Oliver Gierke
  * @author John Blum
@@ -71,7 +71,7 @@ public class GemfireQueryMethod extends QueryMethod {
 	}
 
 	/**
-	 * Asserts that the query method is a non-Paging query method since GemFire does not support pagination
+	 * Asserts that the query method is a non-Paging query method since Pivotal GemFire does not support pagination
 	 * as it has no concept of a Cursor.
 	 *
 	 * @param method the query method to be evaluated
@@ -83,7 +83,7 @@ public class GemfireQueryMethod extends QueryMethod {
 
 		for (Class<?> type : method.getParameterTypes()) {
 			if (Pageable.class.isAssignableFrom(type)) {
-				throw new IllegalStateException(String.format("Pagination is not supported by GemFire Repositories;"
+				throw new IllegalStateException(String.format("Pagination is not supported by Pivotal GemFire Repositories;"
 					+ " Offending method: %1$s", method.getName()));
 			}
 		}
@@ -126,7 +126,7 @@ public class GemfireQueryMethod extends QueryMethod {
 	}
 
 	/**
-	 * Determines whether this query method uses a query HINT to tell the GemFire OQL query engine which indexes
+	 * Determines whether this query method uses a query HINT to tell the Pivotal GemFire OQL query engine which indexes
 	 * to apply to the query execution.
 	 *
 	 * @return a boolean value to indicate whether this query method uses a query HINT.

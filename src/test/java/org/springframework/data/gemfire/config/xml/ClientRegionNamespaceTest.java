@@ -69,7 +69,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ObjectUtils;
 
 /**
- * Unit tests for Spring Data GemFire's XML namespace support for client {@link Region Regions}.
+ * Unit tests for SDG's XML namespace support for client {@link Region Regions}.
  *
  * @author Costin Leau
  * @author David Turanski

@@ -37,7 +37,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * Integration tests for a GemFire DataSource.
+ * Integration tests for a Pivotal GemFireDataSource.
  *
  * @author David Turanski
  * @author John Blum

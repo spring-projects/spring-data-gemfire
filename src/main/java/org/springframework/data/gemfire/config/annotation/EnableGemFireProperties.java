@@ -28,11 +28,11 @@ import org.springframework.context.annotation.Import;
 
 /**
  * The {@link EnableGemFireProperties} annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
- * annotated class to configure GemFire/Geode System properties at runtime during [Spring Boot] application startup.
+ * annotated class to configure Pivotal GemFire/Apache Geode System properties at runtime during [Spring Boot] application startup.
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.config.annotation.GemFirePropertiesConfiguration
- * @see <a href="http://gemfire.docs.pivotal.io/docs-gemfire/reference/topics/gemfire_properties.html">GemFire System Properties</a>
+ * @see <a href="http://gemfire.docs.pivotal.io/docs-gemfire/reference/topics/gemfire_properties.html">Pivotal GemFire System Properties</a>
  * @see <a href="http://geode.docs.pivotal.io/docs/reference/topics/gemfire_properties.html">Geode System Properties</a>
  * @since 1.9.0
  */
@@ -105,7 +105,7 @@ public @interface EnableGemFireProperties {
 	/**
 	 * Relevant only for multi-homed hosts - machines with multiple network interface cards (NICs).
 	 * Specifies the adapter card the cache binds to for peer-to-peer (P2P) communication. Also specifies
-	 * the default location for GemFire Servers to listen on, which is used unless overridden by
+	 * the default location for Pivotal GemFire Servers to listen on, which is used unless overridden by
 	 * the {@literal server-bind-address}. An empty string causes the member to listen on the default card
 	 * for the machine. This is a machine-wide attribute used for system member and client/server communication.
 	 * It has no effect on Locator location, unless the Locator is embedded in a member process.
@@ -149,9 +149,9 @@ public @interface EnableGemFireProperties {
 	 * every application thread has its own sockets for distribution purposes. You can override
 	 * this setting for individual threads inside your application. Where possible, it is better to
 	 * set {@literal conserve-sockets} to {@literal true} and enable the use of specific extra sockets
-	 * in the application code if needed. WAN deployments increase the messaging demands on a GemFire system.
+	 * in the application code if needed. WAN deployments increase the messaging demands on a Pivotal GemFire system.
 	 * To avoid hangs related to WAN messaging, always set {@literal conserve-sockets} to {@literal false}
-	 * for GemFire members that participate in a WAN deployment.
+	 * for Pivotal GemFire members that participate in a WAN deployment.
 	 *
 	 * Defaults to {@literal true}.
 	 */
@@ -169,7 +169,7 @@ public @interface EnableGemFireProperties {
 	 * Working directory used when deploying JAR application files to distributed system members.
 	 * This directory can be local and unique to the member or a shared resource.
 	 *
-	 * Defaults to current working directory of this GemFire JVM process.
+	 * Defaults to current working directory of this Pivotal GemFire JVM process.
 	 */
 	String deployWorkingDirectory() default GemFirePropertiesConfiguration.DEFAULT_DEPLOY_WORKING_DIRECTORY;
 
@@ -208,7 +208,7 @@ public @interface EnableGemFireProperties {
 
 	/**
 	 * Whether partitioned regions will put redundant copies of the same data in different members
-	 * running on the same physical machine. By default, GemFire tries to put redundant copies on different machines,
+	 * running on the same physical machine. By default, Pivotal GemFire tries to put redundant copies on different machines,
 	 * but it will put them on the same machine if no other machines are available. Setting this property
 	 * to {@literal true} prevents this and requires different machines for redundant copies.
 	 *
@@ -263,7 +263,7 @@ public @interface EnableGemFireProperties {
 	long maxWaitTimeReconnect() default GemFirePropertiesConfiguration.DEFAULT_MAX_WAIT_TIME_RECONNECT;
 
 	/**
-	 * GemFire uses the {@literal member-timeout} server configuration, specified in milliseconds, to detect
+	 * Pivotal GemFire uses the {@literal member-timeout} server configuration, specified in milliseconds, to detect
 	 * the abnormal termination of members. The configuration setting is used in two ways:
 	 *
 	 * 1) First, it is used during the UDP heartbeat detection process. When a member detects that
@@ -285,7 +285,7 @@ public @interface EnableGemFireProperties {
 	 * The range of ports available for unicast UDP messaging and for TCP failure detection. This is specified
 	 * as two integers separated by a hyphen. Different members can use different ranges.
 	 *
-	 * GemFire randomly chooses at least two unique integers from this range for the member, one for
+	 * Pivotal GemFire randomly chooses at least two unique integers from this range for the member, one for
 	 * UDP unicast messaging and the other for TCP failure detection messaging. If {@literal tcp-port}
 	 * is configured to {@literal 0}, it will also randomly select a port from this range for TCP sockets
 	 * used for peer-to-peer communication only.
@@ -295,7 +295,7 @@ public @interface EnableGemFireProperties {
 	 *
 	 * The system uniquely identifies the member using the combined host IP address and UDP port number.
 	 *
-	 * You may want to restrict the range of ports that GemFire uses so the product can run in an environment
+	 * You may want to restrict the range of ports that Pivotal GemFire uses so the product can run in an environment
 	 * where routers only allow traffic on certain ports.
 	 *
 	 * Defaults to {@literal 1024-65535}.
@@ -304,7 +304,7 @@ public @interface EnableGemFireProperties {
 
 	/**
 	 * Defines this member’s redundancy zone. Used to separate member’s into different groups for satisfying
-	 * Partitioned Region redundancy. If this property is set, GemFire will not put redundant copies of data
+	 * Partitioned Region redundancy. If this property is set, Pivotal GemFire will not put redundant copies of data
 	 * in members with the same redundancy zone setting.
 	 *
 	 * Defaults to unset.
@@ -375,7 +375,7 @@ public @interface EnableGemFireProperties {
 	 * The TCP port to listen on for cache communications. If set to zero, the operating system selects
 	 * an available port. Each process on a machine must have its own TCP port. Note that some operating systems
 	 * restrict the range of ports usable by non-privileged users, and using restricted port numbers can cause
-	 * runtime errors in GemFire startup.
+	 * runtime errors in Pivotal GemFire startup.
 	 *
 	 * Valid values are in the range 0..65535.
 	 *
@@ -384,7 +384,7 @@ public @interface EnableGemFireProperties {
 	int tcpPort() default GemFirePropertiesConfiguration.DEFAULT_TCP_PORT;
 
 	/**
-	 * The number of tombstones that can accumulate before the GemFire member triggers garbage collection
+	 * The number of tombstones that can accumulate before the Pivotal GemFire member triggers garbage collection
 	 * for tombstones.
 	 *
 	 * Defaults to {@literal 100000} tombstones.

@@ -38,7 +38,7 @@ import org.springframework.util.Assert;
 
 /**
  * The CachingWithGemFireIntegrationTest class is a test suite of test cases testing the contract and functionality
- * of Spring Framework's Cache Abstraction using GemFire as a caching provider applied with Spring Data GemFire.
+ * of Spring Framework's Cache Abstraction using Pivotal GemFireas a caching provider applied with SDG.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -73,7 +73,7 @@ public class CachingWithGemFireIntegrationTest {
 		assertFalse(namedNumbersService.wasCacheMiss());
 
 		try {
-			namedNumbersRegion.put("eleven", null); // GemFire does not accept null values on put(key, value)
+			namedNumbersRegion.put("eleven", null); // Pivotal GemFiredoes not accept null values on put(key, value)
 		}
 		finally {
 			assertTrue(namedNumbersRegion.containsKey("eleven"));

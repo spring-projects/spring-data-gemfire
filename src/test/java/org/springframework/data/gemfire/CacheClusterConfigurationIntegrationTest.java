@@ -57,7 +57,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * The CacheClusterConfigurationIntegrationTest class is a test suite of test cases testing the integration of
- * Spring Data GemFire with GemFire 8's new shared, persistent, cluster configuration service.
+ * SDG with Pivotal GemFire8's new shared, persistent, cluster configuration service.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -233,7 +233,7 @@ public class CacheClusterConfigurationIntegrationTest {
 
 			fail("Loading the 'cacheUsingLocalOnlyConfigurationIntegrationTest.xml' Spring ApplicationContext"
 				+ " configuration file should have resulted in an Exception due to the Region lookup on"
-				+ " 'ClusterConfigRegion' when GemFire Cluster Configuration is disabled!");
+				+ " 'ClusterConfigRegion' when Cluster Configuration is disabled!");
 		}
 		catch (BeanCreationException expected) {
 			assertTrue(expected.getCause() instanceof BeanInitializationException);

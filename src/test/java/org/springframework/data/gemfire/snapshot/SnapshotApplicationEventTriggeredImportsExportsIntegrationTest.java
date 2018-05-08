@@ -52,7 +52,7 @@ import org.springframework.util.StringUtils;
 /**
  * The SnapshotApplicationEventTriggeredImportsExportsIntegrationTest class is a test suite of test cases testing
  * the effects of the SnapshotServiceFactoryBean using Spring ApplicationEvents to trigger imports and exports
- * of GemFire Cache Region data.
+ * of Pivotal GemFireCache Region data.
  *
  * @author John Blum
  * @see org.junit.Test

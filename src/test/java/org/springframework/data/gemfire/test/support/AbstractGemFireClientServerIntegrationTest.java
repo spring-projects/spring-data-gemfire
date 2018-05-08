@@ -30,7 +30,7 @@ import org.springframework.util.Assert;
 
 /**
  * The AbstractGemFireClientServerIntegrationTest class is an abstract test suite base class encapsulating functionality
- * common to all test classes implementing GemFire client/server test cases.
+ * common to all test classes implementing Pivotal GemFireclient/server test cases.
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.fork.ServerProcess
@@ -87,9 +87,6 @@ public abstract class AbstractGemFireClientServerIntegrationTest {
 			arguments.toArray(new String[arguments.size()]));
 
 		waitForServerToStart(gemfireServerProcess, waitTimeInMilliseconds);
-
-		System.out.printf("The Spring-based, GemFire Cache Server process for %1$s should be running...%n",
-			testClass.getSimpleName());
 
 		return gemfireServerProcess;
 	}

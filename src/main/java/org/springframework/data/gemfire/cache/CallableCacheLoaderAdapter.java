@@ -27,9 +27,9 @@ import org.apache.geode.cache.TimeoutException;
 import org.springframework.util.Assert;
 
 /**
- * The {@link CallableCacheLoaderAdapter} class is a {@link Callable} and GemFire {@link CacheLoader} implementation
+ * The {@link CallableCacheLoaderAdapter} class is a {@link Callable} and Pivotal GemFire {@link CacheLoader} implementation
  * that adapts the {@link Callable} interface into an instance of the {@link CacheLoader} interface.  This class is
- * useful in situations where GemFire developers have several {@link CacheLoader} implementations that they wish to
+ * useful in situations where Pivotal GemFire developers have several {@link CacheLoader} implementations that they wish to
  * use with Spring's Cache Abstraction.
  *
  * @author John Blum

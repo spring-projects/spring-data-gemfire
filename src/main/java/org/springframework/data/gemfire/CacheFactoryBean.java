@@ -907,7 +907,7 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 	}
 
 	/**
-	 * Sets an instance of the DynamicRegionSupport to support Dynamic Regions in this GemFire Cache.
+	 * Sets an instance of the DynamicRegionSupport to support Dynamic Regions in this Pivotal GemFire Cache.
 	 *
 	 * @param dynamicRegionSupport the DynamicRegionSupport class to setup Dynamic Regions in this Cache.
 	 */
@@ -923,10 +923,10 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 	}
 
 	/**
-	 * Controls whether auto-reconnect functionality introduced in GemFire 8 is enabled or not.
+	 * Controls whether auto-reconnect functionality introduced in Pivotal GemFire 8 is enabled or not.
 	 *
 	 * @param enableAutoReconnect a boolean value to enable/disable auto-reconnect functionality.
-	 * @since GemFire 8.0
+	 * @since Pivotal GemFire 8.0
 	 */
 	public void setEnableAutoReconnect(Boolean enableAutoReconnect) {
 		this.enableAutoReconnect = enableAutoReconnect;
@@ -975,7 +975,7 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 	}
 
 	/**
-	 * Requires GemFire 7.0 or higher
+	 * Requires Pivotal GemFire 7.0 or higher
 	 * @param gatewayConflictResolver defined as Object in the signature for backward
 	 * compatibility with Gemfire 6 compatibility. This must be an instance of
 	 * {@link org.apache.geode.cache.util.GatewayConflictResolver}
@@ -1075,7 +1075,7 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 
 	/**
 	 * Controls whether pdx ignores fields that were unread during
-	 * deserialization. Applicable on GemFire 6.6 or higher.
+	 * deserialization. Applicable on Pivotal GemFire 6.6 or higher.
 	 *
 	 * @param pdxIgnoreUnreadFields the pdxIgnoreUnreadFields to set
 	 */
@@ -1091,7 +1091,7 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 	}
 
 	/**
-	 * Controls whether type metadata for PDX objects is persisted to disk. Applicable on GemFire 6.6 or higher.
+	 * Controls whether type metadata for PDX objects is persisted to disk. Applicable on Pivotal GemFire 6.6 or higher.
 	 *
 	 * @param pdxPersistent a boolean value indicating that PDX type meta-data should be persisted to disk.
 	 */
@@ -1107,7 +1107,7 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 	}
 
 	/**
-	 * Sets the object preference to PdxInstance. Applicable on GemFire 6.6 or higher.
+	 * Sets the object preference to PdxInstance. Applicable on Pivotal GemFire 6.6 or higher.
 	 *
 	 * @param pdxReadSerialized a boolean value indicating the PDX instance should be returned from Region.get(key)
 	 * when available.
@@ -1126,7 +1126,7 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 	/**
 	 * Sets the {@link PdxSerializable} for this cache. Applicable on GemFire
 	 * 6.6 or higher. The argument is of type object for compatibility with
-	 * GemFire 6.5.
+	 * Pivotal GemFire 6.5.
 	 *
 	 * @param serializer pdx serializer configured for this cache.
 	 */
@@ -1186,7 +1186,7 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 	 * Sets the list of TransactionListeners used to configure the Cache to receive transaction events after
 	 * the transaction is processed (committed, rolled back).
 	 *
-	 * @param transactionListeners the list of GemFire TransactionListeners listening for transaction events.
+	 * @param transactionListeners the list of Pivotal GemFire TransactionListeners listening for transaction events.
 	 * @see org.apache.geode.cache.TransactionListener
 	 */
 	public void setTransactionListeners(List<TransactionListener> transactionListeners) {
@@ -1204,7 +1204,7 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 	 * Sets the TransactionWriter used to configure the Cache for handling transaction events, such as to veto
 	 * the transaction or update an external DB before the commit.
 	 *
-	 * @param transactionWriter the GemFire TransactionWriter callback receiving transaction events.
+	 * @param transactionWriter the Pivotal GemFire TransactionWriter callback receiving transaction events.
 	 * @see org.apache.geode.cache.TransactionWriter
 	 */
 	public void setTransactionWriter(TransactionWriter transactionWriter) {

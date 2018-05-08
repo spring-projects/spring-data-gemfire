@@ -24,7 +24,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The Import class is a annotation type indicating a GemFire OQL Query Import to refer to the class of an object
+ * The Import class is a annotation type indicating a Pivotal GemFire OQL Query Import to refer to the class of an object
  * in cases where the same class name resides in two different name scopes (packages), then you must be able to
  * differentiate the classes having the same name.
  *

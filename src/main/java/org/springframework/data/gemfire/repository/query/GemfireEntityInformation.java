@@ -20,7 +20,7 @@ import org.apache.geode.cache.Region;
 import org.springframework.data.repository.core.EntityInformation;
 
 /**
- * {@link EntityInformation} capturing GemFire specific information.
+ * {@link EntityInformation} capturing Pivotal GemFire specific information.
  *
  * @author Oliver Gierke
  * @see org.springframework.data.repository.core.EntityInformation

@@ -225,9 +225,9 @@ public class AddPoolConfiguration extends AbstractAnnotationConfigSupport
 	}
 
 	/**
-	 * Uses the list of GemFire Locator and Server connection endpoint definitions and meta-data to configure
-	 * the GemFire client {@link org.apache.geode.cache.client.Pool} used to communicate with the servers
-	 * in the GemFire cluster.
+	 * Uses the list of Pivotal GemFire Locator and Server connection endpoint definitions and meta-data to configure
+	 * the Pivotal GemFire client {@link org.apache.geode.cache.client.Pool} used to communicate with the servers
+	 * in the Pivotal GemFire cluster.
 	 *
 	 * @param enablePoolAttributes {@link EnablePool} annotation containing
 	 * {@link org.apache.geode.cache.client.Pool} Locator/Server connection endpoint meta-data.

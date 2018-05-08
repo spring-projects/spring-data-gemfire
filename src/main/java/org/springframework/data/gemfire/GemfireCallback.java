@@ -21,7 +21,7 @@ import org.apache.geode.GemFireException;
 import org.apache.geode.cache.Region;
 
 /**
- * Callback interface for GemFire code. To be used with {@link GemfireTemplate}'s execution methods, often as anonymous
+ * Callback interface for Pivotal GemFire code. To be used with {@link GemfireTemplate}'s execution methods, often as anonymous
  * classes within a method implementation. A typical implementation will call Region.get/put/query to perform some
  * operations on stored objects.
  *
@@ -41,7 +41,7 @@ public interface GemfireCallback<T> {
 	 * A thrown custom RuntimeException is treated as an application exception: it gets propagated to
 	 * the caller of the template.
 	 *
-	 * @param region the GemFire Cache Region upon which the operation of this callback will be performed.
+	 * @param region the Pivotal GemFire Cache Region upon which the operation of this callback will be performed.
 	 * @return a result object, or <tt>null</tt> if no result.
 	 * @throws GemFireCheckedException for checked Exceptions occurring in GemFire.
 	 * @throws GemFireException for runtime Exceptions occurring in GemFire.

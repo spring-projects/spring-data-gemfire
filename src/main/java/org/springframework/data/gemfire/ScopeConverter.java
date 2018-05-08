@@ -21,7 +21,7 @@ import org.springframework.data.gemfire.support.AbstractPropertyEditorConverterS
 
 /**
  * The ScopeConverter class is a Spring Converter and JavaBeans PropertyEditor that converts Strings
- * into GemFire Scope constant values.
+ * into Pivotal GemFire Scope constant values.
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.support.AbstractPropertyEditorConverterSupport
@@ -32,11 +32,11 @@ import org.springframework.data.gemfire.support.AbstractPropertyEditorConverterS
 public class ScopeConverter extends AbstractPropertyEditorConverterSupport<Scope> {
 
 	/**
-	 * Converts the given String source into an instance of GemFire Scope.
+	 * Converts the given String source into an instance of Pivotal GemFire Scope.
 	 *
-	 * @param source the String to convert into a GemFire Scope.
-	 * @return a GemFire Scope for the given String.
-	 * @throws java.lang.IllegalArgumentException if the String is not a valid GemFire Scope.
+	 * @param source the String to convert into a Pivotal GemFire Scope.
+	 * @return a Pivotal GemFire Scope for the given String.
+	 * @throws java.lang.IllegalArgumentException if the String is not a valid Pivotal GemFire Scope.
 	 * @see org.springframework.data.gemfire.ScopeType#getScope(ScopeType)
 	 * @see org.springframework.data.gemfire.ScopeType#valueOfIgnoreCase(String)
 	 * @see org.apache.geode.cache.Scope#fromString(String)

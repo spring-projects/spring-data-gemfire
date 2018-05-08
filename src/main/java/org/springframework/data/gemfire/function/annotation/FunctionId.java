@@ -18,7 +18,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to bind an interface method to a GemFire function id
+ * Annotation to bind an interface method to a Pivotal GemFire function id
  * @author David Turanski
  *
  */

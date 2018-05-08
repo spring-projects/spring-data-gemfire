@@ -17,8 +17,8 @@
 package org.springframework.data.gemfire.snapshot;
 
 /**
- * The ImportSnapshotException class is a RuntimeException indicating an error occurred while loading GemFire Snapshots
- * into the GemFire Cache Regions.
+ * The ImportSnapshotException class is a RuntimeException indicating an error occurred while loading Pivotal GemFire Snapshots
+ * into the Pivotal GemFire Cache Regions.
  *
  * @author John Blum
  * @see java.lang.RuntimeException

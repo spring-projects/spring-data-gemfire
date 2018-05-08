@@ -29,7 +29,7 @@ import org.springframework.context.annotation.Import;
 
 /**
  * The {@link EnableCacheServers} annotation enables 1 or more {@link CacheServer CacheServers}
- * to be defined and used in a peer cache application configured with Spring (Data GemFire/Geode).
+ * to be defined and used in a peer cache application configured with Spring (Data Pivotal GemFire/Apache Geode).
  *
  * @author John Blum
  * @see org.apache.geode.cache.server.CacheServer
@@ -47,7 +47,7 @@ import org.springframework.context.annotation.Import;
 public @interface EnableCacheServers {
 
 	/**
-	 * Enables the definition of multiple GemFire {@link org.apache.geode.cache.server.CacheServer CacheServers}.
+	 * Enables the definition of multiple Pivotal GemFire {@link org.apache.geode.cache.server.CacheServer CacheServers}.
 	 */
 	EnableCacheServer[] servers() default {};
 

@@ -21,7 +21,7 @@ import java.util.Map;
 import org.apache.geode.cache.snapshot.SnapshotFilter;
 
 /**
- * The ComposableSnapshotFilter class is a GemFire SnapshotFilter implementation of the Composition design pattern
+ * The ComposableSnapshotFilter class is a Pivotal GemFire SnapshotFilter implementation of the Composition design pattern
  * allowing 2 or more SnapshotFilters to be combined by logical AND and OR operators acting as a single SnapshotFilter.
  *
  * @author John Blum

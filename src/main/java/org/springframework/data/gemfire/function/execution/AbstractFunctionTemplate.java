@@ -18,7 +18,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 
 /**
- * The base class for GemFire FunctionTemplates used to invoke GemFire Functions.
+ * The base class for Pivotal GemFire FunctionTemplates used to invoke Pivotal GemFire Functions.
  *
  * @author David Turanski
  * @author John Blum

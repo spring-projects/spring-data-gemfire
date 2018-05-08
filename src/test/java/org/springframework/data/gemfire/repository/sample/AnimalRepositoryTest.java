@@ -28,7 +28,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Integration test testing the functionality behind PR #55 involving persisting application domain object/entities
- * to multiple Regions in a GemFire Cache.
+ * to multiple Regions in a Pivotal GemFireCache.
  *
  * @author Stuart Williams
  * @author John Blum

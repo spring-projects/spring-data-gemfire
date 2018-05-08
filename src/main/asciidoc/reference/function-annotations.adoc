@@ -3,22 +3,22 @@
 
 == Introduction
 
-_Spring Data GemFire_ includes annotation support to simplify working with GemFire
+_Spring Data for Pivotal GemFire_ includes annotation support to simplify working with Pivotal GemFire
 http://geode.apache.org/docs/guide/11/developing/function_exec/chapter_overview.html[Function Execution].
-Under-the-hood, the Pivotal GemFire API provides classes to implement and register GemFire
+Under-the-hood, the Pivotal GemFire API provides classes to implement and register Pivotal GemFire
 http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/execute/Function.html[Functions]
-that are deployed on GemFire servers, which may then be invoked by other peer member applications
+that are deployed on Pivotal GemFire servers, which may then be invoked by other peer member applications
 or remotely from cache clients.
 
-Functions can execute in parallel, distributed among multiple GemFire servers in the cluster, aggregating results
+Functions can execute in parallel, distributed among multiple Pivotal GemFire servers in the cluster, aggregating results
 with the map-reduce pattern that are sent back to the caller.  Functions can also be targeted to run on a single server
 or Region.  The Pivotal GemFire API supports remote execution of Functions targeted using various predefined scopes:
 on Region, on members [in groups], on servers, etc.  The implementation and execution of remote Functions,
 as with any RPC protocol, requires some boilerplate code.
 
-_Spring Data GemFire_, true to _Spring's_ core value proposition, aims to hide the mechanics of remote Function execution
-and allow developers to focus on core POJO programming and business logic.  To this end, _Spring Data GemFire_ introduces
-annotations to declaratively register public methods of a POJO class as GemFire Functions along with the ability to
+_Spring Data for Pivotal GemFire_, true to _Spring's_ core value proposition, aims to hide the mechanics of remote Function execution
+and allow developers to focus on core POJO programming and business logic.  To this end, _Spring Data for Pivotal GemFire_ introduces
+annotations to declaratively register public methods of a POJO class as Pivotal GemFire Functions along with the ability to
 invoke registered Functions [remotely] via annotated interfaces.
 
 == Implementation vs Execution
@@ -44,8 +44,8 @@ to aggregate and acquire the execution results.  In certain cases, a custom `Res
 is required and may be registered with the `Execution`.
 
 NOTE: 'Client' and 'Server' are used here in the context of Function execution, which may have a different meaning
-than client and server in GemFire's client-server topology.  While it is common for an application using a `ClientCache`
-to invoke a Function on one or more GemFire servers in a cluster, it is also possible to execute Functions
+than client and server in Pivotal GemFire's client-server topology.  While it is common for an application using a `ClientCache`
+to invoke a Function on one or more Pivotal GemFire servers in a cluster, it is also possible to execute Functions
 in a peer-to-peer (P2P) configuration, where the application is a member of the cluster hosting a peer `Cache`.
 Keep in mind that a peer member cache application is subject to all the same constraints of being a peer member
 of the cluster.
@@ -53,7 +53,7 @@ of the cluster.
 [[function-implementation]]
 == Implementing a Function
 
-Using GemFire APIs, the `FunctionContext` provides a runtime invocation context that includes the client's
+Using Pivotal GemFire APIs, the `FunctionContext` provides a runtime invocation context that includes the client's
 calling arguments and a `ResultSender` implementation to send results back to the client.  Additionally,
 if the Function is executed on a Region, the `FunctionContext` is actually an instance of `RegionFunctionContext`,
 which provides additional information such as the target Region on which the Function was invoked
@@ -101,7 +101,7 @@ or the `ResultSender`, if you need to control how the results are returned to th
 === Annotations for Function Implementation
 
 The following example illustrates how SDG's Function annotations are used to expose POJO methods
-as GemFire Functions:
+as Pivotal GemFire Functions:
 
 [source,java]
 ----
@@ -120,7 +120,7 @@ public class ApplicationFunctions {
 }
 ----
 
-Note, the class itself must be registered as a _Spring_ bean and each GemFire Function is annotated
+Note, the class itself must be registered as a _Spring_ bean and each Pivotal GemFire Function is annotated
 with `@GemfireFunction`.  In this example, _Spring's_ `@Component` annotation was used, but you may register the bean
 by any method supported by _Spring_ (e.g. XML configuration or with a Java configuration class using _Spring Boot_).
 This allows the _Spring_ container to create an instance of this class and wrap it in a
@@ -129,14 +129,14 @@ _Spring_ creates a wrapper instance for each method annotated with `@GemfireFunc
 the same target object instance to invoke the corresponding method.
 
 TIP: The fact that the POJO Function class is a _Spring_ bean may offer other benefits since it shares
-the `ApplicationContext` with GemFire components such as the Cache and Regions. These may be injected into the class
+the `ApplicationContext` with Pivotal GemFire components such as the Cache and Regions. These may be injected into the class
 if necessary.
 
-_Spring_ creates the wrapper class and registers the Function(s) with GemFire's Function Service. The Function id used
+_Spring_ creates the wrapper class and registers the Function(s) with Pivotal GemFire's Function Service. The Function id used
 to register the Functions must be unique.  Using convention it defaults to the simple (unqualified) method name.
 The name can be explicitly defined using the `id` attribute of the `@GemfireFunction` annotation.
 The `@GemfireFunction` annotation also provides other configuration attributes, `HA` and `optimizedForWrite`,
-which correspond to properties defined by GemFire's
+which correspond to properties defined by Pivotal GemFire's
 http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/execute/Function.html[Function] interface.
 If the method's return type is void, then the `hasResult` property is automatically set to `false`;
 otherwise, if the method returns a value the `hasResult` attributes is set to `true`.
@@ -145,7 +145,7 @@ Even for `void` return types, the annotation's `hasResult` attribute can be set 
 as shown in the `functionWithContext` method above.  Presumably, the intention is to use the `ResultSender` directly
 to send results to the caller.
 
-The `PojoFunctionWrapper` implements GemFire's `Function` interface, binds method parameters and invokes the target method
+The `PojoFunctionWrapper` implements Pivotal GemFire's `Function` interface, binds method parameters and invokes the target method
 in its `execute()` method.  It also sends the method's return value using the `ResultSender`.
 
 === Batching Results
@@ -184,11 +184,11 @@ class ApplicationConfiguration { .. }
 == Executing a Function
 
 A process invoking a remote Function needs to provide the Function's ID, calling arguments, the execution target
-(onRegion, onServers, onServer, onMember, onMembers) and optionally, a Filter set.  Using _Spring Data GemFire_,
+(onRegion, onServers, onServer, onMember, onMembers) and optionally, a Filter set.  Using _Spring Data for Pivotal GemFire_,
 all a developer need do is define an interface supported by annotations.  _Spring_ will create a dynamic proxy
 for the interface, which will use the `FunctionService` to create an `Execution`, invoke the `Execution` and coerce
 the results to the defined return type, if necessary.  This technique is very similar to the way
-_Spring Data GemFire's Repository extension_ works, thus some of the configuration and concepts should be familiar.
+_Spring Data for Pivotal GemFire's Repository extension_ works, thus some of the configuration and concepts should be familiar.
 Generally, a single interface definition maps to multiple Function executions, one corresponding to each method
 defined in the interface.
 
@@ -196,7 +196,7 @@ defined in the interface.
 
 To support client-side Function execution, the following SDG Function annotations are provided: `@OnRegion`,
 `@OnServer`, `@OnServers`, `@OnMember`, `@OnMembers`.  These annotations correspond to the `Execution` implementations
-prodided by GemFire's
+prodided by Pivotal GemFire's
 http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/execute/FunctionService.html[FunctionService].
 Each annotation exposes the appropriate attributes. These annotations also provide an optional
 `resultCollector` attribute whose value is the name of a _Spring_ bean implementing the
@@ -288,12 +288,12 @@ The Filter argument is optional.  The following arguments are a variable argumen
 [[function-execution-pdx]]
 == Function Execution with PDX
 
-When using _Spring Data GemFire's_ Function annotation support combined with Pivotal GemFire's
+When using _Spring Data for Pivotal GemFire's_ Function annotation support combined with Pivotal GemFire's
 http://geode.apache.org/docs/guide/11/developing/data_serialization/gemfire_pdx_serialization.html[PDX Serialization],
 there are a few logistical things to keep in mind.
 
-As explained above, and by way of example, typically developers will define GemFire Functions using POJO classes
-annotated with Spring Data GemFire
+As explained above, and by way of example, typically developers will define Pivotal GemFire Functions using POJO classes
+annotated with Spring Data for Pivotal GemFire
 http://docs.spring.io/spring-data-gemfire/docs/current/api/org/springframework/data/gemfire/function/annotation/package-summary.html[Function annotations]
 like so...
 
@@ -334,7 +334,7 @@ public enum OrderSource {
 }
 ----
 
-Of course, a developer may define a Function `Execution` interface to call the 'process' GemFire Server Function...
+Of course, a developer may define a Function `Execution` interface to call the 'process' Pivotal GemFire Server Function...
 
 [source,java]
 ----
@@ -349,16 +349,16 @@ Clearly, this `process(..)` `Order` Function is being called from a client-side 
 The same is true when invoking peer-to-peer member Functions (e.g. `@OnMember(s)) between peers in the cluster.
 Any form of `distribution` requires the data transmitted between client and server, or peers, to be serialized.
 
-Now, if the developer has configured GemFire to use PDX for serialization (instead of Java serialization, for instance)
+Now, if the developer has configured Pivotal GemFire to use PDX for serialization (instead of Java serialization, for instance)
 it is common for developers to also set the `pdx-read-serialized` attribute to *true* in their configuration
-of the GemFire server(s)...
+of the Pivotal GemFire server(s)...
 
 [source,xml]
 ----
 <gfe:cache ... pdx-read-serialized="true"/>
 ----
 
-Or from a GemFire cache client application...
+Or from a Pivotal GemFire cache client application...
 
 [source,xml]
 ----
@@ -368,24 +368,24 @@ Or from a GemFire cache client application...
 This causes all values read from the cache (i.e. Regions) as well as information passed between client and servers,
 or peers, to remain in serialized form, including, but not limited to, Function arguments.
 
-GemFire will only serialize application domain object types that you have specifically configured (registered),
-with either GemFire's
+Pivotal GemFire will only serialize application domain object types that you have specifically configured (registered),
+with either Pivotal GemFire's
 http://gemfire-90-javadocs.docs.pivotal.io/org/apache/geode/pdx/ReflectionBasedAutoSerializer.html[ReflectionBasedAutoSerializer],
-or specifically (and recommended) using a "custom" GemFire
+or specifically (and recommended) using a "custom" Pivotal GemFire
 http://gemfire-90-javadocs.docs.pivotal.io/org/apache/geode/pdx/PdxSerializer.html[PdxSerializer].  If you are using
-_Spring Data GemFire's_ Repository extension to _Spring Data Common's_ Repository abstraction and infrastructure,
-you might even want to consider using _Spring Data GemFire's_
+_Spring Data for Pivotal GemFire's_ Repository extension to _Spring Data Common's_ Repository abstraction and infrastructure,
+you might even want to consider using _Spring Data for Pivotal GemFire's_
 http://docs.spring.io/spring-data-gemfire/docs/current/api/org/springframework/data/gemfire/mapping/MappingPdxSerializer.html[MappingPdxSerializer],
 which uses a entity's mapping meta-data to determine data from the application domain object that will be serialized
 to the PDX instance.
 
-What is less than apparent, though, is that GemFire automatically handles Java Enum types regardless of whether they are
+What is less than apparent, though, is that Pivotal GemFire automatically handles Java Enum types regardless of whether they are
 explicitly configured or not (i.e. registered with a `ReflectionBasedAutoSerializer` using a regex pattern
-and the `classes` parameter, or are handled by a "custom" GemFire `PdxSerializer`), despite the fact that Java Enums
+and the `classes` parameter, or are handled by a "custom" Pivotal GemFire `PdxSerializer`), despite the fact that Java Enums
 implement `java.io.Serializable`.
 
-So, when a developer sets `pdx-read-serialized` to *true* on GemFire Servers where the GemFire Functions
-(including Spring Data GemFire Function annotated POJO classes) are registered, then the developer
+So, when a developer sets `pdx-read-serialized` to *true* on Pivotal GemFire Servers where the Pivotal GemFire Functions
+(including Spring Data for Pivotal GemFire Function annotated POJO classes) are registered, then the developer
 may encounter surprising behavior when invoking the Function `Execution`.
 
 What the developer may pass as arguments when invoking the Function is...
@@ -395,7 +395,7 @@ What the developer may pass as arguments when invoking the Function is...
 orderProcessingFunctions.process(new Order(123, customer, Calendar.getInstance(), items), OrderSource.ONLINE, 400);
 ----
 
-But, what the GemFire Function on the Server gets is...
+But, what the Pivotal GemFire Function on the Server gets is...
 
 [source,java]
 ----
@@ -405,17 +405,17 @@ process(regionData, order:PdxInstance, :PdxInstanceEnum, 400);
 The `Order` and `OrderSource` have been passed to the Function as
 http://gemfire-90-javadocs.docs.pivotal.io/org/apache/geode/pdx/PdxInstance.html[PDX instances].
 Again, this is all because `pdx-read-serialized` is set to *true*, which may be necessary in cases where
-the GemFire Servers are interacting with multiple different clients (e.g. Java, native clients, such as C++/C#, etc).
+the Pivotal GemFire Servers are interacting with multiple different clients (e.g. Java, native clients, such as C++/C#, etc).
 
-This flies in the face of _Spring Data GemFire's_ "strongly-typed", Function annotated POJO class method signatures,
+This flies in the face of _Spring Data for Pivotal GemFire's_ "strongly-typed", Function annotated POJO class method signatures,
 as the developer is expecting application domain object types, not PDX serialized instances.
 
-So, _Spring Data GemFire_ includes enhanced Function support to automatically convert method arguments passed to
+So, _Spring Data for Pivotal GemFire_ includes enhanced Function support to automatically convert method arguments passed to
 the Function that are of type PDX to the desired application domain object types defined by the Function method's
 parameter types.
 
-However, this also requires the developer to explicitly register a GemFire `PdxSerializer` on the GemFire Servers
-where _Spring Data GemFire_ Function annotated POJOs are registered and used, e.g. ...
+However, this also requires the developer to explicitly register a Pivotal GemFire `PdxSerializer` on the Pivotal GemFire Servers
+where _Spring Data for Pivotal GemFire_ Function annotated POJOs are registered and used, e.g. ...
 
 [source,java]
 ----
@@ -424,13 +424,13 @@ where _Spring Data GemFire_ Function annotated POJOs are registered and used, e.
 <gfe:cache ... pdx-serializer-ref="customPdxSerializeer" pdx-read-serialized="true"/>
 ----
 
-Alternatively, a developer my use GemFire's
+Alternatively, a developer my use Pivotal GemFire's
 http://gemfire-90-javadocs.docs.pivotal.io/org/apache/geode/pdx/ReflectionBasedAutoSerializer.html[ReflectionBasedAutoSerializer]
 for convenience.  Of course, it is recommended that you use a "custom" `PdxSerializer` where possible to maintain
 finer grained control over your serialization strategy.
 
-Finally, _Spring Data GemFire_ is careful not to convert your Function arguments if you treat your Function arguments
-generically, or as one of GemFire's PDX types...
+Finally, _Spring Data for Pivotal GemFire_ is careful not to convert your Function arguments if you treat your Function arguments
+generically, or as one of Pivotal GemFire's PDX types...
 
 [source,java]
 ----
@@ -440,9 +440,9 @@ public Object genericFunction(String value, Object domainObject, PdxInstanceEnum
 }
 ----
 
-_Spring Data GemFire_ only converts PDX type data to the corresponding application domain types if and only if
+_Spring Data for Pivotal GemFire_ only converts PDX type data to the corresponding application domain types if and only if
 the corresponding application domain types are on the classpath the the Function annotated POJO method expects it.
 
-For a good example of "custom", "composed" application-specific GemFire `PdxSerializers` as well as appropriate
-POJO Function parameter type handling based on the method signatures, see Spring Data GemFire's
+For a good example of "custom", "composed" application-specific Pivotal GemFire `PdxSerializers` as well as appropriate
+POJO Function parameter type handling based on the method signatures, see Spring Data for Pivotal GemFire's
 https://github.com/spring-projects/spring-data-gemfire/blob/2.0.0.M2/src/test/java/org/springframework/data/gemfire/function/ClientCacheFunctionExecutionWithPdxIntegrationTest.java[ClientCacheFunctionExecutionWithPdxIntegrationTest] class.

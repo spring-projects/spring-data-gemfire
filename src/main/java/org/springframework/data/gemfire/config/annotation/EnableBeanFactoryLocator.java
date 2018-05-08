@@ -29,8 +29,8 @@ import org.springframework.data.gemfire.support.GemfireBeanFactoryLocator;
 
 /**
  * The {@link EnableBeanFactoryLocator} annotation annotates a Spring {@link Configuration @Configuration} class
- * enabling SDG's {@link GemfireBeanFactoryLocator} in order to auto-wire and configure GemFire/Geode Objects
- * declared in GemFire/Geode config.
+ * enabling SDG's {@link GemfireBeanFactoryLocator} in order to auto-wire and configure Pivotal GemFire/Apache Geode Objects
+ * declared in Pivotal GemFire/Apache Geode config.
  *
  * @author John Blum
  * @see java.lang.annotation.Documented

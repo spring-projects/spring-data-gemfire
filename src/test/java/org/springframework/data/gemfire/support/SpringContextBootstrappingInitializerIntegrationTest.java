@@ -127,7 +127,7 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 				System.out.printf("Closing Cache...%n");
 				cache.close();
 
-				// Now, wait for the GemFire Hog to shutdown, OIY!
+				// Now, wait for the Pivotal GemFireHog to shutdown, OIY!
 				synchronized (MUTEX_LOCK) {
 					while (!cache.isClosed()) {
 						try {
@@ -162,8 +162,8 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 			//.set("jmx-manager-start", GEMFIRE_JMX_MANAGER_START)
 			.create();
 
-		assertNotNull("The GemFire Cache was not properly created and initialized!", gemfireCache);
-		assertFalse("The GemFire Cache is closed!", gemfireCache.isClosed());
+		assertNotNull("The cache was not properly created and initialized", gemfireCache);
+		assertFalse("The cache is closed", gemfireCache.isClosed());
 
 		Set<Region<?, ?>> rootRegions = gemfireCache.rootRegions();
 
@@ -178,7 +178,7 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 		assertNotNull(applicationContext);
 		assertTrue(applicationContext.containsBean(GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME));
 		assertTrue(applicationContext.containsBean("TestRegion"));
-		assertFalse(applicationContext.containsBean("Users")); // Region 'Users' is defined in GemFire cache.xml
+		assertFalse(applicationContext.containsBean("Users")); // Region 'Users' is defined in Pivotal GemFirecache.xml
 		assertTrue(applicationContext.containsBean("userDataSource"));
 		assertTrue(applicationContext.containsBean("userDao"));
 		assertTrue(applicationContext.containsBean("userService"));
@@ -190,7 +190,7 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 		assertSame(userDataSource, userDao.getDataSource());
 		assertSame(userDao, userService.getUserDao());
 
-		// NOTE a GemFire declared component initialized by Spring!
+		// NOTE a Pivotal GemFiredeclared component initialized by Spring!
 		UserDataStoreCacheLoader usersCacheLoader = UserDataStoreCacheLoader.getInstance();
 
 		assertSame(userDataSource, usersCacheLoader.getDataSource());

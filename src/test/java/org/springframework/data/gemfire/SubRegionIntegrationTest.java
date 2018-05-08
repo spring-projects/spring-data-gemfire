@@ -41,11 +41,11 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * The SubRegionIntegrationTest class is a test suite of test cases testing the functionality of SubRegions in GemFire
- * configured with Spring Data GemFire's XML namespace configuration meta-data.  This test class tests a complex
+ * configured with SDG's XML namespace configuration meta-data.  This test class tests a complex
  * SubRegion configuration in order to ensure functional completeness.
  *
  * @author John Blum
@@ -56,8 +56,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @since 1.4.0
  * @since 7.0.1 (GemFire)
  */
+@RunWith(SpringRunner.class)
 @ContextConfiguration(value = "complex-subregion.xml", initializers = GemfireTestApplicationContextInitializer.class)
-@RunWith(SpringJUnit4ClassRunner.class)
 @SuppressWarnings("unused")
 public class SubRegionIntegrationTest {
 
@@ -72,7 +72,8 @@ public class SubRegionIntegrationTest {
 
 	@Test
 	public void testGemFireAccountsSubRegionCreation() {
-		assertNotNull("The GemFire Cache was not properly initialized!", cache);
+
+		assertNotNull("Cache was not properly initialized", cache);
 
 		Region customers = cache.getRegion("Customers");
 
@@ -93,6 +94,7 @@ public class SubRegionIntegrationTest {
 
 	@Test
 	public void testSpringSubRegionConfiguration() {
+
 		assertNotNull("The /Customers/Accounts SubRegion was not properly initialized!", accounts);
 		assertEquals("Accounts", accounts.getName());
 		assertEquals("/Customers/Accounts", accounts.getFullPath());
@@ -136,5 +138,4 @@ public class SubRegionIntegrationTest {
 		assertNotNull(subscriptionAttributes);
 		assertEquals(InterestPolicy.CACHE_CONTENT, subscriptionAttributes.getInterestPolicy());
 	}
-
 }

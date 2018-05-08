@@ -22,7 +22,7 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
- * The ExpirationAttributesFactoryBean class is a Spring FactoryBean used to create GemFire ExpirationAttributes
+ * The ExpirationAttributesFactoryBean class is a Spring FactoryBean used to create Pivotal GemFire ExpirationAttributes
  * to specify Expiration policies for Region Time-to-Live (TTL) and Idle-Timeouts (TTI) as well as
  * Entry Time-to-Live (TTL) and Idle-Timeouts (TTI).
  *
@@ -105,7 +105,7 @@ public class ExpirationAttributesFactoryBean implements FactoryBean<ExpirationAt
 	}
 
 	/**
-	 * Initializes the GemFire ExpirationAttributes produced by this factory.
+	 * Initializes the Pivotal GemFire ExpirationAttributes produced by this factory.
 	 *
 	 * @throws Exception if the construction of the ExpirationAttributes was not successful.
 	 * @see #getAction()

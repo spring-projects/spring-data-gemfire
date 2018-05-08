@@ -58,6 +58,7 @@ public class OqlKeywordUnitTests {
 
 	@Test
 	public void valueOfIgnoreCaseWithIllegalValuesThrowsIllegalArgumentException() {
+
 		assertIllegalOqlKeyword("AN");
 		assertIllegalOqlKeyword("ASS");
 		assertIllegalOqlKeyword("CNT");
@@ -81,15 +82,17 @@ public class OqlKeywordUnitTests {
 	}
 
 	protected void assertIllegalOqlKeyword(String keyword) {
+
 		exception.expect(IllegalArgumentException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage(String.format("[%s] is not a valid GemFire OQL Keyword", keyword));
+		exception.expectMessage(String.format("[%s] is not a valid OQL Keyword", keyword));
 
 		OqlKeyword.valueOfIgnoreCase(keyword);
 	}
 
 	@Test
 	public void getKeywordEqualsNameExceptForOrderBy() {
+
 		for (OqlKeyword oqlKeyword : OqlKeyword.values()) {
 			if (!OqlKeyword.ORDER_BY.equals(oqlKeyword)) {
 				assertThat(oqlKeyword.getKeyword()).isEqualTo(oqlKeyword.name());

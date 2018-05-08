@@ -20,7 +20,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.util.StringUtils;
 
 /**
- * Spring {@link ApplicationContextInitializer} used to configure the Spring Data GemFire test suite
+ * Spring {@link ApplicationContextInitializer} used to configure the SDG test suite
  * with mocking enabled or disabled.
  *
  * @author David Turanski
@@ -40,10 +40,11 @@ public class GemfireTestApplicationContextInitializer implements ApplicationCont
 	 */
 	@Override
 	public void initialize(ConfigurableApplicationContext applicationContext) {
+
 		String gemfireTestRunnerDisabled = System.getProperty(GEMFIRE_TEST_RUNNER_DISABLED, Boolean.FALSE.toString());
 
 		if (isGemFireTestRunnerDisabled(gemfireTestRunnerDisabled)) {
-			log.warn(String.format("WARNING - Mocks disabled; Using real GemFire components (%1$s = %2$s)",
+			log.warn(String.format("WARNING - Mocks disabled; Using real Pivotal GemFire objects [%1$s = %2$s]",
 				GEMFIRE_TEST_RUNNER_DISABLED, gemfireTestRunnerDisabled));
 		}
 		else {
@@ -51,8 +52,8 @@ public class GemfireTestApplicationContextInitializer implements ApplicationCont
 		}
 	}
 
-	/* (non-Javadoc) */
 	private boolean isGemFireTestRunnerDisabled(String systemPropertyValue) {
+
 		return (Boolean.valueOf(StringUtils.trimAllWhitespace(systemPropertyValue))
 			|| "yes".equalsIgnoreCase(systemPropertyValue)
 			|| "y".equalsIgnoreCase(systemPropertyValue));

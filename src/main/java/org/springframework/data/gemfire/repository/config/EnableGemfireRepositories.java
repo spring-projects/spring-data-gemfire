@@ -49,7 +49,7 @@ public @interface EnableGemfireRepositories {
 	 * {@code @EnableGemfireRepositories("org.my.pkg")} instead of
 	 * {@code @EnableGemfireRepositories(basePackages="org.my.pkg")}.
 	 *
-	 * @return a String array specifying the packages to search for GemFire Repositories.
+	 * @return a String array specifying the packages to search for Pivotal GemFire Repositories.
 	 * @see #basePackages()
 	 */
 	String[] value() default {};
@@ -58,7 +58,7 @@ public @interface EnableGemfireRepositories {
 	 * Base packages to scan for annotated components. {@link #value()} is an alias for (and mutually exclusive with) this
 	 * attribute. Use {@link #basePackageClasses()} for a type-safe alternative to String-based package names.
 	 *
-	 * @return a String array specifying the packages to search for GemFire Repositories.
+	 * @return a String array specifying the packages to search for Pivotal GemFire Repositories.
 	 * @see #value()
 	 */
 	String[] basePackages() default {};
@@ -68,7 +68,7 @@ public @interface EnableGemfireRepositories {
 	 * package of each class specified will be scanned. Consider creating a special no-op marker class or interface in
 	 * each package that serves no purpose other than being referenced by this attribute.
 	 *
-	 * @return an array of classes used to determine the packages to scan for GemFire Repositories.
+	 * @return an array of classes used to determine the packages to scan for Pivotal GemFire Repositories.
 	 */
 	Class<?>[] basePackageClasses() default {};
 

@@ -134,7 +134,7 @@ public class PartitionedRegionFactoryBeanTest {
 			factoryBean.resolveDataPolicy(mockRegionFactory, null, "REPLICATE");
 		}
 		catch (IllegalArgumentException e) {
-			assertEquals("Data Policy 'REPLICATE' is not supported in Partitioned Regions.", e.getMessage());
+			assertEquals("Data Policy [REPLICATE] is not supported in Partitioned Regions", e.getMessage());
 			throw e;
 		}
 		finally {

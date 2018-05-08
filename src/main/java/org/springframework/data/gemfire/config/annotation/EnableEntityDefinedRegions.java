@@ -38,7 +38,7 @@ import org.springframework.data.gemfire.mapping.annotation.ClientRegion;
 
 /**
  * The {@link EnableEntityDefinedRegions} annotation marks a Spring {@link Configuration @Configuration} application
- * annotated class to enable the creation of GemFire/Geode {@link Region Regions} based on
+ * annotated class to enable the creation of Pivotal GemFire/Apache Geode {@link Region Regions} based on
  * the application persistent entities.
  *
  * @author John Blum
@@ -144,7 +144,7 @@ public @interface EnableEntityDefinedRegions {
 
 	/**
 	 * When this annotation is applied to a cache client application, the {@literal poolName} attribute refers to
-	 * the default name of the GemFire/Geode {@link Pool} assigned to client {@link Region Region(s)}.
+	 * the default name of the Pivotal GemFire/Apache Geode {@link Pool} assigned to client {@link Region Region(s)}.
 	 *
 	 * This value can be overridden by annotating entities with the {@link ClientRegion} annotation.
 	 *

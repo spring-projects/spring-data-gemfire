@@ -49,7 +49,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * The TemplateClientRegionNamespaceTest class is a test suite of test cases testing the contract and functionality
- * of Client Region Templates using Spring Data GemFire XML namespace configuration meta-data.
+ * of Client Region Templates using SDG XML namespace configuration meta-data.
  *
  * @author John Blum
  * @see org.junit.Test

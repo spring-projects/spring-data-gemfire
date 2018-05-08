@@ -20,7 +20,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.CrudRepository;
 
 /**
- * GemFire specific extension of the Spring Data {@link CrudRepository} interface.
+ * Pivotal GemFire specific extension of the Spring Data {@link CrudRepository} interface.
  *
  * @author Oliver Gierke
  * @author John Blum

@@ -32,11 +32,11 @@ import org.springframework.data.gemfire.support.AbstractPropertyEditorConverterS
 public class ExpirationActionConverter extends AbstractPropertyEditorConverterSupport<ExpirationAction> {
 
 	/**
-	 * Converts the given String into an appropriate GemFire ExpirationAction.
+	 * Converts the given String into an appropriate Pivotal GemFire ExpirationAction.
 	 *
-	 * @param source the String to convert into an GemFire ExpirationAction.
-	 * @return an GemFire ExpirationAction value for the given String.
-	 * @throws java.lang.IllegalArgumentException if the String is not a valid GemFire ExpirationAction.
+	 * @param source the String to convert into an Pivotal GemFire ExpirationAction.
+	 * @return an Pivotal GemFire ExpirationAction value for the given String.
+	 * @throws java.lang.IllegalArgumentException if the String is not a valid Pivotal GemFire ExpirationAction.
 	 * @see ExpirationActionType#valueOfIgnoreCase(String)
 	 * @see org.apache.geode.cache.ExpirationAction
 	 */

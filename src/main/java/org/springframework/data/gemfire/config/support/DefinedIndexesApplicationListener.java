@@ -29,7 +29,7 @@ import org.springframework.data.gemfire.config.xml.GemfireConstants;
 
 /**
  * {@link DefinedIndexesApplicationListener} is a Spring {@link ApplicationListener} used to create all
- * "defined" GemFire {@link org.apache.geode.cache.query.Index Indexes} by using the {@link QueryService},
+ * "defined" Pivotal GemFire {@link org.apache.geode.cache.query.Index Indexes} by using the {@link QueryService},
  * {@literal defineXxxIndex(..)} methods.
  *
  * @author John Blum

@@ -21,7 +21,7 @@ import org.springframework.data.gemfire.support.AbstractPropertyEditorConverterS
 
 /**
  * The InterestPolicyConverter class is a Spring Converter implementation and Java PropertyEditor handling
- * the conversion between Strings and GemFire InterestPolicy values.
+ * the conversion between Strings and Pivotal GemFire InterestPolicy values.
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.support.AbstractPropertyEditorConverterSupport
@@ -32,11 +32,11 @@ import org.springframework.data.gemfire.support.AbstractPropertyEditorConverterS
 public class InterestPolicyConverter extends AbstractPropertyEditorConverterSupport<InterestPolicy> {
 
 	/**
-	 * Converts the given String into a GemFire InterestPolicy value.
+	 * Converts the given String into a Pivotal GemFire InterestPolicy value.
 	 *
-	 * @param source the String value to convert into a GemFire InterestPolicy value.
-	 * @return a GemFire InterestPolicy value for the given String description of the GemFire InterestPolicy
-	 * @throws java.lang.IllegalArgumentException if the String is not a valid GemFire InterestPolicy.
+	 * @param source the String value to convert into a Pivotal GemFire InterestPolicy value.
+	 * @return a Pivotal GemFire InterestPolicy value for the given String description of the Pivotal GemFire InterestPolicy
+	 * @throws java.lang.IllegalArgumentException if the String is not a valid Pivotal GemFire InterestPolicy.
 	 * @see org.springframework.data.gemfire.InterestPolicyType#getInterestPolicy(InterestPolicyType)
 	 * @see org.springframework.data.gemfire.InterestPolicyType#valueOfIgnoreCase(String)
 	 * @see #assertConverted(String, Object, Class)

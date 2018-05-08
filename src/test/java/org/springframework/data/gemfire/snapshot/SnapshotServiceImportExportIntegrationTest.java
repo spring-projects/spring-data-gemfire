@@ -40,7 +40,7 @@ import org.springframework.util.FileCopyUtils;
 
 /**
  * The SnapshotServiceImportExportIntegrationTest class is a test suite of test cases testing the import and export
- * of GemFire Cache Region data configured with SDG's Data Namespace &gt;gfe-data:snapshot-service&lt; (XML) element.
+ * of Pivotal GemFireCache Region data configured with SDG's Data Namespace &gt;gfe-data:snapshot-service&lt; (XML) element.
  *
  * @author John Blum
  * @see org.junit.Test

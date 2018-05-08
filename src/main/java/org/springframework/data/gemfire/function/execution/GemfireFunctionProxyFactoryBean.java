@@ -53,7 +53,7 @@ public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, Met
 
 	/**
 	 * @param functionExecutionInterface the proxied interface
-	 * @param gemfireFunctionOperations an interface used to delegate the function invocation (typically a GemFire function template)
+	 * @param gemfireFunctionOperations an interface used to delegate the function invocation (typically a Pivotal GemFire function template)
 	 */
 	public GemfireFunctionProxyFactoryBean(Class<?> functionExecutionInterface, GemfireFunctionOperations gemfireFunctionOperations) {
 		Assert.notNull(functionExecutionInterface, "'functionExecutionInterface' must not be null");
@@ -76,7 +76,7 @@ public class GemfireFunctionProxyFactoryBean implements FactoryBean<Object>, Met
 	@Override
 	public Object invoke(MethodInvocation invocation) throws Throwable {
 		if (AopUtils.isToStringMethod(invocation.getMethod())) {
-			return "GemFire Function Proxy for service interface [" + this.functionExecutionInterface + "]";
+			return "Pivotal GemFire Function Proxy for service interface [" + this.functionExecutionInterface + "]";
 		}
 
 		if (logger.isDebugEnabled()) {

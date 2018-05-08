@@ -66,6 +66,7 @@ public class SubRegionSubElementNamespaceTest {
 
 	@Test
 	public void testCustomersAccountsSubRegionCacheListener() {
+
 		assertNotNull(customersAccountsRegion);
 		assertNotNull(customersAccountsRegion.getAttributes());
 		assertNotNull(customersAccountsRegion.getAttributes().getCacheListeners());
@@ -76,12 +77,13 @@ public class SubRegionSubElementNamespaceTest {
 			found |= (listener instanceof TestNoOpCacheListener);
 		}
 
-		assertTrue(String.format("Expected a GemFire CacheListener of type (%1$s) to be registered on Region (%2$s)!",
+		assertTrue(String.format("Expected a CacheListener of type (%1$s) to be registered on Region (%2$s)!",
 			TestNoOpCacheListener.class.getName(), customersAccountsRegion.getName()), found);
 	}
 
 	@Test
 	public void testOrderItemsSubRegionGatewaySender() {
+
 		assertNotNull(orderItemsRegion);
 		assertNotNull(orderItemsRegion.getAttributes());
 		assertNotNull(orderItemsRegion.getAttributes().getGatewaySenderIds());
@@ -90,14 +92,14 @@ public class SubRegionSubElementNamespaceTest {
 
 	@Test
 	public void testParentChildSubRegionAsyncEventQueue() {
+
 		assertNotNull(parentChildRegion);
 		assertNotNull(parentChildRegion.getAttributes());
 		assertNotNull(parentChildRegion.getAttributes().getAsyncEventQueueIds());
 		assertTrue(parentChildRegion.getAttributes().getAsyncEventQueueIds().contains("testQueue"));
 	}
 
-	public static final class TestNoOpCacheListener extends CacheListenerAdapter {
-	}
+	public static final class TestNoOpCacheListener extends CacheListenerAdapter { }
 
 	public static final class TestNoOpAsyncEventListener implements AsyncEventListener {
 
@@ -107,8 +109,6 @@ public class SubRegionSubElementNamespaceTest {
 		}
 
 		@Override
-		public void close() {
-		}
+		public void close() { }
 	}
-
 }

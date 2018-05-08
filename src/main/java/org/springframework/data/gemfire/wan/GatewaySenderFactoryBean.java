@@ -28,7 +28,7 @@ import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
 
 /**
- * Spring {@link FactoryBean} for creating a parallel or serial GemFire {@link GatewaySender}.
+ * Spring {@link FactoryBean} for creating a parallel or serial Pivotal GemFire {@link GatewaySender}.
  *
  * @author David Turanski
  * @author John Blum
@@ -73,9 +73,9 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 
 	/**
 	 * Constructs an instance of the {@link GatewaySenderFactoryBean} class initialized with a reference to
-	 * the GemFire {@link Cache} used to configured and initialized a GemFire {@link GatewaySender}.
+	 * the Pivotal GemFire {@link Cache} used to configured and initialized a Pivotal GemFire {@link GatewaySender}.
 	 *
-	 * @param cache reference to the GemFire {@link Cache} used to create the GemFire {@link GatewaySender}.
+	 * @param cache reference to the Pivotal GemFire {@link Cache} used to create the Pivotal GemFire {@link GatewaySender}.
 	 * @see org.apache.geode.cache.Cache
 	 */
 	public GatewaySenderFactoryBean(Cache cache) {
@@ -181,9 +181,9 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 	}
 
 	/**
-	 * Boolean value that determines whether GemFire should conflate messages.
+	 * Boolean value that determines whether Pivotal GemFire should conflate messages.
 	 *
-	 * @param enableBatchConflation a boolean value indicating whether GemFire should conflate messages in the Queue.
+	 * @param enableBatchConflation a boolean value indicating whether Pivotal GemFire should conflate messages in the Queue.
 	 * @see #setBatchConflationEnabled(Boolean)
 	 * @deprecated use setBatchConflationEnabled(Boolean)
 	 */

@@ -45,12 +45,12 @@ import org.springframework.util.StringUtils;
 
 /**
  * The {@link AutoRegionLookupConfiguration} class is a Spring {@link ImportBeanDefinitionRegistrar} that enables
- * the automatic lookup of GemFire Regions, which may have been defined else where, such as in {@literal cache.xml}
- * or using GemFire's Cluster Configuration Service.
+ * the automatic lookup of Pivotal GemFire Regions, which may have been defined else where, such as in {@literal cache.xml}
+ * or using Pivotal GemFire's Cluster Configuration Service.
  *
  * This registrar works by registering the {@link AutoRegionLookupBeanPostProcessor} in the Spring application context,
  * which is enabled when a Spring {@link org.springframework.context.annotation.Configuration @Configuration} annotated
- * GemFire cache application class is annotated with {@link EnableAutoRegionLookup}.
+ * Pivotal GemFire cache application class is annotated with {@link EnableAutoRegionLookup}.
  *
  * @author John Blum
  * @see org.springframework.beans.factory.BeanFactory
@@ -79,7 +79,6 @@ public class AutoRegionLookupConfiguration extends AbstractAnnotationConfigSuppo
 
 	private StandardEvaluationContext evaluationContext = new StandardEvaluationContext();
 
-	/* (non-Javadoc) */
 	@Override
 	protected Class getAnnotationType() {
 		return EnableAutoRegionLookup.class;
@@ -153,7 +152,6 @@ public class AutoRegionLookupConfiguration extends AbstractAnnotationConfigSuppo
 		return DEFAULT_ENABLED;
 	}
 
-	/* (non-Javadoc) */
 	private void registerAutoRegionLookupBeanPostProcessor(BeanDefinitionRegistry registry) {
 
 		if (AUTO_REGION_LOOKUP_BEAN_POST_PROCESSOR_REGISTERED.compareAndSet(false, true)) {

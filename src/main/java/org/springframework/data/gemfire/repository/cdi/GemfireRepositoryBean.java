@@ -35,7 +35,7 @@ import org.springframework.data.repository.cdi.CdiRepositoryBean;
 import org.springframework.data.repository.config.CustomRepositoryImplementationDetector;
 
 /**
- * A CDI-based bean that represents a GemFire Repository.
+ * A CDI-based bean that represents a Pivotal GemFire Repository.
  *
  * @author John Blum
  * @param <T> class type of the Repository.

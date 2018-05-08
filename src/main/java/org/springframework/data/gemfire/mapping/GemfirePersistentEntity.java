@@ -32,7 +32,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.util.StringUtils;
 
 /**
- * {@link PersistentEntity} implementation adding custom GemFire persistent entity related metadata, such as the
+ * {@link PersistentEntity} implementation adding custom Pivotal GemFire persistent entity related metadata, such as the
  * {@link org.apache.geode.cache.Region} to which the entity is mapped, etc.
  *
  * @author Oliver Gierke

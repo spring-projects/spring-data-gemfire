@@ -38,8 +38,8 @@ import org.springframework.util.StringUtils;
  * a {@link GemFireCache} by registering all cache {@link Region Regions} that have not been explicitly defined
  * in the Spring application context.
  *
- * This is usually the case for {@link Region Regions} that have been defined in GemFire's native {@literal cache.xml}
- * or defined using GemFire Cluster-based Configuration Service.
+ * This is usually the case for {@link Region Regions} that have been defined in Pivotal GemFire's
+ * native {@literal cache.xml} or defined using Pivotal GemFire's Cluster Configuration Service.
  *
  * @author John Blum
  * @see org.apache.geode.cache.GemFireCache
@@ -67,7 +67,6 @@ public class AutoRegionLookupBeanPostProcessor implements BeanPostProcessor, Bea
 		this.beanFactory = (ConfigurableListableBeanFactory) beanFactory;
 	}
 
-	/* (non-Javadoc) */
 	protected ConfigurableListableBeanFactory getBeanFactory() {
 		return Optional.ofNullable(this.beanFactory).orElseThrow(() ->
 			newIllegalStateException("BeanFactory was not properly configured"));
@@ -86,12 +85,10 @@ public class AutoRegionLookupBeanPostProcessor implements BeanPostProcessor, Bea
 		return bean;
 	}
 
-	/* (non-Javadoc) */
 	void registerCacheRegionsAsBeans(GemFireCache cache) {
 		cache.rootRegions().forEach(this::registerCacheRegionAsBean);
 	}
 
-	/* (non-Javadoc) */
 	void registerCacheRegionAsBean(Region<?, ?> region) {
 
 		if (region != null) {
@@ -108,7 +105,6 @@ public class AutoRegionLookupBeanPostProcessor implements BeanPostProcessor, Bea
 		}
 	}
 
-	/* (non-Javadoc) */
 	String getBeanName(Region region) {
 
 		return Optional.ofNullable(region.getFullPath())
@@ -117,7 +113,6 @@ public class AutoRegionLookupBeanPostProcessor implements BeanPostProcessor, Bea
 			.orElseGet(region::getName);
 	}
 
-	/* (non-Javadoc) */
 	Set<Region<?, ?>> nullSafeSubregions(Region<?, ?> parentRegion) {
 		return Optional.ofNullable(parentRegion.subregions(false)).orElse(Collections.emptySet());
 	}

@@ -47,7 +47,7 @@ import org.springframework.util.Assert;
 
 /**
  * The ExceptionThrowingFunctionExecutionIntegrationTest class is a test suite of test cases testing the invocation
- * of a GemFire Function using Spring Data GemFire Function Execution Annotation support when that Function throws
+ * of a Pivotal GemFireFunction using SDG Function Execution Annotation support when that Function throws
  * an Exception.
  *
  * @author John Blum

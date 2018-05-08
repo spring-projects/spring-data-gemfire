@@ -27,7 +27,7 @@ import org.apache.geode.cache.GemFireCache;
 import org.springframework.context.annotation.Import;
 
 /**
- * The {@link EnableGemFireMockObjects} annotation enables mocking of GemFire Objects in Unit Tests.
+ * The {@link EnableGemFireMockObjects} annotation enables mocking of Pivotal GemFireObjects in Unit Tests.
  *
  * @author John Blum
  * @see java.lang.annotation.Documented

@@ -30,7 +30,7 @@ import org.springframework.data.gemfire.support.WiringDeclarableSupport;
 /**
  * The {@link AbstractAuthInitialize} class is an abstract support class and basic implementation
  * of the {@link AuthInitialize} interface used in the authentication of a client or peer
- * with a secure GemFire/Geode cluster.
+ * with a secure Pivotal GemFire/Apache Geode cluster.
  *
  * @author John Blum
  * @see java.util.Properties

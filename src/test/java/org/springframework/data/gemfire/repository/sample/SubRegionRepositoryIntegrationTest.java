@@ -40,7 +40,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * Integration tests testing the use of GemFire Repositories on GemFire Cache Subregions.
+ * Integration tests testing the use of Pivotal GemFireRepositories on Pivotal GemFireCache Subregions.
  *
  * @author John Blum
  * @see org.junit.Test

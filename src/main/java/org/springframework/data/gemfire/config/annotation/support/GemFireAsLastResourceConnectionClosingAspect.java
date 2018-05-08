@@ -21,8 +21,8 @@ import org.aspectj.lang.annotation.Aspect;
 
 /**
  * The {@link GemFireAsLastResourceConnectionClosingAspect} class is a {@link AbstractGemFireAsLastResourceAspectSupport}
- * implementation responsible for closing the GemFire Connection obtained from the GemFire JCA ResourceAdapter
- * deployed in a managed environment when using GemFire as the Last Resource in a CMT/JTA Transaction
+ * implementation responsible for closing the Pivotal GemFire Connection obtained from the Pivotal GemFire JCA ResourceAdapter
+ * deployed in a managed environment when using Pivotal GemFire as the Last Resource in a CMT/JTA Transaction
  * initiated from Spring's Transaction infrastructure.
  *
  * @author John Blum
@@ -38,12 +38,12 @@ public class GemFireAsLastResourceConnectionClosingAspect extends AbstractGemFir
 	private static final int DEFAULT_ORDER = 1024000;
 
 	/**
-	 * Closes the GemFire JCA ResourceAdapter Connection after the Spring CMT/JTA Transaction completes.
+	 * Closes the Pivotal GemFire JCA ResourceAdapter Connection after the Spring CMT/JTA Transaction completes.
 	 */
 	@After("atTransactionalType() || atTransactionalMethod()")
 	public void doGemFireConnectionClose() {
 
-		logTraceInfo("Closing GemFire Connection...");
+		logTraceInfo("Closing Pivotal GemFire Connection...");
 
 		GemFireConnectionHolder.close(isThrowOnError(), this::logWarning);
 	}

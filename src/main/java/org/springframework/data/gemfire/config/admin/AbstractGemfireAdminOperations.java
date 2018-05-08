@@ -38,9 +38,9 @@ public class AbstractGemfireAdminOperations implements GemfireAdminOperations {
 	protected static final String NOT_IMPLEMENTED = "Not Implemented";
 
 	/**
-	 * Returns a {@link Iterable collection} of {@link Region} names defined on the GemFire Servers in the cluster.
+	 * Returns a {@link Iterable collection} of {@link Region} names defined on the Pivotal GemFire Servers in the cluster.
 	 *
-	 * @return an {@link Iterable} of {@link Region} names defined on the GemFire Servers in the cluster.
+	 * @return an {@link Iterable} of {@link Region} names defined on the Pivotal GemFire Servers in the cluster.
 	 * @see org.apache.geode.cache.Region#getName()
 	 * @see java.lang.Iterable
 	 */

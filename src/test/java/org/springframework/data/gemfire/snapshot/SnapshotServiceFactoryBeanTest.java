@@ -86,7 +86,7 @@ public class SnapshotServiceFactoryBeanTest {
 	private static File snapshotDat;
 
 	@Rule
-	public ExpectedException expectedException = ExpectedException.none();
+	public ExpectedException exception = ExpectedException.none();
 
 	private SnapshotServiceFactoryBean factoryBean = new SnapshotServiceFactoryBean();
 
@@ -184,17 +184,21 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void setCacheToNull() {
-		expectedException.expect(IllegalArgumentException.class);
-		expectedException.expectCause(is(nullValue(Throwable.class)));
-		expectedException.expectMessage("The GemFire Cache must not be null");
+
+		exception.expect(IllegalArgumentException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage("Cache must not be null");
+
 		factoryBean.setCache(null);
 	}
 
 	@Test
 	public void getCacheWhenUninitialized() {
-		expectedException.expect(IllegalStateException.class);
-		expectedException.expectCause(is(nullValue(Throwable.class)));
-		expectedException.expectMessage("The GemFire Cache was not properly initialized");
+
+		exception.expect(IllegalStateException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage("The cache was not properly initialized");
+
 		factoryBean.getCache();
 	}
 
@@ -366,17 +370,17 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void wrapNullCacheSnapshotService() {
-		expectedException.expect(IllegalArgumentException.class);
-		expectedException.expectCause(is(nullValue(Throwable.class)));
-		expectedException.expectMessage("The backing CacheSnapshotService must not be null");
+		exception.expect(IllegalArgumentException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage("The backing CacheSnapshotService must not be null");
 		factoryBean.wrap((CacheSnapshotService) null);
 	}
 
 	@Test
 	public void wrapNullRegionSnapshotService() {
-		expectedException.expect(IllegalArgumentException.class);
-		expectedException.expectCause(is(nullValue(Throwable.class)));
-		expectedException.expectMessage("The backing RegionSnapshotService must not be null");
+		exception.expect(IllegalArgumentException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage("The backing RegionSnapshotService must not be null");
 		factoryBean.wrap((RegionSnapshotService) null);
 	}
 
@@ -1162,9 +1166,9 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@Test
 	public void createSnapshotMetadataWithNullLocation() {
-		expectedException.expect(IllegalArgumentException.class);
-		expectedException.expectCause(is(nullValue(Throwable.class)));
-		expectedException.expectMessage("Location must not be null");
+		exception.expect(IllegalArgumentException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage("Location must not be null");
 		new SnapshotMetadata(null, mock(SnapshotFilter.class), SnapshotFormat.GEMFIRE);
 	}
 
@@ -1247,5 +1251,4 @@ public class SnapshotServiceFactoryBeanTest {
 			throw new UnsupportedOperationException("not implemented");
 		}
 	}
-
 }

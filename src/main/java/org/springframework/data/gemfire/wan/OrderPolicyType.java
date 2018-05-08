@@ -19,7 +19,7 @@ package org.springframework.data.gemfire.wan;
 import org.apache.geode.cache.util.Gateway;
 
 /**
- * The OrderPolicyType class is an enumeration of GemFire Gateway Order Policies.
+ * The OrderPolicyType class is an enumeration of Pivotal GemFire Gateway Order Policies.
  *
  * @author John Blum
  * @see org.apache.geode.cache.util.Gateway.OrderPolicy
@@ -27,6 +27,7 @@ import org.apache.geode.cache.util.Gateway;
  */
 @SuppressWarnings({ "deprecation", "unused" })
 public enum OrderPolicyType {
+
 	KEY(Gateway.OrderPolicy.KEY),
 	PARTITION(Gateway.OrderPolicy.PARTITION),
 	THREAD(Gateway.OrderPolicy.THREAD);
@@ -34,10 +35,10 @@ public enum OrderPolicyType {
 	private final Gateway.OrderPolicy orderPolicy;
 
 	/**
-	 * Constructs an instance of the OrderPolicyType enum initialized with the matching GemFire Gateway.OrderPolicy
+	 * Constructs an instance of the OrderPolicyType enum initialized with the matching Pivotal GemFire Gateway.OrderPolicy
 	 * enumerated value.
 	 *
-	 * @param orderPolicy the matching GemFire Gateway.OrderPolicy enumerated value.
+	 * @param orderPolicy the matching Pivotal GemFire Gateway.OrderPolicy enumerated value.
 	 * @see org.apache.geode.cache.util.Gateway.OrderPolicy
 	 */
 	OrderPolicyType(final Gateway.OrderPolicy orderPolicy) {
@@ -45,12 +46,12 @@ public enum OrderPolicyType {
 	}
 
 	/**
-	 * Null-safe operation to extract the matching GemFire Gateway.OrderPolicy enumerated value from
+	 * Null-safe operation to extract the matching Pivotal GemFire Gateway.OrderPolicy enumerated value from
 	 * the specified OrderPolicyType.
 	 *
-	 * @param orderPolicyType the OrderPolicyType enum from which to extract the GemFire-based
+	 * @param orderPolicyType {@link OrderPolicyType} enum from which to extract the Pivotal GemFire-based
 	 * Gateway.OrderPolicy enumerated value.
-	 * @return the GemFire Gateway.OrderPolicy enumerated value for the given OrderPolicyType.
+	 * @return the Pivotal GemFire Gateway.OrderPolicy enumerated value for the given OrderPolicyType.
 	 * @see org.apache.geode.cache.util.Gateway.OrderPolicy
 	 * @see #getOrderPolicy()
 	 */
@@ -59,11 +60,11 @@ public enum OrderPolicyType {
 	}
 
 	/**
-	 * Returns the matching OrderPolicyType given a GemFire Gateway.OrderPolicy enumerated value.
+	 * Returns the matching OrderPolicyType given a Pivotal GemFire Gateway.OrderPolicy enumerated value.
 	 *
-	 * @param orderPolicy the GemFire Gateway.OrderPolicy enumerated value used to match
+	 * @param orderPolicy the Pivotal GemFire Gateway.OrderPolicy enumerated value used to match
 	 * the desired OrderPolicyType.
-	 * @return a OrderPolicyType matching the given GemFire Gateway.OrderPolicy enumerated value.
+	 * @return a OrderPolicyType matching the given Pivotal GemFire Gateway.OrderPolicy enumerated value.
 	 * @see org.apache.geode.cache.util.Gateway.OrderPolicy
 	 * @see #getOrderPolicy()
 	 */
@@ -78,7 +79,7 @@ public enum OrderPolicyType {
 	}
 
 	/**
-	 * Returns a matching OrderPolicyType given the case-insensitive, name of the GemFire Gateway OrderPolicy.
+	 * Returns a matching OrderPolicyType given the case-insensitive, name of the Pivotal GemFire Gateway OrderPolicy.
 	 *
 	 * @param name a String name used to match the desired OrderPolicyType.
 	 * @return a OrderPolicyType enumerated value for the given name.
@@ -96,13 +97,12 @@ public enum OrderPolicyType {
 	}
 
 	/**
-	 * Gets the GemFire Gateway.OrderPolicy corresponding to this OrderPolicyType enum.
+	 * Gets the Pivotal GemFire Gateway.OrderPolicy corresponding to this OrderPolicyType enum.
 	 *
-	 * @return a GemFire Gateway.OrderPolicy for this enum.
+	 * @return a Pivotal GemFire Gateway.OrderPolicy for this enum.
 	 * @see org.apache.geode.cache.util.Gateway.OrderPolicy
 	 */
 	public Gateway.OrderPolicy getOrderPolicy() {
 		return orderPolicy;
 	}
-
 }

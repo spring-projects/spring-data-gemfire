@@ -67,7 +67,7 @@ public class RestHttpGemfireAdminTemplate extends FunctionGemfireAdminTemplate {
 	/**
 	 * Constructs an instance of the {@link RestHttpGemfireAdminTemplate} initialized with
 	 * the given {@link ClientCache} and configured with the default host and port when accessing
-	 * the GemFire or Geode Management REST API interface.
+	 * the Pivotal GemFire or Geode Management REST API interface.
 	 *
 	 * @param clientCache reference to the {@link ClientCache}
 	 * @throws IllegalArgumentException if the {@link ClientCache} reference is {@literal null}.
@@ -80,11 +80,11 @@ public class RestHttpGemfireAdminTemplate extends FunctionGemfireAdminTemplate {
 	/**
 	 * Constructs an instance of the {@link RestHttpGemfireAdminTemplate} initialized with
 	 * the given {@link ClientCache} and configured with the specified host and port when accessing
-	 * the GemFire or Geode Management REST API interface.
+	 * the Pivotal GemFire or Geode Management REST API interface.
 	 *
 	 * @param clientCache reference to the {@link ClientCache}
-	 * @param host {@link String} containing the hostname of the GemFire/Geode Manager.
-	 * @param port integer value specifying the port on which the GemFire/Geode Manager HTTP Service is listening
+	 * @param host {@link String} containing the hostname of the Pivotal GemFire/Apache Geode Manager.
+	 * @param port integer value specifying the port on which the Pivotal GemFire/Apache Geode Manager HTTP Service is listening
 	 * for HTTP clients.
 	 * @throws IllegalArgumentException if the {@link ClientCache} reference is {@literal null}.
 	 * @see org.apache.geode.cache.client.ClientCache
@@ -111,7 +111,7 @@ public class RestHttpGemfireAdminTemplate extends FunctionGemfireAdminTemplate {
 
 	/**
 	 * Resolves the Pivotal GemFire or Apache Geode Management REST API URL given the host and port
-	 * of the GemFire/Geode Manager's embedded HTTP service.
+	 * of the Pivotal GemFire/Apache Geode Manager's embedded HTTP service.
 	 *
 	 * @param host {@link String} containing the hostname of the Manager running the embedded HTTP service
 	 * and Management REST API.
@@ -123,9 +123,9 @@ public class RestHttpGemfireAdminTemplate extends FunctionGemfireAdminTemplate {
 	}
 
 	/**
-	 * Returns a reference to the resolved GemFire/Geode Management REST API URL.
+	 * Returns a reference to the resolved Pivotal GemFire/Apache Geode Management REST API URL.
 	 *
-	 * @return a {@link String} containing the resolved GemFire/Geode Management REST API URL.
+	 * @return a {@link String} containing the resolved Pivotal GemFire/Apache Geode Management REST API URL.
 	 */
 	protected String getManagementRestApiUrl() {
 		return this.managementRestApiUrl;

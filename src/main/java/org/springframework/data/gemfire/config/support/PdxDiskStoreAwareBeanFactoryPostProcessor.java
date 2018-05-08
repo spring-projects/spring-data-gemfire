@@ -33,7 +33,7 @@ import org.springframework.util.Assert;
 
 /**
  * {@link PdxDiskStoreAwareBeanFactoryPostProcessor} is a Spring {@link BeanFactoryPostProcessor} that modifies
- * all GemFire Async Event Queue, Region and Disk Store beans in the Spring container to form a dependency on
+ * all Pivotal GemFire Async Event Queue, Region and Disk Store beans in the Spring container to form a dependency on
  * the Cache's PDX {@link DiskStore} bean.
  *
  * A persistent Region may contain PDX typed data, in which case, the PDX type meta-data stored to disk needs to be
@@ -57,8 +57,8 @@ public class PdxDiskStoreAwareBeanFactoryPostProcessor implements BeanFactoryPos
 	 * Constructs an instance of the {@link PdxDiskStoreAwareBeanFactoryPostProcessor} class initialized with
 	 * the given PDX {@link DiskStore} name.
 	 *
-	 * @param pdxDiskStoreName name of the GemFire PDX {@link DiskStore}.
-	 * @throws IllegalArgumentException if the GemFire PDX {@link DiskStore} name is unspecified.
+	 * @param pdxDiskStoreName name of the Pivotal GemFire PDX {@link DiskStore}.
+	 * @throws IllegalArgumentException if the Pivotal GemFire PDX {@link DiskStore} name is unspecified.
 	 */
 	public PdxDiskStoreAwareBeanFactoryPostProcessor(String pdxDiskStoreName) {
 		Assert.hasText(pdxDiskStoreName, "PDX DiskStore name is required");
@@ -66,9 +66,9 @@ public class PdxDiskStoreAwareBeanFactoryPostProcessor implements BeanFactoryPos
 	}
 
 	/**
-	 * Returns the name of the GemFire PDX {@link DiskStore}.
+	 * Returns the name of the Pivotal GemFire PDX {@link DiskStore}.
 	 *
-	 * @return the name of the GemFire PDX {@link DiskStore}.
+	 * @return the name of the Pivotal GemFire PDX {@link DiskStore}.
 	 */
 	public String getPdxDiskStoreName() {
 		return this.pdxDiskStoreName;

@@ -27,8 +27,8 @@ import java.lang.annotation.Target;
 import org.springframework.context.annotation.Import;
 
 /**
- * The {@link EnablePools} annotation enables 1 or more GemFire {@link org.apache.geode.cache.client.Pool Pools}
- * to be defined and used in a GemFire client cache application configured with Spring (Data GemFire).
+ * The {@link EnablePools} annotation enables 1 or more Pivotal GemFire {@link org.apache.geode.cache.client.Pool Pools}
+ * to be defined and used in a Pivotal GemFire client cache application configured with Spring (Data GemFire).
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.config.annotation.AddPoolsConfiguration
@@ -45,7 +45,7 @@ import org.springframework.context.annotation.Import;
 public @interface EnablePools {
 
 	/**
-	 * Enables the definition of multiple GemFire {@link org.apache.geode.cache.client.Pool Pools}.
+	 * Enables the definition of multiple Pivotal GemFire {@link org.apache.geode.cache.client.Pool Pools}.
 	 */
 	EnablePool[] pools() default {};
 

@@ -25,8 +25,8 @@ import org.springframework.data.gemfire.support.GemfireBeanFactoryLocator;
 
 /**
  * The {@link BeanFactoryLocatorConfiguration} class extends the Spring application configuration by enabling
- * Spring Data GemFire/Geode's {@link GemfireBeanFactoryLocator} in order to auto-wire and configure any
- * GemFire/Geode Objects declared in GemFire/Geode config (e.g. XML or properties).
+ * SDG's {@link GemfireBeanFactoryLocator} in order to auto-wire and configure any Pivotal GemFire/Apache Geode objects
+ * declared in Pivotal GemFire/Apache Geode config (e.g. XML or properties).
  *
  * @author John Blum
  * @see org.springframework.beans.factory.config.BeanPostProcessor
@@ -42,8 +42,8 @@ import org.springframework.data.gemfire.support.GemfireBeanFactoryLocator;
 public class BeanFactoryLocatorConfiguration {
 
 	/**
-	 * Declares and registers a Spring {@link BeanPostProcessor} and post processes a Spring Data GemFire/Geode
-	 * {@link CacheFactoryBean} by setting the {@literal useBeanFactoryLocator} property to {@literal true}.
+	 * Declares and registers a Spring {@link BeanPostProcessor} and post processes a SDG {@link CacheFactoryBean}
+	 * by setting the {@literal useBeanFactoryLocator} property to {@literal true}.
 	 *
 	 * @return a Spring {@link BeanPostProcessor} used to post process the SDG {@link CacheFactoryBean}.
 	 * @see org.springframework.beans.factory.config.BeanPostProcessor

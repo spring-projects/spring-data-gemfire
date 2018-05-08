@@ -18,7 +18,7 @@ package org.springframework.data.gemfire;
 import org.apache.geode.cache.InterestPolicy;
 
 /**
- * The InterestPolicyType enum is an enumeration of all the GemFire Subscription, InterestPolicy values.
+ * The InterestPolicyType enum is an enumeration of all the Pivotal GemFire Subscription, InterestPolicy values.
  *
  * @author Lyndon Adams
  * @author John Blum
@@ -27,6 +27,7 @@ import org.apache.geode.cache.InterestPolicy;
  */
 @SuppressWarnings("unused")
 public enum InterestPolicyType {
+
 	ALL(InterestPolicy.ALL),
 	CACHE_CONTENT(InterestPolicy.CACHE_CONTENT);
 
@@ -35,9 +36,9 @@ public enum InterestPolicyType {
 	private final InterestPolicy interestPolicy;
 
 	/**
-	 * Constructs an instance of the SubscriptionType enum initialized with the matching GemFire InterestPolicy.
+	 * Constructs an instance of the SubscriptionType enum initialized with the matching Pivotal GemFire InterestPolicy.
 	 *
-	 * @param interestPolicy a GemFire InterestPolicy corresponding to this SubscriptionType.
+	 * @param interestPolicy a Pivotal GemFire InterestPolicy corresponding to this SubscriptionType.
 	 * @see org.apache.geode.cache.InterestPolicy
 	 */
 	InterestPolicyType(final InterestPolicy interestPolicy) {
@@ -45,11 +46,13 @@ public enum InterestPolicyType {
 	}
 
 	/**
-	 * Null-safe operation to extract the GemFire InterestPolicy from the InterPolicyType enumerated value.
+	 * Null-safe operation to extract the Pivotal GemFire {@link InterestPolicy}
+	 * from the {@link InterestPolicyType} enumerated value.
 	 *
-	 * @param interestPolicyType the InterestPolicyType enum from which to extract GemFire's InterestPolicy
-	 * @return a GemFire InterestPolicy for the given InterestPolicyType enumerated value
-	 * or null if InterestPolicyType is null.
+	 * @param interestPolicyType the {@link InterestPolicyType} enum from which to extract
+	 * Pivotal GemFire's {@link InterestPolicy}.
+	 * @return a Pivotal GemFire {@link InterestPolicy} for the given {@link InterestPolicyType} enumerated value
+	 * or {@literal null} if {@link InterestPolicyType} is {@literal null}.
 	 * @see org.apache.geode.cache.InterestPolicy
 	 */
 	public static InterestPolicy getInterestPolicy(final InterestPolicyType interestPolicyType) {
@@ -57,10 +60,10 @@ public enum InterestPolicyType {
 	}
 
 	/**
-	 * Returns a SubscriptionType enumerated value for the given GemFire InterestPolicy.
+	 * Returns a SubscriptionType enumerated value for the given Pivotal GemFire InterestPolicy.
 	 *
-	 * @param interestPolicy the GemFire InterestPolicy used to lookup and match a SubscriptionType.
-	 * @return a SubscriptionType enumerated value matching the given GemFire InterestPolicy
+	 * @param interestPolicy the Pivotal GemFire InterestPolicy used to lookup and match a SubscriptionType.
+	 * @return a SubscriptionType enumerated value matching the given Pivotal GemFire InterestPolicy
 	 * or null if no matching value was found.
 	 * @see org.apache.geode.cache.InterestPolicy
 	 * @see #getInterestPolicy()
@@ -95,13 +98,12 @@ public enum InterestPolicyType {
 	}
 
 	/**
-	 * Returns the GemFire InterestPolicy corresponding to this SubscriptionType enumerated value.
+	 * Returns the Pivotal GemFire InterestPolicy corresponding to this SubscriptionType enumerated value.
 	 *
-	 * @return the GemFire InterestPolicy corresponding to this SubscriptionType.
+	 * @return the Pivotal GemFire InterestPolicy corresponding to this SubscriptionType.
 	 * @see org.apache.geode.cache.InterestPolicy
 	 */
 	public InterestPolicy getInterestPolicy() {
 		return interestPolicy;
 	}
-
 }

@@ -71,7 +71,7 @@ public class MockRegionFactory<K, V> {
 		attributesFactory = (attributes != null ? new org.apache.geode.cache.AttributesFactory<K,V>(attributes)
 			: new org.apache.geode.cache.AttributesFactory<K,V>());
 
-		// Workaround for GemFire bug???
+		// Workaround for Pivotal GemFirebug???
 		if (attributes != null) {
 			attributesFactory.setLockGrantor(attributes.isLockGrantor());
 		}

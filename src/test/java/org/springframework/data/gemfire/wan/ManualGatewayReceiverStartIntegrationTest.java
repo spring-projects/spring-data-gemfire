@@ -34,7 +34,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * The ManualGatewayReceiverStartIntegrationTest class is a test suite of test cases testing the manual start capability
- * of Gateway Receivers when configured with the Spring Data GemFire XML namespace.
+ * of Gateway Receivers when configured with the SDG XML namespace.
  *
  * @author John Blum
  * @see org.junit.Test

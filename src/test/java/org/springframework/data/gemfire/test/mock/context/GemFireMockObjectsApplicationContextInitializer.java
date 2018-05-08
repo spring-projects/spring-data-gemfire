@@ -22,7 +22,7 @@ import org.springframework.data.gemfire.test.mock.config.GemFireMockObjectsBeanP
 
 /**
  * The {@link GemFireMockObjectsApplicationContextInitializer} class is a Spring {@link ApplicationContextInitializer}
- * used to initialize the Spring {@link ConfigurableApplicationContext} with GemFire Object mocking.
+ * used to initialize the Spring {@link ConfigurableApplicationContext} with Pivotal GemFireObject mocking.
  *
  * @author John Blum
  * @see org.springframework.context.ApplicationContextInitializer

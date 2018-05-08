@@ -35,7 +35,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * Integration test testing {@link Region sub-Region} functionality from a GemFire cache client.
+ * Integration test testing {@link Region sub-Region} functionality from a Pivotal GemFirecache client.
  *
  * @author John Blum
  * @see org.junit.Test

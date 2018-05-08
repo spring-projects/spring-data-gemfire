@@ -30,7 +30,7 @@ import org.springframework.util.Assert;
 
 /**
  * The GemfireCacheRegionProducer class is an application scoped CDI context bean that is responsible
- * for creating the GemFire Cache "People" Region used to store {@link Person} instances.
+ * for creating the Pivotal GemFireCache "People" Region used to store {@link Person} instances.
  *
  * @author John Blum
  * @see javax.enterprise.context.ApplicationScoped

@@ -35,9 +35,9 @@ import org.springframework.util.StringUtils;
 
 /**
  * {@link ClientRegionPoolBeanFactoryPostProcessor} is a Spring {@link BeanFactoryPostProcessor} implementation
- * ensuring a proper dependency is declared between a GemFire client {@link org.apache.geode.cache.Region}
- * and the GemFire client {@link org.apache.geode.cache.client.Pool} it references and uses, providing
- * the GemFire client {@link org.apache.geode.cache.client.Pool} has been defined and configured with
+ * ensuring a proper dependency is declared between a Pivotal GemFire client {@link org.apache.geode.cache.Region}
+ * and the Pivotal GemFire client {@link org.apache.geode.cache.client.Pool} it references and uses, providing
+ * the Pivotal GemFire client {@link org.apache.geode.cache.client.Pool} has been defined and configured with
  * Spring (Data GemFire) configuration meta-data (e.g. XML).
  *
  * @author John Blum

@@ -98,9 +98,9 @@ public @interface ClientRegion {
 	boolean ignoreIfExists() default true;
 
 	/**
-	 * Name of the GemFire/Geode {@link Pool} used by this persistent entity's {@link org.apache.geode.cache.Region}
+	 * Name of the Pivotal GemFire/Apache Geode {@link Pool} used by this persistent entity's {@link org.apache.geode.cache.Region}
 	 * data access operations sent to the corresponding {@link org.apache.geode.cache.Region}
-	 * on the GemFire/Geode Server.
+	 * on the Pivotal GemFire/Apache Geode Server.
 	 *
 	 * Defaults to {@literal DEFAULT}.
 	 */

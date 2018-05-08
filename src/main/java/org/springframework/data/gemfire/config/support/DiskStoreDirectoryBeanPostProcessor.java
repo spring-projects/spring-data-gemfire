@@ -28,7 +28,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 /**
- * The {@link DiskStoreDirectoryBeanPostProcessor} processes any GemFire {@link org.apache.geode.cache.DiskStore},
+ * The {@link DiskStoreDirectoryBeanPostProcessor} processes any Pivotal GemFire {@link org.apache.geode.cache.DiskStore},
  * {@link DiskDir} Spring beans defined in the application context to ensure that the directory actually exists
  * before creating the {@link org.apache.geode.cache.DiskStore}.
  *

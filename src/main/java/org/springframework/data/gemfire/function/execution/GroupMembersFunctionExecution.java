@@ -31,7 +31,7 @@ class GroupMembersFunctionExecution extends AbstractFunctionExecution {
 	 * Constructs an instance of the GroupMembersFunctionExecution class to execute a data independent Function
 	 * on all members from each of the specified groups.
 	 *
-	 * @param groups the list of GemFire Groups indicating the members on which to execute the data independent Function.
+	 * @param groups the list of Pivotal GemFire Groups indicating the members on which to execute the data independent Function.
 	 */
 	public GroupMembersFunctionExecution(final String... groups) {
 		Assert.notEmpty(groups, "'groups' cannot be null or empty.");

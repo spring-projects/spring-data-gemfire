@@ -208,17 +208,14 @@ public abstract class RegionLookupFactoryBean<K, V> extends AbstractFactoryBeanS
 		this.cache = cache;
 	}
 
-	/* (non-Javadoc) */
 	boolean isLookupEnabled() {
 		return Boolean.TRUE.equals(getLookupEnabled());
 	}
 
-	/* (non-Javadoc) */
 	public void setLookupEnabled(Boolean lookupEnabled) {
 		this.lookupEnabled = lookupEnabled;
 	}
 
-	/* (non-Javadoc) */
 	public Boolean getLookupEnabled() {
 		return this.lookupEnabled;
 	}
@@ -236,7 +233,7 @@ public abstract class RegionLookupFactoryBean<K, V> extends AbstractFactoryBeanS
 	}
 
 	/**
-	 * Sets a reference to the parent {@link Region} to indicated this {@link FactoryBean} represents a GemFire cache
+	 * Sets a reference to the parent {@link Region} to indicated this {@link FactoryBean} represents a Pivotal GemFire cache
 	 * {@link Region Sub-Region}.
 	 *
 	 * @param parent reference to the parent {@link Region}.
@@ -247,7 +244,7 @@ public abstract class RegionLookupFactoryBean<K, V> extends AbstractFactoryBeanS
 	}
 
 	/**
-	 * Returns a reference to the parent {@link Region} indicating this {@link FactoryBean} represents a GemFire cache
+	 * Returns a reference to the parent {@link Region} indicating this {@link FactoryBean} represents a Pivotal GemFire cache
 	 * {@link Region Sub-Region}.
 	 *
 	 * @return a reference to the parent {@link Region} or {@literal null} if this {@link Region}

@@ -34,7 +34,7 @@ public class ReplicatedRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
 			dataPolicy = DataPolicy.EMPTY;
 		}
 		else {
-			// Validate that the user-defined Data Policy matches the appropriate Spring GemFire XML namespace
+			// Validate that the user-defined Data Policy matches the appropriate Spring Pivotal GemFire XML namespace
 			// configuration meta-data element for the Region (i.e. <gfe:replicated-region .../>)!
 			Assert.isTrue(dataPolicy.withReplication(), String.format(
 				"Data Policy '%1$s' is not supported in Replicated Regions.", dataPolicy));

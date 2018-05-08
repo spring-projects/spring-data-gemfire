@@ -131,7 +131,7 @@ public @interface EnableManager {
 	/**
 	 * The rate, in milliseconds, at which this member will push updates to any JMX Managers. Currently this value
 	 * should be greater than or equal to the {@literal statistic-sample-rate}. Setting this value too high will
-	 * cause stale values to be seen by Gfsh and GemFire Pulse.
+	 * cause stale values to be seen by Gfsh and Pivotal GemFire Pulse.
 	 *
 	 * Defaults to {@literal 2000} milliseconds.
 	 *

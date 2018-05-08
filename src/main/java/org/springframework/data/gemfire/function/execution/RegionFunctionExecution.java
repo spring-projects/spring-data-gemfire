@@ -20,7 +20,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.springframework.util.CollectionUtils;
 
 /**
- * Creates a GemFire {@link Execution} using {code}FunctionService.onRegion(Region region){code}
+ * Creates a Pivotal GemFire {@link Execution} using {code}FunctionService.onRegion(Region region){code}
  * @author David Turanski
  *
  */

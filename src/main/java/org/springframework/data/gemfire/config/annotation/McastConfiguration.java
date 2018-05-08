@@ -25,8 +25,8 @@ import org.springframework.data.gemfire.util.PropertiesBuilder;
 
 /**
  * The {@link McastConfiguration} class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
- * that applies additional GemFire configuration by way of GemFire System properties to configure and use
- * multi-cast networking for GemFire communication and distribution rather than the (preferred)
+ * that applies additional Pivotal GemFire configuration by way of Pivotal GemFire System properties to configure and use
+ * multi-cast networking for Pivotal GemFire communication and distribution rather than the (preferred)
  * Locator-based location services.
  *
  * @author John Blum

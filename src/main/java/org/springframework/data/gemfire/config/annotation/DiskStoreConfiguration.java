@@ -47,7 +47,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * The {@link DiskStoreConfiguration} class is a Spring {@link ImportBeanDefinitionRegistrar} used to register
- * a GemFire/Geode {@link org.apache.geode.cache.DiskStore} bean definition.
+ * a Pivotal GemFire/Apache Geode {@link org.apache.geode.cache.DiskStore} bean definition.
  *
  * @author John Blum
  * @see org.apache.geode.cache.DiskStore

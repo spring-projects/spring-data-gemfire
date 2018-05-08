@@ -24,7 +24,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The {@link ContinuousQuery} annotation to define a GemFire/Geode Continuous Query (CQ) on a POJO method
+ * The {@link ContinuousQuery} annotation to define a Pivotal GemFire/Apache Geode Continuous Query (CQ) on a POJO method
  * which handles all CQ events and errors.
  *
  * @author John Blum

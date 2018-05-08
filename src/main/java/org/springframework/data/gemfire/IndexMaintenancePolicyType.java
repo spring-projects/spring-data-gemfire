@@ -20,7 +20,7 @@ import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.RegionFactory;
 
 /**
- * The IndexMaintenanceType enum is a enumerated type of GemFire Index maintenance update options.
+ * The IndexMaintenanceType enum is a enumerated type of Pivotal GemFire Index maintenance update options.
  *
  * @author John Blum
  * @see org.apache.geode.cache.AttributesFactory#setIndexMaintenanceSynchronous(boolean)
@@ -56,7 +56,7 @@ public enum IndexMaintenancePolicyType {
 	}
 
 	/**
-	 * Sets the GemFire AttributesFactory's 'indexMaintenanceSynchronous' property appropriately based on
+	 * Sets the Pivotal GemFire AttributesFactory's 'indexMaintenanceSynchronous' property appropriately based on
 	 * this IndexMaintenancePolicyType.
 	 *
 	 * @param attributesFactory the AttributesFactory instance on which to set the indexMaintenanceProperty.
@@ -69,7 +69,7 @@ public enum IndexMaintenancePolicyType {
 	}
 
 	/**
-	 * Sets the GemFire RegionFactory's 'indexMaintenanceSynchronous' property appropriately based on
+	 * Sets the Pivotal GemFire RegionFactory's 'indexMaintenanceSynchronous' property appropriately based on
 	 * this IndexMaintenancePolicyType.
 	 *
 	 * @param regionFactory the RegionFactory instance on which to set the indexMaintenanceProperty.

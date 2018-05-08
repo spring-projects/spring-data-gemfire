@@ -22,7 +22,7 @@ import org.springframework.util.StringUtils;
 /**
  * {@link AbstractUnitAndIntegrationTestsWithMockSupport} is an abstract base class for test classes
  * having support for the creation and use of mock objects in test cases, but that may also be ran
- * as integration tests using actual GemFire components (e.g. Regions, etc).
+ * as integration tests using actual Pivotal GemFirecomponents (e.g. Regions, etc).
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer

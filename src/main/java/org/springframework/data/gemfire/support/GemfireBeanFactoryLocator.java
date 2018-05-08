@@ -41,8 +41,8 @@ import org.springframework.util.StringUtils;
 /**
  * The {@link GemfireBeanFactoryLocator} class stores a reference to the Spring
  * {@link org.springframework.context.ApplicationContext} / {@link BeanFactory} needed to auto-wire
- * user application GemFire objects implementing the {@link org.apache.geode.cache.Declarable} interface
- * and defined in GemFire's native configuration format (e.g. {@literal cache.xml}.
+ * user application Pivotal GemFire objects implementing the {@link org.apache.geode.cache.Declarable} interface
+ * and defined in Pivotal GemFire's native configuration format (e.g. {@literal cache.xml}.
  *
  * In most cases, a developer does not need to use this class directly as it is registered by the
  * {@link org.springframework.data.gemfire.CacheFactoryBean} when the {@literal useBeanFactoryLocator} property

@@ -47,7 +47,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Integration tests testing the {@link SimpleGemfireRepository} class and SDC Repository abstraction implementation
- * in the context of GemFire "Cache" Transactions.
+ * in the context of Pivotal GemFire"Cache" Transactions.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -80,7 +80,8 @@ public class SimpleGemfireRepositoryTransactionalIntegrationTest {
 
 	@Before
 	public void setup() {
-		assertNotNull("The 'Customers' GemFire Cache Region was not properly configured and initialized!", customers);
+
+		assertNotNull("The 'Customers' Cache Region was not properly configured and initialized!", customers);
 		assertEquals("Customers", customers.getName());
 		assertEquals("/Customers", customers.getFullPath());
 		assertTrue(customers.isEmpty());
@@ -93,7 +94,8 @@ public class SimpleGemfireRepositoryTransactionalIntegrationTest {
 
 	@Test
 	public void testDeleteAll() {
-		Collection<Customer> expectedCustomers = new ArrayList<Customer>(4);
+
+		Collection<Customer> expectedCustomers = new ArrayList<>(4);
 
 		expectedCustomers.add(createCustomer("Jon", "Doe"));
 		expectedCustomers.add(createCustomer("Jane", "Doe"));
@@ -122,14 +124,13 @@ public class SimpleGemfireRepositoryTransactionalIntegrationTest {
 
 	public static class SerializableCustomer extends Customer implements Serializable {
 
-		public SerializableCustomer() {
-		}
+		public SerializableCustomer() { }
 
-		public SerializableCustomer(final Long id) {
+		public SerializableCustomer(Long id) {
 			super(id);
 		}
 
-		public SerializableCustomer(final String firstName, final String lastName) {
+		public SerializableCustomer(String firstName, String lastName) {
 			super(firstName, lastName);
 		}
 	}
@@ -150,7 +151,7 @@ public class SimpleGemfireRepositoryTransactionalIntegrationTest {
 
 		void saveAll(final Iterable<Customer> customers) {
 			transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-				@Override protected void doInTransactionWithoutResult(final TransactionStatus status) {
+				@Override  protected void doInTransactionWithoutResult(TransactionStatus status) {
 					customerRepository.saveAll(customers);
 				}
 			});
@@ -158,7 +159,7 @@ public class SimpleGemfireRepositoryTransactionalIntegrationTest {
 
 		void removeAllCausingTransactionRollback() {
 			transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-				@Override protected void doInTransactionWithoutResult(final TransactionStatus status) {
+				@Override protected void doInTransactionWithoutResult(TransactionStatus status) {
 					removeAll();
 					throw new IllegalStateException("'removeAll' operation not permitted");
 				}
@@ -167,7 +168,7 @@ public class SimpleGemfireRepositoryTransactionalIntegrationTest {
 
 		void removeAll() {
 			transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-				@Override protected void doInTransactionWithoutResult(final TransactionStatus status) {
+				@Override protected void doInTransactionWithoutResult(TransactionStatus status) {
 					customerRepository.deleteAll();
 				}
 			});

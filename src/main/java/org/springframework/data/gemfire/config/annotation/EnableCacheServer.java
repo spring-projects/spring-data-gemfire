@@ -31,10 +31,10 @@ import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
 
 /**
  * The {@link EnableCacheServer} annotation configures a Spring {@link org.springframework.context.annotation.Configuration}
- * annotated class with a GemFire {@link CacheServer} bean in the Spring application context.
+ * annotated class with a Pivotal GemFire {@link CacheServer} bean in the Spring application context.
  *
  * This annotation is used in conjunction with the {@link CacheServerApplication}, or {@link PeerCacheApplication}
- * annotations to add an additional {@link CacheServer CacheServers} to a GemFire peer cache application
+ * annotations to add an additional {@link CacheServer CacheServers} to a Pivotal GemFire peer cache application
  * configured with Spring (Data GemFire).
  *
  * To add more than 1 {@link CacheServer} to your application, this annotation can be nested in

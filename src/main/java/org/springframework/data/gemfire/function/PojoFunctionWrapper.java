@@ -25,7 +25,7 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * Invokes a given {@link Object POJO} {@link Method} as a (remote) GemFire/Geode {@link Function}.
+ * Invokes a given {@link Object POJO} {@link Method} as a (remote) Pivotal GemFire/Apache Geode {@link Function}.
  *
  * If the {@link Object POJO} has a constructor that takes a {@link java.util.Map}, and the {@link Function} context
  * is a {@link Region}, the {@link Region} will be injected.

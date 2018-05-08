@@ -31,17 +31,17 @@ public class PartitionedRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> 
 
 		// First, verify the GemFire version is 6.5 or Higher when Persistence is specified...
 		Assert.isTrue(!DataPolicy.PERSISTENT_PARTITION.equals(dataPolicy) || GemfireUtils.isGemfireVersion65OrAbove(),
-			String.format("Persistent PARTITION Regions can only be used from GemFire 6.5 onwards; current version is [%s].",
+			String.format("Persistent PARTITION Regions can only be used from Pivotal GemFire 6.5 onwards; current version is [%s]",
 				CacheFactory.getVersion()));
 
 		if (dataPolicy == null) {
 			dataPolicy = (isPersistent() ? DataPolicy.PERSISTENT_PARTITION : DataPolicy.PARTITION);
 		}
 		else {
-			// Validate that the user-defined Data Policy matches the appropriate Spring GemFire XML namespace
+			// Validate that the user-defined Data Policy matches the appropriate Spring Pivotal GemFire XML namespace
 			// configuration meta-data element for Region (i.e. <gfe:partitioned-region .../>)!
 			Assert.isTrue(dataPolicy.withPartitioning(), String.format(
-				"Data Policy '%1$s' is not supported in Partitioned Regions.", dataPolicy));
+				"Data Policy [%s] is not supported in Partitioned Regions", dataPolicy));
 		}
 
 		// Validate the data-policy and persistent attributes are compatible when specified!

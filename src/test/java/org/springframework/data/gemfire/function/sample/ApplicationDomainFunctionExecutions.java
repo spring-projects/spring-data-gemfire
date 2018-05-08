@@ -21,8 +21,8 @@ import org.springframework.data.gemfire.function.ClientCacheFunctionExecutionWit
 import org.springframework.data.gemfire.function.annotation.OnServer;
 
 /**
- * The ApplicationDomainFunctionExecutions class defines a GemFire Client Cache Function execution targeted at a
- * GemFire Server.
+ * The ApplicationDomainFunctionExecutions class defines a Pivotal GemFireClient Cache Function execution targeted at a
+ * Pivotal GemFireServer.
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.function.ClientCacheFunctionExecutionWithPdxIntegrationTest

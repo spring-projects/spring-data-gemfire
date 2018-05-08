@@ -34,7 +34,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * The ClientCacheNamespaceTest class is a test suite of test cases testing the contract and functionality
- * of the Spring Data GemFire ClientCacheParser.
+ * of the SDG ClientCacheParser.
  *
  * @author John Blum
  * @see org.junit.Test

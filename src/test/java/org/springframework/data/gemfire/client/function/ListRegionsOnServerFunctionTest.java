@@ -38,7 +38,7 @@ import org.mockito.stubbing.Answer;
 
 /**
  * The ListRegionsOnServerFunctionTest class is a test suite of test cases testing the contract and functionality
- * of the ListRegionsOnServerFunction GemFire Function class.
+ * of the ListRegionsOnServerFunction Pivotal GemFireFunction class.
  *
  * @author John Blum
  * @see org.junit.Test

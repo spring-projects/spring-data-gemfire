@@ -35,8 +35,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * Integration test to test the functionality of a GemFire Function implementing the Spring Data GemFire
- * {@link LazyWiringDeclarableSupport} class, defined using native GemFire configuration meta-data
+ * Integration test to test the functionality of a Pivotal GemFireFunction implementing the SDG
+ * {@link LazyWiringDeclarableSupport} class, defined using native Pivotal GemFireconfiguration meta-data
  * (i.e {@literal cache.xml}).
  *
  * @author John Blum
@@ -146,7 +146,7 @@ public class LazyWiringDeclarableSupportFunctionBasedIntegrationTests {
 			context.getResultSender().lastResult(formatHelloGreeting(addressTo(context)));
 		}
 
-		// precedence is... 1. Caller 2. GemFire 3. Spring
+		// precedence is... 1. Caller 2. Pivotal GemFire3. Spring
 		protected String addressTo(FunctionContext context) {
 			Object arguments = context.getArguments();
 			String addressTo = null;

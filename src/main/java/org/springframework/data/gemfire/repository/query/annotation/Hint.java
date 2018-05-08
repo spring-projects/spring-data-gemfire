@@ -24,7 +24,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The Hint class is a annotation type indicating a GemFire OQL Query Hint.
+ * The Hint class is a annotation type indicating a Pivotal GemFire OQL Query Hint.
  *
  * @author John Blum
  * @see java.lang.annotation.Documented

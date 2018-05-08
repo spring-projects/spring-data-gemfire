@@ -34,8 +34,8 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.util.Assert;
 
 /**
- * The {@link LazyWiringDeclarableSupport} class is an implementation of GemFire's {@link Declarable} interface
- * that enables support for wiring GemFire components with Spring bean dependencies defined in
+ * The {@link LazyWiringDeclarableSupport} class is an implementation of Pivotal GemFire's {@link Declarable} interface
+ * that enables support for wiring Pivotal GemFire components with Spring bean dependencies defined in
  * a Spring {@link ApplicationContext}.
  *
  * @author John Blum
@@ -53,7 +53,7 @@ import org.springframework.util.Assert;
 public abstract class LazyWiringDeclarableSupport extends WiringDeclarableSupport
 		implements ApplicationListener<ContextRefreshedEvent>, DisposableBean {
 
-	// atomic reference to the parameters passed by GemFire when this Declarable object
+	// atomic reference to the parameters passed by Pivotal GemFire when this Declarable object
 	// was constructed, configured and its init method called
 	private final AtomicReference<Properties> parametersReference = new AtomicReference<>();
 
@@ -78,7 +78,7 @@ public abstract class LazyWiringDeclarableSupport extends WiringDeclarableSuppor
 
 	/**
 	 * Asserts that this {@link Declarable} object has been properly configured and initialized by the Spring container
-	 * after has GemFire constructed this {@link Declarable} object during startup.
+	 * after has Pivotal GemFire constructed this {@link Declarable} object during startup.
 	 *
 	 * This method is recommended to be called before any of this {@link Declarable} object's {@link CacheCallback}
 	 * methods (e.g. {@link CacheLoader#load(LoaderHelper)} are invoked in order to ensure that this {@link Declarable}
@@ -138,11 +138,11 @@ public abstract class LazyWiringDeclarableSupport extends WiringDeclarableSuppor
 	}
 
 	/**
-	 * Initialization method called by GemFire with the configured parameters once this {@link Declarable} object
-	 * has been constructed by GemFire and the &lt;initalizer&gt; element is parsed
-	 * in GemFire's configuration meta-data during startup.
+	 * Initialization method called by Pivotal GemFire with the configured parameters once this {@link Declarable} object
+	 * has been constructed by Pivotal GemFire and the &lt;initalizer&gt; element is parsed
+	 * in Pivotal GemFire's configuration meta-data during startup.
 	 *
-	 * @param parameters {@link Properties} containing the configured parameters parsed from GemFire's
+	 * @param parameters {@link Properties} containing the configured parameters parsed from Pivotal GemFire's
 	 * configuration meta-data (e.g. {@literal cache.xml}) and passed to this {@link Declarable} object.
 	 * @see #doInit(BeanFactory, Properties)
 	 * @see java.util.Properties
@@ -165,9 +165,9 @@ public abstract class LazyWiringDeclarableSupport extends WiringDeclarableSuppor
 	 * This method is triggered by the Spring {@link org.springframework.context.ApplicationContext}, Spring application
 	 * {@link ContextRefreshedEvent}) indicating that the Spring container (context) has been created and refreshed.
 	 *
-	 * @param parameters {@link Properties} containing the configured parameters parsed from GemFire's
+	 * @param parameters {@link Properties} containing the configured parameters parsed from Pivotal GemFire's
 	 * configuration meta-data (e.g. {@literal cache.xml}) and passed to this {@link Declarable} object.
-	 * @throws IllegalArgumentException if the {@literal bean-name} parameter was specified in GemFire's
+	 * @throws IllegalArgumentException if the {@literal bean-name} parameter was specified in Pivotal GemFire's
 	 * configuration meta-data but no bean with the specified name could be found in the Spring context.
 	 * @see #init(java.util.Properties)
 	 * @see #configureThis(BeanFactory, String)
@@ -186,7 +186,7 @@ public abstract class LazyWiringDeclarableSupport extends WiringDeclarableSuppor
 	 *
 	 * By default, this method does nothing.
 	 *
-	 * @param parameters {@link Properties} containing the configured parameters parsed from GemFire's
+	 * @param parameters {@link Properties} containing the configured parameters parsed from Pivotal GemFire's
 	 * configuration meta-data (e.g. {@literal cache.xml}) and passed to this {@link Declarable} object.
 	 * @see #doInit(BeanFactory, Properties)
 	 * @see java.util.Properties
@@ -198,7 +198,7 @@ public abstract class LazyWiringDeclarableSupport extends WiringDeclarableSuppor
 	 * Null-safe operation to return the parameters passed to this {@link Declarable} object when created by GemFire
 	 * from it's own configuration meta-data (e.g. {@literal cache.xml}).
 	 *
-	 * @return a {@link Properties} containing the configured parameters parsed from GemFire's configuration meta-data
+	 * @return a {@link Properties} containing the configured parameters parsed from Pivotal GemFire's configuration meta-data
 	 * (e.g. {@literal cache.xml}) and passed to this {@link Declarable} object.
 	 * @see java.util.Properties
 	 */
@@ -210,7 +210,7 @@ public abstract class LazyWiringDeclarableSupport extends WiringDeclarableSuppor
 	/**
 	 * Stores a reference to the {@link Properties parameters} passed to the {@link Declarable#init(Properties)} method.
 	 *
-	 * @param parameters {@link Properties} containing the configured parameters parsed from GemFire's
+	 * @param parameters {@link Properties} containing the configured parameters parsed from Pivotal GemFire's
 	 * configuration meta-data (e.g. {@literal cache.xml}) and passed to this {@link Declarable} object.
 	 * @see java.util.Properties
 	 */
@@ -219,7 +219,7 @@ public abstract class LazyWiringDeclarableSupport extends WiringDeclarableSuppor
 	}
 
 	/**
-	 * Event handler method called when GemFire has created and initialized (refreshed)
+	 * Event handler method called when Pivotal GemFire has created and initialized (refreshed)
 	 * the Spring {@link ApplicationContext} using the {@link SpringContextBootstrappingInitializer}.
 	 *
 	 * @param event {@link ContextRefreshedEvent} published by the Spring {@link ApplicationContext} after it is

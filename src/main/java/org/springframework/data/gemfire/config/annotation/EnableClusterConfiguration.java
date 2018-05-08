@@ -30,9 +30,9 @@ import org.springframework.context.annotation.Import;
 
 /**
  * The {@link EnableClusterConfiguration} annotation enables Apache Geode / Pivotal GemFire schema-like definitions
- * defined in a Spring [Boot], Geode/GemFire cache client application using Spring config to be pushed to
- * a Geode/GemFire cluster, similar to how schema commands (e.g. `create region`) in Gfsh are processed by
- * an Geode/GemFire Manager.
+ * defined in a Spring [Boot], Geode/Pivotal GemFire cache client application using Spring config to be pushed to
+ * a Geode/Pivotal GemFire cluster, similar to how schema commands (e.g. `create region`) in Gfsh are processed by
+ * an Geode/Pivotal GemFire Manager.
  *
  * @author John Blum
  * @see java.lang.annotation.Documented
@@ -52,7 +52,7 @@ import org.springframework.context.annotation.Import;
 public @interface EnableClusterConfiguration {
 
 	/**
-	 * Configures the bind address used by the Spring, GemFire/Geode cache client application to locate
+	 * Configures the bind address used by the Spring, Pivotal GemFire/Apache Geode cache client application to locate
 	 * the Manager's HTTP Service and access the Management REST API.  This configuration setting is only used
 	 * when {@link #useHttp()} is set to {@literal true}.
 	 *
@@ -64,7 +64,7 @@ public @interface EnableClusterConfiguration {
 	String host() default ClusterConfigurationConfiguration.DEFAULT_MANAGEMENT_HTTP_HOST;
 
 	/**
-	 * Configures the port used by the Spring, GemFire/Geode cache client application to locate
+	 * Configures the port used by the Spring, Pivotal GemFire/Apache Geode cache client application to locate
 	 * the Manager's HTTP Service and access the Management REST API.  This configuration setting is only used
 	 * when {@link #useHttp()} is set to {@literal true}.
 	 *
@@ -77,7 +77,7 @@ public @interface EnableClusterConfiguration {
 
 	/**
 	 * Configuration setting used to specify the data management policy used when creating {@link Region Regions}
-	 * on the servers in the Geode/GemFire cluster.
+	 * on the servers in the Geode/Pivotal GemFire cluster.
 	 *
 	 * The data management policy is expressed with a {@link RegionShortcut}, but corresponds to the various
 	 * different {@link DataPolicy DataPolicies} available.
@@ -90,7 +90,7 @@ public @interface EnableClusterConfiguration {
 	RegionShortcut serverRegionShortcut() default RegionShortcut.PARTITION;
 
 	/**
-	 * Configures whether connectivity between the Spring, GemFire/Geode application should be established using HTTP.
+	 * Configures whether connectivity between the Spring, Pivotal GemFire/Apache Geode application should be established using HTTP.
 	 *
 	 * Alternatively, you can configure this setting using the {@literal spring.data.gemfire.management.use-http}
 	 * property in {@literal application.properties}.

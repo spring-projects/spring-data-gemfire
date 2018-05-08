@@ -64,7 +64,7 @@ public class LuceneServiceFactoryBean extends AbstractFactoryBeanSupport<LuceneS
 	 * from given the {@link GemFireCache}.
 	 *
 	 * @param gemFireCache {@link GemFireCache} used to resolve the {@link LuceneService} instance.
-	 * @return a single instance of the GemFire {@link LuceneService}.
+	 * @return a single instance of the Pivotal GemFire {@link LuceneService}.
 	 * @see org.apache.geode.cache.GemFireCache
 	 * @see org.apache.geode.cache.lucene.LuceneService
 	 */

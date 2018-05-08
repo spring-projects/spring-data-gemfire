@@ -35,7 +35,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * The SubRegionNamespaceTest class is a test suite of test cases testing the contract and functionality of
- * Region/SubRegion creation in a GemFire Cache.
+ * Region/SubRegion creation in a Pivotal GemFireCache.
  *
  * @author David Turanski
  * @author John Blum

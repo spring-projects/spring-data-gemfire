@@ -55,7 +55,7 @@ public interface GemfireOperations {
 	<K, V> boolean replace(K key, V oldValue, V newValue);
 
 	/**
-	 * Executes a GemFire query with the given (optional) parameters and returns the result. Note this method expects the query to return multiple results; for queries that return only one
+	 * Executes a Pivotal GemFire query with the given (optional) parameters and returns the result. Note this method expects the query to return multiple results; for queries that return only one
 	 * element use {@link #findUnique(String, Object...)}.
 	 *
 	 * As oppose, to the {@link #query(String)} method, this method allows for more generic queries (against multiple regions even) to be executed.
@@ -75,7 +75,7 @@ public interface GemfireOperations {
 	<E> SelectResults<E> find(String query, Object... params) throws InvalidDataAccessApiUsageException;
 
 	/**
-	 * Executes a GemFire query with the given (optional) parameters and returns the result. Note this method expects the query to return a single result; for queries that return multiple
+	 * Executes a Pivotal GemFire query with the given (optional) parameters and returns the result. Note this method expects the query to return a single result; for queries that return multiple
 	 * elements use {@link #find(String, Object...)}.
 	 *
 	 * As oppose, to the {@link #query(String)} method, this method allows for more generic queries (against multiple regions even) to be executed.
@@ -113,7 +113,7 @@ public interface GemfireOperations {
 	 * @param <T> type parameter specifying the returned result type.
 	 * @param action callback object that specifies the Gemfire action to execute.
 	 * @return a result object returned by the action, or <code>null</code>.
-	 * @throws org.springframework.dao.DataAccessException in case of GemFire errors.
+	 * @throws org.springframework.dao.DataAccessException in case of Pivotal GemFire errors.
 	 */
 	<T> T execute(GemfireCallback<T> action) throws DataAccessException;
 
@@ -122,9 +122,9 @@ public interface GemfireOperations {
 	 *
 	 * @param <T> type parameter specifying the returned result type.
 	 * @param action callback object that specifies the Gemfire action to execute.
-	 * @param exposeNativeRegion whether to expose the native GemFire region to callback code.
+	 * @param exposeNativeRegion whether to expose the native Pivotal GemFire region to callback code.
 	 * @return a result object returned by the action, or <code>null</code>.
-	 * @throws org.springframework.dao.DataAccessException in case of GemFire errors.
+	 * @throws org.springframework.dao.DataAccessException in case of Pivotal GemFire errors.
 	 */
 	<T> T execute(GemfireCallback<T> action, boolean exposeNativeRegion) throws DataAccessException;
 

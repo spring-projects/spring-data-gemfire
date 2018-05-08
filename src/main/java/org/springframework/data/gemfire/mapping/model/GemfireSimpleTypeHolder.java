@@ -83,7 +83,7 @@ public class GemfireSimpleTypeHolder extends SimpleTypeHolder {
 
 	/**
 	 * Constructs an instance of GemfireSimpleTypeHolder initialized with additional, custom simple types
-	 * handled by GemFire along with register the default simple types.
+	 * handled by Pivotal GemFire along with register the default simple types.
 	 *
 	 * @see org.springframework.data.mapping.model.SimpleTypeHolder#SimpleTypeHolder(Set, boolean)
 	 */
@@ -94,7 +94,7 @@ public class GemfireSimpleTypeHolder extends SimpleTypeHolder {
 	/**
 	 * Constructs an instance of the GemfireSimpleTypeHolder initialized with a source {@link SimpleTypeHolder}.
 	 *
-	 * @param source the SimpleTypeHolder used as the source for GemFire's {@link SimpleTypeHolder} implementation.
+	 * @param source the SimpleTypeHolder used as the source for Pivotal GemFire's {@link SimpleTypeHolder} implementation.
 	 * source must not be {@literal null}.
 	 * @throws NullPointerException if source is null.
 	 */

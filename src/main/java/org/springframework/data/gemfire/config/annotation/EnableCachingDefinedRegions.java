@@ -35,7 +35,7 @@ import org.springframework.data.gemfire.mapping.annotation.ClientRegion;
 
 /**
  * The {@link EnableCachingDefinedRegions} annotation marks a Spring {@link Configuration @Configuration} application
- * annotated class to enable the creation of GemFire/Geode {@link Region Regions} based on Spring's Cache Abstraction
+ * annotated class to enable the creation of Pivotal GemFire/Apache Geode {@link Region Regions} based on Spring's Cache Abstraction
  * Annotations applied to application service methods and types.
  *
  * Additionally, this annotation enables Spring's Cache Abstraction with SDG's {@link EnableGemfireCaching} annotation,
@@ -78,7 +78,7 @@ public @interface EnableCachingDefinedRegions {
 
 	/**
 	 * When this annotation is applied to a cache client application, the {@literal poolName} attribute refers to
-	 * the default name of the GemFire/Geode {@link Pool} assigned to client {@link Region Region(s)}.
+	 * the default name of the Pivotal GemFire/Apache Geode {@link Pool} assigned to client {@link Region Region(s)}.
 	 *
 	 * This value can be overridden by annotating entities with the {@link ClientRegion} annotation.
 	 *

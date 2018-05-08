@@ -61,9 +61,8 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * The {@link AbstractAnnotationConfigSupport} class is an abstract base class encapsulating functionality
- * common to all Annotations and configuration classes used to configure Pivotal GemFire/Apache Geode objects
- * with Spring Data GemFire or Spring Data Geode.
+ * The {@link AbstractAnnotationConfigSupport} class is an abstract base class encapsulating functionality common to
+ * all Annotations and configuration classes used to configure Pivotal GemFire/Apache Geode objects with SDG.
  *
  * @author John Blum
  * @see java.lang.ClassLoader
@@ -194,7 +193,7 @@ public abstract class AbstractAnnotationConfigSupport
 	}
 
 	/**
-	 * Constructs a new instance of {@link Log} to log statements printed by Spring Data GemFire/Geode.
+	 * Constructs a new instance of {@link Log} to log statements printed by SDG.
 	 *
 	 * @return a new instance of {@link Log}.
 	 * @see org.apache.commons.logging.LogFactory#getLog(Class)

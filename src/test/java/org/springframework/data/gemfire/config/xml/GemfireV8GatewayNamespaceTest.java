@@ -34,7 +34,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * The GemfireV8GatewayNamespaceTest class is a test suite of test cases testing the contract and functionality of
- * GemFire 8 Gateway Sender/Receiver support.
+ * Pivotal GemFire8 Gateway Sender/Receiver support.
  *
  * @author John Blum
  * @see org.junit.Test

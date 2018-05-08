@@ -47,7 +47,7 @@ import org.springframework.util.Assert;
 
 /**
  * The ClientCacheIndexingTest class is a test suite of test cases testing the creation and application of indexes
- * on client Regions of a GemFire ClientCache using the &lt;gfe:index/&gt; tag element in the Spring Data GemFire
+ * on client Regions of a Pivotal GemFireClientCache using the &lt;gfe:index/&gt; tag element in the SDG
  * XML namespace and configuration meta-data, which is backed by the IndexFactoryBean.
  *
  * @author John Blum
@@ -77,13 +77,15 @@ public class ClientCacheIndexingTest {
 
 	@BeforeClass
 	public static void setup() throws IOException {
+
 		String serverName = "GemFireIndexingCacheServer";
 
 		File serverWorkingDirectory = new File(FileSystemUtils.WORKING_DIRECTORY, serverName.toLowerCase());
 
-		Assert.isTrue(serverWorkingDirectory.isDirectory() || serverWorkingDirectory.mkdirs());
+		Assert.isTrue(serverWorkingDirectory.isDirectory() || serverWorkingDirectory.mkdirs(),
+			String.format("Working directory [%s] could not be created", serverWorkingDirectory));
 
-		List<String> arguments = new ArrayList<String>();
+		List<String> arguments = new ArrayList<>();
 
 		arguments.add("-Dgemfire.name=" + serverName);
 		arguments.add("/org/springframework/data/gemfire/client/ClientCacheIndexingTest-server-context.xml");
@@ -97,6 +99,7 @@ public class ClientCacheIndexingTest {
 	}
 
 	private static void waitForServerStart(final long milliseconds) {
+
 		ThreadUtils.timedWait(milliseconds, TimeUnit.MILLISECONDS.toMillis(500), new ThreadUtils.WaitCondition() {
 			private File serverPidControlFile = new File(serverProcess.getWorkingDirectory(),
 				ServerProcess.getServerProcessControlFilename());
@@ -109,6 +112,7 @@ public class ClientCacheIndexingTest {
 
 	@AfterClass
 	public static void tearDown() {
+
 		serverProcess.shutdown();
 
 		if (Boolean.valueOf(System.getProperty("spring.gemfire.fork.clean", Boolean.TRUE.toString()))) {
@@ -116,9 +120,10 @@ public class ClientCacheIndexingTest {
 		}
 	}
 
-	protected Index getIndex(final GemFireCache gemfireCache, final String indexName) {
-		QueryService queryService = (gemfireCache instanceof ClientCache
-			? ((ClientCache) gemfireCache).getLocalQueryService() : gemfireCache.getQueryService());
+	private Index getIndex(GemFireCache gemfireCache, String indexName) {
+
+		QueryService queryService = gemfireCache instanceof ClientCache
+			? ((ClientCache) gemfireCache).getLocalQueryService() : gemfireCache.getQueryService();
 
 		for (Index index : queryService.getIndexes()) {
 			if (index.getName().equals(indexName)) {
@@ -132,7 +137,8 @@ public class ClientCacheIndexingTest {
 	@Test
 	@SuppressWarnings("deprecation")
 	public void testIndexByName() {
-		assertNotNull("The GemFire ClientCache was not properly configured and initialized!", clientCache);
+
+		assertNotNull("ClientCache was not properly configured and initialized", clientCache);
 
 		Index actualIndex = getIndex(clientCache, "ExampleIndex");
 
@@ -141,5 +147,4 @@ public class ClientCacheIndexingTest {
 		assertEquals(IndexType.HASH, actualIndex.getType());
 		assertSame(exampleIndex, actualIndex);
 	}
-
 }

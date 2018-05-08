@@ -32,8 +32,8 @@ import org.apache.geode.cache.wan.GatewaySender;
 
 /**
  * {@link SchemaObjectType} defines an enumeration of all the types of Apache Geode or Pivotal GemFire schema objects
- * (e.g. {@link Region}) that may possibly be handled by Spring Data Geode / Spring Data GemFire
- * and that can be created remotely, from a client application.
+ * (e.g. {@link Region}) that may possibly be handled by SDG and that can be created remotely,
+ * from a client application.
  *
  * @author John Blum
  * @see org.apache.geode.cache.asyncqueue.AsyncEventQueue
@@ -69,9 +69,9 @@ public enum SchemaObjectType {
 
 	/**
 	 * Constructs an instance of an {@link SchemaObjectType} enumerated value initialized with
-	 * the actual GemFire {@link Class schema object instance type}.
+	 * the actual Pivotal GemFire {@link Class schema object instance type}.
 	 *
-	 * @param objectType actual {@link Class interface type} of the GemFire schema object instance.
+	 * @param objectType actual {@link Class interface type} of the Pivotal GemFire schema object instance.
 	 * @see java.lang.Class
 	 */
 	SchemaObjectType(Class<?> objectType) {
@@ -80,13 +80,13 @@ public enum SchemaObjectType {
 
 	/**
 	 * Null-safe factory method used to look up and resolve the corresponding {@link SchemaObjectType}
-	 * given an instance of a GemFire schema object.
+	 * given an instance of a Pivotal GemFire schema object.
 	 *
 	 * For example, given an instance of {@link Region}, this factory method will return
 	 * {@link SchemaObjectType#REGION}.
 	 *
-	 * @param obj actual instance of a GemFire schema object, e.g. reference to a {@link Region}.
-	 * @return a corresponding {@link SchemaObjectType} for a given instance of a GemFire schema object.
+	 * @param obj actual instance of a Pivotal GemFire schema object, e.g. reference to a {@link Region}.
+	 * @return a corresponding {@link SchemaObjectType} for a given instance of a Pivotal GemFire schema object.
 	 * If the type cannot be determined, then {@link SchemaObjectType#UNKNOWN} is returned.
 	 * @see #from(Class)
 	 */
@@ -98,13 +98,13 @@ public enum SchemaObjectType {
 
 	/**
 	 * Null-safe factory method used to look up and resolve the corresponding {@link SchemaObjectType}
-	 * given the type of GemFire schema object.
+	 * given the type of Pivotal GemFire schema object.
 	 *
 	 * For example, given the {@link Region} {@link Class interface} or any {@link Class sub-type} of {@link Region},
 	 * this factory method will return {@link SchemaObjectType#REGION}.
 	 *
-	 * @param type {@link Class type} of the GemFire schema object, e.g. the {@link Region} {@link Class interface}.
-	 * @return a corresponding {@link SchemaObjectType} for a given {@link Class type }of a GemFire schema object.
+	 * @param type {@link Class type} of the Pivotal GemFire schema object, e.g. the {@link Region} {@link Class interface}.
+	 * @return a corresponding {@link SchemaObjectType} for a given {@link Class type }of a Pivotal GemFire schema object.
 	 * If the type cannot be determined, then {@link SchemaObjectType#UNKNOWN} is returned.
 	 * @see #from(Object)
 	 */
@@ -115,9 +115,9 @@ public enum SchemaObjectType {
 	}
 
 	/**
-	 * Returns the {@link Class class type} of the GemFire schema object represented by this enumerated value.
+	 * Returns the {@link Class class type} of the Pivotal GemFire schema object represented by this enumerated value.
 	 *
-	 * @return the {@link Class class type} of the GemFire schema object represented by this enumerated value.
+	 * @return the {@link Class class type} of the Pivotal GemFire schema object represented by this enumerated value.
 	 * @see java.lang.Class
 	 */
 	public Class<?> getObjectType() {

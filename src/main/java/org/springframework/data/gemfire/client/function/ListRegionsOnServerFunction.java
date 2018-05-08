@@ -26,8 +26,8 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 
 /**
- * ListRegionsOnServerFunction is a GemFire Function class that returns a List of names for all Regions
- * defined in the GemFire cluster.
+ * ListRegionsOnServerFunction is a Pivotal GemFire Function class that returns a List of names for all Regions
+ * defined in the Pivotal GemFire cluster.
  *
  * @author David Turanski
  * @author John Blum

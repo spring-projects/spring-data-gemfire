@@ -33,7 +33,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * The DiskStoreNamespaceTest class is a test suite of test cases testing the contract and functionality of using
- * Spring Data GemFire's XML namespace to configure GemFire Disk Stores.
+ * SDG's XML namespace to configure Pivotal GemFireDisk Stores.
  *
  * @author John Blum
  * @see org.junit.Test

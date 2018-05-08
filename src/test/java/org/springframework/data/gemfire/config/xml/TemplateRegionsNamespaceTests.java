@@ -71,7 +71,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * The TemplateRegionsNamespaceTests class is a test suite of test cases testing the functionality and support for
- * Region Templating in Spring Data GemFire.
+ * Region Templating in SDG.
  *
  * @author John Blum
  * @see org.junit.Test

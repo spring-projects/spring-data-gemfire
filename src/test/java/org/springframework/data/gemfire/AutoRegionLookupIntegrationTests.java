@@ -26,8 +26,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
- * The AutoRegionLookupIntegrationTests class is a test suite of test cases testing the contract and functionality
- * of Spring Data GemFire's new auto Region lookup feature.
+ * Integration tests to test the contract and functionality of SDG's Auto Region Lookup functionality.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -54,5 +53,4 @@ public class AutoRegionLookupIntegrationTests {
 		assertTrue(applicationContext.containsBean("/NativeReplicateParent/NativeReplicateChild"));
 		assertTrue(applicationContext.containsBean("/NativeReplicateParent/NativeReplicateChild/NativeReplicateGrandchild"));
 	}
-
 }

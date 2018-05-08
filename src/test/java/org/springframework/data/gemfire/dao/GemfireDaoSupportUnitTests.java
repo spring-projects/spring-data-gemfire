@@ -52,6 +52,7 @@ public class GemfireDaoSupportUnitTests {
 
 	@Test
 	public void setAndGetGemfireTemplate() {
+
 		GemfireTemplate expectedGemfireTemplate = new GemfireTemplate(mockRegion);
 		GemfireDaoSupport dao = new TestGemfireDaoSupport();
 
@@ -68,6 +69,7 @@ public class GemfireDaoSupportUnitTests {
 
 	@Test
 	public void setRegion() {
+
 		GemfireDaoSupport dao = new TestGemfireDaoSupport();
 
 		dao.setRegion(mockRegion);
@@ -82,6 +84,7 @@ public class GemfireDaoSupportUnitTests {
 	@Test
 	@SuppressWarnings("rawtypes")
 	public void createProperlyInitializedGemfireDaoSupportWithTemplate() throws Exception {
+
 		GemfireTemplate expectedGemfireTemplate = new GemfireTemplate();
 		GemfireDaoSupport dao = new TestGemfireDaoSupport();
 
@@ -94,9 +97,10 @@ public class GemfireDaoSupportUnitTests {
 
 	@Test
 	public void invalidGemfireDaoSupportInstanceThrowsIllegalStateException() throws Exception {
+
 		exception.expect(IllegalStateException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("A GemFire Cache Region or instance of GemfireTemplate is required");
+		exception.expectMessage("A Cache Region or instance of GemfireTemplate is required");
 
 		new TestGemfireDaoSupport().afterPropertiesSet();
 	}

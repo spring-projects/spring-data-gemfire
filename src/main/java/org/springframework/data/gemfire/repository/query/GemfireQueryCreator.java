@@ -115,7 +115,7 @@ class GemfireQueryCreator extends AbstractQueryCreator<QueryString, Predicates> 
 
 	/**
 	 * {@link IndexProvider} is an {@link Iterator} providing sequentially numbered placeholders (starting at 1),
-	 * in a generated GemFire OQL statement corresponding to all possible arguments passed to
+	 * in a generated Pivotal GemFire OQL statement corresponding to all possible arguments passed to
 	 * the query's indexed parameters.
 	 *
 	 * @see java.util.Iterator

@@ -1,4 +1,4 @@
-= Spring Data GemFire Reference Guide
+= Spring Data for Pivotal GemFire Reference Guide
 Costin Leau , David Turanski , John Blum , Oliver Gierke
 :revnumber: {version}
 :revdate: {localdate}
@@ -6,7 +6,7 @@ Costin Leau , David Turanski , John Blum , Oliver Gierke
 :toc:
 :!toc-placement:
 
-(C) 2010-2017 The original authors.
+(C) 2010-2018 The original authors.
 
 NOTE: Copies of this document may be made for your own use and for distribution to others provided that you do not
 charge any fee for such copies and further provided that each copy contains this Copyright Notice

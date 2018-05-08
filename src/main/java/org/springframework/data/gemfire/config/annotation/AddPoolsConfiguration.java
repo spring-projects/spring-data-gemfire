@@ -26,7 +26,7 @@ import org.springframework.core.type.AnnotationMetadata;
 /**
  * The {@link AddPoolsConfiguration} class registers {@link org.springframework.data.gemfire.client.PoolFactoryBean}
  * bean definitions for all {@link EnablePool} annotation configuration meta-data defined in
- * the {@link EnablePools} annotation on a GemFire client cache application class.
+ * the {@link EnablePools} annotation on a Pivotal GemFire client cache application class.
 
  * @author John Blum
  * @see org.apache.geode.cache.client.Pool

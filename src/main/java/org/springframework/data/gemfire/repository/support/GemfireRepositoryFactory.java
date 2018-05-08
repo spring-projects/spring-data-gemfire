@@ -98,10 +98,10 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 	}
 
 	/**
-	 * Returns a reference to the GemFire {@link MappingContext} used to provide mapping meta-data
+	 * Returns a reference to the Pivotal GemFire {@link MappingContext} used to provide mapping meta-data
 	 * between {@link Class entity types} and the data store.
 	 *
-	 * @return a reference to the GemFire {@link MappingContext}.
+	 * @return a reference to the Pivotal GemFire {@link MappingContext}.
 	 * @see org.springframework.data.gemfire.mapping.GemfireMappingContext
 	 * @see org.springframework.data.mapping.context.MappingContext
 	 */

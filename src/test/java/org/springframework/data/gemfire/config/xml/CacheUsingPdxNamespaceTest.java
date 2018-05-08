@@ -33,7 +33,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
- * The CacheUsingPdxNamespaceTest class is a test suite of test case testing the Spring Data GemFire XML namespace
+ * The CacheUsingPdxNamespaceTest class is a test suite of test case testing the SDG XML namespace
  * when PDX is configured in GemFire.
  *
  * @author John Blum

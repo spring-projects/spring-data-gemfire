@@ -40,7 +40,7 @@ import org.springframework.util.xml.DomUtils;
 import org.w3c.dom.Element;
 
 /**
- * Utilities used by the Spring Data GemFire XML Namespace Parsers.
+ * Utilities used by SDG XML Namespace Parsers.
  *
  * @author Costin Leau
  * @author David Turanski
@@ -394,12 +394,15 @@ abstract class ParsingUtils {
 	}
 
 	static void throwExceptionIfNotGemfireV7(String elementName, String attributeName, ParserContext parserContext) {
+
 		if (!GemfireUtils.isGemfireVersion7OrAbove()) {
+
 			String messagePrefix = (attributeName != null)
 				? String.format("Attribute '%1$s' of element '%2$s'", attributeName, elementName)
 				: String.format("Element '%1$s'", elementName);
+
 			parserContext.getReaderContext().error(
-				String.format("%1$s requires GemFire version 7 or later. The current version is %2$s.",
+				String.format("%1$s requires Pivotal GemFire version 7 or later. The current version is %2$s.",
 					messagePrefix, GemfireUtils.GEMFIRE_VERSION), null);
 		}
 	}

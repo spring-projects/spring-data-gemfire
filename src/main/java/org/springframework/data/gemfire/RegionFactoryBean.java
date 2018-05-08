@@ -401,7 +401,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 *
 	 * @param <K> the Class type fo the Region key.
 	 * @param <V> the Class type of the Region value.
-	 * @param regionFactory the GemFire RegionFactory used to configure and create the Region that is the product
+	 * @param regionFactory the Pivotal GemFire RegionFactory used to configure and create the Region that is the product
 	 * of this RegionFactoryBean.
 	 * @param regionAttributes the RegionAttributes containing the Region configuration settings to merge to the
 	 * RegionFactory.
@@ -512,7 +512,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 *
 	 * This method is not part of the RegionFactoryBean API and is strictly used for testing purposes!
 	 *
-	 * NOTE unfortunately, must resort to using a GemFire internal class, ugh!
+	 * NOTE unfortunately, must resort to using a Pivotal GemFire internal class, ugh!
 	 *
 	 * @see org.apache.geode.internal.cache.UserSpecifiedRegionAttributes#hasEvictionAttributes
 	 */
@@ -573,6 +573,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	}
 
 	/**
+<<<<<<< HEAD
 	 * Validates that the settings for Data Policy and the 'persistent' attribute in &lt;gfe:*-region&gt; elements
 	 * are compatible.
 	 *
@@ -600,6 +601,10 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 >>>>>>> c22ebe6... DATAGEODE-12 - Introduce Spring Configurers to flexibly alter Spring Data GemFire configuration when using Annotation config.
 	 * Validates and sets the Data Policy on the RegionFactory used to create and configure the Region from this
 	 * FactoryBean.
+=======
+	 * Validates and sets the {@link DataPolicy} on the {@link RegionFactory} used to create and configure
+	 * the {@link Region} from this {@link FactoryBean}.
+>>>>>>> 12126a1... SGF-732 - Change branding from Spring Data GemFire to Spring Data for Pivotal GemFire.
 	 *
 	 * @param regionFactory the RegionFactory used by this FactoryBean to create and configure the Region.
 	 * @param persistent a boolean value indicating whether the Region should be persistent and persist it's
@@ -625,9 +630,9 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 * Validates the configured Data Policy and may override it, taking into account the 'persistent' attribute
 	 * and constraints for the Region type.
 	 *
-	 * @param regionFactory the GemFire RegionFactory used to create the desired Region.
+	 * @param regionFactory the Pivotal GemFire RegionFactory used to create the desired Region.
 	 * @param persistent a boolean value indicating whether the Region should persist it's data to disk.
-	 * @param dataPolicy requested Data Policy as set by the user in the Spring GemFire configuration meta-data.
+	 * @param dataPolicy requested Data Policy as set by the user in the Spring Pivotal GemFire configuration meta-data.
 	 * @see org.apache.geode.cache.DataPolicy
 	 * @see org.apache.geode.cache.RegionFactory
 	 */
@@ -785,7 +790,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	/**
 	 * Sets the DataPolicy of the Region.
 	 *
-	 * @param dataPolicy the GemFire DataPolicy to use when configuring the Region.
+	 * @param dataPolicy the Pivotal GemFire DataPolicy to use when configuring the Region.
 	 * @since 1.4.0
 	 */
 	public void setDataPolicy(DataPolicy dataPolicy) {

@@ -41,7 +41,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * The PersistentPartitionRegionTemplateTest class is a test suite of test cases testing the functionality of
- * Spring Data GemFire's Region templates with a 'persistent', PARTITION Region configuration.
+ * SDG's Region templates with a 'persistent', PARTITION Region configuration.
  *
  * @author John Blum
  * @see org.junit.Test

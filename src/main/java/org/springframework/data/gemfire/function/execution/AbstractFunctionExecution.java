@@ -28,7 +28,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * Base class for * Creating a GemFire {@link Execution} using {@link FunctionService}.  Protected setters support
+ * Base class for * Creating a Pivotal GemFire {@link Execution} using {@link FunctionService}.  Protected setters support
  * method chaining.
  *
  * @author David Turanski

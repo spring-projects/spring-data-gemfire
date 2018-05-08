@@ -38,7 +38,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * The RawRegionBeanDefinitionTest class is a test suite of test cases testing the contract and functionality
- * of the SDG RegionFactoryBean class, and specifically the specification of the GemFire Region DataPolicy,
+ * of the SDG RegionFactoryBean class, and specifically the specification of the Pivotal GemFireRegion DataPolicy,
  * when used as raw bean definition in Spring XML configuration meta-data.
  *
  * @author John Blum

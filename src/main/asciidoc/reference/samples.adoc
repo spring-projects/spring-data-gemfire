@@ -2,12 +2,12 @@
 = Sample Applications
 
 NOTE: Sample applications are now maintained in the
-https://github.com/spring-projects/spring-gemfire-examples[Spring GemFire Examples] repository.
+https://github.com/spring-projects/spring-gemfire-examples[Spring Pivotal GemFire Examples] repository.
 
-The _Spring Data GemFire_ project also includes one sample application.  Named "Hello World", the sample application
+The _Spring Data for Pivotal GemFire_ project also includes one sample application.  Named "Hello World", the sample application
 demonstrates how to configure and use Pivotal GemFire inside a _Spring_ application.  At runtime, the sample offers
 a *shell* to the user allowing her to run various commands against the data grid.  It provides an excellent
-starting point for users unfamiliar with the essential components or with _Spring_ and GemFire concepts.
+starting point for users unfamiliar with the essential components or with _Spring_ and Pivotal GemFire concepts.
 
 The sample is bundled with the distribution and is Maven-based.  A developer can easily import them into any
 Maven-aware IDE (such as https://spring.io/tools/sts[Spring Tool Suite]) or run them from the command-line.
@@ -15,13 +15,13 @@ Maven-aware IDE (such as https://spring.io/tools/sts[Spring Tool Suite]) or run 
 [[samples:hello-world]]
 == Hello World
 
-The Hello World sample application demonstrates the core functionality of the _Spring Data GemFire_ project.
-It bootstraps GemFire, configures it, executes arbitrary commands against the cache and shuts it down
+The Hello World sample application demonstrates the core functionality of the _Spring Data for Pivotal GemFire_ project.
+It bootstraps Pivotal GemFire, configures it, executes arbitrary commands against the cache and shuts it down
 when the application exits.  Multiple instances of the application can be started at the same time
 and they will work together, sharing data without any user intervention.
 
 .Running under Linux
-NOTE: If you experience networking problems when starting GemFire or the samples, try adding the following
+NOTE: If you experience networking problems when starting Pivotal GemFire or the samples, try adding the following
 system property `java.net.preferIPv4Stack=true` to the command line (e.g. `-Djava.net.preferIPv4Stack=true`).
 For an alternative (global) fix especially on Ubuntu see https://jira.spring.io/browse/SGF-28[SGF-28].
 
@@ -44,7 +44,7 @@ The output will likely look as follows:
 
 [source]
 ----
-INFO: Created GemFire Cache [Spring GemFire World] v. X.Y.Z
+INFO: Created Pivotal GemFire Cache [Spring Pivotal GemFire World] v. X.Y.Z
 INFO: Created new cache region [myWorld]
 INFO: Member xxxxxx:50694/51611 connecting to region [myWorld]
 Hello World!
@@ -81,7 +81,7 @@ and its information:
 
 [source]
 ----
-INFO: Connected to Distributed System ['Spring GemFire World'=xxxx:56218/49320@yyyyy]
+INFO: Connected to Distributed System ['Spring Pivotal GemFire World'=xxxx:56218/49320@yyyyy]
 Hello World!
 ...
 
@@ -107,7 +107,7 @@ http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/
 for _Spring_
 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-annotation-config[components].
 
-The cache configuration defines the GemFire cache, Region and for illustrative purposes, a simple `CacheListener`
+The cache configuration defines the Pivotal GemFire cache, Region and for illustrative purposes, a simple `CacheListener`
 that acts as a logger.
 
 The main *beans* are `HelloWorld` and `CommandProcessor` which rely on the `GemfireTemplate` to interact with

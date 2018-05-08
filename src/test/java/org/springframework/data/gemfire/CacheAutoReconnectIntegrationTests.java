@@ -31,8 +31,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
 
 /**
- * The CacheAutoReconnectIntegrationTests class is a tests suite of test cases testing Spring Data GemFire's support
- * of GemFire's Auto-Reconnect functionality release in 8.0.
+ * The CacheAutoReconnectIntegrationTests class is a tests suite of test cases testing SDG's support
+ * of Pivotal GemFire's Auto-Reconnect functionality release in 8.0.
  *
  * @author John Blum
  * @see org.junit.Test

@@ -21,20 +21,21 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.ServerLauncherCacheProvider;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.GemfireUtils;
 
 /**
- * The SpringServerLauncherCacheProvider class overrides the default behavior of GemFire's {@link ServerLauncher}
- * to bootstrap the GemFire cache using a Spring {@link org.springframework.context.ApplicationContext} instead
- * of GemFire cache.xml inside a GemFire Server JVM-based process. This enables a GemFire Cache Server's resources
- * to be configured with Spring Data GemFire's XML namespace.
+ * The {@link SpringServerLauncherCacheProvider} class overrides the default behavior of Pivotal GemFire's
+ * {@link ServerLauncher} to bootstrap the Pivotal GemFire cache using a Spring {@link ApplicationContext}
+ * instead of Pivotal GemFire {@literal cache.xml} inside a Pivotal GemFire Server JVM-based process.
+ * This enables a Pivotal GemFire Cache Server's resources to be configured with SDG's XML namespace.
  *
  * Unlike {@link SpringContextBootstrappingInitializer}, this allows the configuration of the cache to specified
  * in the Spring context.
  *
- * To use this cache provider, ensure that the Spring Data GemFire JAR file is on the classpath of the GemFire server
+ * To use this cache provider, ensure that the SDG JAR file is on the classpath of the Pivotal GemFire server
  * and specify the --spring-xml-location option from the Gfsh command line or call
- * {@link Builder#setSpringXmlLocation(String)} when launching the GemFire server.
+ * {@link Builder#setSpringXmlLocation(String)} when launching the Pivotal GemFire server.
  *
  * @author Dan Smith
  * @author John Blum
@@ -46,7 +47,6 @@ import org.springframework.data.gemfire.GemfireUtils;
  */
 public class SpringServerLauncherCacheProvider implements ServerLauncherCacheProvider {
 
-	/* (non-Javadoc) */
 	@Override
 	public Cache createCache(Properties gemfireProperties, ServerLauncher serverLauncher) {
 		Cache cache = null;
@@ -60,7 +60,6 @@ public class SpringServerLauncherCacheProvider implements ServerLauncherCachePro
 		return cache;
 	}
 
-	/* (non-Javadoc) */
 	Properties createParameters(ServerLauncher serverLauncher) {
 		Properties parameters = new Properties();
 		parameters.setProperty(SpringContextBootstrappingInitializer.CONTEXT_CONFIG_LOCATIONS_PARAMETER,
@@ -68,12 +67,10 @@ public class SpringServerLauncherCacheProvider implements ServerLauncherCachePro
 		return parameters;
 	}
 
-	/* (non-Javadoc) */
 	String gemfireName() {
 		return (GemfireUtils.GEMFIRE_PREFIX + GemfireUtils.NAME_PROPERTY_NAME);
 	}
 
-	/* (non-Javadoc) */
 	SpringContextBootstrappingInitializer newSpringContextBootstrappingInitializer() {
 		return new SpringContextBootstrappingInitializer();
 	}

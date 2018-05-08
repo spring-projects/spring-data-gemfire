@@ -40,7 +40,7 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * Utility class for registering a POJO as a GemFire/Geode {@link Function}.
+ * Utility class for registering a POJO as a Pivotal GemFire/Apache Geode {@link Function}.
  *
  * @author David Turanski
  * @author John Blum
@@ -78,7 +78,7 @@ public abstract class GemfireFunctionUtils {
 	}
 
 	/**
-	 * Null-safe operation used to determine the GemFire/Geode {@link Function#getId()} Function ID}
+	 * Null-safe operation used to determine the Pivotal GemFire/Apache Geode {@link Function#getId()} Function ID}
 	 * of a given {@link GemfireFunction} annotated POJO {@link Method}.
 	 *
 	 * If the {@link Method} is not {@literal null} and annotated with {@link GemfireFunction} then this method
@@ -88,9 +88,9 @@ public abstract class GemfireFunctionUtils {
 	 * is returned as the {@link Function#getId() Function ID}.
 	 *
 	 * @param method {@link GemfireFunction} annotated POJO {@link Method} containing the implementation
-	 * for a GemFire/Geode {@link Function}.
-	 * @return the GemFire/Geode Function ID of the given {@link Method}, or an empty {@link Optional}
-	 * if the {@link Method} is not a GemFire/Geode {@link Function}.
+	 * for a Pivotal GemFire/Apache Geode {@link Function}.
+	 * @return the Pivotal GemFire/Apache Geode Function ID of the given {@link Method}, or an empty {@link Optional}
+	 * if the {@link Method} is not a Pivotal GemFire/Apache Geode {@link Function}.
 	 * @see org.springframework.data.gemfire.function.annotation.GemfireFunction
 	 * @see java.lang.reflect.Method
 	 * @see #isGemfireFunction(Method)
@@ -196,7 +196,7 @@ public abstract class GemfireFunctionUtils {
 	}
 
 	/**
-	 * Wrap the {@link Object target object} and {@link Method method} in a GemFire/Geode {@link Function}
+	 * Wrap the {@link Object target object} and {@link Method method} in a Pivotal GemFire/Apache Geode {@link Function}
 	 * and register the {@link Function} with the {@link FunctionService}.
 	 *
 	 * @param target {@link Object target object}.
@@ -213,7 +213,7 @@ public abstract class GemfireFunctionUtils {
 	}
 
 	/**
-	 * Wrap the {@link Object target object} and {@link Method method} in a GemFire/Geode {@link Function}
+	 * Wrap the {@link Object target object} and {@link Method method} in a Pivotal GemFire/Apache Geode {@link Function}
 	 * and register the {@link Function} with the {@link FunctionService}.
 	 *
 	 * @param target {@link Object target object}.

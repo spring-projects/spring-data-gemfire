@@ -24,30 +24,30 @@ import org.apache.geode.cache.execute.Function;
 public interface GemfireFunctionOperations {
 
 	/**
-	 * Execute an unregistered GemFire Function with the given arguments.
+	 * Execute an unregistered Pivotal GemFire Function with the given arguments.
 	 *
 	 * @param <T> type parameter specifying the result type of the Function execution.
-	 * @param function the GemFire Function object to execute.
+	 * @param function the Pivotal GemFire Function object to execute.
 	 * @param args an array of Object arguments to the Function call.
 	 * @return the contents of the ResultsCollector.
 	 */
 	<T> Iterable<T> execute(Function function, Object... args);
 
 	/**
-	 * Execute a GemFire Function registered with the given ID.
+	 * Execute a Pivotal GemFire Function registered with the given ID.
 	 *
 	 * @param <T> type parameter specifying the result type of the Function execution.
-	 * @param functionId the ID under which the GemFire function is registered.
+	 * @param functionId the ID under which the Pivotal GemFire function is registered.
 	 * @param args an array of Object arguments to the Function call.
 	 * @return the results
 	 */
 	<T> Iterable<T> execute(String functionId, Object... args);
 
     /**
-     * Execute an unregistered GemFire Function with the expected singleton result.
+     * Execute an unregistered Pivotal GemFire Function with the expected singleton result.
 
 	 * @param <T> type parameter specifying the result type of the Function execution.
-	 * @param function the GemFire Function object.
+	 * @param function the Pivotal GemFire Function object.
 	 * @param args an array of Object arguments to the Function call.
 	 * @return the first item in the ResultsCollector.
 	 * @see org.apache.geode.cache.execute.Function
@@ -55,25 +55,25 @@ public interface GemfireFunctionOperations {
 	<T> T executeAndExtract(Function function, Object... args);
 
 	/**
-	 * Execute a GemFire Function registered with an ID and with an expected singleton result
+	 * Execute a Pivotal GemFire Function registered with an ID and with an expected singleton result
 
 	 * @param <T> type parameter specifying the result type of the Function execution.
-	 * @param functionId the ID under which the GemFire function is registered.
+	 * @param functionId the ID under which the Pivotal GemFire function is registered.
 	 * @param args an array of Object arguments to the Function call.
 	 * @return the first item in the results collector
 	 */
 	<T> T executeAndExtract(String functionId, Object... args);
 
 	/**
-	 * Execute a GemFire Function registered with the given ID having no return value.
+	 * Execute a Pivotal GemFire Function registered with the given ID having no return value.
 
-	 * @param functionId the ID under which the GemFire function is registered.
+	 * @param functionId the ID under which the Pivotal GemFire function is registered.
 	 * @param args an array of Object arguments to the Function call.
 	 */
 	void executeWithNoResult(String functionId, Object... args);
 
     /**
-     * Execute a GemFire Function using a native GemFire {@link org.apache.geode.cache.execute.Execution} instance.
+     * Execute a Pivotal GemFire Function using a native Pivotal GemFire {@link org.apache.geode.cache.execute.Execution} instance.
 	 *
 	 * @param <T> type parameter specifying the result type of the Function execution.
      * @param callback a callback providing the execution instance.

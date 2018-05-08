@@ -79,7 +79,7 @@ class GemfireListenerContainerParser extends AbstractSingleBeanDefinitionParser 
 	 * (of type {@link ContinuousQueryDefinition)).
 	 *
 	 * @param element XML DOM {@link Element} to parse.
-	 * @return a Spring {@link BeanDefinition} for the GemFire Continuous Query (CQ) listener configuration.
+	 * @return a Spring {@link BeanDefinition} for the Pivotal GemFire Continuous Query (CQ) listener configuration.
 	 * @see org.springframework.beans.factory.xml.BeanDefinition
 	 * @see org.w3c.dom.Element
 	 */

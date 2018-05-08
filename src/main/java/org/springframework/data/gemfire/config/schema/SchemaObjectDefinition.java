@@ -45,7 +45,7 @@ public abstract class SchemaObjectDefinition implements Serializable, Ordered {
 	/**
 	 * Constructs a new instance of {@link SchemaObjectDefinition} initialized with the specified {@link String name}.
 	 *
-	 * @param name {@link String name} given to the GemFire/Geode schema object; must not be {@literal null}.
+	 * @param name {@link String name} given to the Pivotal GemFire/Apache Geode schema object; must not be {@literal null}.
 	 * @throws IllegalArgumentException if name is not specified.
 	 */
 	public SchemaObjectDefinition(String name) {

@@ -85,9 +85,6 @@ public class ClientCacheVariableServersTest {
 			arguments.toArray(new String[arguments.size()]));
 
 		waitForServerToStart(TimeUnit.SECONDS.toMillis(20));
-
-		System.out.printf("Spring-based, GemFire Cache Server process for %1$s should be running...%n",
-			ClientCacheVariableServersTest.class.getSimpleName());
 	}
 
 	private static void waitForServerToStart(final long milliseconds) {
@@ -131,5 +128,4 @@ public class ClientCacheVariableServersTest {
 			cacheMissCounter.set(0);
 		}
 	}
-
 }

@@ -24,6 +24,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.control.ResourceManager;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.annotation.Configuration;
@@ -31,8 +32,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.gemfire.support.GemfireBeanFactoryLocator;
 
 /**
- * The {@link PeerCacheApplication} annotation enables an embedded GemFire peer {@link org.apache.geode.cache.Cache}
- * instance in a Spring Data GemFire based application.
+ * The {@link PeerCacheApplication} annotation enables an embedded Pivotal GemFire peer {@link Cache} instance
+ * in a SDG based application.
  *
  * @author John Blum
  * @see org.apache.geode.cache.control.ResourceManager
@@ -81,7 +82,7 @@ public @interface PeerCacheApplication {
 	float criticalOffHeapPercentage() default 0.0f;
 
 	/**
-	 * By default, a GemFire member (both locators and servers) will attempt to reconnect and reinitialize the cache
+	 * By default, a Pivotal GemFire member (both locators and servers) will attempt to reconnect and reinitialize the cache
 	 * after it has been forced out of the distributed system by a network partition event or has otherwise been
 	 * shunned by other members. Use this property to enable the auto-reconnect behavior.
 	 *
@@ -139,7 +140,7 @@ public @interface PeerCacheApplication {
 	int lockTimeout() default 60;
 
 	/**
-	 * Configures the log level used to output log messages at GemFire cache runtime.
+	 * Configures the log level used to output log messages at Pivotal GemFire cache runtime.
 	 *
 	 * Defaults to {@literal config}.
 	 *
@@ -159,7 +160,7 @@ public @interface PeerCacheApplication {
 	int messageSyncInterval() default 1;
 
 	/**
-	 * Configures the name of this GemFire member in the cluster (distributed system).
+	 * Configures the name of this Pivotal GemFire member in the cluster (distributed system).
 	 *
 	 * Defaults to {@literal SpringBasedPeerCacheApplication}.
 	 *
@@ -179,8 +180,8 @@ public @interface PeerCacheApplication {
 
 	/**
 	 * Determines whether the {@link GemfireBeanFactoryLocator} should be enabled to lookup
-	 * the Spring {@link BeanFactory} to auto-wire and configure/initialize GemFire components
-	 * created in a non-Spring managed, GemFire context.
+	 * the Spring {@link BeanFactory} to auto-wire and configure/initialize Pivotal GemFire components
+	 * created in a non-Spring managed, Pivotal GemFire context.
 	 *
 	 * Defaults to {@literal false}.
 	 *
@@ -189,7 +190,7 @@ public @interface PeerCacheApplication {
 	boolean useBeanFactoryLocator() default false;
 
 	/**
-	 * Configures whether this GemFire cache member node would pull it's configuration meta-data
+	 * Configures whether this Pivotal GemFire cache member node would pull it's configuration meta-data
 	 * from the cluster-based Cluster Configuration service.
 	 *
 	 * Defaults to {@literal false}.

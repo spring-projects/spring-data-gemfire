@@ -42,14 +42,14 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * Helper class that simplifies GemFire data access code and converts {@link GemFireCheckedException} and
+ * Helper class that simplifies Pivotal GemFire data access code and converts {@link GemFireCheckedException} and
  * {@link GemFireException} into Spring {@link DataAccessException}, following the <tt>org.springframework.dao</tt>
  * exception hierarchy.
  *
- * The central method is <tt>execute</tt>, supporting GemFire access code implementing the GemfireCallback interface.
+ * The central method is <tt>execute</tt>, supporting Pivotal GemFire access code implementing the GemfireCallback interface.
  * It provides dedicated handling such that neither the GemfireCallback implementation nor the calling code needs to
  * explicitly care about handling {@link Region} life-cycle exceptions.
- * Typically used to implement data access or business logic services that use GemFire within their implementation but
+ * Typically used to implement data access or business logic services that use Pivotal GemFire within their implementation but
  * are GemFire-agnostic in their interface. The latter or code calling the latter only have to deal with business
  * objects, query objects, and <tt>org.springframework.dao</tt> exceptions.
  *
@@ -89,7 +89,7 @@ public class GemfireTemplate extends GemfireAccessor implements GemfireOperation
 	 * <p>As there is often a need to cast to a interface, the exposed proxy implements all interfaces
 	 * implemented by the original {@link Region}. If this is not sufficient, turn this flag to "true".
 	 *
-	 * @param exposeNativeRegion a boolean value to indicate whether the native GemFire Cache Region should be exposed
+	 * @param exposeNativeRegion a boolean value to indicate whether the native Pivotal GemFire Cache Region should be exposed
 	 * to the GemfireCallback.
 	 * @see org.springframework.data.gemfire.GemfireCallback
 	 */
@@ -98,9 +98,9 @@ public class GemfireTemplate extends GemfireAccessor implements GemfireOperation
 	}
 
 	/**
-	 * Returns whether to expose the native GemFire Cache Region or a Region proxy to the GemfireCallback code.
+	 * Returns whether to expose the native Pivotal GemFire Cache Region or a Region proxy to the GemfireCallback code.
 	 *
-	 * @return a boolean value indicating whether the native GemFire Cache Region or Region proxy is exposed
+	 * @return a boolean value indicating whether the native Pivotal GemFire Cache Region or Region proxy is exposed
 	 * to the GemfireCallback code.
 	 */
 	public boolean isExposeNativeRegion() {
@@ -473,12 +473,12 @@ public class GemfireTemplate extends GemfireAccessor implements GemfireOperation
 	}
 
 	/**
-	 * Create a close-suppressing proxy for the given GemFire Cache {@link Region}.
+	 * Create a close-suppressing proxy for the given Pivotal GemFire Cache {@link Region}.
 	 * Called by the <code>execute</code> method.
 	 *
 	 * @param <K> the Region key class type.
 	 * @param <V> the Region value class type.
-	 * @param region the GemFire Cache Region to create a proxy for.
+	 * @param region the Pivotal GemFire Cache Region to create a proxy for.
 	 * @return the Region proxy implementing all interfaces implemented by the passed-in Region object.
 	 * @see org.apache.geode.cache.Region#close()
 	 * @see #execute(GemfireCallback, boolean)
@@ -493,7 +493,7 @@ public class GemfireTemplate extends GemfireAccessor implements GemfireOperation
 	}
 
 	/**
-	 * InvocationHandler that suppresses close calls on GemFire Cache Regions.
+	 * InvocationHandler that suppresses close calls on Pivotal GemFire Cache Regions.
 	 *
 	 * @see org.apache.geode.cache.Region#close()
 	 * @see java.lang.reflect.InvocationHandler

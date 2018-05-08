@@ -26,7 +26,7 @@ import org.springframework.util.ClassUtils;
 
 /**
  * {@link GemfireUtils} is an abstract utility class encapsulating common functionality to access features
- * and capabilities of GemFire based on version and other configuration meta-data.
+ * and capabilities of Pivotal GemFire based on version and other configuration meta-data.
  *
  * @author John Blum
  * @see org.apache.geode.cache.CacheFactory
@@ -42,7 +42,6 @@ public abstract class GemfireUtils extends RegionUtils {
 	public final static String GEMFIRE_VERSION = apacheGeodeVersion();
 	public final static String UNKNOWN = "unknown";
 
-	/* (non-Javadoc) */
 	public static String apacheGeodeProductName() {
 
 		try {
@@ -53,7 +52,6 @@ public abstract class GemfireUtils extends RegionUtils {
 		}
 	}
 
-	/* (non-Javadoc) */
 	public static String apacheGeodeVersion() {
 
 		try {
@@ -64,13 +62,11 @@ public abstract class GemfireUtils extends RegionUtils {
 		}
 	}
 
-	/* (non-Javadoc) */
 	public static boolean isGemfireVersionGreaterThanEqualTo(double expectedVersion) {
 		double actualVersion = Double.parseDouble(GEMFIRE_VERSION.substring(0, 3));
 		return actualVersion >= expectedVersion;
 	}
 
-	/* (non-Javadoc) */
 	public static boolean isGemfireVersion65OrAbove() {
 		// expected 'major.minor'
 		try {
@@ -83,7 +79,6 @@ public abstract class GemfireUtils extends RegionUtils {
 		}
 	}
 
-	/* (non-Javadoc) */
 	public static boolean isGemfireVersion7OrAbove() {
 		try {
 			return isGemfireVersionGreaterThanEqualTo(7.0);
@@ -95,7 +90,6 @@ public abstract class GemfireUtils extends RegionUtils {
 		}
 	}
 
-	/* (non-Javadoc) */
 	public static boolean isGemfireVersion8OrAbove() {
 
 		try {

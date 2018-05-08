@@ -32,7 +32,7 @@ import org.junit.rules.ExpectedException;
 
 /**
  * The ConnectionEndpointTest class is a test suite of test cases testing the contract and functionality
- * of the ConnectionEndpoint class representing GemFire Socket connection endpoints to GemFire services
+ * of the ConnectionEndpoint class representing Pivotal GemFireSocket connection endpoints to Pivotal GemFire'services
  * (such as Locators, etc).
  *
  * @author John Blum

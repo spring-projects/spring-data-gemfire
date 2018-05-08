@@ -19,7 +19,7 @@ package org.springframework.data.gemfire.listener;
 import org.apache.geode.cache.query.CqEvent;
 
 /**
- * Continuous Query (CQ) listener listening for events and notifications by a GemFire Continuous Query (CQ).
+ * Continuous Query (CQ) listener listening for events and notifications by a Pivotal GemFire Continuous Query (CQ).
  *
  * @author Costin Leau
  * @author John Blum

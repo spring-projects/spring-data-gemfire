@@ -480,7 +480,7 @@ public class GemfireRepositoryFactoryUnitTests {
 		}
 		catch (IllegalStateException expected) {
 
-			assertThat(expected).hasMessageStartingWith("Pagination is not supported by GemFire Repositories");
+			assertThat(expected).hasMessageStartingWith("Pagination is not supported by Pivotal GemFire Repositories");
 			assertThat(expected).hasNoCause();
 
 			throw expected;

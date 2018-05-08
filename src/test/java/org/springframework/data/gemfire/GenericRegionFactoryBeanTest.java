@@ -43,7 +43,6 @@ import org.springframework.data.gemfire.util.CacheUtils;
  */
 public class GenericRegionFactoryBeanTest {
 
-	// As defined in com.gemstone.gemfire.internal.cache.AbstractRegion
 	private static final Scope DEFAULT_SCOPE = Scope.DISTRIBUTED_NO_ACK;
 
 	private static Region<Object, Object> defaultRegion;
@@ -56,6 +55,7 @@ public class GenericRegionFactoryBeanTest {
 
 	@BeforeClass
 	public static void setup() throws Exception {
+
 		Cache gemfireCache = new CacheFactory()
 			.set("name", GenericRegionFactoryBeanTest.class.getSimpleName())
 			.set("mcast-port", "0")
@@ -125,6 +125,7 @@ public class GenericRegionFactoryBeanTest {
 
 	@AfterClass
 	public static void tearDown() {
+
 		CacheUtils.closeCache();
 
 		FileFilter fileFilter = FileSystemUtils.CompositeFileFilter.or(
@@ -134,20 +135,20 @@ public class GenericRegionFactoryBeanTest {
 		FileSystemUtils.deleteRecursive(FileSystemUtils.WORKING_DIRECTORY, fileFilter);
 	}
 
-	protected void assertRegionAttributes(Region<?, ?> region, String expectedRegionName, DataPolicy expectedDataPolicy,
+	private void assertRegionAttributes(Region<?, ?> region, String expectedRegionName, DataPolicy expectedDataPolicy,
 			Scope expectedScope) {
 
 		assertRegionAttributes(region, expectedRegionName, String.format("%1$s%2$s", Region.SEPARATOR, expectedRegionName),
 			expectedDataPolicy, expectedScope);
 	}
 
-	protected void assertRegionAttributes(Region<?, ?> region, String expectedRegionName, String expectedRegionPath,
+	private void assertRegionAttributes(Region<?, ?> region, String expectedRegionName, String expectedRegionPath,
 			DataPolicy expectedDataPolicy, Scope expectedScope) {
 
-		assertNotNull("The GemFire Cache Region must not be null!", region);
+		assertNotNull("The Cache Region must not be null", region);
 		assertEquals(expectedRegionName, region.getName());
 		assertEquals(expectedRegionPath, region.getFullPath());
-		assertNotNull("The RegionAttributes must be specified!", region.getAttributes());
+		assertNotNull("The RegionAttributes must be specified", region.getAttributes());
 		assertEquals(expectedDataPolicy, region.getAttributes().getDataPolicy());
 		assertEquals(expectedScope, region.getAttributes().getScope());
 	}

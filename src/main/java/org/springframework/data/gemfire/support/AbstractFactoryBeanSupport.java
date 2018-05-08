@@ -66,7 +66,7 @@ public abstract class AbstractFactoryBeanSupport<T>
 	}
 
 	/**
-	 * Constructs a new instance of {@link Log} to log statements printed by Spring Data GemFire/Geode.
+	 * Constructs a new instance of {@link Log} to log statements printed by SDG.
 	 *
 	 * @return a new instance of {@link Log}.
 	 * @see org.apache.commons.logging.LogFactory#getLog(Class)

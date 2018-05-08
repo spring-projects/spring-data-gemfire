@@ -109,7 +109,7 @@ public @interface LocalRegion {
 	 * with this persistent entity overflows data to disk during eviction due to entry/heap/memory constraints.
 	 *
 	 * A {@link org.apache.geode.cache.Region} can also be persistent without an explicit
-	 * {@link org.apache.geode.cache.DiskStore} defined; in that case, GemFire/Geode writes to the "DEFAULT"
+	 * {@link org.apache.geode.cache.DiskStore} defined; in that case, Pivotal GemFire/Apache Geode writes to the "DEFAULT"
 	 * {@link org.apache.geode.cache.DiskStore}.
 	 *
 	 * Defaults to {@literal false}.

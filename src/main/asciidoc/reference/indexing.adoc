@@ -3,17 +3,17 @@
 
 Pivotal GemFire allows Indexes (or Indices) to be created on Region data to improve the performance of OQL queries.
 
-In _Spring Data GemFire_ (SDG), Indexes are declared with the `index` element:
+In _Spring Data for Pivotal GemFire_ (SDG), Indexes are declared with the `index` element:
 
 [source,xml]
 ----
 <gfe:index id="myIndex" expression="someField" from="/SomeRegion" type="HASH"/>
 ----
 
-In _Spring Data GemFire's_ XML schema (a.k.a. SDG namespace), `Index` bean declarations are not bound to a _Region_,
-unlike GemFire's native `cache.xml`.  Rather, they are top-level elements just like `&lt;gfe:cache&gt;`.  This allows
+In _Spring Data for Pivotal GemFire's_ XML schema (a.k.a. SDG namespace), `Index` bean declarations are not bound to a _Region_,
+unlike Pivotal GemFire's native `cache.xml`.  Rather, they are top-level elements just like `&lt;gfe:cache&gt;`.  This allows
 a developer to declare any number of Indexes on any _Region_ whether they were just created or already exist,
-a significant improvement over GemFire's native `cache.xml` format.
+a significant improvement over Pivotal GemFire's native `cache.xml` format.
 
 An `Index` must have a name.  A developer may give the `Index` an explicit name using the `name` attribute,
 otherwise the _bean name_ (i.e. value of the `id` attribute) of the `Index` bean definition is used as
@@ -69,9 +69,9 @@ Therefore, I might want to create an `Index` like so...
 ----
 
 The `from` clause must refer to a valid, existing _Region_ and is how an `Index` gets applied to a _Region_.
-This is *not* _Sprig Data GemFire_ specific; this is a feature of Pivotal GemFire.
+This is *not* _Sprig Data Pivotal GemFire_ specific; this is a feature of Pivotal GemFire.
 
-The `Index` `type` maybe 1 of 3 enumerated values defined by _Spring Data GemFire's_
+The `Index` `type` maybe 1 of 3 enumerated values defined by _Spring Data for Pivotal GemFire's_
 http://docs.spring.io/spring-data-gemfire/docs/current/api/org/springframework/data/gemfire/IndexType.html[IndexType]
 enumeration: `FUNCTIONAL`, `HASH` and `PRIMARY_KEY`.
 
@@ -84,14 +84,14 @@ is invoked to create a `KEY` `Index`.
 The default is `FUNCTIONAL` and results in one of the `QueryService.createIndex(..)` methods
 being invoked.
 
-See the _Spring Data GemFire_ XML schema for a full set of options.
+See the _Spring Data for Pivotal GemFire_ XML schema for a full set of options.
 
 For more information on Indexing in Pivotal GemFire, see http://gemfire90.docs.pivotal.io/geode/developing/query_index/query_index.html[Working with Indexes]
 in Pivotal GemFire's User Guide.
 
 == Defining Indexes
 
-In addition to creating Indexes upfront as `Index` bean definitions are processed by _Spring Data GemFire_
+In addition to creating Indexes upfront as `Index` bean definitions are processed by _Spring Data for Pivotal GemFire_
 on _Spring_ container initialization, you may also *define* all of your application Indexes prior to creating
 them by using the `define` attribute, like so...
 
@@ -102,8 +102,8 @@ them by using the `define` attribute, like so...
 
 When `define` is set to `true` (defaults to `false`), this will not actually create the `Index` right then and there.
 All "defined" Indexes are created all at once, when the _Spring_ `ApplicationContext` is "refreshed", or, that is,
-when a `ContextRefreshedEvent` is published by the _Spring_ container.  _Spring Data GemFire_ registers itself as
-an `ApplicationListener` listening for the `ContextRefreshedEvent`.  When fired, _Spring Data GemFire_ will call
+when a `ContextRefreshedEvent` is published by the _Spring_ container.  _Spring Data for Pivotal GemFire_ registers itself as
+an `ApplicationListener` listening for the `ContextRefreshedEvent`.  When fired, _Spring Data for Pivotal GemFire_ will call
 http://gemfire-90-javadocs.docs.pivotal.io/org/apache/geode/cache/query/QueryService.html#createDefinedIndexes--[QueryService.createDefinedIndexes()].
 
 Defining Indexes and creating them all at once helps promote speed and efficiency when creating Indexes.
@@ -113,21 +113,21 @@ for more details.
 
 == `IgnoreIfExists` and `Override`
 
-Two _Spring Data GemFire_ `Index` configuration options warrant special mention here: `ignoreIfExists` and `override`.
+Two _Spring Data for Pivotal GemFire_ `Index` configuration options warrant special mention here: `ignoreIfExists` and `override`.
 
 These options correspond to the `ignore-if-exists` and `override` attributes on the `&lt;gfe:index&gt;` element
-in _Spring Data GemFire's_ XML schema, respectively.
+in _Spring Data for Pivotal GemFire's_ XML schema, respectively.
 
 WARNING: Make sure you absolutely understand what you are doing before using either of these options.  These options can
 affect the performance and/or resources (e.g. memory) consumed by your application at runtime.  As such, both of
 these options are disabled (i.e. set to `false`) in SDG by default.
 
-NOTE: These options are only available in _Spring Data GemFire_ and exist to workaround known limitations
-with Pivotal GemFire; there are no equivalent options or functionality available in GemFire itself.
+NOTE: These options are only available in _Spring Data for Pivotal GemFire_ and exist to workaround known limitations
+with Pivotal GemFire; there are no equivalent options or functionality available in Pivotal GemFire itself.
 
-Each option significantly differs in behavior and entirely depends on the type of GemFire `Index` _Exception_ thrown.
-This also means that neither option has any effect if a GemFire Index-type _Exception_ is *not* thrown.  These options
-are meant to specifically handle GemFire `IndexExistsExceptions` and `IndexNameConflictExceptions`, which can occur
+Each option significantly differs in behavior and entirely depends on the type of Pivotal GemFire `Index` _Exception_ thrown.
+This also means that neither option has any effect if a Pivotal GemFire Index-type _Exception_ is *not* thrown.  These options
+are meant to specifically handle Pivotal GemFire `IndexExistsExceptions` and `IndexNameConflictExceptions`, which can occur
 for various, sometimes obscure reasons.  But, in general...
 
 * An http://gemfire-90-javadocs.docs.pivotal.io/org/apache/geode/cache/query/IndexExistsException.html[IndexExistsException]
@@ -138,9 +138,9 @@ create an `Index`.
 is thrown when there exists another `Index` with the same name but possibly different definition when attempting to
 create an `Index`.
 
-_Spring Data GemFire's_ default behavior is to *_fail-fast_*, always!  So, neither `Index` _Exception_ will be "handled"
+_Spring Data for Pivotal GemFire's_ default behavior is to *_fail-fast_*, always!  So, neither `Index` _Exception_ will be "handled"
 by default; these `Index` _Exceptions_ are simply wrapped in a SDG `GemfireIndexException` and rethrown.  If you wish
-for _Spring Data GemFire_ to handle them for you, then you can set either of these `Index` bean definition options.
+for _Spring Data for Pivotal GemFire_ to handle them for you, then you can set either of these `Index` bean definition options.
 
 `IgnoreIfExists` always takes *precedence* over `Override`, primarily because it uses less resources given it returns
 the "existing" `Index` in both exceptional cases.
@@ -152,10 +152,10 @@ then the `Index` that would have been created by this `Index` bean definition / 
 and the "existing" `Index` will be returned.
 
 There is very little consequence in returning the "existing" `Index` since the `Index` "definition" is the same,
-as deemed by GemFire itself, *not* SDG.
+as deemed by Pivotal GemFire itself, *not* SDG.
 
 However, this also means that *no* `Index` with the "`name`" specified in your `Index` bean definition / declaration
-will "actually" exist from GemFire's perspective either (i.e. with
+will "actually" exist from Pivotal GemFire's perspective either (i.e. with
 http://gemfire-90-javadocs.docs.pivotal.io/org/apache/geode/cache/query/QueryService.html#getIndexes--[QueryService.getIndexes()]).
 Therefore, you should be careful when writing OQL query statements that use _Query Hints_, especially _Hints_ that refer
 to the application `Index` being "*ignored*".  Those _Query Hints_ will need to be changed.
@@ -173,7 +173,7 @@ this might not be the case.  So, make sure you verify.
 
 NOTE: SDG makes a best effort to inform the user when the `Index` being ignored is significantly different
 in its definition from the "existing" `Index`.  However, in order for SDG to accomplish this, it must be able to "find"
-the existing `Index`, which is looked up using the GemFire API (the only means available).
+the existing `Index`, which is looked up using the Pivotal GemFire API (the only means available).
 
 
 === `Override` Behavior
@@ -182,7 +182,7 @@ When an `IndexExistsException` is thrown and `override` is set to `true` (or `&l
 the `Index` is effectively "_renamed_".  Remember, `IndexExistsExceptions` are thrown when multiple Indexes exist,
 all having the same "definition" but different "names".
 
-_Spring Data GemFire_ can only accomplish this using GemFire's API, by first "_removing_" the "existing" `Index`
+_Spring Data for Pivotal GemFire_ can only accomplish this using Pivotal GemFire's API, by first "_removing_" the "existing" `Index`
 and then "_recreating_" the `Index` with the *new* name.  It is possible that either the remove or subsequent
 create invocation could fail.  There is no way to execute both actions atomically and rollback this joint operation
 if either fails.
@@ -197,7 +197,7 @@ is thrown.
 
 If so, SDG is *smart* and will just return the "existing" Index as is, even on `override`.  There is no harm in this
 since both the "name" and the "definition" are exactly the same.  Of course, SDG can only accomplish this when
-SDG is able to "find" the "existing" `Index`, which is dependent on GemFire's APIs.  If it cannot find it,
+SDG is able to "find" the "existing" `Index`, which is dependent on Pivotal GemFire's APIs.  If it cannot find it,
 nothing happens and a SDG `GemfireIndexException` is thrown wrapping the `IndexNameConflictException`.
 
 However, when the "definition" of the "existing" `Index` is different, then SDG will attempt to "_recreate_" the `Index`
@@ -207,31 +207,31 @@ and make sure the `Index` definition matches your expectations and application r
 === How does `IndexNameConflictExceptions` actually happen?
 
 It is probably not all that uncommon for `IndexExistsExceptions` to be thrown, especially when
-multiple configuration sources are used to configure GemFire (e.g. _Spring Data GemFire_, GemFire _Cluster Config_,
-maybe GemFire native `cache.xml`, the API, etc, etc).  You should definitely prefer 1 configuration method here
+multiple configuration sources are used to configure Pivotal GemFire (e.g. _Spring Data for Pivotal GemFire_, Pivotal GemFire _Cluster Config_,
+maybe Pivotal GemFire native `cache.xml`, the API, etc, etc).  You should definitely prefer 1 configuration method here
 and stick with it.
 
 _However, when does an `IndexNameConflictException` get thrown?_
 
 One particular case is an `Index` defined on a `PARTITION` _Region_ (PR).  When an `Index` is defined on
-a `PARTITION` _Region_ (e.g. "X"), GemFire distributes the `Index` definition (and name) to other peer members
+a `PARTITION` _Region_ (e.g. "X"), Pivotal GemFire distributes the `Index` definition (and name) to other peer members
 in the cluster that also host the same `PARTITION` _Region_ (i.e. "X").  The distribution of this `Index` definition
 to and subsequent creation of this `Index` by peer members on a "need-to-know" basis (i.e. those hosting the same PR)
 is performed asynchronously.
 
-During this window of time, it is possible that these "pending" PR `Indexes` will not be identifiable by GemFire,
+During this window of time, it is possible that these "pending" PR `Indexes` will not be identifiable by Pivotal GemFire,
 such as with a call to http://gemfire-90-javadocs.docs.pivotal.io/org/apache/geode/cache/query/QueryService.html#getIndexes--[QueryService.getIndexes()]
 or with http://gemfire-90-javadocs.docs.pivotal.io/org/apache/geode/cache/query/QueryService.html#getIndexes-org.apache.geode.cache.Region-[QueryService.getIndexes(:Region)],
 or even with http://gemfire-90-javadocs.docs.pivotal.io/org/apache/geode/cache/query/QueryService.html#getIndex-org.apache.geode.cache.Region-java.lang.String-[QueryService.getIndex(:Region, indexName:String)].
 
-As such, the only way for SDG or other GemFire cache client applications (not involving _Spring_) to know for sure,
+As such, the only way for SDG or other Pivotal GemFire cache client applications (not involving _Spring_) to know for sure,
 is to just attempt to create the `Index`.  If it fails with either an `IndexNameConflictException`,
 or even an `IndexExistsException`, then you will know.  This is because the `QueryService` `Index` creation waits on
-"pending" `Index` definitions, where as the other GemFire API calls do not.
+"pending" `Index` definitions, where as the other Pivotal GemFire API calls do not.
 
 In any case, SDG makes a best effort and attempts to inform the user what has or is happening along with
-the corrective action.  Given all GemFire `QueryService.createIndex(..)` methods are synchronous, "blocking" operations,
-then the state of GemFire should be consistent and accessible after either of these Index-type _Exceptions_ are thrown,
+the corrective action.  Given all Pivotal GemFire `QueryService.createIndex(..)` methods are synchronous, "blocking" operations,
+then the state of Pivotal GemFire should be consistent and accessible after either of these Index-type _Exceptions_ are thrown,
 in which case, SDG can inspect the state of the system and respond/act accordingly, based on the user's
 desired configuration.
 

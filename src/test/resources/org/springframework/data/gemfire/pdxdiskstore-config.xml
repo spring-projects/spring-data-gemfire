@@ -29,7 +29,7 @@
 	</bean>
 
 	<!--
-		NOTE if the GemFire Disk Stores are declared/defined in the right order inside this Spring application context
+		NOTE if the Pivotal GemFireDisk Stores are declared/defined in the right order inside this Spring application context
 		configuration file, then the test passes since the PDX Disk Store gets created before the Data Disk Store that
 		is used by the Region to store data with the PDX typed key and value objects.
 	  -->

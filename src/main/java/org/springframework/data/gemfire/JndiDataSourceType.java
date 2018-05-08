@@ -36,10 +36,10 @@ public enum JndiDataSourceType {
 	private final String name;
 
 	/**
-	 * Constructs an instance of the JndiDataSourceType enum initialized with the specified name used by GemFire to
+	 * Constructs an instance of the JndiDataSourceType enum initialized with the specified name used by Pivotal GemFire to
 	 * specify supported JNDI DataSource implementations.
 	 *
-	 * @param name the GemFire named JNDI DataSource implementation.
+	 * @param name the Pivotal GemFire named JNDI DataSource implementation.
 	 */
 	JndiDataSourceType(final String name) {
 		Assert.hasText(name, "The JNDI DataSource Type 'name' must be specified!");
@@ -47,11 +47,11 @@ public enum JndiDataSourceType {
 	}
 
 	/**
-	 * Returns a JndiDataSourceType enumerated value based on the GemFire preferred name for the supported JNDI,
+	 * Returns a JndiDataSourceType enumerated value based on the Pivotal GemFire preferred name for the supported JNDI,
 	 * DataSource implementation, ignoring case and all extra leading/trailing whitespace.
 	 *
-	 * @param name the GemFire named JNDI DataSource implementation.
-	 * @return the JndiDataSourceType enumerated value matching the given GemFire name used for the supported JNDI,
+	 * @param name the Pivotal GemFire named JNDI DataSource implementation.
+	 * @return the JndiDataSourceType enumerated value matching the given Pivotal GemFire name used for the supported JNDI,
 	 * DataSource implementation, or null if not match was found.
 	 * @see #values()
 	 * @see #isMatch(JndiDataSourceType, String)
@@ -67,11 +67,11 @@ public enum JndiDataSourceType {
 	}
 
 	/**
-	 * Determines whether the specified JndiDataSourceType enum and the given, supported GemFire 'named',
+	 * Determines whether the specified JndiDataSourceType enum and the given, supported Pivotal GemFire 'named',
 	 * JNDI DataSource implementation are a match.
 	 *
 	 * @param jndiDataSourceType the given JndiDataSourceType enum used in the match.
-	 * @param name the specified GemFire "named" JNDI DataSource implementation.
+	 * @param name the specified Pivotal GemFire "named" JNDI DataSource implementation.
 	 * @return a boolean value indicating whether the given JndiDataSourceType enumerated value matched the given name.
 	 * @see java.lang.String#equalsIgnoreCase(String)
 	 * @see org.springframework.util.StringUtils#trimWhitespace(String)
@@ -83,16 +83,16 @@ public enum JndiDataSourceType {
 	}
 
 	/**
-	 * Gets the GemFire name of the support JNDI DataSource implementation type.
+	 * Gets the Pivotal GemFire name of the support JNDI DataSource implementation type.
 	 *
-	 * @return the GemFire named JNDI DataSource implementation.
+	 * @return the Pivotal GemFire named JNDI DataSource implementation.
 	 */
 	public String getName() {
 		return name;
 	}
 
 	/**
-	 * Returns a String describing this JNDI DataSource implementation based on the GemFire supported names.
+	 * Returns a String describing this JNDI DataSource implementation based on the Pivotal GemFire supported names.
 	 *
 	 * @return a String description for this JNDI DataSource (implementation) type.
 	 */

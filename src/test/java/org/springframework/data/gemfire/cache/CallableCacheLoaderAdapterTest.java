@@ -38,7 +38,7 @@ import org.mockito.stubbing.Answer;
 
 /**
  * Unit tests to test the adaption of the {@link java.util.concurrent.Callable}
- * into GemFire's {@link org.apache.geode.cache.CacheLoader} interface.
+ * into Pivotal GemFire's {@link org.apache.geode.cache.CacheLoader} interface.
  *
  * @author John Blum
  * @see org.junit.Rule

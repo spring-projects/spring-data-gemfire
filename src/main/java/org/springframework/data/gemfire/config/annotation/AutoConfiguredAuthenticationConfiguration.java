@@ -33,7 +33,7 @@ import org.springframework.util.StringUtils;
 /**
  * The {@link AutoConfiguredAuthenticationConfiguration} class is a Spring {@link Configuration @Configuration} class
  * that auto-configures Pivotal GemFire / Apache Geode Authentication by providing a implementation
- * of the {@link org.apache.geode.security.AuthInitialize} interface along with setting the necessary GemFire / Geode
+ * of the {@link org.apache.geode.security.AuthInitialize} interface along with setting the necessary Pivotal GemFire / Geode
  * properties.
  *
  * @author John Blum

@@ -31,7 +31,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * DistributedSystemUtils is an abstract utility class for working with the GemFire DistributedSystem.
+ * DistributedSystemUtils is an abstract utility class for working with the Pivotal GemFire DistributedSystem.
  *
  * @author John Blum
  * @see org.apache.geode.cache.GemFireCache
