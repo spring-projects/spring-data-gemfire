@@ -36,7 +36,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * The {@link GemFireAsLastResourceConfiguration} class is a Spring {@link Configuration @Configuration}
- * annotated class used to configure the GemFire "Last Resource" Spring Data GemFire {@link Aspect Aspects}.
+ * annotated class used to configure the Pivotal GemFire "Last Resource" SDG {@link Aspect Aspects}.
  *
  * @author John Blum
  * @see org.apache.geode.cache.GemFireCache
@@ -50,7 +50,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * @see org.springframework.data.gemfire.config.annotation.support.GemFireAsLastResourceConnectionAcquiringAspect
  * @see org.springframework.data.gemfire.config.annotation.support.GemFireAsLastResourceConnectionClosingAspect
  * @see org.springframework.transaction.annotation.EnableTransactionManagement
- * @since 1.0.0
+ * @since 2.0.0
  */
 @Configuration
 @SuppressWarnings("unused")

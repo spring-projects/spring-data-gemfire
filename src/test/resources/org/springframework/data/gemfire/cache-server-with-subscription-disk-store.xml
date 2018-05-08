@@ -21,7 +21,7 @@
 		<gfe:disk-dir location="./gemfire/subscription-disk-store" max-size="50"/>
 	</gfe:disk-store>
 
-	<!-- let the GemFire Cache Server port default to 40404 -->
+	<!-- let the Pivotal GemFireCache Server port default to 40404 -->
 	<gfe:cache-server id="testCacheServer" auto-startup="true" bind-address="localhost" groups="test-server"
 					  max-connections="1">
 		<gfe:subscription-config eviction-type="ENTRY" disk-store="testSubscriptionDiskStore" capacity="512"/>

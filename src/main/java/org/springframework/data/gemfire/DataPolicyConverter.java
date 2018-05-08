@@ -20,7 +20,7 @@ import org.apache.geode.cache.DataPolicy;
 import org.springframework.core.convert.converter.Converter;
 
 /**
- * The DataPolicyConverter class converts String values into GemFire DataPolicy enumerated values.
+ * The DataPolicyConverter class converts String values into Pivotal GemFire DataPolicy enumerated values.
  *
  * @author David Turanski
  * @author John Blum

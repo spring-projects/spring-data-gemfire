@@ -1,5 +1,5 @@
 /**
- * Base package for Spring GemFire WAN support
+ * Base package for Spring Pivotal GemFire WAN support
  */
 package org.springframework.data.gemfire.wan;
 

@@ -46,9 +46,9 @@ import org.springframework.data.gemfire.config.schema.definitions.RegionDefiniti
 public interface GemfireAdminOperations {
 
 	/**
-	 * Returns a {@link Iterable collection} of {@link Region} names defined on the GemFire Servers in the cluster.
+	 * Returns a {@link Iterable collection} of {@link Region} names defined on the Pivotal GemFire Servers in the cluster.
 	 *
-	 * @return an {@link Iterable} of {@link Region} names defined on the GemFire Servers in the cluster.
+	 * @return an {@link Iterable} of {@link Region} names defined on the Pivotal GemFire Servers in the cluster.
 	 * @see org.apache.geode.cache.Region#getName()
 	 * @see java.lang.Iterable
 	 */

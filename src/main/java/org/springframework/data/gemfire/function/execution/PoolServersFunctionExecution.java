@@ -18,7 +18,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.springframework.util.Assert;
 
 /**
- * Creates a GemFire {@link Execution} using {code}FunctionService.onServers(Pool pool){code}
+ * Creates a Pivotal GemFire {@link Execution} using {code}FunctionService.onServers(Pool pool){code}
  * @author David Turanski
  *
  */

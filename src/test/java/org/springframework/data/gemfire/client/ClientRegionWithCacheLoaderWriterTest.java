@@ -41,7 +41,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * The ClientRegionWithCacheLoaderWriterTest class is a test suite of test cases testing the addition of CacheLoaders
- * and CacheWriters to a client, local Region inside a GemFire Cache.
+ * and CacheWriters to a client, local Region inside a Pivotal GemFireCache.
  *
  * @author John Blum
  * @see org.junit.Test

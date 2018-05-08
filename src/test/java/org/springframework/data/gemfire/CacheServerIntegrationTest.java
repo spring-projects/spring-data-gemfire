@@ -33,8 +33,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
- * The CacheServerIntegrationTest class is a test suite of test cases testing the functionality of GemFire Cache Servers
- * configured using the Spring Data GemFire XML namespace.
+ * The CacheServerIntegrationTest class is a test suite of test cases testing the functionality of Pivotal GemFireCache Servers
+ * configured using the SDG XML namespace.
  *
  * @author John Blum
  * @see org.junit.Test

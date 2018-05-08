@@ -31,10 +31,10 @@ import org.springframework.data.gemfire.GemfireUtils;
 
 /**
  * The {@link EnablePool} annotation configures a Spring {@link org.springframework.context.annotation.Configuration}
- * annotated class with a "named" GemFire client {@link Pool} bean in the application context.
+ * annotated class with a "named" Pivotal GemFire client {@link Pool} bean in the application context.
  *
  * This annotation is used in conjunction with the {@link ClientCacheApplication} annotation to add an additional
- * {@link Pool} to a GemFire cache client application configured with Spring (Data GemFire).
+ * {@link Pool} to a Pivotal GemFire cache client application configured with Spring (Data GemFire).
  *
  * To add more than 1 {@link Pool} to your application, this annotation can be nested in the {@link EnablePools}
  * annotation.
@@ -90,7 +90,7 @@ public @interface EnablePool {
 	int loadConditioningInterval() default PoolFactory.DEFAULT_LOAD_CONDITIONING_INTERVAL;
 
 	/**
-	 * Configures the GemFire {@link org.apache.geode.distributed.Locator Locators} to which
+	 * Configures the Pivotal GemFire {@link org.apache.geode.distributed.Locator Locators} to which
 	 * this cache client will connect.
 	 *
 	 * Use either the {@literal spring.data.gemfire.pool.<poolName>.locators} property
@@ -101,7 +101,7 @@ public @interface EnablePool {
 
 	/**
 	 * A {@link String} containing a comma-delimited list of hosts and ports defining the connection endpoints
-	 * of GemFire Locators in the cluster.
+	 * of Pivotal GemFire Locators in the cluster.
 	 *
 	 * The {@link String} must be formatted as: 'host1[port], host2[port], ..., hostN[port]'.
 	 *
@@ -210,7 +210,7 @@ public @interface EnablePool {
 	String serverGroup() default PoolFactory.DEFAULT_SERVER_GROUP;
 
 	/**
-	 * Configures the GemFire {@link org.apache.geode.cache.server.CacheServer CacheServers} to which
+	 * Configures the Pivotal GemFire {@link org.apache.geode.cache.server.CacheServer CacheServers} to which
 	 * this cache client will connect.
 	 *
 	 * Use either the {@literal spring.data.gemfire.pool.<poolName>.servers} property
@@ -221,7 +221,7 @@ public @interface EnablePool {
 
 	/**
 	 * A {@link String} containing a comma-delimited list of hosts and ports defining the connection endpoints
-	 * of GemFire Servers in the cluster.
+	 * of Pivotal GemFire Servers in the cluster.
 	 *
 	 * The {@link String} must be formatted as: 'host1[port], host2[port], ..., hostN[port]'.
 	 *

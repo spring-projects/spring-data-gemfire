@@ -16,7 +16,7 @@
 package org.springframework.data.gemfire.config.xml;
 
 /**
- * The GemfireConstants class define constants for Spring GemFire component bean names.
+ * The GemfireConstants class define constants for Spring Pivotal GemFire component bean names.
  *
  * @author David Turanski
  * @author John Blum

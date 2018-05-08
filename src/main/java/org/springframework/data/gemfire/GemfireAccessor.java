@@ -43,11 +43,11 @@ public class GemfireAccessor implements InitializingBean {
 	private Region region;
 
 	/**
-	 * Returns the template GemFire Cache Region.
+	 * Returns the template Pivotal GemFire Cache Region.
 	 *
 	 * @param <K> the Region key class type.
 	 * @param <V> the Region value class type.
-	 * @return the GemFire Cache Region.
+	 * @return the Pivotal GemFire Cache Region.
 	 * @see org.apache.geode.cache.Region
 	 */
 	@SuppressWarnings("unchecked")
@@ -56,9 +56,9 @@ public class GemfireAccessor implements InitializingBean {
 	}
 
 	/**
-	 * Sets the template GemFire Cache Region.
+	 * Sets the template Pivotal GemFire Cache Region.
 	 *
-	 * @param region the GemFire Cache Region used by this template.
+	 * @param region the Pivotal GemFire Cache Region used by this template.
 	 * @see org.apache.geode.cache.Region
 	 */
 	public void setRegion(Region<?, ?> region) {
@@ -92,9 +92,9 @@ public class GemfireAccessor implements InitializingBean {
 	}
 
 	/**
-	 * Converts the given GemFire exception to an appropriate exception from the
+	 * Converts the given Pivotal GemFire exception to an appropriate exception from the
 	 * <code>org.springframework.dao</code> hierarchy. Note that this particular implementation
-	 * is called only for GemFire querying exception that do <b>NOT</b> extend from GemFire exception.
+	 * is called only for Pivotal GemFire querying exception that do <b>NOT</b> extend from Pivotal GemFire exception.
 	 * May be overridden in subclasses.
 	 *
 	 * @param ex GemFireException that occurred

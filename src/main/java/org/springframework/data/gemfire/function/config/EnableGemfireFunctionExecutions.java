@@ -23,7 +23,7 @@ import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Import;
 
 /**
- * Enables classpath scanning for interfaces annotated as GemFire function executions (function invocations).
+ * Enables classpath scanning for interfaces annotated as Pivotal GemFire function executions (function invocations).
  * These include interfaces annotated with one of {code} @OnRegion, @OnServer, @OnServers, @OnMember, @OnMembers{code}
  *
  * @author David Turanski

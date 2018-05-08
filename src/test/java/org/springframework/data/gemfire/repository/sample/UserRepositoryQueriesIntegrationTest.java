@@ -34,11 +34,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * The RepositoryQueriesTest class is a test suite of test cases testing the GemFire Query capability of Spring Data
- * GemFire Repositories.
+ * The RepositoryQueriesTest class is a test suite of test cases testing the Pivotal GemFireQuery capability of Spring Data
+ * Pivotal GemFireRepositories.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -47,7 +47,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @since 1.3.3
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration("userRepositoryQueriesIntegrationTest.xml")
 @SuppressWarnings("unused")
 public class UserRepositoryQueriesIntegrationTest {
@@ -93,7 +93,8 @@ public class UserRepositoryQueriesIntegrationTest {
 
 	@Before
 	public void setup() {
-		assertNotNull("The 'Users' GemFire Cache Region cannot be null!", users);
+
+		assertNotNull("The 'Users' Cache Region cannot be null!", users);
 
 		if (users.isEmpty()) {
 			userRepository.save(createUser("blumj", true));

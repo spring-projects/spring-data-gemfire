@@ -20,7 +20,7 @@ import org.apache.geode.cache.Scope;
 import org.springframework.util.StringUtils;
 
 /**
- * The ScopeType enum is an enumeration of GemFire Scopes.
+ * The ScopeType enum is an enumeration of Pivotal GemFire Scopes.
  *
  * @author John Blum
  * @see org.apache.geode.cache.Scope
@@ -36,9 +36,9 @@ public enum ScopeType {
 	private final Scope gemfireScope;
 
 	/**
-	 * Constructs an instance of the ScopeType initialized with a matching GemFire Scope.
+	 * Constructs an instance of the ScopeType initialized with a matching Pivotal GemFire Scope.
 	 *
-	 * @param gemfireScope the GemFire Scope paired with this enumerated value.
+	 * @param gemfireScope the Pivotal GemFire Scope paired with this enumerated value.
 	 * @see org.apache.geode.cache.Scope
 	 */
 	ScopeType(final Scope gemfireScope) {
@@ -46,11 +46,11 @@ public enum ScopeType {
 	}
 
 	/**
-	 * Null-safe operation to extract the GemFire Scope from the given ScopeType enum value, or null if the provided
+	 * Null-safe operation to extract the Pivotal GemFire Scope from the given ScopeType enum value, or null if the provided
 	 * scopeType is null.
 	 *
-	 * @param scopeType the ScopeType enumerated value from which to extract the GemFire Scope.
-	 * @return the paired GemFire Scope from the given ScopeType or null if scopeType is null.
+	 * @param scopeType the ScopeType enumerated value from which to extract the Pivotal GemFire Scope.
+	 * @return the paired Pivotal GemFire Scope from the given ScopeType or null if scopeType is null.
 	 * @see org.apache.geode.cache.Scope
 	 * @see #getScope()
 	 */
@@ -59,10 +59,10 @@ public enum ScopeType {
 	}
 
 	/**
-	 * Returns a ScopeType enumerated value for the given a GemFire Scope.
+	 * Returns a ScopeType enumerated value for the given a Pivotal GemFire Scope.
 	 *
-	 * @param scope the GemFire Scope used to lookup and match the appropriate ScopeType.
-	 * @return a ScopeType for the given GemFire Scope or null if no match was found.
+	 * @param scope the Pivotal GemFire Scope used to lookup and match the appropriate ScopeType.
+	 * @return a ScopeType for the given Pivotal GemFire Scope or null if no match was found.
 	 * @see org.apache.geode.cache.Scope
 	 * @see #getScope()
 	 * @see #values()
@@ -78,10 +78,10 @@ public enum ScopeType {
 	}
 
 	/**
-	 * Returns a ScopeType enumerated value given the case-insensitive name of the GemFire Scope.
+	 * Returns a ScopeType enumerated value given the case-insensitive name of the Pivotal GemFire Scope.
 	 *
 	 * @param name a String name describing the ScopeType enum value.
-	 * @return a ScopeType for the given case-insensitive, named GemFire Scope.
+	 * @return a ScopeType for the given case-insensitive, named Pivotal GemFire Scope.
 	 * @see java.lang.String#equalsIgnoreCase(String)
 	 * @see #values()
 	 * @see #name()
@@ -112,9 +112,9 @@ public enum ScopeType {
 	}
 
 	/**
-	 * Gets the matching GemFire Scope for this enumerated value.
+	 * Gets the matching Pivotal GemFire Scope for this enumerated value.
 	 *
-	 * @return a GemFire Scope for this enumerated value.
+	 * @return a Pivotal GemFire Scope for this enumerated value.
 	 * @see org.apache.geode.cache.Scope
 	 */
 	public Scope getScope() {

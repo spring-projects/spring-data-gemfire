@@ -26,7 +26,7 @@ import org.springframework.core.type.AnnotationMetadata;
 
 /**
  * The {@link DiskStoresConfiguration} class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
- * used to register multiple GemFire/Geode {@link org.apache.geode.cache.DiskStore} bean definitions.
+ * used to register multiple Pivotal GemFire/Apache Geode {@link org.apache.geode.cache.DiskStore} bean definitions.
  *
  * @author John Blum
  * @see org.springframework.beans.factory.support.BeanDefinitionRegistry

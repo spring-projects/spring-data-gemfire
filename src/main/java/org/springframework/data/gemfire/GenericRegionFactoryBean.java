@@ -18,14 +18,14 @@ package org.springframework.data.gemfire;
 
 /**
  * The GenericRegionFactoryBean class is an extension of the abstract, base RegionFactoryBean class enabling developers
- * to define a GemFire Cache Region with defaults.
+ * to define a Pivotal GemFire Cache Region with defaults.
  *
  * The defaults for DataPolicy is NORMAL and Scope is DISTRIBUTED_NO_ACK, effectively creating a "non-replicate",
  * Distributed Region.
  *
  * This class enables developers to create various non-strongly-typed Regions (e.g. PARTITION, REPLICATE) based on
  * various combinations of the DataPolicy, Scope and Subscription settings as defined in the Region Types section
- * of the GemFire User Guide (see link below).  How GemFire Regions receive and distribute entry updates
+ * of the Pivotal GemFire User Guide (see link below).  How Pivotal GemFire Regions receive and distribute entry updates
  * is defined in the Storage and Distribution Options section.
  *
  * Note, it is generally better to define strong-typed Regions (e.g. PARTITION with PartitionedRegionFactoryBean)

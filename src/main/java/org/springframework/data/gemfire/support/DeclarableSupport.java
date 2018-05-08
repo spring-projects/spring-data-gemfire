@@ -25,7 +25,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.data.gemfire.RegionFactoryBean;
 
 /**
- * Convenience class for Spring-aware GemFire {@link Declarable} components.  Provides subclasses with a reference
+ * Convenience class for Spring-aware Pivotal GemFire {@link Declarable} components.  Provides subclasses with a reference
  * to the current Spring {@link BeanFactory} in orde to perform Spring bean lookups or resource loading.
  *
  * Note, in most cases, the developer should just declare the same components as Spring beans in the Spring container,

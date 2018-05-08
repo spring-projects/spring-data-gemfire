@@ -1,17 +1,17 @@
 [[bootstrap:function]]
 = Configuring the Function Service
 
-_Spring Data GemFire_ provides <<function-annotations,annotation>> support for implementing and registering
+_Spring Data for Pivotal GemFire_ provides <<function-annotations,annotation>> support for implementing and registering
 Pivotal GemFire Functions.
 
-_Spring Data GemFire_ also provides namespace support for registering Pivotal GemFire
+_Spring Data for Pivotal GemFire_ also provides namespace support for registering Pivotal GemFire
 http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/execute/Function.html[Functions]
 for remote Function execution.
 
 Please refer to Pivotal GemFire' http://geode.apache.org/docs/guide/11/developing/function_exec/chapter_overview.html[documentation]
 for more information on the Function execution framework.
 
-GemFire Functions are declared as _Spring_ beans and must implement the `org.apache.geode.cache.execute.Function`
+Pivotal GemFire Functions are declared as _Spring_ beans and must implement the `org.apache.geode.cache.execute.Function`
 interface or extend `org.apache.geode.cache.execute.FunctionAdapter`.
 
 The namespace uses a familiar pattern to declare functions:

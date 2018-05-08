@@ -76,7 +76,7 @@ import org.springframework.dao.TypeMismatchDataAccessException;
 import org.springframework.util.ClassUtils;
 
 /**
- * Helper class featuring methods for GemFire Cache or Region handling.
+ * Helper class featuring methods for Pivotal GemFire Cache or Region handling.
  *
  * @author Costin Leau
  */
@@ -297,7 +297,7 @@ public abstract class GemfireCacheUtils {
 	/**
 	 * Converts the given (unchecked) Gemfire exception to an appropriate one from the
 	 * <code>org.springframework.dao</code> hierarchy. This method exists to handle backwards compatibility
-	 * for exceptions that had their parents changed in GemFire 6.5.
+	 * for exceptions that had their parents changed in Pivotal GemFire 6.5.
 	 *
 	 * @param ex Gemfire unchecked exception
 	 * @return new the corresponding DataAccessException instance
@@ -309,7 +309,7 @@ public abstract class GemfireCacheUtils {
 	/**
 	 * Converts the given (unchecked) Gemfire exception to an appropriate one from the
 	 * <code>org.springframework.dao</code> hierarchy. This method exists to handle backwards compatibility
-	 * for exceptions that had their parents changed in GemFire 6.5.
+	 * for exceptions that had their parents changed in Pivotal GemFire 6.5.
 	 *
 	 * @param ex Gemfire unchecked exception
 	 * @return new the corresponding DataAccessException instance
@@ -319,7 +319,7 @@ public abstract class GemfireCacheUtils {
 	}
 
 	/**
-	 * Package protected method for detecting CqInvalidException which has been removed in GemFire 6.5 GA.
+	 * Package protected method for detecting CqInvalidException which has been removed in Pivotal GemFire 6.5 GA.
 	 */
 	static boolean isCqInvalidException(RuntimeException ex) {
 		return (CQ_EXCEPTION_CLASS != null && CQ_EXCEPTION_CLASS.isAssignableFrom(ex.getClass()));

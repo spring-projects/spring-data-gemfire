@@ -41,7 +41,7 @@ import org.springframework.core.annotation.AliasFor;
 
 /**
  * The {@link EnableDiskStore} annotation marks a Spring {@link Configuration @Configuration} annotated {@link Class}
- * to configure a single GemFire/Geode {@link org.apache.geode.cache.DiskStore} bean in the Spring application context
+ * to configure a single Pivotal GemFire/Apache Geode {@link org.apache.geode.cache.DiskStore} bean in the Spring application context
  * in which to persist or overflow data from 1 or more cache {@link org.apache.geode.cache.Region Regions}.
  *
  * @author John Blum

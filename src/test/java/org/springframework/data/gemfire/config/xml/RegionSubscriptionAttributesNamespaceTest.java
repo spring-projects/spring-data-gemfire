@@ -32,7 +32,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * The RegionSubscriptionAttributesNamespaceTest class is a test suite of test cases testing the contract
- * and functionality of declaring and defining Subscription Attributes for a Region in the Spring Data GemFire
+ * and functionality of declaring and defining Subscription Attributes for a Region in the SDG
  * XML namespace (XSD) configuration meta-data.
  *
  * @author John Blum

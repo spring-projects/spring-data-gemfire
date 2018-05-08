@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
 
 /**
  * {@link UsesGemFireProperties} is a meta-annotation used to mark other SDG {@link Annotation Annotations}
- * that uses GemFire properties to configure the Spring-based GemFire cache instance.
+ * that uses Pivotal GemFire properties to configure the Spring-based Pivotal GemFire cache instance.
  *
  * @author John Blum
  * @see java.lang.annotation.Annotation

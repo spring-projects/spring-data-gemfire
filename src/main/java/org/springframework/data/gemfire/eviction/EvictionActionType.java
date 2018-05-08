@@ -19,7 +19,7 @@ package org.springframework.data.gemfire.eviction;
 import org.apache.geode.cache.EvictionAction;
 
 /**
- * The EvictionActionType enum is an enumeration of all the GemFire EvictionAction values.
+ * The EvictionActionType enum is an enumeration of all the Pivotal GemFire EvictionAction values.
  *
  * @author John Blum
  * @see org.apache.geode.cache.EvictionAction
@@ -36,9 +36,9 @@ public enum EvictionActionType {
 	private final EvictionAction evictionAction;
 
 	/**
-	 * Constructs an instance of the EvictionActionType enum initialized with the matching GemFire EvictionAction.
+	 * Constructs an instance of the EvictionActionType enum initialized with the matching Pivotal GemFire EvictionAction.
 	 *
-	 * @param evictionAction the matching GemFire EvictionAction value for this enumerated value.
+	 * @param evictionAction the matching Pivotal GemFire EvictionAction value for this enumerated value.
 	 * @see org.apache.geode.cache.EvictionAction
 	 */
 	EvictionActionType(final EvictionAction evictionAction) {
@@ -46,11 +46,11 @@ public enum EvictionActionType {
 	}
 
 	/**
-	 * A null-safe operation to extract the GemFire EvictionAction from the EvictionActionType enumerated value.
+	 * A null-safe operation to extract the Pivotal GemFire EvictionAction from the EvictionActionType enumerated value.
 	 *
 	 * @param evictionActionType the EvictionActionType enumerated value from which to extract
-	 * the matching GemFire EvictionAction value.
-	 * @return a GemFire EvictionAction given a EvictionActionType enumerated value.
+	 * the matching Pivotal GemFire EvictionAction value.
+	 * @return a Pivotal GemFire EvictionAction given a EvictionActionType enumerated value.
 	 * @see #getEvictionAction()
 	 */
 	public static EvictionAction getEvictionAction(final EvictionActionType evictionActionType) {
@@ -58,10 +58,10 @@ public enum EvictionActionType {
 	}
 
 	/**
-	 * Returns an EvictionActionType enumerated value matching the given GemFire EvictionAction.
+	 * Returns an EvictionActionType enumerated value matching the given Pivotal GemFire EvictionAction.
 	 *
-	 * @param evictionAction the GemFire EvictionAction used to lookup and match the appropriate EvictionActionType.
-	 * @return an EvictionActionType enumerated value matching the given GemFire EvictionAction
+	 * @param evictionAction the Pivotal GemFire EvictionAction used to lookup and match the appropriate EvictionActionType.
+	 * @return an EvictionActionType enumerated value matching the given Pivotal GemFire EvictionAction
 	 * or null if no match was found.
 	 * @see org.apache.geode.cache.EvictionAction
 	 * @see #getEvictionAction()
@@ -96,9 +96,9 @@ public enum EvictionActionType {
 	}
 
 	/**
-	 * Gets the matching GemFire EvictionAction represented by this enumerated value.
+	 * Gets the matching Pivotal GemFire EvictionAction represented by this enumerated value.
 	 *
-	 * @return the GemFire EvictionAction represented by this enum.
+	 * @return the Pivotal GemFire EvictionAction represented by this enum.
 	 * @see org.apache.geode.cache.EvictionAction
 	 */
 	public EvictionAction getEvictionAction() {

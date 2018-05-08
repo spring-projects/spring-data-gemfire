@@ -53,7 +53,7 @@ import org.springframework.util.StringUtils;
 /**
  * The {@link IndexConfiguration} class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
  * and extension of {@link EntityDefinedRegionsConfiguration} used in the {@link EnableIndexing} annotation
- * to dynamically create GemFire/Geode {@link org.apache.geode.cache.Region} {@link Index Indexes} based on
+ * to dynamically create Pivotal GemFire/Apache Geode {@link org.apache.geode.cache.Region} {@link Index Indexes} based on
  * {@link GemfirePersistentEntity} {@link GemfirePersistentProperty} annotations.
  *
  * @author John Blum

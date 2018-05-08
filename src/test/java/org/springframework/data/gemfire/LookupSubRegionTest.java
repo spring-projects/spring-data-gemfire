@@ -30,7 +30,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * The LookupSubRegionTest class is a test suite of test cases testing the contract and functionality of Region lookups
- * using Spring Data GemFire configuration and GemFire native cache.xml.
+ * using SDG configuration and Pivotal GemFirenative cache.xml.
  *
  * @author John Blum
  * @see org.junit.Test

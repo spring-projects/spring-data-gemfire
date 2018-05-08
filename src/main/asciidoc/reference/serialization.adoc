@@ -1,7 +1,7 @@
 [[serialization]]
 = Working with Pivotal GemFire Serialization
 
-To improve overall performance of the Pivotal GemFire In-memory Data Grid, GemFire supports a dedicated
+To improve overall performance of the Pivotal GemFire In-memory Data Grid, Pivotal GemFire supports a dedicated
 serialization protocol, called PDX, that is both faster and offers more compact results over
 standard Java serialization in addition to works transparently across various language platforms (Java, C++, .NET).
 Please refer to
@@ -10,7 +10,7 @@ and
 https://cwiki.apache.org/confluence/display/GEODE/PDX+Serialization+Internals[PDX Serialization Internals]
 for more details.
 
-This chapter discusses the various ways in which _Spring Data GemFire_ simplifies and improves GemFire's
+This chapter discusses the various ways in which _Spring Data for Pivotal GemFire_ simplifies and improves Pivotal GemFire's
 custom serialization in Java.
 
 [[serialization:wiring]]
@@ -19,9 +19,9 @@ custom serialization in Java.
 It is fairly common for serialized objects to have transient data. Transient data is often dependent on the system
 or environment where it lives at a certain point in time.  For instance, a `DataSource` is environment specific.
 Serializing such information is useless, and potentially even dangerous, since it is local to a certain VM/machine.
-For such cases, _Spring Data GemFire_ offers a special
+For such cases, _Spring Data for Pivotal GemFire_ offers a special
 http://geode.apache.org/releases/latest/javadoc/org/apache/geode/Instantiator.html[`Instantiator`]
-that performs wiring for each new instance created by GemFire during deserialization.
+that performs wiring for each new instance created by Pivotal GemFire during deserialization.
 
 Through such a mechanism, one can rely on the _Spring_ container to inject and manage certain dependencies
 making it easy to split transient from persistent data and have *rich domain objects* in a transparent manner.
@@ -46,16 +46,16 @@ To use this SDG `Instantiator`, simply declare it as a bean:
 ----
 
 During the _Spring_ container startup, once it is being initialized, the `Instantiator` will, by default, register
-itself with the GemFire serialization system and perform wiring on all instances of `SomeDataSerializableClass`
-created by GemFire during deserialization.
+itself with the Pivotal GemFire serialization system and perform wiring on all instances of `SomeDataSerializableClass`
+created by Pivotal GemFire during deserialization.
 
 [[serialization:instance-generator]]
 == Auto-generating custom `Instantiators`
 
 For data intensive applications, a large number of instances might be created on each machine as data flows in.
-Out-of-the-box, GemFire uses reflection to create new types, but for some scenarios, this might prove to be expensive.
+Out-of-the-box, Pivotal GemFire uses reflection to create new types, but for some scenarios, this might prove to be expensive.
 As always, it is good to perform profiling to quantify whether this is the case or not.  For such cases,
-_Spring Data GemFire_ allows the automatic generation of `Instatiator` classes which instantiate a new type
+_Spring Data for Pivotal GemFire_ allows the automatic generation of `Instatiator` classes which instantiate a new type
 (using the default constructor) without the use of reflection:
 
 [source,xml]
@@ -71,5 +71,5 @@ _Spring Data GemFire_ allows the automatic generation of `Instatiator` classes w
 ----
 
 The definition above, automatically generates two `Instantiators` for two classes, namely `CustomTypeA`
-and `CustomTypeB` and registers them with GemFire, under user id `1025` and `1026`. The two `Instantiators` avoid
+and `CustomTypeB` and registers them with Pivotal GemFire, under user id `1025` and `1026`. The two `Instantiators` avoid
 the use of reflection and create the instances directly through Java code.

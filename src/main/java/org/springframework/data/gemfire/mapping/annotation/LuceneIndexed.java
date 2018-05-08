@@ -31,8 +31,8 @@ import org.springframework.data.gemfire.mapping.GemfirePersistentProperty;
 
 /**
  * The {@link LuceneIndexed} annotation is used to index a {@link GemfirePersistentEntity}
- * {@link GemfirePersistentProperty}, creating a GemFire/Geode {@link LuceneIndex}
- * on a GemFire/Geode {@link org.apache.geode.cache.Region}.
+ * {@link GemfirePersistentProperty}, creating a Pivotal GemFire/Apache Geode {@link LuceneIndex}
+ * on a Pivotal GemFire/Apache Geode {@link org.apache.geode.cache.Region}.
  *
  * @author John Blum
  * @see org.springframework.core.annotation.AliasFor

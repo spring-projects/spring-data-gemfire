@@ -25,7 +25,7 @@ import org.springframework.data.util.TypeInformation;
 
 /**
  * Spring Data {@link AbstractMappingContext} implementation defining entity mapping meta-data
- * for GemFire persistent entities.
+ * for Pivotal GemFire persistent entities.
  *
  * @author Oliver Gierke
  * @author John Blum
@@ -40,7 +40,7 @@ public class GemfireMappingContext extends AbstractMappingContext<GemfirePersist
 	 */
 	public GemfireMappingContext() {
 		// Technically, the following call is not Thread-safe (the "this" reference escapes), but then MappingContext
-		// makes no Thread-safety guarantees, even though, most likely, and especially in GemFire's case,
+		// makes no Thread-safety guarantees, even though, most likely, and especially in Pivotal GemFire's case,
 		// the MappingContext will be used in a highly concurrent context (modeled after SD MongoDB for consistency)!
 		setSimpleTypeHolder(new GemfireSimpleTypeHolder());
 	}

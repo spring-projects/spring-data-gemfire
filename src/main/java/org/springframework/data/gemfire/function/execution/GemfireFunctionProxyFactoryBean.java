@@ -57,7 +57,7 @@ public class GemfireFunctionProxyFactoryBean implements BeanClassLoaderAware, Fa
 
 	/**
 	 * @param functionExecutionInterface the proxied interface
-	 * @param gemfireFunctionOperations an interface used to delegate the function invocation (typically a GemFire function template)
+	 * @param gemfireFunctionOperations an interface used to delegate the function invocation (typically a Pivotal GemFire function template)
 	 */
 	public GemfireFunctionProxyFactoryBean(Class<?> functionExecutionInterface, GemfireFunctionOperations gemfireFunctionOperations) {
 
@@ -82,7 +82,7 @@ public class GemfireFunctionProxyFactoryBean implements BeanClassLoaderAware, Fa
 	public Object invoke(MethodInvocation invocation) throws Throwable {
 
 		if (AopUtils.isToStringMethod(invocation.getMethod())) {
-			return "GemFire Function Proxy for service interface [" + this.functionExecutionInterface + "]";
+			return "Pivotal GemFire Function Proxy for service interface [" + this.functionExecutionInterface + "]";
 		}
 
 		if (logger.isDebugEnabled()) {

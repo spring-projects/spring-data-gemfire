@@ -25,7 +25,7 @@ import org.springframework.cache.support.SimpleValueWrapper;
 import org.springframework.util.Assert;
 
 /**
- * Spring Framework {@link Cache} implementation backed by a GemFire {@link Region}.
+ * Spring Framework {@link Cache} implementation backed by a Pivotal GemFire {@link Region}.
  *
  * @author Costin Leau
  * @author John Blum
@@ -38,11 +38,11 @@ public class GemfireCache implements Cache {
 	private final Region region;
 
 	/**
-	 * Wraps a GemFire {@link Region} in an instance of {@link GemfireCache} to adapt the GemFire {@link Region}
+	 * Wraps a Pivotal GemFire {@link Region} in an instance of {@link GemfireCache} to adapt the Pivotal GemFire {@link Region}
 	 * to function as a Spring {@link Cache} in Spring's caching infrastructure.
 	 *
-	 * @param region GemFire {@link Region} to wrap.
-	 * @return an instance of {@link GemfireCache} backed by the provided GemFire {@link Region}.
+	 * @param region Pivotal GemFire {@link Region} to wrap.
+	 * @return an instance of {@link GemfireCache} backed by the provided Pivotal GemFire {@link Region}.
 	 * @see org.apache.geode.cache.Region
 	 * @see org.springframework.cache.Cache
 	 * @see #GemfireCache(Region)
@@ -52,22 +52,22 @@ public class GemfireCache implements Cache {
 	}
 
 	/**
-	 * Constructs an instance of {@link GemFireCache} initialized with the given GemFire {@link Region}.
+	 * Constructs an instance of {@link GemFireCache} initialized with the given Pivotal GemFire {@link Region}.
 	 * The {@link Region} will function as the backing store and implementation for
 	 * the Spring {@link Cache} interface.
 	 *
-	 * @param region GemFire {@link Region} backing the Spring {@link Cache}.
+	 * @param region Pivotal GemFire {@link Region} backing the Spring {@link Cache}.
 	 * @throws IllegalArgumentException if {@link Region} is null.
 	 */
 	public GemfireCache(Region<?, ?> region) {
-		Assert.notNull(region, "GemFire Region must not be null");
+		Assert.notNull(region, "Region must not be null");
 		this.region = region;
 	}
 
 	/**
-	 * Returns the GemFire {@link Region} used as the implementation for this Spring {@link Cache}.
+	 * Returns the Pivotal GemFire {@link Region} used as the implementation for this Spring {@link Cache}.
 	 *
-	 * @return the GemFire {@link Region} used as the implementation for this Spring {@link Cache}.
+	 * @return the Pivotal GemFire {@link Region} used as the implementation for this Spring {@link Cache}.
 	 * @see org.apache.geode.cache.Region
 	 */
 	public Region getNativeCache() {

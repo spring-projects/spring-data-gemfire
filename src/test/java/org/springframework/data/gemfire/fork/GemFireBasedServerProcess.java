@@ -24,8 +24,8 @@ import org.springframework.data.gemfire.process.support.ProcessUtils;
 import org.springframework.data.gemfire.test.support.FileSystemUtils;
 
 /**
- * The {@link GemFireBasedServerProcess} class is a main Java class used to launch a GemFire Server
- * using GemFire's {@link ServerLauncher} API.
+ * The {@link GemFireBasedServerProcess} class is a main Java class used to launch a Pivotal GemFireServer
+ * using Pivotal GemFire's {@link ServerLauncher} API.
  *
  * @author John Blum
  * @see org.apache.geode.distributed.ServerLauncher
@@ -52,7 +52,7 @@ public class GemFireBasedServerProcess {
 	private static ServerLauncher runServer(String[] args) {
 		ServerLauncher serverLauncher = buildServerLauncher(args);
 
-		// start the GemFire Server process...
+		// start the Pivotal GemFireServer process...
 		serverLauncher.start();
 
 		return serverLauncher;

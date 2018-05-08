@@ -21,7 +21,7 @@ import org.springframework.data.gemfire.listener.ContinuousQueryListenerContaine
 /**
  * The {@link ContinuousQueryListenerContainerConfigurer} interfaces defines a contract for implementations to customize
  * the configuration of SDG's {@link ContinuousQueryListenerContainer} when enabling Continuous Query (CQ) functionality
- * in Spring Boot, GemFire/Geode cache client applications.
+ * in Spring Boot, Pivotal GemFire/Apache Geode cache client applications.
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer

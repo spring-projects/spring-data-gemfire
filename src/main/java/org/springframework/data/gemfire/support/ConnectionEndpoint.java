@@ -24,7 +24,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * The ConnectionEndpoint class models a GemFire connection endpoint in the format of hostname[portnumber],
+ * The ConnectionEndpoint class models a Pivotal GemFire connection endpoint in the format of hostname[portnumber],
  * where hostname is the network name or IP address of the host.
  *
  * @author John Blum

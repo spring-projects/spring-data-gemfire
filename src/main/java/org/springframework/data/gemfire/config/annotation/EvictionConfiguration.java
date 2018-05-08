@@ -195,16 +195,16 @@ public class EvictionConfiguration implements ApplicationContextAware, ImportAwa
 	}
 
 	/**
-	 * {@link EvictionPolicyConfigurer} configures the Eviction policy of a GemFire {@link Region}.
+	 * {@link EvictionPolicyConfigurer} configures the Eviction policy of a Pivotal GemFire {@link Region}.
 	 */
 	protected interface EvictionPolicyConfigurer {
 
 		/**
 		 * Configure the Eviction policy on the given SDG {@link RegionFactoryBean} or {@link ClientRegionFactoryBean}
-		 * used to create a GemFire {@link Region}.
+		 * used to create a Pivotal GemFire {@link Region}.
 		 *
 		 * @param regionFactoryBean {@link RegionFactoryBean} or {@link ClientRegionFactoryBean} used to create
-		 * a GemFire {@link Region}.
+		 * a Pivotal GemFire {@link Region}.
 		 * @return the given {@code regionFactoryBean}.
 		 * @see org.springframework.data.gemfire.RegionFactoryBean
 		 * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
@@ -352,7 +352,7 @@ public class EvictionConfiguration implements ApplicationContextAware, ImportAwa
 		 * Resolves the Eviction policy threshold (a.k.a. maximum) based on the {@link EvictionPolicyType}.
 		 *
 		 * For instance {@link EvictionPolicyType#HEAP_PERCENTAGE} does not support maximum/threshold since
-		 * the settings are determined by the GemFire/Geode cache critical heap percentage and eviction heap percentage
+		 * the settings are determined by the Pivotal GemFire/Apache Geode cache critical heap percentage and eviction heap percentage
 		 * System property settings.
 		 *
 		 * @param maximum integer value specifying the configured Eviction threshold.

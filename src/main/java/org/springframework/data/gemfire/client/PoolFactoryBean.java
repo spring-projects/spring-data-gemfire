@@ -79,7 +79,7 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 	// Indicates whether the Pool has been created by this FactoryBean, or not
 	volatile boolean springManagedPool = true;
 
-	// GemFire Pool Configuration Settings
+	// Pivotal GemFire Pool Configuration Settings
 	private boolean keepAlive = false;
 	private boolean multiUserAuthentication = PoolFactory.DEFAULT_MULTIUSER_AUTHENTICATION;
 	private boolean prSingleHopEnabled = PoolFactory.DEFAULT_PR_SINGLE_HOP_ENABLED;

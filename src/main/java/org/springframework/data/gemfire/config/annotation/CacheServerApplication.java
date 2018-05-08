@@ -33,10 +33,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
 
 /**
- * The CacheServerApplication annotation enables an embedded GemFire
- * {@link org.apache.geode.cache.server.CacheServer} instance in a Spring Data GemFire based application.
+ * The CacheServerApplication annotation enables an embedded Pivotal GemFire {@link CacheServer} instance
+ * in a SDG-based application.
  *
- * In addition, this also implies an embedded GemFire peer {@link org.apache.geode.cache.Cache} must exist
+ * In addition, this also implies an embedded Pivotal GemFire peer {@link org.apache.geode.cache.Cache} must exist
  * and therefore will be configured, constructed and initialized as a Spring bean in the application context.
  *
  * @author John Blum
@@ -107,7 +107,7 @@ public @interface CacheServerApplication {
 	float criticalOffHeapPercentage() default 0.0f;
 
 	/**
-	 * By default, a GemFire member (both locators and servers) will attempt to reconnect and reinitialize the cache
+	 * By default, a Pivotal GemFire member (both locators and servers) will attempt to reconnect and reinitialize the cache
 	 * after it has been forced out of the distributed system by a network partition event or has otherwise been
 	 * shunned by other members. Use this property to enable the auto-reconnect behavior.
 	 *
@@ -185,7 +185,7 @@ public @interface CacheServerApplication {
 	int lockTimeout() default 60;
 
 	/**
-	 * Configures the log level used to output log messages at GemFire cache runtime.
+	 * Configures the log level used to output log messages at Pivotal GemFire cache runtime.
 	 *
 	 * Defaults to {@literal config}.
 	 *
@@ -252,7 +252,7 @@ public @interface CacheServerApplication {
 	int messageTimeToLive() default CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE;
 
 	/**
-	 * Configures the name of this GemFire member in the cluster (distributed system).
+	 * Configures the name of this Pivotal GemFire member in the cluster (distributed system).
 	 *
 	 * Defaults to {@literal SpringBasedCacheServerApplication}.
 	 *
@@ -318,8 +318,8 @@ public @interface CacheServerApplication {
 
 	/**
 	 * Determines whether the Spring {@link BeanFactory} locator should be enabled to lookup
-	 * the Spring {@link BeanFactory} to auto-wire and configure/initialize GemFire components
-	 * created in a non-Spring managed, GemFire context.
+	 * the Spring {@link BeanFactory} to auto-wire and configure/initialize Pivotal GemFire components
+	 * created in a non-Spring managed, Pivotal GemFire context.
 	 *
 	 * Defaults to {@literal false}.
 	 *
@@ -328,7 +328,7 @@ public @interface CacheServerApplication {
 	boolean useBeanFactoryLocator() default false;
 
 	/**
-	 * Configures whether this GemFire cache member node would pull it's configuration meta-data
+	 * Configures whether this Pivotal GemFire cache member node would pull it's configuration meta-data
 	 * from the cluster-based Cluster Configuration service.
 	 *
 	 * Defaults to {@literal false}.

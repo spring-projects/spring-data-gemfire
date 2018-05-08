@@ -18,7 +18,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to declare an interface as a GemFire OnServer Function Execution
+ * Annotation to declare an interface as a Pivotal GemFire OnServer Function Execution
  * @author David Turanski
  *
  */
@@ -27,23 +27,23 @@ import java.lang.annotation.Target;
 public @interface OnServer {
 
 	/**
-	 * The bean name of the POJO interface defining the GemFire Function executions.
+	 * The bean name of the POJO interface defining the Pivotal GemFire Function executions.
 	 *
-	 * @return the bean name (id) of the POJO interface defining the GemFire Function executions.
+	 * @return the bean name (id) of the POJO interface defining the Pivotal GemFire Function executions.
 	 */
 	String id() default "";
 
 	/**
 	 *  A reference to the cache.
 	 *
-	 *  @return a bean name reference to the GemFire Cache.
+	 *  @return a bean name reference to the Pivotal GemFire Cache.
 	 */
 	String cache() default "";
 
 	/**
 	 * The pool bean name (optional).
 	 *
-	 * @return an optional bean name of the GemFire Pool.
+	 * @return an optional bean name of the Pivotal GemFire Pool.
 	 */
 	String pool() default "";
 

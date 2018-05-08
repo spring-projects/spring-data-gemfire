@@ -19,8 +19,8 @@ package org.springframework.data.gemfire.function.sample;
 import org.springframework.data.gemfire.function.annotation.OnMember;
 
 /**
- * The HelloFunctionExecution interface is a Spring Data GemFire Function Execution interface
- * for the 'hello' GemFire Function and hello greetings.
+ * The HelloFunctionExecution interface is a SDG Function Execution interface
+ * for the 'hello' Pivotal GemFireFunction and hello greetings.
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.function.annotation.OnMember

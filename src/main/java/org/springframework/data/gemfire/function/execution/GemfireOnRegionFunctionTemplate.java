@@ -27,9 +27,9 @@ public class GemfireOnRegionFunctionTemplate extends AbstractFunctionTemplate im
 	private final Region<?, ?> region;
 
 	/**
-	 * Constructs an instance of the GemFireOnRegionFunctionTemplate with the given GemFire Cache Region.
+	 * Constructs an instance of the GemFireOnRegionFunctionTemplate with the given Pivotal GemFire Cache Region.
 	 *
-	 * @param region the GemFire Cache Region upon which the Function will be executed.
+	 * @param region the Pivotal GemFire Cache Region upon which the Function will be executed.
 	 * @see org.apache.geode.cache.Region
 	 */
 	public GemfireOnRegionFunctionTemplate(Region<?, ?> region) {

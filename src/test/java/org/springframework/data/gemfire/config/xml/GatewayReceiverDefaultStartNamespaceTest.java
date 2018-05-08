@@ -34,7 +34,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * The GatewayReceiverDefaultStartNamespaceTest class is a test suite of test cases testing the contract
- * and functionality of Gateway Receiver configuration in Spring Data GemFire using the XML namespace (XSD).
+ * and functionality of Gateway Receiver configuration in SDG using the XML namespace (XSD).
  * This test class tests the default start configuration of the GatewayReceiver Gemfire Component in SDG.
  *
  * @author John Blum

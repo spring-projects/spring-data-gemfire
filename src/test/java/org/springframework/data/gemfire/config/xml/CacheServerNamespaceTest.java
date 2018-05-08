@@ -33,7 +33,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * The CacheServerNamespaceTest class is a test suite of test cases testing the functionality of the SDG XML namespace
- * when configuring a GemFire Cache Servers and Client Subscription.
+ * when configuring a Pivotal GemFireCache Servers and Client Subscription.
  *
  * @author Costin Leau
  * @author David Turanski

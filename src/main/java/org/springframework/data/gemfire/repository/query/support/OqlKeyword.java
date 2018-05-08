@@ -21,7 +21,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * The OqlKeyword enum represents the range of keywords (Reserved Words)
- * in GemFire's Object Query Language (OQL).
+ * in Pivotal GemFire's Object Query Language (OQL).
  *
  * @author John Blum
  * @see <a href="http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/query_additional/supported_keywords.html">Supported Keywords</a>
@@ -56,7 +56,7 @@ public enum OqlKeyword {
 	private final String keyword;
 
 	/**
-	 * Constructs an instance of the GemFire {@link OqlKeyword} enumerate value with an unspecified keyword.
+	 * Constructs an instance of the Pivotal GemFire {@link OqlKeyword} enumerate value with an unspecified keyword.
 	 * When the keyword is unspecified, it defaults to the {@link #name()} of the {@link OqlKeyword}.
 	 *
 	 * @see #OqlKeyword(String)
@@ -66,9 +66,9 @@ public enum OqlKeyword {
 	}
 
 	/**
-	 * Constructs an {@link OqlKeyword} enumerated value with the given GemFire OQL Keyword.
+	 * Constructs an {@link OqlKeyword} enumerated value with the given Pivotal GemFire OQL Keyword.
 	 *
-	 * @param keyword {@link String} specifying the GemFire OQL Keyword;
+	 * @param keyword {@link String} specifying the Pivotal GemFire OQL Keyword;
 	 * can be {@literal null}.
 	 */
 	OqlKeyword(String keyword) {
@@ -78,9 +78,9 @@ public enum OqlKeyword {
 	/**
 	 * Looks up an {@link OqlKeyword} for the given {@code keyword} {@link String}.
 	 *
-	 * @param keyword name of the GemFire OQL Keyword to lookup.
+	 * @param keyword name of the Pivotal GemFire OQL Keyword to lookup.
 	 * @return an {@link OqlKeyword} enumerated value for the given {@code keyword} {@link String}.
-	 * @throws IllegalArgumentException if {@code keyword} is not a valid GemFire OQL Keyword.
+	 * @throws IllegalArgumentException if {@code keyword} is not a valid Pivotal GemFire OQL Keyword.
 	 */
 	public static OqlKeyword valueOfIgnoreCase(String keyword) {
 		for (OqlKeyword oqlKeyword : values()) {
@@ -89,15 +89,15 @@ public enum OqlKeyword {
 			}
 		}
 
-		throw new IllegalArgumentException(String.format("[%s] is not a valid GemFire OQL Keyword", keyword));
+		throw new IllegalArgumentException(String.format("[%s] is not a valid OQL Keyword", keyword));
 	}
 
 	/**
-	 * Returns name of this GemFire OQL Keyword enumerated value.  The keyword may have been
+	 * Returns name of this Pivotal GemFire OQL Keyword enumerated value.  The keyword may have been
 	 * explicitly defined when the {@link OqlKeyword} enumerated value was constructed, in which case
 	 * this value is returned, otherwise this method returns {@link OqlKeyword#name()}.
 	 *
-	 * @return a {@link String} name for this GemFire OQL Keyword enumerated value.
+	 * @return a {@link String} name for this Pivotal GemFire OQL Keyword enumerated value.
 	 * @see #name()
 	 */
 	public String getKeyword() {

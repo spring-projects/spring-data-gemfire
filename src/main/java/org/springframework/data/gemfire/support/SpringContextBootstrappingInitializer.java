@@ -45,11 +45,11 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * The {@link SpringContextBootstrappingInitializer} class is a GemFire configuration initializer used to bootstrap
- * a Spring {@link ApplicationContext} inside a GemFire Server JVM-based process.  This enables a GemFire Server
- * resource to be mostly configured with Spring Data GemFire's configuration meta-data.  The GemFire {@link Cache}
+ * The {@link SpringContextBootstrappingInitializer} class is a Pivotal GemFire configuration initializer used to bootstrap
+ * a Spring {@link ApplicationContext} inside a Pivotal GemFire Server JVM-based process.  This enables a Pivotal GemFire Server
+ * resource to be mostly configured with SDG's configuration meta-data.  The Pivotal GemFire {@link Cache}
  * itself is the only resource that cannot be configured and initialized in a Spring context since the initializer
- * is not invoked until after GemFire creates and initializes the GemFire {@link Cache} for use.
+ * is not invoked until after Pivotal GemFire creates and initializes the Pivotal GemFire {@link Cache} for use.
  *
  * @author John Blum
  * @see org.springframework.context.ApplicationContext
@@ -102,7 +102,7 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	}
 
 	/**
-	 * Sets the ClassLoader used by the Spring ApplicationContext, created by this GemFire Initializer, when creating
+	 * Sets the ClassLoader used by the Spring ApplicationContext, created by this Pivotal GemFire Initializer, when creating
 	 * bean definition classes.
 	 *
 	 * @param beanClassLoader the ClassLoader used by the Spring ApplicationContext to load bean definition classes.
@@ -123,7 +123,7 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	 * Notifies any Spring ApplicationListeners of a current and existing ContextRefreshedEvent if the
 	 * ApplicationContext had been previously created, initialized and refreshed before any ApplicationListeners
 	 * interested in ContextRefreshedEvents were registered so that application components (such as the
-	 * GemFire CacheLoaders extending LazyWiringDeclarableSupport objects) registered late, requiring configuration
+	 * Pivotal GemFire CacheLoaders extending LazyWiringDeclarableSupport objects) registered late, requiring configuration
 	 * (auto-wiring), also get notified and wired accordingly.
 	 *
 	 * @param listener a Spring ApplicationListener requiring notification of any ContextRefreshedEvents after the
@@ -141,7 +141,7 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 
 	/**
 	 * Registers a Spring ApplicationListener to be notified when the Spring ApplicationContext is created by GemFire
-	 * when instantiating and initializing Declarables declared inside the &lt;initializer&gt; block inside GemFire's
+	 * when instantiating and initializing Declarables declared inside the &lt;initializer&gt; block inside Pivotal GemFire's
 	 * cache.xml file.
 	 *
 	 * @param <T> the Class type of the Spring ApplicationListener.
@@ -373,12 +373,12 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	}
 
 	/**
-	 * Initializes a Spring ApplicationContext with the given parameters specified with a GemFire &lt;initializer&gt;
+	 * Initializes a Spring ApplicationContext with the given parameters specified with a Pivotal GemFire &lt;initializer&gt;
 	 * block in cache.xml.
 	 *
 	 * @param parameters a Properties object containing the configuration parameters and settings defined in the
-	 * GemFire cache.xml &lt;initializer&gt; block for the declared SpringContextBootstrappingInitializer
-	 * GemFire Declarable object.
+	 * Pivotal GemFire cache.xml &lt;initializer&gt; block for the declared SpringContextBootstrappingInitializer
+	 * Pivotal GemFire Declarable object.
 	 * @throws org.springframework.context.ApplicationContextException if the Spring ApplicationContext could not be
 	 * successfully created, configured and initialized.
 	 * @see #createApplicationContext(String[], String[])
@@ -433,8 +433,8 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	/**
 	 * Gets notified when the Spring ApplicationContext gets created and refreshed by GemFire, once the
 	 * &lt;initializer&gt; block is processed and the SpringContextBootstrappingInitializer Declarable component
-	 * is initialized.  This handler method proceeds in notifying any other GemFire components that need to be aware
-	 * that the Spring ApplicationContext now exists and is ready for use, such as other Declarable GemFire objects
+	 * is initialized.  This handler method proceeds in notifying any other Pivotal GemFire components that need to be aware
+	 * that the Spring ApplicationContext now exists and is ready for use, such as other Declarable Pivotal GemFire objects
 	 * requiring auto-wiring support, etc.
 	 *
 	 * In addition, this method handles the ContextClosedEvent by removing the ApplicationContext reference.

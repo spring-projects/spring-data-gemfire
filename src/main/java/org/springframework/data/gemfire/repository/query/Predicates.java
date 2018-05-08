@@ -114,7 +114,7 @@ class Predicates implements Predicate {
 		}
 
 		/**
-		 * Builds a conditional expression for the entity property in the WHERE clause of the GemFire OQL
+		 * Builds a conditional expression for the entity property in the WHERE clause of the Pivotal GemFire OQL
 		 * query statement.
 		 *
 		 * @see org.springframework.data.gemfire.repository.query.Predicate#toString(java.lang.String)
@@ -162,10 +162,10 @@ class Predicates implements Predicate {
 		}
 
 		/**
-		 * Resolves the given {@link Type} as an GemFire OQL operator.
+		 * Resolves the given {@link Type} as an Pivotal GemFire OQL operator.
 		 *
 		 * @param partType the conditional expression (e.g. 'IN') in the query method name.
-		 * @return a GemFire OQL operator.
+		 * @return a Pivotal GemFire OQL operator.
 		 */
 		String resolveOperator(Type partType) {
 			switch (partType) {

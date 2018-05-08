@@ -38,7 +38,7 @@ import org.springframework.data.gemfire.util.CollectionUtils;
 
 /**
  * The {@link ClientServerIntegrationTestsSupport} class is a abstract base class encapsulating common functionality
- * to support the implementation of GemFire client/server tests.
+ * to support the implementation of Pivotal GemFireclient/server tests.
  *
  * @author John Blum
  * @see java.io.File

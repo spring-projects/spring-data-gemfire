@@ -16,6 +16,7 @@
 
 package org.springframework.data.gemfire.config.support;
 
+import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 
 import org.apache.geode.cache.EvictionAction;
@@ -48,9 +49,9 @@ import org.springframework.data.gemfire.wan.OrderPolicyConverter;
 
 /**
  * {@link CustomEditorBeanFactoryPostProcessor} is a Spring {@link BeanFactoryPostProcessor} implementation
- * used to register custom {@link java.beans.PropertyEditor PropertyEditors} / Spring {@link Converter Converters}
- * that are used to perform type conversions between String-based configuration meta-data and actual GemFire
- * or Spring Data GemFire defined (enumerated) types.
+ * used to register custom {@link PropertyEditor PropertyEditors} / Spring {@link Converter Converters}
+ * that are used to perform type conversions between String-based configuration meta-data
+ * and actual Pivotal GemFire or SDG defined types.
  *
  * @author John Blum
  * @see org.springframework.beans.factory.config.BeanFactoryPostProcessor

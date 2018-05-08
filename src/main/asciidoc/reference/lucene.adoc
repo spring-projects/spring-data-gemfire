@@ -74,7 +74,7 @@ inside a `@Configuration` class with...
 ----
 @Bean(name = "Books")
 @DependsOn("bookTitleIndex")
-PartitionedRegionFactoryBean<Long, Book> booksRegion(GemFireCache gemfireCache) {
+PartitionedRegionFactoryBean<Long, Book> booksRegion(Pivotal GemFireCache gemfireCache) {
 
     PartitionedRegionFactoryBean<Long, Book> peopleRegion =
         new PartitionedRegionFactoryBean<>();
@@ -87,7 +87,7 @@ PartitionedRegionFactoryBean<Long, Book> booksRegion(GemFireCache gemfireCache) 
 }
 
 @Bean
-LuceneIndexFactoryBean bookTitleIndex(GemFireCache gemFireCache,
+LuceneIndexFactoryBean bookTitleIndex(Pivotal GemFireCache gemFireCache,
         LuceneSerializer luceneSerializer) {
 
     LuceneIndexFactoryBean luceneIndex = new LuceneIndexFactoryBean();
@@ -243,7 +243,7 @@ If I define the following `LuceneIndex`...
 [source,java]
 ----
 @Bean
-LuceneIndexFactoryBean personLastNameIndex(GemFireCache gemfireCache) {
+LuceneIndexFactoryBean personLastNameIndex(Pivotal GemFireCache gemfireCache) {
 
     LuceneIndexFactoryBean personLastNameIndex =
         new LuceneIndexFactoryBean();

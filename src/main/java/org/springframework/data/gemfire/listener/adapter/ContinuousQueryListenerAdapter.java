@@ -40,11 +40,11 @@ import org.springframework.util.StringUtils;
  * Event listener adapter that delegates the handling of messages to target listener methods via reflection,
  * with flexible event type conversion.
  *
- * Allows listener methods to operate on event content types, completely independent from the GemFire/Geode API.
+ * Allows listener methods to operate on event content types, completely independent from the Pivotal GemFire/Apache Geode API.
  *
  * <p>Modeled as much as possible after the JMS MessageListenerAdapter in the core Spring Framework.
  *
- * <p>By default, the content of incoming GemFire/Geode CQ events gets extracted before being passed into
+ * <p>By default, the content of incoming Pivotal GemFire/Apache Geode CQ events gets extracted before being passed into
  * the target listener method, to let the target method operate on event content types such as Object or Operation
  * instead of the raw {@link CqEvent}.</p>
  *
@@ -158,7 +158,7 @@ public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 	 * handle the given event.
 	 * <p>The default implementation simply returns the configured
 	 * default listener method, if any.
-	 * @param event the GemFire event
+	 * @param event the Pivotal GemFire event
 	 * @return the name of the listener method (never <code>null</code>)
 	 * @see #setDefaultListenerMethod
 	 */

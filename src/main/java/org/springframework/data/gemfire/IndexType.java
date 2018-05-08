@@ -17,7 +17,7 @@
 package org.springframework.data.gemfire;
 
 /**
- * The IndexType class is an enumerated type of GemFire Index Types.
+ * The IndexType class is an enumerated type of Pivotal GemFire Index Types.
  *
  * @author John Blum
  * @see org.apache.geode.cache.query.IndexType
@@ -34,9 +34,9 @@ public enum IndexType {
 	private final org.apache.geode.cache.query.IndexType gemfireIndexType;
 
 	/**
-	 * Constructs an instance of the IndexType enum initialized with the given GemFire IndexType.
+	 * Constructs an instance of the IndexType enum initialized with the given Pivotal GemFire IndexType.
 	 *
-	 * @param gemfireIndexType the corresponding GemFire IndexType
+	 * @param gemfireIndexType the corresponding Pivotal GemFire IndexType
 	 * @see org.apache.geode.cache.query.IndexType
 	 */
 	IndexType(final org.apache.geode.cache.query.IndexType gemfireIndexType) {
@@ -77,11 +77,11 @@ public enum IndexType {
 	}
 
 	/**
-	 * Returns an IndexType given the corresponding GemFire IndexType or null if no SDG IndexType
-	 * corresponds to the GemFire IndexType.
+	 * Returns an IndexType given the corresponding Pivotal GemFire IndexType or null if no SDG IndexType
+	 * corresponds to the Pivotal GemFire IndexType.
 	 *
-	 * @param gemfireIndexType the GemFire IndexType.
-	 * @return a IndexType matching the GemFire IndexType or null if the GemFire IndexType does not match
+	 * @param gemfireIndexType the Pivotal GemFire IndexType.
+	 * @return a IndexType matching the Pivotal GemFire IndexType or null if the Pivotal GemFire IndexType does not match
 	 * any IndexType in this enumeration.
 	 * @see org.apache.geode.cache.query.IndexType
 	 */
@@ -115,9 +115,9 @@ public enum IndexType {
 	}
 
 	/**
-	 * Gets the matching GemFire IndexType for this IndexType enumerated value.
+	 * Gets the matching Pivotal GemFire IndexType for this IndexType enumerated value.
 	 *
-	 * @return the matching GemFire IndexType.
+	 * @return the matching Pivotal GemFire IndexType.
 	 * @see org.apache.geode.cache.query.IndexType
 	 */
 	public org.apache.geode.cache.query.IndexType getGemfireIndexType() {

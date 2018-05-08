@@ -32,7 +32,7 @@
 	</gfe:replicated-region>
 
 	<!--
-	 NOTE GemFire will switch the Region's DataPolicy when Entry Expiration Action settings
+	 NOTE Pivotal GemFirewill switch the Region's DataPolicy when Entry Expiration Action settings
 	 are "LOCAL_[DESTROY|INVALIDATE]" based or the Eviction Action is "LOCAL_[DESTROY|INVALIDATE]".
 	-->
 	<gfe:replicated-region id="PreloadedExample" persistent="false">

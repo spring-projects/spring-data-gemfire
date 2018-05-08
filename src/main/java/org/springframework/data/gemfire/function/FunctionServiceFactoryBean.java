@@ -26,7 +26,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.CollectionUtils;
 
 /**
- * Spring FactoryBean for registering instance of GemFire Function with the GemFire FunctionService.
+ * Spring FactoryBean for registering instance of Pivotal GemFire Function with the Pivotal GemFire FunctionService.
  *
  * @author David Turanski
  * @author John Blum

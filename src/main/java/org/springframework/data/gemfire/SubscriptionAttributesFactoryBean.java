@@ -22,7 +22,7 @@ import org.springframework.beans.factory.InitializingBean;
 
 /**
  * The SubscriptionAttributesFactoryBean class is a Spring FactoryBean used for defining and constructing
- * a GemFire SubscriptionAttributes object, which determines the Subscription policy used by Regions to
+ * a Pivotal GemFire SubscriptionAttributes object, which determines the Subscription policy used by Regions to
  * declared their data interests.
  *
  * @author Lyndon Adams
@@ -76,10 +76,10 @@ public class SubscriptionAttributesFactoryBean implements FactoryBean<Subscripti
 	}
 
 	/**
-	 * Sets GemFire's InterestPolicy specified on the SubscriptionAttributes in order to define/declare
-	 * the data interests and distribution of changes.
+	 * Sets Pivotal GemFire's {@link InterestPolicy} specified on the {@link SubscriptionAttributes} in order to
+	 * define/declare the data interests and distribution of changes.
 	 *
-	 * @param interestPolicy the GemFire InterestsPolicy to set for Subscription.
+	 * @param interestPolicy the Pivotal GemFire {@link InterestPolicy} to set for Subscription.
 	 * @see org.apache.geode.cache.InterestPolicy
 	 * @see org.apache.geode.cache.SubscriptionAttributes#SubscriptionAttributes(org.apache.geode.cache.InterestPolicy)
 	 */
@@ -88,10 +88,10 @@ public class SubscriptionAttributesFactoryBean implements FactoryBean<Subscripti
 	}
 
 	/**
-	 * Gets GemFire's InterestPolicy specified on the SubscriptionAttributes which defines data interests
-	 * and distribution of changes.
+	 * Gets Pivotal GemFire's {@link InterestPolicy} specified on the {@link SubscriptionAttributes}, which defines
+	 * data interests and distribution of changes.
 	 *
-	 * @return the GemFire InterestsPolicy set for Subscription.
+	 * @return the Pivotal GemFire {@link InterestPolicy} set for Subscription.
 	 * @see org.apache.geode.cache.InterestPolicy
 	 * @see org.apache.geode.cache.SubscriptionAttributes#getInterestPolicy()
 	 */
@@ -99,16 +99,13 @@ public class SubscriptionAttributesFactoryBean implements FactoryBean<Subscripti
 		return (interestPolicy != null ? interestPolicy : InterestPolicy.DEFAULT);
 	}
 
-	/* non-Javadoc */
 	@Deprecated
 	public void setPolicy(InterestPolicy policy) {
 		setInterestPolicy(policy);
 	}
 
-	/* non-Javadoc */
 	@Deprecated
 	public InterestPolicy getPolicy() {
 		return getInterestPolicy();
 	}
-
 }

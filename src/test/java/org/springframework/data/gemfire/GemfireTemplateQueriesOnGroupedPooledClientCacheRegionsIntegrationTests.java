@@ -62,14 +62,14 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * Integrations tests for {@link GemfireTemplate} testing proper function and behavior of executing (OQL) queries
- * from a cache client application using the {@link GemfireTemplate} to a cluster of GemFire servers that have
+ * from a cache client application using the {@link GemfireTemplate} to a cluster of Pivotal GemFire'servers that have
  * been grouped according to business function and data access, primarily to distribute the load.
  *
- * Each GemFire {@link Pool} is configured to target a specific server group.  Each group of servers in the cluster
+ * Each Pivotal GemFire{@link Pool} is configured to target a specific server group.  Each group of servers in the cluster
  * defines specific {@link Region Regions} to manage data independently and separately from other data that might
  * garner high frequency access.
  *
- * Spring Data GemFire's {@link GemfireTemplate} should intelligently employ the right
+ * SDG's {@link GemfireTemplate} should intelligently employ the right
  * {@link org.apache.geode.cache.query.QueryService} configured with the {@link Region Region's} {@link Pool}
  * meta-data when executing the query in order to ensure the right servers containing the {@link Region Region's}
  * with the data of interest are targeted.

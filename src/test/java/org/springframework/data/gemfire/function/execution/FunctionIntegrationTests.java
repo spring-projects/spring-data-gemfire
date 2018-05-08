@@ -143,7 +143,7 @@ public class FunctionIntegrationTests extends ClientServerIntegrationTestsSuppor
 	}
 
 	/*
-	 * This gets wrapped in a GemFire Function and registered on the forked server.
+	 * This gets wrapped in a Pivotal GemFireFunction and registered on the forked server.
 	 */
 	@Component
 	@SuppressWarnings("unused")

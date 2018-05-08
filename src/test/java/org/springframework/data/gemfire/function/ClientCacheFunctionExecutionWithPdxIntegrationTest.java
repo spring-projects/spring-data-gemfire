@@ -52,7 +52,7 @@ import org.springframework.util.ObjectUtils;
 
 /**
  * The ClientCacheFunctionExecutionWithPdxIntegrationTest class is a test suite of test cases testing Spring Data
- * GemFire's Function annotation support and interaction between a GemFire client and server Cache
+ * Pivotal GemFire's Function annotation support and interaction between a Pivotal GemFireclient and server Cache
  * when PDX is configured and read-serialized is set to true.
  *
  * @author John Blum

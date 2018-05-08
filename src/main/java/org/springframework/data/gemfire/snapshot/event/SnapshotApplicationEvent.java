@@ -23,7 +23,7 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.util.StringUtils;
 
 /**
- * The SnapshotApplicationEvent class is a Spring ApplicationEvent signaling a GemFire Cache or Region snapshot event,
+ * The SnapshotApplicationEvent class is a Spring ApplicationEvent signaling a Pivotal GemFire Cache or Region snapshot event,
  * used to trigger a snapshot to occur.
  *
  * @author John Blum
@@ -66,7 +66,7 @@ public abstract class SnapshotApplicationEvent<K, V> extends ApplicationEvent {
 	}
 
 	/**
-	 * Gets the absolute pathname of the Region in GemFire for which the snapshot will be taken.
+	 * Gets the absolute pathname of the Region in Pivotal GemFire for which the snapshot will be taken.
 	 *
 	 * @return a String indicating the absolute pathname of the Region.
 	 * @see org.apache.geode.cache.Region#getFullPath()
@@ -76,7 +76,7 @@ public abstract class SnapshotApplicationEvent<K, V> extends ApplicationEvent {
 	}
 
 	/**
-	 * Gets the meta-data used to perform the GemFire Cache Region data snapshots.
+	 * Gets the meta-data used to perform the Pivotal GemFire Cache Region data snapshots.
 	 *
 	 * @return an array of SnapshotMetadata containing information necessary to perform the data export.
 	 * @see org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotMetadata

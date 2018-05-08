@@ -45,7 +45,7 @@ public interface UserRepository extends GemfireRepository<User, String> {
 	List<User> findDistinctByUsernameLike(String username);
 
 /*
-	//NOTE unfortunately, the 'NOT LIKE' operator is unsupported in GemFire's Query/OQL syntax
+	//NOTE unfortunately, the 'NOT LIKE' operator is unsupported in Pivotal GemFire's Query/OQL syntax
 	List<User> findDistinctByUsernameNotLike(String username);
 */
 

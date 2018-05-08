@@ -42,7 +42,7 @@ public class GemfireCacheTransactionsConfiguration {
 
 	/**
 	 * Declares and registers SDG's {@link GemfireTransactionManager} as the {@literal transactionManager}
-	 * in Spring's Transaction Management infrastructure to manage local, GemFire/Geode cache transactions.
+	 * in Spring's Transaction Management infrastructure to manage local, Pivotal GemFire/Apache Geode cache transactions.
 	 *
 	 * @param gemfireCache reference to the {@link GemFireCache}.
 	 * @return a new instance of {@link GemfireTransactionManager} initialized with the given {@link GemFireCache}.

@@ -57,9 +57,9 @@ import org.springframework.context.annotation.Import;
 public @interface EnableHttpService {
 
 	/**
-	 * If set, then the GemFire member binds the embedded HTTP service to the specified address.
+	 * If set, then the Pivotal GemFire member binds the embedded HTTP service to the specified address.
 	 * If this property is not set but the HTTP service is enabled using {@literal http-service-port},
-	 * then GemFire binds the HTTP service to the member’s local address. Used by the GemFire Pulse Web application
+	 * then Pivotal GemFire binds the HTTP service to the member’s local address. Used by the Pivotal GemFire Pulse Web application
 	 * and the Developer REST API service.
 	 *
 	 * Defaults to unset.
@@ -69,8 +69,8 @@ public @interface EnableHttpService {
 	String bindAddress() default "";
 
 	/**
-	 * If non-zero, then GemFire starts an embedded HTTP service that listens on this port. The HTTP service
-	 * is used to host the GemFire Pulse Web application and the development REST API service. If you are hosting
+	 * If non-zero, then Pivotal GemFire starts an embedded HTTP service that listens on this port. The HTTP service
+	 * is used to host the Pivotal GemFire Pulse Web application and the development REST API service. If you are hosting
 	 * the Pulse web app on your own Web server and are not using the Development REST API service, then disable
 	 * this embedded HTTP service by setting this property to zero. Ignored if {@literal jmx-manager}
 	 * and {@literal start-dev-rest-api} are both set to {@literal false}.
@@ -83,7 +83,7 @@ public @interface EnableHttpService {
 
 	/**
 	 * Boolean indicating whether to require authentication for HTTP service connections. If this property is not set,
-	 * then GemFire uses the value of {@literal cluster-ssl-require-authentication} to determine whether HTTP service
+	 * then Pivotal GemFire uses the value of {@literal cluster-ssl-require-authentication} to determine whether HTTP service
 	 * connections require authentication.
 	 *
 	 * To enable SSL communications for the HTTP service, use the {@link EnableSsl} annotation and set the

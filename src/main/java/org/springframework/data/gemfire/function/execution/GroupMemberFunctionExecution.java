@@ -31,7 +31,7 @@ class GroupMemberFunctionExecution extends AbstractFunctionExecution {
 	 * Constructs an instance of the GroupMemberFunctionExecution class to execute a data independent Function
 	 * on a single member from each of the specified groups.
 	 *
-	 * @param groups the list of GemFire Groups from which to pick a member from each group on which to execute
+	 * @param groups the list of Pivotal GemFire Groups from which to pick a member from each group on which to execute
 	 * the data independent Function.
 	 */
 	public GroupMemberFunctionExecution(final String... groups) {

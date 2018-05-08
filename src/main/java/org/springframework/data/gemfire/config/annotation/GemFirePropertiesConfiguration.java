@@ -25,7 +25,7 @@ import org.springframework.data.gemfire.util.PropertiesBuilder;
 
 /**
  * The {@link GemFirePropertiesConfiguration} class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
- * capable of configuring additional GemFire Properties on a (Spring Boot) application class at runtime
+ * capable of configuring additional Pivotal GemFire Properties on a (Spring Boot) application class at runtime
  * during startup.
  *
  * @author John Blum

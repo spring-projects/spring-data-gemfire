@@ -51,7 +51,7 @@ import org.springframework.util.StringUtils;
 /**
  * The GemFireDataSourceUsingNonSpringConfiguredGemFireServerIntegrationTest class is a test suite of test cases
  * testing the contract and functionality of the GemfireDataSourcePostProcessor using the &lt;gfe-data:datasource&gt;
- * element in Spring config to setup a GemFire ClientCache connecting to a native, non-Spring configured GemFire Server
+ * element in Spring config to setup a Pivotal GemFireClientCache connecting to a native, non-Spring configured Pivotal GemFireServer
  * as the DataSource to assert that client Region Proxies are registered as Spring beans
  * in the Spring ApplicationContext correctly.
  *

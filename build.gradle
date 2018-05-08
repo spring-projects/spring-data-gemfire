@@ -20,7 +20,7 @@ apply plugin: 'propdeps'
 apply plugin: 'docbook-reference'
 apply plugin: 'org.asciidoctor.gradle.asciidoctor'
 
-description = 'Spring Data GemFire'
+description = 'Spring Data for Pivotal GemFire'
 group = 'org.springframework.data'
 
 sourceCompatibility = 1.8

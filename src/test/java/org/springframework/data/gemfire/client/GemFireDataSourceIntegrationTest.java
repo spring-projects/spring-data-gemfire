@@ -43,8 +43,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * The GemFireDataSourceIntegrationTest class is a test suite of test cases testing the contract and functionality
- * of the &lt;gfe-data:datasource&gt; element in the context of a GemFire cluster running both native,
- * non-Spring configured GemFire Server(s) in addition to Spring configured and bootstrapped GemFire Server(s).
+ * of the &lt;gfe-data:datasource&gt; element in the context of a Pivotal GemFirecluster running both native,
+ * non-Spring configured Pivotal GemFireServer(s) in addition to Spring configured and bootstrapped Pivotal GemFireServer(s).
  *
  * @author John Blum
  * @see org.junit.Test

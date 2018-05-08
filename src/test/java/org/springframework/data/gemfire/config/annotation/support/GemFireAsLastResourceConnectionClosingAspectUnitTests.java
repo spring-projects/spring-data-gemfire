@@ -75,9 +75,9 @@ public class GemFireAsLastResourceConnectionClosingAspectUnitTests {
 
 		when(mockLogger.isTraceEnabled()).thenReturn(true);
 
-		aspect.doGemFireConnectionClose();;
+		aspect.doGemFireConnectionClose();
 
 		verify(mockGemFireConnection, times(1)).close();
-		verify(mockLogger, times(1)).trace(eq("Closing GemFire Connection..."));
+		verify(mockLogger, times(1)).trace(eq("Closing Pivotal GemFire Connection..."));
 	}
 }

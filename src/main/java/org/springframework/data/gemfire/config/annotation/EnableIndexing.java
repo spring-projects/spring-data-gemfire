@@ -30,7 +30,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * The {@link EnableIndexing} annotation marks a Spring {@link Configuration @Configuration} annotated application class
- * to enable the creation of GemFire/Geode {@link Index Indexes} and {@link LuceneIndex LuceneIndexes} based on
+ * to enable the creation of Pivotal GemFire/Apache Geode {@link Index Indexes} and {@link LuceneIndex LuceneIndexes} based on
  * application persistent entity field/property annotations, such as the {@link @Id}, {@link @Indexed}
  * and {@link @LuceneIndex} annotations.
  *
@@ -51,12 +51,12 @@ import org.springframework.context.annotation.Configuration;
 public @interface EnableIndexing {
 
 	/**
-	 * Determines whether all GemFire/Geode {@link Index Indexes} will be defined before created.
+	 * Determines whether all Pivotal GemFire/Apache Geode {@link Index Indexes} will be defined before created.
 	 * If set to {@literal true}, then all {@link Index Indexes} are defined first and the created
 	 * in a single, bulk operation, thereby improving {@link Index} creation process efficiency.
 	 *
 	 * Only applies to OQL-based {@link Index Indexes}.  {@link LuceneIndex LuceneIndexes} are managed differently
-	 * by GemFire/Geode.
+	 * by Pivotal GemFire/Apache Geode.
 	 *
 	 * Defaults to {@literal false}.
 	 */

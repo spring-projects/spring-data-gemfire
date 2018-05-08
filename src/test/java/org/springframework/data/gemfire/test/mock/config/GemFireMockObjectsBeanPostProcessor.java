@@ -35,7 +35,7 @@ import org.springframework.lang.Nullable;
 
 /**
  * The {@link GemFireMockObjectsBeanPostProcessor} class is a Spring {@link BeanPostProcessor} that applies
- * mocks and spies to Spring Data GemFire / Spring Data Geode and Pivotal GemFire / Apache Geode objects
+ * mocks and spies to SDG / Spring Data Geode and Pivotal GemFire / Apache Geode objects
  * and components.
  *
  * @author John Blum

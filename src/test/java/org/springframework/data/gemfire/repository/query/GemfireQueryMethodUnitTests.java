@@ -58,7 +58,7 @@ import org.springframework.util.ObjectUtils;
 public class GemfireQueryMethodUnitTests {
 
 	@Rule
-	public ExpectedException expectedException = ExpectedException.none();
+	public ExpectedException exception = ExpectedException.none();
 
 	private GemfireMappingContext context = new GemfireMappingContext();
 
@@ -148,15 +148,17 @@ public class GemfireQueryMethodUnitTests {
 	 */
 	@Test
 	public void rejectsQueryMethodWithPageableParameter() throws Exception {
-		expectedException.expect(IllegalStateException.class);
-		expectedException.expectCause(is(nullValue(Throwable.class)));
-		expectedException.expectMessage(Matchers.startsWith("Pagination is not supported by GemFire Repositories; Offending method: someMethod"));
+
+		exception.expect(IllegalStateException.class);
+		exception.expectCause(is(nullValue(Throwable.class)));
+		exception.expectMessage(Matchers.startsWith("Pagination is not supported by Pivotal GemFire Repositories; Offending method: someMethod"));
 
 		new GemfireQueryMethod(Invalid.class.getMethod("someMethod", Pageable.class), metadata, factory, context);
 	}
 
 	@Test
 	public void detectsQueryHintsCorrectly() throws Exception {
+
 		assertThat(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("queryWithHint"),
 			metadata, factory, context).hasHint(), is(true));
 		assertThat(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("queryWithImport"),
@@ -169,6 +171,7 @@ public class GemfireQueryMethodUnitTests {
 
 	@Test
 	public void detectsQueryImportsCorrectly() throws Exception {
+
 		assertThat(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("queryWithHint"),
 			metadata, factory, context).hasImport(), is(false));
 		assertThat(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("queryWithImport"),
@@ -181,6 +184,7 @@ public class GemfireQueryMethodUnitTests {
 
 	@Test
 	public void detectsQueryLimitsCorrectly() throws Exception {
+
 		assertThat(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("queryWithHint"),
 			metadata, factory, context).hasLimit(), is(false));
 		assertThat(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("queryWithImport"),
@@ -193,6 +197,7 @@ public class GemfireQueryMethodUnitTests {
 
 	@Test
 	public void detectsQueryTracingCorrectly() throws Exception {
+
 		assertThat(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("queryWithHint"),
 			metadata, factory, context).hasTrace(), is(true));
 		assertThat(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("queryWithImport"),
@@ -205,6 +210,7 @@ public class GemfireQueryMethodUnitTests {
 
 	@Test
 	public void hintOnQueryWithHint() throws Exception {
+
 		assertQueryHints(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("queryWithHint"),
 			metadata, factory, context), "IdIdx", "LastNameIdx");
 
@@ -220,6 +226,7 @@ public class GemfireQueryMethodUnitTests {
 
 	@Test
 	public void importOnQueryWithImport() throws Exception {
+
 		assertImportStatement(new GemfireQueryMethod(AnnotatedQueryMethods.class.getMethod("queryWithImport"),
 			metadata, factory, context), "org.example.app.domain.ExampleType");
 

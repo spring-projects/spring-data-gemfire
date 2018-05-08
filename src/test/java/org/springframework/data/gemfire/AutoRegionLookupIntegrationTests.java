@@ -26,7 +26,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * Integration tests to test the contract and functionality of Spring Data GemFire's Auto Region Lookup functionality.
+ * Integration tests to test the contract and functionality of SDG's Auto Region Lookup functionality.
  *
  * @author John Blum
  * @see org.junit.Test

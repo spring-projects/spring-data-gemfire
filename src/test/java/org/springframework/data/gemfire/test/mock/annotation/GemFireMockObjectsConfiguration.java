@@ -31,7 +31,7 @@ import org.springframework.data.gemfire.test.mock.config.GemFireMockObjectsBeanP
 
 /**
  * The {@link GemFireMockObjectsConfiguration} class is a Spring {@link Configuration @Configuration} class
- * containing bean definitions to configure GemFire Object mocking.
+ * containing bean definitions to configure Pivotal GemFireObject mocking.
  *
  * @author John Blum
  * @see java.lang.annotation.Annotation

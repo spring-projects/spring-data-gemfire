@@ -33,8 +33,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * Integration tests with test cases testing the functionality of GemFire Index creation using
- * the Spring Data GemFire XML namespace (XSD) and the {@link IndexParser}.
+ * Integration tests with test cases testing the functionality of Pivotal GemFireIndex creation using
+ * the SDG XML namespace (XSD) and the {@link IndexParser}.
  *
  * @author Costin Leau
  * @author David Turanski

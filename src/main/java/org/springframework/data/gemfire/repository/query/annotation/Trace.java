@@ -24,7 +24,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The Trace class is an annotation type to enable GemFire OQL Query debugging.
+ * The Trace class is an annotation type to enable Pivotal GemFire OQL Query debugging.
  *
  * @author John Blum
  * @see java.lang.annotation.Documented

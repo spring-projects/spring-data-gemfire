@@ -31,9 +31,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.data.gemfire.test.support.FileSystemUtils;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.Assert;
 
 /**
@@ -48,40 +49,33 @@ import org.springframework.util.Assert;
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @since 1.3.3
  */
+@RunWith(SpringRunner.class)
 @ContextConfiguration("/org/springframework/data/gemfire/pdxdiskstore-config.xml")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@RunWith(SpringJUnit4ClassRunner.class)
 public class PdxDiskStoreIntegrationTest {
 
-	protected static final int NUMBER_OF_REGION_ENTRIES = 1000;
+	private static final int NUMBER_OF_REGION_ENTRIES = 1000;
 
 	@Resource(name = "pdxDataRegion")
 	private Region<KeyHolder<String>, ValueHolder<Integer>> pdxDataRegion;
 
-	protected static void assertRegionExists(final String expectedRegionName, final String expectedRegionPath, final Region region) {
+	private static void assertRegionExists(String expectedRegionName, String expectedRegionPath, Region region) {
+
 		assertNotNull(region);
+
 		assertEquals(String.format("Expected Region with name %1$s; but was %2$s!",
 			expectedRegionName, region.getName()), expectedRegionName, region.getName());
+
 		assertEquals(String.format("Expected Region with path %1$s; but was %2$s!",
 			expectedRegionPath, region.getFullPath()), expectedRegionPath, region.getFullPath());
 	}
 
-	protected static boolean createDirectory(final File path) {
-		return (path != null && (path.isDirectory() || path.mkdirs()));
+	private static boolean createDirectory(final File path) {
+		return path != null && (path.isDirectory() || path.mkdirs());
 	}
 
-	protected static File createFile(final String pathname) {
+	private static File createFile(final String pathname) {
 		return new File(pathname);
-	}
-
-	protected static void deleteRecursive(final File path) {
-		if (path.isDirectory()) {
-			for (File file : path.listFiles()) {
-				deleteRecursive(file);
-			}
-		}
-
-		path.delete();
 	}
 
 	@BeforeClass
@@ -92,15 +86,15 @@ public class PdxDiskStoreIntegrationTest {
 
 	@AfterClass
 	public static void tearDownAfterClass() {
-		deleteRecursive(createFile("./gemfire"));
+		FileSystemUtils.deleteRecursive(createFile("./gemfire"));
 	}
 
 	@Before
 	public void setup() {
-		assertNotNull("The PdxData GemFire Region was not created successfully!", pdxDataRegion);
+
+		assertNotNull("PdxData Region was not created successfully", pdxDataRegion);
 
 		if (pdxDataRegion.size() == 0) {
-			System.out.printf("Creating entries for Region (%1$s)...%n", pdxDataRegion.getName());
 			for (int index = 1; index <= NUMBER_OF_REGION_ENTRIES; index++) {
 				pdxDataRegion.put(new KeyHolder<String>("key" + index), new ValueHolder<Integer>(index));
 			}
@@ -135,11 +129,10 @@ public class PdxDiskStoreIntegrationTest {
 
 		private T key;
 
-		public KeyHolder() {
-		}
+		public KeyHolder() { }
 
 		public KeyHolder(final T key) {
-			Assert.notNull(key, "The key cannot be null!");
+			Assert.notNull(key, "Key must not be null");
 			this.key = key;
 		}
 
@@ -153,7 +146,8 @@ public class PdxDiskStoreIntegrationTest {
 
 		@Override
 		public boolean equals(final Object obj) {
-			if (obj == this) {
+
+			if (this == obj) {
 				return true;
 			}
 
@@ -168,8 +162,11 @@ public class PdxDiskStoreIntegrationTest {
 
 		@Override
 		public int hashCode() {
+
 			int hashValue = 17;
+
 			hashValue = 37 * hashValue + hashCode(this.getKey());
+
 			return hashValue;
 		}
 
@@ -184,8 +181,7 @@ public class PdxDiskStoreIntegrationTest {
 
 		private T value;
 
-		public ValueHolder() {
-		}
+		public ValueHolder() { }
 
 		public ValueHolder(final T value) {
 			this.value = value;
@@ -201,7 +197,8 @@ public class PdxDiskStoreIntegrationTest {
 
 		@Override
 		public boolean equals(final Object obj) {
-			if (obj == this) {
+
+			if (this == obj) {
 				return true;
 			}
 
@@ -216,8 +213,11 @@ public class PdxDiskStoreIntegrationTest {
 
 		@Override
 		public int hashCode() {
+
 			int hashValue = 17;
+
 			hashValue = 17 * hashValue + hashCode(this.getValue());
+
 			return hashValue;
 		}
 
@@ -226,5 +226,4 @@ public class PdxDiskStoreIntegrationTest {
 			return String.valueOf(getValue());
 		}
 	}
-
 }

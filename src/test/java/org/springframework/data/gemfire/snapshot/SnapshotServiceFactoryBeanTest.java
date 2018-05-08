@@ -205,7 +205,7 @@ public class SnapshotServiceFactoryBeanTest {
 
 		exception.expect(IllegalArgumentException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("The GemFire Cache must not be null");
+		exception.expectMessage("Cache must not be null");
 
 		factoryBean.setCache(null);
 	}
@@ -215,7 +215,7 @@ public class SnapshotServiceFactoryBeanTest {
 
 		exception.expect(IllegalStateException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("The GemFire Cache was not properly initialized");
+		exception.expectMessage("The cache was not properly initialized");
 
 		factoryBean.getCache();
 	}

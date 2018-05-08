@@ -32,7 +32,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * {@link QueryString} is a utility class used to construct GemFire OQL query statements.
+ * {@link QueryString} is a utility class used to construct Pivotal GemFire OQL query statements.
  *
  * @author Oliver Gierke
  * @author David Turanski
@@ -246,7 +246,7 @@ public class QueryString {
 	}
 
 	/**
-	 * Appends the {@link Sort} order to this GemFire OQL Query string.
+	 * Appends the {@link Sort} order to this Pivotal GemFire OQL Query string.
 	 *
 	 * @param sort {@link Sort} indicating the order of the query results.
 	 * @return a new {@link QueryString} with an ORDER BY clause if {@link Sort} is not {@literal null},

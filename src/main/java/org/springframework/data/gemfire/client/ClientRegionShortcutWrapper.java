@@ -21,10 +21,12 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.springframework.util.ObjectUtils;
 
 /**
- * The {@link ClientRegionShortcutWrapper} enum is a Java enumerated type that wraps GemFire's {@link ClientRegionShortcut ClientRegionShortcuts}
- * with Spring Data GemFire {@link ClientRegionShortcutWrapper} enumerated values.
+ * The {@link ClientRegionShortcutWrapper} enum is a Java enumerated type that wraps Pivotal GemFire's
+ * {@link ClientRegionShortcut ClientRegionShortcuts} with SDG {@link ClientRegionShortcutWrapper}
+ * enumerated values.
  *
  * @author John Blum
+ * @see org.apache.geode.cache.DataPolicy
  * @see org.apache.geode.cache.client.ClientRegionShortcut
  * @since 1.4.0
  */

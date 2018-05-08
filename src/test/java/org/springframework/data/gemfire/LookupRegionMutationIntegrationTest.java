@@ -55,7 +55,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * The LookupRegionMutationIntegrationTest class is a test suite of test cases testing the contract and integrated
- * functionality between natively-defined GemFire Cache Regions and SDG's Region lookup functionality combined with
+ * functionality between natively-defined Pivotal GemFireCache Regions and SDG's Region lookup functionality combined with
  * Region attribute(s) mutation.
  *
  * @author John Blum
@@ -111,7 +111,7 @@ public class LookupRegionMutationIntegrationTest {
 
 	private void assertGemFireComponent(Object gemfireComponent, String expectedName) {
 
-		assertNotNull("The GemFire component must not be null!", gemfireComponent);
+		assertNotNull("Component must not be null", gemfireComponent);
 		assertEquals(expectedName, gemfireComponent.toString());
 	}
 

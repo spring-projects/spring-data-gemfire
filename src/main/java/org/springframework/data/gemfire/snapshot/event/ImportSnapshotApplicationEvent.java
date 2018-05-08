@@ -19,7 +19,7 @@ package org.springframework.data.gemfire.snapshot.event;
 import static org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotMetadata;
 
 /**
- * The ImportSnapshotApplicationEvent class is a Spring ApplicationEvent signaling a GemFire Cache or Region 'export'
+ * The ImportSnapshotApplicationEvent class is a Spring ApplicationEvent signaling a Pivotal GemFire Cache or Region 'export'
  * snapshot event.
  *
  * @author John Blum

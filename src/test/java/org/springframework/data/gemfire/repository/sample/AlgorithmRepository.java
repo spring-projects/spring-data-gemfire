@@ -20,7 +20,7 @@ import org.springframework.data.gemfire.repository.GemfireRepository;
 
 /**
  * The AlgorithmRepository class is a Data Access Object (DAO) for accessing and persistent data/state about Algorithms
- * to a GemFire Cache/Region.
+ * to a Pivotal GemFireCache/Region.
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.repository.GemfireRepository

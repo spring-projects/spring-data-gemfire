@@ -24,7 +24,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The Limit class is an annotation type indicating a GemFire OQL Query Limit on the number of results
+ * The Limit class is an annotation type indicating a Pivotal GemFire OQL Query Limit on the number of results
  * that are returned.
  *
  * @author John Blum

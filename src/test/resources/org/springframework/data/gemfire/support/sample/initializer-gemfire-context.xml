@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- data source Spring XML configuration file and meta-data, using GemFire -->
+<!-- data source Spring XML configuration file and meta-data, using Pivotal GemFire-->
 <beans xmlns="http://www.springframework.org/schema/beans"
 	   xmlns:gfe="http://www.springframework.org/schema/gemfire"
 	   xmlns:util="http://www.springframework.org/schema/util"

@@ -59,7 +59,7 @@ public enum SubscriptionEvictionPolicy {
 	/**
 	 * Null-safe utility method for setting the client's subscription eviction policy on the configuration meta-data.
 	 *
-	 * @param config a GemFire ClientSubscriptionConfig object holding the configuration setting and meta-data
+	 * @param config a Pivotal GemFire ClientSubscriptionConfig object holding the configuration setting and meta-data
 	 * about the client's subscription configuration.
 	 * @return the ClientSubscriptionConfig object.
 	 * @see org.apache.geode.cache.server.ClientSubscriptionConfig#setEvictionPolicy(String)

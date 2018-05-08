@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
 
 /**
  *
- * Used to declare a concrete method as a GemFire function implementation
+ * Used to declare a concrete method as a Pivotal GemFire function implementation
  *
  * @author David Turanski
  *
@@ -35,16 +35,16 @@ public @interface GemfireFunction {
 	String id() default "";
 
 	/**
-	 * Attribute to determine whether the GemFire Function is HA (Highly Available).
+	 * Attribute to determine whether the Pivotal GemFire Function is HA (Highly Available).
 	 *
-	 * @return a boolean value indicating whether the defined GemFire Function is HA.
+	 * @return a boolean value indicating whether the defined Pivotal GemFire Function is HA.
 	 */
 	boolean HA() default false;
 
 	/**
-	 * Attribute to determine whether the GemFire Function is optimized for write operations.
+	 * Attribute to determine whether the Pivotal GemFire Function is optimized for write operations.
 	 *
-	 * @return a boolean value indicating if the GemFire Function is configured for optimized write operations.
+	 * @return a boolean value indicating if the Pivotal GemFire Function is configured for optimized write operations.
 	 */
 	boolean optimizeForWrite() default false;
 
@@ -59,7 +59,7 @@ public @interface GemfireFunction {
 	 * Normally follows the method return type, i.e., false if void, true otherwise. This allows overriding
 	 * a void method which uses the resultSender directly.
 	 *
-	 * @return a boolean value indicating if the GemFire Function is expected to return a result.
+	 * @return a boolean value indicating if the Pivotal GemFire Function is expected to return a result.
 	 */
 	boolean hasResult() default false;
 

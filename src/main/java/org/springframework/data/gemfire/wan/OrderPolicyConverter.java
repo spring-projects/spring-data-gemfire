@@ -21,7 +21,7 @@ import org.springframework.data.gemfire.support.AbstractPropertyEditorConverterS
 
 /**
  * The OrderPolicyConverter class is a Spring Converter and JavaBeans PropertyEditor used to convert a String value
- * into an appropriate GemFire Gateway.OrderPolicy enum.
+ * into an appropriate Pivotal GemFire Gateway.OrderPolicy enum.
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.support.AbstractPropertyEditorConverterSupport
@@ -33,11 +33,11 @@ import org.springframework.data.gemfire.support.AbstractPropertyEditorConverterS
 public class OrderPolicyConverter extends AbstractPropertyEditorConverterSupport<Gateway.OrderPolicy> {
 
 	/**
-	 * Converts the given String into a GemFire Gateway.OrderPolicy enum.
+	 * Converts the given String into a Pivotal GemFire Gateway.OrderPolicy enum.
 	 *
 	 * @param source the String to convert.
-	 * @return a GemFire Gateway.OrderPolicy enum for the given String.
-	 * @throws java.lang.IllegalArgumentException if the String is not a valid GemFire Gateway.OrderPolicy.
+	 * @return a Pivotal GemFire Gateway.OrderPolicy enum for the given String.
+	 * @throws java.lang.IllegalArgumentException if the String is not a valid Pivotal GemFire Gateway.OrderPolicy.
 	 * @see org.springframework.data.gemfire.wan.OrderPolicyType#getOrderPolicy()
 	 * @see org.springframework.data.gemfire.wan.OrderPolicyType#valueOfIgnoreCase(String)
 	 * @see org.apache.geode.cache.util.Gateway.OrderPolicy

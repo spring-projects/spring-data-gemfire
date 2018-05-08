@@ -30,7 +30,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * The RepositoryQueriesWithJoinsTest class is a test suite of test cases testing the use of JOINS between 2 Regions
- * in GemFire OQL queries (SELECT statements).
+ * in Pivotal GemFireOQL queries (SELECT statements).
  *
  * @author John Blum
  * @see org.junit.Test

@@ -23,7 +23,7 @@ import org.springframework.data.gemfire.function.config.GemfireFunctionBeanPostP
 import org.w3c.dom.Element;
 
 /**
- * A Spring {@link BeanDefinitionParser} to enable Spring Data GemFire Function annotation support.
+ * A Spring {@link BeanDefinitionParser} Pivotal GemFire Function annotation support.
  *
  * Bean definition parser for the &lt;gfe:annotation-driven&gt; SDG XML namespace (XSD) element.
  *

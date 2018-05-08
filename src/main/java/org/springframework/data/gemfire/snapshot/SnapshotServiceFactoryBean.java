@@ -58,7 +58,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * The SnapshotServiceFactoryBean class is a Spring FactoryBean used to configure and create an instance
- * of an appropriate GemFire Snapshot Service to perform data import and exports.  A CacheSnapshotService is created
+ * of an appropriate Pivotal GemFire Snapshot Service to perform data import and exports.  A CacheSnapshotService is created
  * if the Region is not specified, otherwise a RegionSnapshotService is used based on the configured Region.
  *
  * @author John Blum
@@ -105,10 +105,10 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 	}
 
 	/**
-	 * Constructs and initializes the GemFire Snapshot Service used to take a snapshot of the configured Cache
+	 * Constructs and initializes the Pivotal GemFire Snapshot Service used to take a snapshot of the configured Cache
 	 * or Region if initialized.  In addition, this initialization method will perform the actual import.
 	 *
-	 * @throws Exception if the construction and initialization of the GemFire Snapshot Service fails.
+	 * @throws Exception if the construction and initialization of the Pivotal GemFire Snapshot Service fails.
 	 * @see org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotServiceAdapter
 	 * @see #getSuppressImportOnInit()
 	 * @see #getImports()
@@ -127,10 +127,10 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 
 	/**
 	 * Constructs an appropriate instance of the SnapshotServiceAdapter based on the FactoryBean configuration. If
-	 * a Region has not been specified, then a GemFire Snapshot Service for the Cache is constructed, otherwise
-	 * the GemFire Snapshot Service for the configured Region is used.
+	 * a Region has not been specified, then a Pivotal GemFire Snapshot Service for the Cache is constructed, otherwise
+	 * the Pivotal GemFire Snapshot Service for the configured Region is used.
 	 *
-	 * @return a SnapshotServiceAdapter wrapping the appropriate GemFire Snapshot Service (either Cache or Region)
+	 * @return a SnapshotServiceAdapter wrapping the appropriate Pivotal GemFire Snapshot Service (either Cache or Region)
 	 * depending on the FactoryBean configuration.
 	 * @see #wrap(CacheSnapshotService)
 	 * @see #wrap(RegionSnapshotService)
@@ -144,11 +144,11 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 	}
 
 	/**
-	 * Wraps the GemFire CacheSnapshotService into an appropriate Adapter to uniformly access snapshot operations
+	 * Wraps the Pivotal GemFire CacheSnapshotService into an appropriate Adapter to uniformly access snapshot operations
 	 * on the Cache and Regions alike.
 	 *
-	 * @param cacheSnapshotService the GemFire CacheSnapshotService to wrap.
-	 * @return a SnapshotServiceAdapter wrapping the GemFire CacheSnapshotService.
+	 * @param cacheSnapshotService the Pivotal GemFire CacheSnapshotService to wrap.
+	 * @return a SnapshotServiceAdapter wrapping the Pivotal GemFire CacheSnapshotService.
 	 * @see SnapshotServiceFactoryBean.SnapshotServiceAdapter
 	 * @see SnapshotServiceFactoryBean.CacheSnapshotServiceAdapter
 	 * @see org.apache.geode.cache.snapshot.CacheSnapshotService
@@ -158,11 +158,11 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 	}
 
 	/**
-	 * Wraps GemFire's RegionSnapshotService into an appropriate Adapter to uniformly access snapshot operations
+	 * Wraps Pivotal GemFire's RegionSnapshotService into an appropriate Adapter to uniformly access snapshot operations
 	 * on the Cache and Regions alike.
 	 *
-	 * @param regionSnapshotService the GemFire RegionSnapshotService to wrap.
-	 * @return a SnapshotServiceAdapter wrapping the GemFire RegionSnapshotService.
+	 * @param regionSnapshotService the Pivotal GemFire RegionSnapshotService to wrap.
+	 * @return a SnapshotServiceAdapter wrapping the Pivotal GemFire RegionSnapshotService.
 	 * @see SnapshotServiceFactoryBean.SnapshotServiceAdapter
 	 * @see SnapshotServiceFactoryBean.RegionSnapshotServiceAdapter
 	 * @see org.apache.geode.cache.snapshot.RegionSnapshotService
@@ -172,29 +172,29 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 	}
 
 	/**
-	 * Sets a reference to the GemFire Cache for which the snapshot will be taken.
+	 * Sets a reference to the Pivotal GemFire Cache for which the snapshot will be taken.
 	 *
-	 * @param cache the GemFire Cache used to create an instance of CacheSnapshotService.
+	 * @param cache the Pivotal GemFire Cache used to create an instance of CacheSnapshotService.
 	 * @throws IllegalArgumentException if the Cache reference is null.
 	 * @see org.apache.geode.cache.Cache
 	 * @see #getCache()
 	 */
 	public void setCache(Cache cache) {
 		this.cache = Optional.ofNullable(cache)
-			.orElseThrow(() -> newIllegalArgumentException("The GemFire Cache must not be null"));
+			.orElseThrow(() -> newIllegalArgumentException("Cache must not be null"));
 	}
 
 	/**
-	 * Gets a reference to the GemFire Cache for which the snapshot will be taken.
+	 * Gets a reference to the Pivotal GemFire Cache for which the snapshot will be taken.
 	 *
-	 * @return the GemFire Cache used to create an instance of CacheSnapshotService.
+	 * @return the Pivotal GemFire Cache used to create an instance of CacheSnapshotService.
 	 * @throws IllegalStateException if the Cache argument is null.
 	 * @see org.apache.geode.cache.Cache
 	 * @see #setCache(Cache)
 	 */
 	protected Cache getCache() {
 		return Optional.ofNullable(this.cache)
-			.orElseThrow(() -> newIllegalStateException("The GemFire Cache was not properly initialized"));
+			.orElseThrow(() -> newIllegalStateException("The cache was not properly initialized"));
 	}
 
 	/**
@@ -240,9 +240,9 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 	}
 
 	/**
-	 * Sets a reference to the GemFire Region for which the snapshot will be taken.
+	 * Sets a reference to the Pivotal GemFire Region for which the snapshot will be taken.
 	 *
-	 * @param region the GemFire Region used to create an instance of the RegionSnapshotService.
+	 * @param region the Pivotal GemFire Region used to create an instance of the RegionSnapshotService.
 	 * @see org.apache.geode.cache.Region
 	 * @see #getRegion()
 	 */
@@ -251,9 +251,9 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 	}
 
 	/**
-	 * Gets a reference to the GemFire Region for which the snapshot will be taken.
+	 * Gets a reference to the Pivotal GemFire Region for which the snapshot will be taken.
 	 *
-	 * @return the GemFire Region used to create an instance of the RegionSnapshotService.
+	 * @return the Pivotal GemFire Region used to create an instance of the RegionSnapshotService.
 	 * @see org.apache.geode.cache.Region
 	 * @see #getRegion()
 	 */
@@ -283,10 +283,10 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 	}
 
 	/**
-	 * Gets the reference to the GemFire Snapshot Service created by this FactoryBean.
+	 * Gets the reference to the Pivotal GemFire Snapshot Service created by this FactoryBean.
 	 *
-	 * @return the GemFire Snapshot Service created by this FactoryBean.
-	 * @throws Exception if the GemFire Snapshot Service failed to be created.
+	 * @return the Pivotal GemFire Snapshot Service created by this FactoryBean.
+	 * @throws Exception if the Pivotal GemFire Snapshot Service failed to be created.
 	 * @see SnapshotServiceFactoryBean.SnapshotServiceAdapter
 	 */
 	@Override
@@ -310,7 +310,7 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 	}
 
 	/**
-	 * Determines this this FactoryBean creates single GemFire Snapshot Service instances.
+	 * Determines this this FactoryBean creates single Pivotal GemFire Snapshot Service instances.
 	 *
 	 * @return true.
 	 */
@@ -320,7 +320,7 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 	}
 
 	/**
-	 * Performs an export of the GemFire Cache or Region if configured.
+	 * Performs an export of the Pivotal GemFire Cache or Region if configured.
 	 *
 	 * @throws Exception if the Cache/Region data export operation fails.
 	 * @see org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotServiceAdapter
@@ -334,10 +334,10 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 	}
 
 	/**
-	 * Listens for SnapshotApplicationEvents triggering a GemFire Cache-wide or Region data snapshot import/export
-	 * when details of the event match the criteria of this factory's constructed GemFire SnapshotService.
+	 * Listens for SnapshotApplicationEvents triggering a Pivotal GemFire Cache-wide or Region data snapshot import/export
+	 * when details of the event match the criteria of this factory's constructed Pivotal GemFire SnapshotService.
 	 *
-	 * @param event the SnapshotApplicationEvent triggering a GemFire Cache or Region data import/export.
+	 * @param event the SnapshotApplicationEvent triggering a Pivotal GemFire Cache or Region data import/export.
 	 * @see org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotServiceAdapter
 	 * @see org.springframework.data.gemfire.snapshot.event.ExportSnapshotApplicationEvent
 	 * @see org.springframework.data.gemfire.snapshot.event.ImportSnapshotApplicationEvent
@@ -366,11 +366,11 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 
 	/**
 	 * Determines whether the details of the given SnapshotApplicationEvent match the criteria of this factory
-	 * to trigger a GemFire Cache or Region data export.
+	 * to trigger a Pivotal GemFire Cache or Region data export.
 	 *
 	 * @param event the SnapshotApplicationEvent containing details of the application requested data export.
 	 * @return a boolean value indicating whether the application requested snapshot event details match
-	 * the criteria required by this factory to trigger a GemFire Cache or Region data export.
+	 * the criteria required by this factory to trigger a Pivotal GemFire Cache or Region data export.
 	 * @see SnapshotApplicationEvent
 	 */
 	protected boolean isMatch(SnapshotApplicationEvent event) {
@@ -378,7 +378,7 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 	}
 
 	/**
-	 * Resolves the SnapshotMetadata used to perform the GemFire Cache or Region data snapshot import/export.
+	 * Resolves the SnapshotMetadata used to perform the Pivotal GemFire Cache or Region data snapshot import/export.
 	 * If the event contains specific SnapshotMetadata, then this is preferred over the factory's own
 	 * "import" or "export" SnapshotMetadata.
 	 *
@@ -397,7 +397,7 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 	}
 
 	/**
-	 * The SnapshotServiceAdapter interface is an Adapter adapting both GemFire CacheSnapshotService
+	 * The SnapshotServiceAdapter interface is an Adapter adapting both Pivotal GemFire CacheSnapshotService
 	 * and RegionSnapshotService to treat them uniformly.
 	 *
 	 * @param <K> the class type of the Region key.
@@ -568,7 +568,7 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 	}
 
 	/**
-	 * The CacheSnapshotServiceAdapter is a SnapshotServiceAdapter adapting GemFire's CacheSnapshotService.
+	 * The CacheSnapshotServiceAdapter is a SnapshotServiceAdapter adapting Pivotal GemFire's CacheSnapshotService.
 	 *
 	 * @see SnapshotServiceFactoryBean.SnapshotServiceAdapterSupport
 	 */
@@ -652,7 +652,7 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 	}
 
 	/**
-	 * The RegionSnapshotServiceAdapter is a SnapshotServiceAdapter adapting GemFire's RegionSnapshotService.
+	 * The RegionSnapshotServiceAdapter is a SnapshotServiceAdapter adapting Pivotal GemFire's RegionSnapshotService.
 	 *
 	 * @see SnapshotServiceFactoryBean.SnapshotServiceAdapterSupport
 	 */
@@ -735,7 +735,7 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 	}
 
 	/**
-	 * The SnapshotMetadata class encapsulates details of the GemFire Cache or Region data snapshot
+	 * The SnapshotMetadata class encapsulates details of the Pivotal GemFire Cache or Region data snapshot
 	 * on either import or export.
 	 *
 	 * @param <K> the class type of the Region key.

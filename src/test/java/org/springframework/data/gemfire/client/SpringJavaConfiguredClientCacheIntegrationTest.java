@@ -35,7 +35,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * The SpringJavaConfiguredClientCacheIntegrationTest class is a test suite of test cases testing
- * the proper configuration of a GemFire ClientCache instance using Spring Java-based configuration meta-data.
+ * the proper configuration of a Pivotal GemFireClientCache instance using Spring Java-based configuration meta-data.
  *
  * @author John Blum
  * @see org.junit.Test

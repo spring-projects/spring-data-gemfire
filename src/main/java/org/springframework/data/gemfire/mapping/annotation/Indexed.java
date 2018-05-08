@@ -32,7 +32,7 @@ import org.springframework.data.gemfire.mapping.GemfirePersistentProperty;
 
 /**
  * The {@link Indexed} annotation is used to index a {@link GemfirePersistentEntity} {@link GemfirePersistentProperty},
- * which creates a GemFire/Geode {@link Index} on a GemFire/Geode {@link org.apache.geode.cache.Region}.
+ * which creates a Pivotal GemFire/Apache Geode {@link Index} on a Pivotal GemFire/Apache Geode {@link org.apache.geode.cache.Region}.
  *
  * @author John Blum
  * @see org.springframework.core.annotation.AliasFor
@@ -66,7 +66,7 @@ public @interface Indexed {
 	String expression() default "";
 
 	/**
-	 * The GemFire/Geode {@link org.apache.geode.cache.Region} on which the Index is created.
+	 * The Pivotal GemFire/Apache Geode {@link org.apache.geode.cache.Region} on which the Index is created.
 	 */
 	String from() default "";
 

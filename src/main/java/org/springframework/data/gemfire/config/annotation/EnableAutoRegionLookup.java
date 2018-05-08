@@ -24,12 +24,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.apache.geode.cache.Region;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * The {@link EnableAutoRegionLookup} annotation configures a Spring {@link org.springframework.context.annotation.Configuration}
- * annotated class with the ability to automatically look up and register GemFire {@link org.apache.geode.cache.Region Regions}
- * which may have be defined in {@literal cache.xml} or by using GemFire's Cluster Configuration Service.
+ * The {@link EnableAutoRegionLookup} annotation configures a Spring {@link Configuration} annotated class
+ * with the ability to automatically look up and register Pivotal GemFire {@link Region Regions}
+ * which may have be defined in {@literal cache.xml} or by using Pivotal GemFire's Cluster Configuration Service.
  *
  * This annotation defines the {@code enabled} attribute to allow users to dynamically change the behavior
  * of auto {@link org.apache.geode.cache.Region} lookup at application configuration time using either a SpEL

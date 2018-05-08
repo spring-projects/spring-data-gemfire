@@ -485,7 +485,7 @@ public class ClientRegionFactoryBean<K, V> extends ConfigurableRegionFactoryBean
 	/**
 	 * Sets the CacheLoader used to load data local to the client's Region on cache misses.
 	 *
-	 * @param cacheLoader a GemFire CacheLoader used to load data into the client Region.
+	 * @param cacheLoader a Pivotal GemFire CacheLoader used to load data into the client Region.
 	 * @see org.apache.geode.cache.CacheLoader
 	 */
 	public void setCacheLoader(CacheLoader<K, V> cacheLoader) {
@@ -495,7 +495,7 @@ public class ClientRegionFactoryBean<K, V> extends ConfigurableRegionFactoryBean
 	/**
 	 * Sets the CacheWriter used to perform a synchronous write-behind when data is put into the client's Region.
 	 *
-	 * @param cacheWriter the GemFire CacheWriter used to perform synchronous write-behinds on put ops.
+	 * @param cacheWriter the Pivotal GemFire CacheWriter used to perform synchronous write-behinds on put ops.
 	 * @see org.apache.geode.cache.CacheWriter
 	 */
 	public void setCacheWriter(CacheWriter<K, V> cacheWriter) {

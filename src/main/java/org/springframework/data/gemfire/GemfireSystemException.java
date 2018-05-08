@@ -21,7 +21,7 @@ import org.apache.geode.GemFireException;
 import org.springframework.dao.UncategorizedDataAccessException;
 
 /**
- * GemFire-specific subclass of UncategorizedDataAccessException, for GemFire system errors that do not match any concrete <code>org.springframework.dao</code> exceptions.
+ * GemFire-specific subclass of UncategorizedDataAccessException, for Pivotal GemFire system errors that do not match any concrete <code>org.springframework.dao</code> exceptions.
  *
  * @author Costin Leau
  */

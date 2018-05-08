@@ -19,7 +19,7 @@ package org.springframework.data.gemfire.function.sample;
 import org.springframework.data.gemfire.function.annotation.OnServer;
 
 /**
- * The ExceptionThrowingFunctionExecution interface defines a GemFire Function that throws a RuntimeException.
+ * The ExceptionThrowingFunctionExecution interface defines a Pivotal GemFireFunction that throws a RuntimeException.
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.function.annotation.OnServer

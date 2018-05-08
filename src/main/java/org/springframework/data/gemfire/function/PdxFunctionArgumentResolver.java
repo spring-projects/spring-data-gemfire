@@ -25,8 +25,8 @@ import org.apache.geode.pdx.PdxInstance;
 import org.springframework.util.ClassUtils;
 
 /**
- * The PdxFunctionArgumentResolver class is a Spring Data GemFire FunctionArgumentResolver that automatically resolves
- * PDX types when GemFire is configured with read-serialized set to true, but the application domain classes
+ * The {@link PdxFunctionArgumentResolver} class is a SDG {@link FunctionArgumentResolver} that automatically resolves
+ * PDX types when Pivotal GemFire is configured with read-serialized set to true, but the application domain classes
  * are actually on the classpath.
  *
  * @author John Blum
@@ -39,18 +39,20 @@ class PdxFunctionArgumentResolver extends DefaultFunctionArgumentResolver {
 
 	/*
 	 * (non-Javadoc)
-	 *
 	 * @see org.apache.geode.cache.execute.FunctionContext
 	 */
 	@Override
 	public Object[] resolveFunctionArguments(final FunctionContext functionContext) {
+
 		Object[] functionArguments = super.resolveFunctionArguments(functionContext);
 
 		if (isPdxSerializerConfigured()) {
+
 			int index = 0;
 
 			for (Object functionArgument : functionArguments) {
 				if (functionArgument instanceof PdxInstance) {
+
 					String className = ((PdxInstance) functionArgument).getClassName();
 
 					if (isDeserializationNecessary(className)) {
@@ -82,6 +84,7 @@ class PdxFunctionArgumentResolver extends DefaultFunctionArgumentResolver {
 	 * @see org.apache.geode.cache.CacheFactory#getAnyInstance()
 	 */
 	boolean isPdxSerializerConfigured() {
+
 		try {
 			return (CacheFactory.getAnyInstance().getPdxSerializer() != null);
 		}
@@ -117,6 +120,7 @@ class PdxFunctionArgumentResolver extends DefaultFunctionArgumentResolver {
 	 * @see java.lang.reflect.Method#getParameterTypes()
 	 */
 	boolean functionAnnotatedMethodHasParameterOfType(final String className) {
+
 		for (Class<?> parameterType : getFunctionAnnotatedMethod().getParameterTypes()) {
 			if (parameterType.getName().equals(className)) {
 				return true;
@@ -125,5 +129,4 @@ class PdxFunctionArgumentResolver extends DefaultFunctionArgumentResolver {
 
 		return false;
 	}
-
 }

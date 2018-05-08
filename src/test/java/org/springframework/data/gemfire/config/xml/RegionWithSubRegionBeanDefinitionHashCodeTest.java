@@ -30,7 +30,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * The RegionWithSubRegionBeanDefinitionHashCodeTest class is a test suite for testing the hashCode() method of a
- * Spring container BeanDefinition representing a GemFire Region having SubRegions.  This test suite is meant to
+ * Spring container BeanDefinition representing a Pivotal GemFireRegion having SubRegions.  This test suite is meant to
  * ensure the correct behavior of and provide regression coverage for, JIRA issue SGF-178, "parent attribute causes
  * endless loop in hashCode".
  *

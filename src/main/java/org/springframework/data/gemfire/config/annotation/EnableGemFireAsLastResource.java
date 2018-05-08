@@ -27,7 +27,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
 
 /**
- * The {@link EnableGemFireAsLastResource} annotation is used to enable GemFire as a Last Resource in a Spring,
+ * The {@link EnableGemFireAsLastResource} annotation is used to enable Pivotal GemFire as a Last Resource in a Spring,
  * CMT/JTA Transaction.
  *
  * @author John Blum

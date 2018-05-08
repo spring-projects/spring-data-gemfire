@@ -47,7 +47,7 @@ import org.springframework.util.Assert;
  * in the cluster.
  *
  * Note: any schema changing functionality (e.g. {@link #createRegion(RegionDefinition)}) does not get recorded by
- * the GemFire/Geode Cluster Configuration Service using this strategy.
+ * the Pivotal GemFire/Apache Geode Cluster Configuration Service using this strategy.
  *
  * @author John Blum
  * @see org.apache.geode.cache.client.ClientCache
@@ -91,7 +91,7 @@ public class FunctionGemfireAdminTemplate extends AbstractGemfireAdminOperations
 	 * / Apache Geode cluster.
 	 *
 	 * @return an {@link Iterable} of servers-side {@link Region} names for all {@link Region Regions} defined
-	 * across all servers in the remote GemFire/Geode cluster.
+	 * across all servers in the remote Pivotal GemFire/Apache Geode cluster.
 	 * @see java.lang.Iterable
 	 */
 	@Override

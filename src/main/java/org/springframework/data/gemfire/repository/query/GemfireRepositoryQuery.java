@@ -21,7 +21,7 @@ import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.util.Assert;
 
 /**
- * Base class for GemFire specific {@link RepositoryQuery} implementations.
+ * Base class for Pivotal GemFire specific {@link RepositoryQuery} implementations.
  * <p>
  * @author Oliver Gierke
  * @author David Turanski

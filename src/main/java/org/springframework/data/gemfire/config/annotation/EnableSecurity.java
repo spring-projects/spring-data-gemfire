@@ -122,7 +122,7 @@ public @interface EnableSecurity {
 	String securityPostProcessorClassName() default "";
 
 	/**
-	 * The {@literal security-username} used by a GemFire cache client application required to authenticate.
+	 * The {@literal security-username} used by a Pivotal GemFire cache client application required to authenticate.
 	 *
 	 * Defaults to unset.
 	 *
@@ -131,7 +131,7 @@ public @interface EnableSecurity {
 	String securityUsername() default "";
 
 	/**
-	 * The {@literal security-password} used by a GemFire cache client application required to authenticate.
+	 * The {@literal security-password} used by a Pivotal GemFire cache client application required to authenticate.
 	 *
 	 * Defaults to unset.
 	 *
@@ -140,7 +140,7 @@ public @interface EnableSecurity {
 	String securityPassword() default "";
 
 	/**
-	 * Sets the Geode System Property referring to the location of an Apache Shiro INI file used to configure
+	 * Sets the Apache Geode System Property referring to the location of an Apache Shiro INI file used to configure
 	 * the Apache Shiro Security Framework to secure Apache Geode.
 	 *
 	 * Default is unset.

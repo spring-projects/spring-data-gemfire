@@ -34,7 +34,7 @@ import org.springframework.util.ObjectUtils;
 
 /**
  * A Spring {@link BeanFactoryPostProcessor} used to register a Client Region Proxy bean for each Region
- * accessible to a GemFire DataSource. If the Region is already defined, the bean definition will not be overridden.
+ * accessible to a Pivotal GemFire DataSource. If the Region is already defined, the bean definition will not be overridden.
  *
  * @author David Turanski
  * @author John Blum
@@ -57,10 +57,10 @@ public class GemfireDataSourcePostProcessor implements BeanFactoryPostProcessor 
 
 	/**
 	 * Constructs an instance of the GemfireDataSourcePostProcessor BeanFactoryPostProcessor class initialized
-	 * with the specified GemFire ClientCache instance for creating client PROXY Regions for all data Regions
-	 * configured in the GemFire cluster.
+	 * with the specified Pivotal GemFire ClientCache instance for creating client PROXY Regions for all data Regions
+	 * configured in the Pivotal GemFire cluster.
 	 *
-	 * @param clientCache the GemFire ClientCache instance.
+	 * @param clientCache the Pivotal GemFire ClientCache instance.
 	 * @see org.apache.geode.cache.client.ClientCache
 	 */
 	public GemfireDataSourcePostProcessor(ClientCache clientCache) {

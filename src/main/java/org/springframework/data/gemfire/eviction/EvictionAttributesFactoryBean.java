@@ -116,7 +116,7 @@ public class EvictionAttributesFactoryBean implements FactoryBean<EvictionAttrib
 	}
 
 	/**
-	 * Sets the GemFire ObjectSizer used in determining object sizes of data stored in the Cache.
+	 * Sets the Pivotal GemFire ObjectSizer used in determining object sizes of data stored in the Cache.
 	 *
 	 * @param objectSizer the ObjectSizer used in sizing object data stored in the Cache.
 	 * @see org.apache.geode.cache.util.ObjectSizer
@@ -126,7 +126,7 @@ public class EvictionAttributesFactoryBean implements FactoryBean<EvictionAttrib
 	}
 
 	/**
-	 * Gets the GemFire ObjectSizer used in determining object sizes of data stored in the Cache.
+	 * Gets the Pivotal GemFire ObjectSizer used in determining object sizes of data stored in the Cache.
 	 *
 	 * @return the ObjectSizer used in sizing object data stored in the Cache.
 	 * @see org.apache.geode.cache.util.ObjectSizer

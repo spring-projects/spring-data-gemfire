@@ -31,7 +31,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * The AlgorithmRepositoryTest class is a test suite of test cases testing the contract and functionality of GemFire's
+ * The AlgorithmRepositoryTest class is a test suite of test cases testing the contract and functionality of Pivotal GemFire's
  * Repository extension when using a plain old Java interface for defining the application domain object/entity type,
  * rather than a Java class, that is the subject of the persistence operations.
  *
@@ -55,8 +55,9 @@ public class AlgorithmRepositoryTest {
 
 	@Test
 	public void algorithmsRepositoryFunctionsCorrectly() {
+
 		assertNotNull("A reference to the AlgorithmRepository was not properly configured!", algorithmRepo);
-		assertNotNull("A reference to the 'Algorithms' GemFire Cache Region was not properly configured!",
+		assertNotNull("A reference to the 'Algorithms' Cache Region was not properly configured!",
 			algorithmsRegion);
 		assertEquals("Algorithms", algorithmsRegion.getName());
 		assertEquals("/Algorithms", algorithmsRegion.getFullPath());
@@ -90,9 +91,8 @@ public class AlgorithmRepositoryTest {
 		}
 	}
 
-	protected static final class BinarySearch extends AbstractAlgorithm {
-	}
+	protected static final class BinarySearch extends AbstractAlgorithm { }
 
-	protected static final class HeapSort extends AbstractAlgorithm {
-	}
+	protected static final class HeapSort extends AbstractAlgorithm { }
+
 }

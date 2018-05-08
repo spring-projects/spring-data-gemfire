@@ -204,7 +204,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	 *
 	 * However, if the {@link BeanFactory} was not configured, or no bean exists in the Spring container
 	 * with the given {@link String name} or of the {@link Pool} type, then the named {@link Pool} is looked up
-	 * in GemFire/Geode's {@link PoolManager}.
+	 * in Pivotal GemFire/Apache Geode's {@link PoolManager}.
 	 *
 	 * @param poolName {@link String} containing the name of the {@link Pool} to initialize.
 	 * @return the given {@link Pool} name.
@@ -405,9 +405,9 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	}
 
 	/**
-	 * Set the underlying RegionService (GemFire Cache) used for registering Queries.
+	 * Set the underlying RegionService (Pivotal GemFire Cache) used for registering Queries.
 	 *
-	 * @param cache the RegionService (GemFire Cache) used for registering Queries.
+	 * @param cache the RegionService (Pivotal GemFire Cache) used for registering Queries.
 	 * @see org.apache.geode.cache.RegionService
 	 */
 	public void setCache(RegionService cache) {
@@ -549,9 +549,9 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	}
 
 	/**
-	 * Set the GemFire QueryService used by this container to create ContinuousQueries (CQ).
+	 * Set the Pivotal GemFire QueryService used by this container to create ContinuousQueries (CQ).
 	 *
-	 * @param queryService the GemFire QueryService object used by the container to create ContinuousQueries (CQ).
+	 * @param queryService the Pivotal GemFire QueryService object used by the container to create ContinuousQueries (CQ).
 	 * @see org.apache.geode.cache.query.QueryService
 	 */
 	public void setQueryService(QueryService queryService) {

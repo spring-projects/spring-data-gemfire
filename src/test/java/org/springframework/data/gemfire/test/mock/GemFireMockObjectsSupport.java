@@ -138,7 +138,7 @@ import org.springframework.util.Assert;
 
 /**
  * The {@link GemFireMockObjectsSupport} class is an abstract base class encapsulating factory methods for creating
- * Mock GemFire Objects (e.g. {@link Cache}, {@link ClientCache}, {@link Region}, etc).
+ * Mock Pivotal GemFireObjects (e.g. {@link Cache}, {@link ClientCache}, {@link Region}, etc).
  *
  * @author John Blum
  * @see org.apache.geode.cache.Cache
@@ -395,10 +395,10 @@ public abstract class GemFireMockObjectsSupport extends MockObjectsSupport {
 	}
 
 	/**
-	 * Resolves the single, remembered {@link GemFireCache} if using GemFire in Singleton-mode.
+	 * Resolves the single, remembered {@link GemFireCache} if using Pivotal GemFirein Singleton-mode.
 	 *
 	 * @param <T> {@link Class sub-type} of the {@link GemFireCache} instance.
-	 * @param useSingletonCache boolean value indicating if mock infrastructure is using GemFire Singletons.
+	 * @param useSingletonCache boolean value indicating if mock infrastructure is using Pivotal GemFireSingletons.
 	 * @return an {@link Optional}, single remembered instance of the {@link GemFireCache}.
 	 * @see org.apache.geode.cache.GemFireCache
 	 */

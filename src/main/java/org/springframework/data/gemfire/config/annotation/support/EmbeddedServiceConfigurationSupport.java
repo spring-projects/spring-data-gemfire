@@ -70,7 +70,7 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 
 	/**
 	 * Returns a reference to an instance of the {@link AbstractCacheConfiguration} class used to configure
-	 * a GemFire (Singleton, client or peer) cache instance along with it's associated, embedded services.
+	 * a Pivotal GemFire (Singleton, client or peer) cache instance along with it's associated, embedded services.
 	 *
 	 * @param <T> {@link Class} type extension of {@link AbstractCacheConfiguration}.
 	 * @return a reference to a single {@link AbstractCacheConfiguration} instance.
@@ -233,14 +233,14 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 
 		/**
 		 * Constructs a new instance of the {@link GemFirePropertiesBeanPostProcessor} initialized with
-		 * the given GemFire/Geode {@link Properties}.
+		 * the given Pivotal GemFire/Apache Geode {@link Properties}.
 		 *
 		 * @param gemfireProperties {@link Properties} used to configure Pivotal GemFire or Apache Geode.
 		 * @throws IllegalArgumentException if {@link Properties} are {@literal null} or empty.
 		 * @see java.util.Properties
 		 */
 		protected GemFirePropertiesBeanPostProcessor(Properties gemfireProperties) {
-			Assert.notEmpty(gemfireProperties, "GemFire Properties are required");
+			Assert.notEmpty(gemfireProperties, "Pivotal GemFire Properties are required");
 			this.gemfireProperties = gemfireProperties;
 		}
 

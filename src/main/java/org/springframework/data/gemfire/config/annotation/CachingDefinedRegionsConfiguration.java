@@ -67,7 +67,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * The {@link CachingDefinedRegionsConfiguration} class is a Spring {@link Configuration @Configuration} class
- * that applies configuration to a Spring (Data GemFire/Geode) application to create GemFire/Geode cache
+ * that applies configuration to a Spring (Data Pivotal GemFire/Apache Geode) application to create Pivotal GemFire/Apache Geode cache
  * {@link Region Regions} based on the use of Spring's Cache Abstraction to enable caching for application
  * service classes and methods.
  *

@@ -149,9 +149,9 @@ public class ApacheShiroSecurityConfiguration extends AbstractAnnotationConfigSu
 	 * declared in the Spring {@link org.springframework.context.ApplicationContext}.
 	 *
 	 * This {@link Bean} definition declares a dependency on the Apache Geode {@link GemFireCache} instance
-	 * in order to ensure the Geode cache is created and initialized first.  This ensures that any internal Geode
-	 * security configuration logic is evaluated and processed before SDG attempts to configure Apache Shiro
-	 * as Apache Geode's security provider.
+	 * in order to ensure the Apache Geode cache is created and initialized first.  This ensures that any internal
+	 * Apache Geode security configuration logic is evaluated and processed before SDG attempts to configure
+	 * Apache Shiro as Apache Geode's security provider.
 	 *
 	 * Additionally, this {@link Bean} definition will register the Apache Shiro
 	 * {@link org.apache.geode.security.SecurityManager} with the Apache Shiro security framework

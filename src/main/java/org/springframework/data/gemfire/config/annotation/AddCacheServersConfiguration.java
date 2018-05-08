@@ -26,7 +26,7 @@ import org.springframework.core.type.AnnotationMetadata;
 /**
  * The {@link AddCacheServersConfiguration} class registers {@link org.springframework.data.gemfire.server.CacheServerFactoryBean}
  * bean definitions for all {@link EnableCacheServer} annotation configuration meta-data defined in
- * the {@link EnableCacheServers} annotation on a GemFire peer cache application class.
+ * the {@link EnableCacheServers} annotation on a Pivotal GemFire peer cache application class.
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.config.annotation.AddCacheServerConfiguration

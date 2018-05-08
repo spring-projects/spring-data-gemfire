@@ -23,8 +23,7 @@ import org.springframework.data.repository.config.RepositoryBeanDefinitionParser
 import org.springframework.data.repository.config.RepositoryConfigurationExtension;
 
 /**
- * Spring {@link org.springframework.beans.factory.xml.NamespaceHandler} for Spring Data GemFire
- * XML namespace (XSD) bean definitions.
+ * Spring {@link org.springframework.beans.factory.xml.NamespaceHandler} for SDG XML namespace (XSD) bean definitions.
  *
  * @author Costin Leau
  * @author David Turanski

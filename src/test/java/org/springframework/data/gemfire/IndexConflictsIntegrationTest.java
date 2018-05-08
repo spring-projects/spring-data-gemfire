@@ -56,7 +56,7 @@ import org.springframework.context.annotation.Import;
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.context.annotation.Import
  * @see <a href="https://jira.spring.io/browse/SGF-432">IndexFactoryBean traps IndexExistsException instead of IndexNameConflictException</a>
- * @see <a href="https://jira.spring.io/browse/SGF-637">Improve IndexFactoryBean's resilience and options for handling GemFire IndexExistsExceptions and IndexNameConflictExceptions</a>
+ * @see <a href="https://jira.spring.io/browse/SGF-637">Improve IndexFactoryBean's resilience and options for handling Pivotal GemFireIndexExistsExceptions and IndexNameConflictExceptions</a>
  * @since 1.6.3
  */
 public class IndexConflictsIntegrationTest {

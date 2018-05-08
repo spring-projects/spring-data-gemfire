@@ -28,7 +28,7 @@
 	<gfe:client-region id="Example" pool-name="serverPool" shortcut="PROXY"
 					   key-constraint="java.lang.String" value-constraint="java.lang.Integer"/>
 
-	<!-- Keep the definition of this GemFire Pool bean after the Region (Example) that depends on it! -->
+	<!-- Keep the definition of this Pivotal GemFirePool bean after the Region (Example) that depends on it! -->
 	<gfe:pool id="serverPool" servers="${gemfire.cache.client.pool.server.hosts-and-ports}">
 		<gfe:server host="${gemfire.cache.client.pool.server.host}" port="${gemfire.cache.client.pool.server.port}"/>
 	</gfe:pool>

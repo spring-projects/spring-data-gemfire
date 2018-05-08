@@ -181,12 +181,12 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 
 	/**
 	 * Constructs an instance of {@link GemfireAdminOperations} to perform administrative, schema functions
-	 * on a GemFire cache cluster as well as a client cache from a cache client.
+	 * on a Pivotal GemFire cache cluster as well as a client cache from a cache client.
 	 *
 	 * @param clientCache {@link ClientCache} instance used by the {@link GemfireAdminOperations} interface
-	 * to access the GemFire system.
+	 * to access the Pivotal GemFire system.
 	 * @return an implementation of the {@link GemfireAdminOperations} interface to perform administrative functions
-	 * on a GemFire system.
+	 * on a Pivotal GemFire system.
 	 * @see org.springframework.data.gemfire.config.admin.GemfireAdminOperations
 	 * @see org.apache.geode.cache.client.ClientCache
 	 */
@@ -206,10 +206,10 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 
 	/**
 	 * Constructs an instance of {@link SchemaObjectCollector} to inspect the application's context
-	 * and find all the GemFire schema objects declared of a particular type or types.
+	 * and find all the Pivotal GemFire schema objects declared of a particular type or types.
 	 *
-	 * @return a new instance of {@link SchemaObjectCollector} to inspect a GemFire system schema
-	 * in search of specific GemFire schema objects (e.g. {@link Region} or {@link Index}).
+	 * @return a new instance of {@link SchemaObjectCollector} to inspect a Pivotal GemFire system schema
+	 * in search of specific Pivotal GemFire schema objects (e.g. {@link Region} or {@link Index}).
 	 * @see org.springframework.data.gemfire.config.schema.SchemaObjectCollector
 	 */
 	private SchemaObjectCollector<?> newSchemaObjectCollector() {
@@ -221,7 +221,7 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 	}
 
 	/**
-	 * Constructs an instance of {@link SchemaObjectDefiner} used to reverse engineer a GemFire schema object instance
+	 * Constructs an instance of {@link SchemaObjectDefiner} used to reverse engineer a Pivotal GemFire schema object instance
 	 * to build a definition.
 	 *
 	 * @return a new instance of {@link SchemaObjectDefiner}.

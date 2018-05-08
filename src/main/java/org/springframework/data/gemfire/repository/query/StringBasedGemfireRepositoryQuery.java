@@ -215,7 +215,7 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	 * Returns the given object as a Collection. Collections will be returned as is, Arrays will be converted into a
 	 * Collection and all other objects will be wrapped into a single-element Collection.
 	 *
-	 * @param source the resulting object from the GemFire Query.
+	 * @param source the resulting object from the Pivotal GemFire Query.
 	 * @return the querying resulting object as a Collection.
 	 * @see java.util.Arrays#asList(Object[])
 	 * @see java.util.Collection

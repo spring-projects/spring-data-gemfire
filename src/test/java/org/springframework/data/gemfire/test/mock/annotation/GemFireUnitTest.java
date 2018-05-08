@@ -29,8 +29,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * The {@link GemFireUnitTest} annotation marks a test class as a GemFire Unit Test
- * with GemFire Object mocking enabled.
+ * The {@link GemFireUnitTest} annotation marks a test class as a Pivotal GemFireUnit Test
+ * with Pivotal GemFireObject mocking enabled.
  *
  * Additionally, this annotation enables Spring's {@link SpringRunner} JUnit Runner implementation
  * using JUnit's {@link RunWith} annotation.

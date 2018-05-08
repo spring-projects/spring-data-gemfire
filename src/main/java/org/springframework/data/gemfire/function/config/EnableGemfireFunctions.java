@@ -22,7 +22,7 @@ import java.lang.annotation.Target;
 import org.springframework.context.annotation.Import;
 
 /**
- * Enables GemFire annotated Function implementations.
+ * Enables Pivotal GemFire annotated Function implementations.
  *
  * Causes the container to discover any beans that are annotated with {code}@GemfireFunction{code},
  * wrap them in a {@link org.springframework.data.gemfire.function.PojoFunctionWrapper},

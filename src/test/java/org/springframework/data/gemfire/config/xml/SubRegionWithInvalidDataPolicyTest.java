@@ -27,13 +27,13 @@ import org.xml.sax.SAXParseException;
 
 /**
  * The SubRegionWithInvalidDataPolicyTest class is a test suite of test cases testing the data-policy and persistent
- * attributes settings are consistent for GemFire SubRegion bean definitions.
+ * attributes settings are consistent for Pivotal GemFireSubRegion bean definitions.
  *
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
- * @since GemFire 7.0.1
- * @since Spring Data GemFire 1.4.0
+ * @since Pivotal GemFire7.0.1
+ * @since SDG 1.4.0
  */
 public class SubRegionWithInvalidDataPolicyTest {
 

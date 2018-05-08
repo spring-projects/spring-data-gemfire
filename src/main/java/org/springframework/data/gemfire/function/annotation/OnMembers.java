@@ -18,7 +18,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to declare an interface as a GemFire OnMembers Function Execution
+ * Annotation to declare an interface as a Pivotal GemFire OnMembers Function Execution
  * @author David Turanski
  *
  */
@@ -27,16 +27,16 @@ import java.lang.annotation.Target;
 public @interface OnMembers {
 
 	/**
-	 * The bean name of the POJO interface defining the GemFire Function executions.
+	 * The bean name of the POJO interface defining the Pivotal GemFire Function executions.
 	 *
-	 * @return the bean name (id) of the POJO interface defining the GemFire Function executions.
+	 * @return the bean name (id) of the POJO interface defining the Pivotal GemFire Function executions.
 	 */
 	String id() default "";
 
 	/**
-	 * The GemFire Group to which the members must belong to target the Function execution.
+	 * The Pivotal GemFire Group to which the members must belong to target the Function execution.
 	 *
-	 * @return the name of the GemFire Group to which the members must belong for the targeted the Function execution.
+	 * @return the name of the Pivotal GemFire Group to which the members must belong for the targeted the Function execution.
 	 */
 	String groups() default "";
 

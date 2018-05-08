@@ -36,7 +36,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * The UsingQueryAnnotationExtensionsInUserRepositoryIntegrationTest class is a test suite of test cases testing
- * the contract and functionality of the Spring Data Commons Repository abstraction, Spring Data GemFire Repository
+ * the contract and functionality of the Spring Data Commons Repository abstraction, SDG Repository
  * extention with custom OQL Query annotations.
  *
  * @author John Blum

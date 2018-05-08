@@ -29,8 +29,8 @@ import org.w3c.dom.Element;
  * Bean definition parser for the &lt;gfe:auto-region-lookup&gt; SDG XML namespace (XSD) element.
  *
  * This parser will register a Spring {@link org.springframework.beans.factory.config.BeanPostProcessor)
- * that discovers all Regions defined in GemFire's native {@literal cache.xml} file, or when using
- * GemFire 8's cluster-based configuration service to define Regions, to create corresponding beans
+ * that discovers all Regions defined in Pivotal GemFire's native {@literal cache.xml} file, or when using
+ * Pivotal GemFire 8's cluster-based configuration service to define Regions, to create corresponding beans
  * in the Spring application context.
  *
  * @author John Blum

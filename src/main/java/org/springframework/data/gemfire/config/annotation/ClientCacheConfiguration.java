@@ -190,14 +190,14 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 	}
 
 	/**
-	 * Configures Spring container infrastructure components and beans used by Spring Data GemFire
-	 * to enable Pivotal GemFire or Apache Geode to function properly inside a Spring context.
+	 * Configures Spring container infrastructure components and beans used by SDG to enable Pivotal GemFire
+	 * or Apache Geode to function properly inside a Spring context.
 	 *
 	 * This overridden method configures and registers additional Spring components and bean applicable to
 	 * {@link ClientCache ClientCaches}.
 	 *
 	 * @param importMetadata {@link AnnotationMetadata} containing annotation meta-data
-	 * for the Spring Data GemFire cache application class.
+	 * for the SDG cache application class.
 	 * @see org.springframework.core.type.AnnotationMetadata
 	 */
 	@Override

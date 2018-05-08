@@ -21,7 +21,7 @@ import org.springframework.data.gemfire.support.AbstractPropertyEditorConverterS
 
 /**
  * The EvictionActionConverter class is a Spring Converter and JavaBeans PropertyEditor that converts
- * an Object value into an instance of GemFire EvictionAction.
+ * an Object value into an instance of Pivotal GemFire EvictionAction.
  *
  * @author John Blum
  * @see EvictionActionType
@@ -33,12 +33,12 @@ import org.springframework.data.gemfire.support.AbstractPropertyEditorConverterS
 public class EvictionActionConverter extends AbstractPropertyEditorConverterSupport<EvictionAction> {
 
 	/**
-	 * Converts the given String into a GemFire EvictionAction value.
+	 * Converts the given String into a Pivotal GemFire EvictionAction value.
 	 *
 	 * @param source the String to convert.
-	 * @return the GemFire EvictionAction value matching the given String.
+	 * @return the Pivotal GemFire EvictionAction value matching the given String.
 	 * @throws java.lang.IllegalArgumentException if the String could not be converted into
-	 * an instance of GemFire EvictionAction.
+	 * an instance of Pivotal GemFire EvictionAction.
 	 * @see org.apache.geode.cache.EvictionAction
 	 */
 	@Override

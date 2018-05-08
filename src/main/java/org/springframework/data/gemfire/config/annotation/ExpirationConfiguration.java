@@ -48,7 +48,7 @@ import org.springframework.util.Assert;
 
 /**
  * {@link ExpirationConfiguration} is a Spring {@link Configuration} class used to configure expiration policies
- * for GemFire/Geode {@link Region Regions}.
+ * for Pivotal GemFire/Apache Geode {@link Region Regions}.
  *
  * @author John Blum
  * @see org.springframework.context.annotation.Configuration

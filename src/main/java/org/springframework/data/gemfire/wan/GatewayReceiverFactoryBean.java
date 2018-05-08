@@ -27,7 +27,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * Spring {@link FactoryBean} for creating a GemFire {@link GatewayReceiver}.
+ * Spring {@link FactoryBean} for creating a Pivotal GemFire {@link GatewayReceiver}.
  *
  * @author David Turanski
  * @author John Blum
@@ -57,9 +57,9 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 
 	/**
 	 * Constructs an instance of the {@link GatewayReceiverFactoryBean} class initialized with a reference to
-	 * the GemFire {@link Cache} used to configure and initialize a GemFire {@link GatewayReceiver}.
+	 * the Pivotal GemFire {@link Cache} used to configure and initialize a Pivotal GemFire {@link GatewayReceiver}.
 	 *
-	 * @param cache reference to the GemFire {@link Cache} used to create the {@link GatewayReceiver}.
+	 * @param cache reference to the Pivotal GemFire {@link Cache} used to create the {@link GatewayReceiver}.
 	 * @see org.apache.geode.cache.Cache
 	 */
 	public GatewayReceiverFactoryBean(Cache cache) {

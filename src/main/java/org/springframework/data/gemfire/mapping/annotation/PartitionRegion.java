@@ -130,7 +130,7 @@ public @interface PartitionRegion {
 	 *
 	 * This setting may also be the name of a Spring bean defined in the Spring context.
 	 *
-	 * Defaults to unset, thus using the default GemFire/Geode partitioning strategy.
+	 * Defaults to unset, thus using the default Pivotal GemFire/Apache Geode partitioning strategy.
 	 */
 	String partitionResolverName() default "";
 
@@ -142,7 +142,7 @@ public @interface PartitionRegion {
 	 * with this persistent entity overflows data to disk during eviction due to entry/heap/memory constraints.
 	 *
 	 * A {@link org.apache.geode.cache.Region} can also be persistent without an explicit
-	 * {@link org.apache.geode.cache.DiskStore} defined; in that case, GemFire/Geode writes to the "DEFAULT"
+	 * {@link org.apache.geode.cache.DiskStore} defined; in that case, Pivotal GemFire/Apache Geode writes to the "DEFAULT"
 	 * {@link org.apache.geode.cache.DiskStore}.
 	 *
 	 * Defaults to {@literal false}.

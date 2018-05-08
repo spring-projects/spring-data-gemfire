@@ -54,13 +54,12 @@ public class GemfireRepositoryExtension extends CdiRepositoryExtensionSupport {
 
 	final Set<Bean<Region>> regionBeans = new HashSet<>();
 
-	/* (non-Javadoc) */
 	public GemfireRepositoryExtension() {
-		logger.info("Activating CDI extension for Spring Data GemFire Repositories");
+		logger.info("Activating CDI extension for SDG Repositories");
 	}
 
 	/**
-	 * Implementation of an observer that captures GemFire Region beans defined in the CDI container, storing them
+	 * Implementation of an observer that captures Pivotal GemFire Region beans defined in the CDI container, storing them
 	 * along with any defined GemfireMappingContexts for later construction of the Repository beans.
 	 *
 	 * @param <X> class type of the bean instance.
@@ -128,14 +127,13 @@ public class GemfireRepositoryExtension extends CdiRepositoryExtensionSupport {
 		}
 	}
 
-	/* (non-Javadoc) */
 	<T> CdiRepositoryBean<T> createRepositoryBean(BeanManager beanManager, Class<T> repositoryType,
 			Set<Annotation> qualifiers) {
 
 		// Determine the GemfireMappingContext bean that matches the qualifiers of the Repository.
 		Bean<GemfireMappingContext> gemfireMappingContextBean = mappingContexts.get(qualifiers);
 
-		// Construct and return a GemFire Repository bean.
+		// Construct and return a Pivotal GemFire Repository bean.
 		return new GemfireRepositoryBean<T>(beanManager, repositoryType, qualifiers, getCustomImplementationDetector(),
 			gemfireMappingContextBean, regionBeans);
 	}

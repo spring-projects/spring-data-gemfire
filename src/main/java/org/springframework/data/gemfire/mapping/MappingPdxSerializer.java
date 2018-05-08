@@ -44,8 +44,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 /**
- * GemFire {@link PdxSerializer} implementation using the Spring Data GemFire {@link GemfireMappingContext}
- * to read and write entities from/to GemFire PDX bytes.
+ * Pivotal GemFire {@link PdxSerializer} implementation using the SDG {@link GemfireMappingContext} to read and write entities
+ * from/to Pivotal GemFire PDX bytes.
  *
  * @author Oliver Gierke
  * @author David Turanski
@@ -343,9 +343,9 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	}
 
 	/**
-	 * Returns the configured {@link EntityInstantiators} handling instantiation for GemFire persistent entities.
+	 * Returns the configured {@link EntityInstantiators} handling instantiation for Pivotal GemFire persistent entities.
 	 *
-	 * @return the configured {@link EntityInstantiators} handling instantiation for GemFire persistent entities.
+	 * @return the configured {@link EntityInstantiators} handling instantiation for Pivotal GemFire persistent entities.
 	 * @see org.springframework.data.convert.EntityInstantiators
 	 */
 	protected EntityInstantiators getGemfireInstantiators() {
@@ -379,7 +379,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 
 	/**
 	 * Returns a reference to the configured {@link GemfireMappingContext mapping context} used to handling mapping
-	 * logic between GemFire persistent entities and application domain object {@link Class types}.
+	 * logic between Pivotal GemFire persistent entities and application domain object {@link Class types}.
 	 *
 	 * @return a reference to the configured {@link GemfireMappingContext mapping context} for Pivotal GemFire.
 	 * @see org.springframework.data.gemfire.mapping.GemfireMappingContext
@@ -462,7 +462,6 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 		return propertyAccessor.getBean();
 	}
 
-	/* (non-Javadoc) */
 	boolean isWritable(GemfirePersistentEntity<?> entity, GemfirePersistentProperty persistentProperty) {
 
 		return !entity.isConstructorArgument(persistentProperty)
@@ -532,7 +531,6 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 		return false;
 	}
 
-	/* (non-Javadoc) */
 	boolean isReadable(GemfirePersistentProperty persistentProperty) {
 		return !persistentProperty.isTransient();
 	}

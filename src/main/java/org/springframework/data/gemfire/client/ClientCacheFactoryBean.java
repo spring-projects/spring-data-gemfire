@@ -490,7 +490,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	}
 
 	/**
-	 * Set the GemFire System property 'durable-client-id' to indicate to the server that this client is durable.
+	 * Set the Pivotal GemFire System property 'durable-client-id' to indicate to the server that this client is durable.
 	 *
 	 * @param durableClientId a String value indicating the durable client id.
 	 */
@@ -499,7 +499,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	}
 
 	/**
-	 * Gets the value of the GemFire System property 'durable-client-id' indicating to the server whether
+	 * Gets the value of the Pivotal GemFire System property 'durable-client-id' indicating to the server whether
 	 * this client is durable.
 	 *
 	 * @return a String value indicating the durable client id.
@@ -509,7 +509,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	}
 
 	/**
-	 * Set the GemFire System property 'durable-client-timeout' indicating to the server how long to track events
+	 * Set the Pivotal GemFire System property 'durable-client-timeout' indicating to the server how long to track events
 	 * for the durable client when disconnected.
 	 *
 	 * @param durableClientTimeout an Integer value indicating the timeout in seconds for the server to keep
@@ -520,7 +520,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	}
 
 	/**
-	 * Get the value of the GemFire System property 'durable-client-timeout' indicating to the server how long
+	 * Get the value of the Pivotal GemFire System property 'durable-client-timeout' indicating to the server how long
 	 * to track events for the durable client when disconnected.
 	 *
 	 * @return an Integer value indicating the timeout in seconds for the server to keep
@@ -632,10 +632,10 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	}
 
 	/**
-	 * Sets the {@link Pool} used by this cache client to obtain connections to the GemFire cluster.
+	 * Sets the {@link Pool} used by this cache client to obtain connections to the Pivotal GemFire cluster.
 	 *
-	 * @param pool the GemFire {@link Pool} used by this {@link ClientCache} to obtain connections
-	 * to the GemFire cluster.
+	 * @param pool the Pivotal GemFire {@link Pool} used by this {@link ClientCache} to obtain connections
+	 * to the Pivotal GemFire cluster.
 	 * @throws IllegalArgumentException if the {@link Pool} is null.
 	 */
 	public void setPool(Pool pool) {
@@ -643,19 +643,19 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	}
 
 	/**
-	 * Gets the {@link Pool} used by this cache client to obtain connections to the GemFire cluster.
+	 * Gets the {@link Pool} used by this cache client to obtain connections to the Pivotal GemFire cluster.
 	 *
-	 * @return the GemFire {@link Pool} used by this {@link ClientCache} to obtain connections
-	 * to the GemFire cluster.
+	 * @return the Pivotal GemFire {@link Pool} used by this {@link ClientCache} to obtain connections
+	 * to the Pivotal GemFire cluster.
 	 */
 	public Pool getPool() {
 		return this.pool;
 	}
 
 	/**
-	 * Sets the name of the {@link Pool} used by this cache client to obtain connections to the GemFire cluster.
+	 * Sets the name of the {@link Pool} used by this cache client to obtain connections to the Pivotal GemFire cluster.
 	 *
-	 * @param poolName set the name of the GemFire {@link Pool} used by this GemFire {@link ClientCache}.
+	 * @param poolName set the name of the Pivotal GemFire {@link Pool} used by this Pivotal GemFire {@link ClientCache}.
 	 * @throws IllegalArgumentException if the {@link Pool} name is unspecified.
 	 */
 	public void setPoolName(String poolName) {
@@ -663,9 +663,9 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	}
 
 	/**
-	 * Gets the name of the GemFire {@link Pool} used by this GemFire cache client.
+	 * Gets the name of the Pivotal GemFire {@link Pool} used by this Pivotal GemFire cache client.
 	 *
-	 * @return the name of the GemFire {@link Pool} used by this GemFire cache client.
+	 * @return the name of the Pivotal GemFire {@link Pool} used by this Pivotal GemFire cache client.
 	 */
 	public String getPoolName() {
 		return this.poolName;
@@ -717,10 +717,10 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	}
 
 	/**
-	 * Determines whether this GemFire cache client is ready for events.  If 'readyForEvents' was explicitly set,
+	 * Determines whether this Pivotal GemFire cache client is ready for events.  If 'readyForEvents' was explicitly set,
 	 * then it takes precedence over all other considerations (e.g. durability).
 	 *
-	 * @return a boolean value indicating whether this GemFire cache client is ready for events.
+	 * @return a boolean value indicating whether this Pivotal GemFire cache client is ready for events.
 	 * @see org.springframework.data.gemfire.GemfireUtils#isDurable(ClientCache)
 	 * @see #getReadyForEvents()
 	 */

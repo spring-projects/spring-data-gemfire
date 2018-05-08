@@ -155,7 +155,7 @@ public class DiskStoreAndEvictionRegionParsingTest {
 		EvictionAttributes evicAttr = attrs.getEvictionAttributes();
 		assertEquals(EvictionAction.LOCAL_DESTROY, evicAttr.getAction());
 		assertEquals(EvictionAlgorithm.LRU_MEMORY, evicAttr.getAlgorithm());
-		// for some reason GemFire resets this to 56 on my machine (not sure
+		// for some reason Pivotal GemFireresets this to 56 on my machine (not sure
 		// why)
 		// assertEquals(10, evicAttr.getMaximum());
 		ObjectSizer sizer = evicAttr.getObjectSizer();

@@ -33,7 +33,7 @@ public class PartitionedRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> 
 			dataPolicy = (isPersistent() ? DataPolicy.PERSISTENT_PARTITION : DataPolicy.PARTITION);
 		}
 		else {
-			// Validate that the user-defined Data Policy matches the appropriate Spring GemFire XML namespace
+			// Validate that the user-defined Data Policy matches the appropriate Spring Pivotal GemFire XML namespace
 			// configuration meta-data element for Region (i.e. <gfe:partitioned-region .../>)!
 			Assert.isTrue(dataPolicy.withPartitioning(), String.format(
 				"Data Policy '%1$s' is not supported in Partitioned Regions.", dataPolicy));

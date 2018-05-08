@@ -43,7 +43,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * The {@link GemFireComponentClassTypeScanner} class is a classpath component scanner used to search
- * for GemFire components based on {@link Class} type.
+ * for Pivotal GemFire components based on {@link Class} type.
  *
  * @author John Blum
  * @see java.lang.Iterable
@@ -60,7 +60,7 @@ public class GemFireComponentClassTypeScanner implements Iterable<String> {
 	 * Factory method to construct an instance of the {@link GemFireComponentClassTypeScanner} initialized with
 	 * the given array of base packages to scan.
 	 *
-	 * @param basePackages array of base packages to scan for GemFire components.
+	 * @param basePackages array of base packages to scan for Pivotal GemFire components.
 	 * @throws IllegalArgumentException if the array of base packages is {@literal null} or empty.
 	 * @return an initialized instance of {@link GemFireComponentClassTypeScanner}.
 	 * @see #GemFireComponentClassTypeScanner(Set)
@@ -73,7 +73,7 @@ public class GemFireComponentClassTypeScanner implements Iterable<String> {
 	 * Factory method to construct an instance of the {@link GemFireComponentClassTypeScanner} initialized with
 	 * the given {@link Iterable} of base packages to scan.
 	 *
-	 * @param basePackages {@link Iterable} of base packages to scan for GemFire components.
+	 * @param basePackages {@link Iterable} of base packages to scan for Pivotal GemFire components.
 	 * @throws IllegalArgumentException if the {@link Iterable} of base packages is {@literal null} or empty.
 	 * @return an initialized instance of {@link GemFireComponentClassTypeScanner}.
 	 * @see #GemFireComponentClassTypeScanner(Set)
@@ -98,7 +98,7 @@ public class GemFireComponentClassTypeScanner implements Iterable<String> {
 	 * Constructs an instance of the {@link GemFireComponentClassTypeScanner} initialized with
 	 * the given {@link Set} of base packages to scan.
 	 *
-	 * @param basePackages {@link Set} of base packages to scan for GemFire component clases.
+	 * @param basePackages {@link Set} of base packages to scan for Pivotal GemFire component clases.
 	 * @throws IllegalArgumentException if the {@link Set} is {@literal null} or empty.
 	 * @see java.util.Set
 	 */
@@ -118,9 +118,9 @@ public class GemFireComponentClassTypeScanner implements Iterable<String> {
 	}
 
 	/**
-	 * Returns an unmodifiable {@link Set} of base packages to scan for GemFire components.
+	 * Returns an unmodifiable {@link Set} of base packages to scan for Pivotal GemFire components.
 	 *
-	 * @return an unmodifiable {@link Set} of base packages to scan for GemFire components.
+	 * @return an unmodifiable {@link Set} of base packages to scan for Pivotal GemFire components.
 	 * @see java.util.Set
 	 */
 	protected Set<String> getBasePackages() {
@@ -128,10 +128,10 @@ public class GemFireComponentClassTypeScanner implements Iterable<String> {
 	}
 
 	/**
-	 * Returns a reference to the {@link ClassLoader} used to find and load GemFire application
+	 * Returns a reference to the {@link ClassLoader} used to find and load Pivotal GemFire application
 	 * persistent entity classes.
 	 *
-	 * @return the {@link ClassLoader} used to find and load GemFire application persistent entity classes.
+	 * @return the {@link ClassLoader} used to find and load Pivotal GemFire application persistent entity classes.
 	 * @see org.springframework.beans.factory.config.ConfigurableBeanFactory#getBeanClassLoader()
 	 * @see java.lang.Thread#getContextClassLoader()
 	 * @see java.lang.ClassLoader
@@ -147,7 +147,7 @@ public class GemFireComponentClassTypeScanner implements Iterable<String> {
 	}
 
 	/**
-	 * Returns a reference to the Spring {@link Environment} in which the Spring GemFire application is running.
+	 * Returns a reference to the Spring {@link Environment} in which the Spring Pivotal GemFire application is running.
 	 *
 	 * @return a reference to the Spring {@link Environment}.
 	 * @see org.springframework.context.ApplicationContext#getEnvironment()
@@ -192,10 +192,10 @@ public class GemFireComponentClassTypeScanner implements Iterable<String> {
 	}
 
 	/**
-	 * Scans the {@link Set} of base packages searching for GemFire application components
+	 * Scans the {@link Set} of base packages searching for Pivotal GemFire application components
 	 * accepted by the filters of this scanner.
 	 *
-	 * @return a {@link Set} of GemFire application component {@link Class} types found on the classpath.
+	 * @return a {@link Set} of Pivotal GemFire application component {@link Class} types found on the classpath.
 	 * @see #newClassPathScanningCandidateComponentProvider(boolean)
 	 * @see java.util.Set
 	 */

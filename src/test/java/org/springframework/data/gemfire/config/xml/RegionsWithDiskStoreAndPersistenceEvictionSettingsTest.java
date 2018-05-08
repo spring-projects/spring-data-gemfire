@@ -33,7 +33,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * The RegionsWithDiskStoreAndPersistenceEvictionSettingsTest class is a test suite testing the functionality
- * of GemFire Cache Regions when persistent/non-persistent with and without Eviction settings when specifying a
+ * of Pivotal GemFireCache Regions when persistent/non-persistent with and without Eviction settings when specifying a
  * Disk Store.
  *
  * @author John Blum

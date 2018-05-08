@@ -25,8 +25,8 @@ import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.query.QueryService;
 
 /**
- * {@link DelegatingPoolAdapter} is an abstract implementation of GemFire's {@link Pool} interface and extension of
- * {@link FactoryDefaultsPoolAdapter} that delegates operations to the provided {@link Pool} instance.
+ * {@link DelegatingPoolAdapter} is an abstract implementation of Pivotal GemFire's {@link Pool} interface
+ * and extension of {@link FactoryDefaultsPoolAdapter} that delegates operations to the provided {@link Pool} instance.
  *
  * However, this implementation guards against a potentially <code>null</code> {@link Pool} reference by returning
  * default factory settings for the {@link Pool}'s configuration properties along with default behavior for operations

@@ -44,7 +44,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * {@link AbstractGemFireAsLastResourceAspectSupport} is an abstract base class encapsulating functionality common
- * to all AOP Aspect extensions/implementations involving the GemFire JCA ResourceAdapter object registered in
+ * to all AOP Aspect extensions/implementations involving the Pivotal GemFire JCA ResourceAdapter object registered in
  * the JNDI context of a managed environment.
  *
  * @author John Blum
@@ -111,10 +111,10 @@ public class AbstractGemFireAsLastResourceAspectSupport implements Ordered {
 	}
 
 	/**
-	 * Returns the configured reference to GemFire's JCA ResourceAdapter registered in the managed environment's
+	 * Returns the configured reference to Pivotal GemFire's JCA ResourceAdapter registered in the managed environment's
 	 * JNDI context.
 	 *
-	 * @return a {@link String} containing the configured reference to GemFire's JCA ResourceAdapter
+	 * @return a {@link String} containing the configured reference to Pivotal GemFire's JCA ResourceAdapter
 	 * registered in the managed environment's JNDI context.
 	 */
 	public String getGemFireJcaResourceAdapterJndiName() {
@@ -456,7 +456,7 @@ public class AbstractGemFireAsLastResourceAspectSupport implements Ordered {
 	 * Resolves a reference to the {@link GemFireCache} required by this Aspect to perform its function.
 	 *
 	 * This method either returns the configured {@link GemFireCache} instance or looks up
-	 * the {@link GemFireCache} instance using GemFire's API.
+	 * the {@link GemFireCache} instance using Pivotal GemFire's API.
 	 *
 	 * @return a reference to the resolved {@link GemFireCache} instance.
 	 * @see org.springframework.data.gemfire.GemfireUtils#resolveGemFireCache()
@@ -475,10 +475,10 @@ public class AbstractGemFireAsLastResourceAspectSupport implements Ordered {
 	}
 
 	/**
-	 * Resolves the configured JNDI name used to lookup and resolve the GemFire JCA ResourceAdapter object
+	 * Resolves the configured JNDI name used to lookup and resolve the Pivotal GemFire JCA ResourceAdapter object
 	 * from the JNDI context in the managed environment.
 	 *
-	 * @return a {@link String} containing the JNDI name used to lookup and resolve the GemFire JCA ResourceAdapter
+	 * @return a {@link String} containing the JNDI name used to lookup and resolve the Pivotal GemFire JCA ResourceAdapter
 	 * object from the JNDI context in the managed environment.
 	 * @see #getGemFireJcaResourceAdapterJndiName()
 	 */
@@ -525,7 +525,7 @@ public class AbstractGemFireAsLastResourceAspectSupport implements Ordered {
 			catch (ResourceException cause) {
 
 				String message =
-					String.format("Failed to acquire GemFire Connection from GemFire's JCA ResourceAdapter: %s",
+					String.format("Failed to acquire Pivotal GemFire Connection from GemFire's JCA ResourceAdapter: %s",
 						cause.getMessage());
 
 				if (throwOnError) {
@@ -562,7 +562,7 @@ public class AbstractGemFireAsLastResourceAspectSupport implements Ordered {
 				}
 				catch (ResourceException cause) {
 
-					String message = String.format("Failed to close GemFire Connection: %s", cause.getMessage());
+					String message = String.format("Failed to close Pivotal GemFire Connection: %s", cause.getMessage());
 
 					if (throwOnError) {
 						throw newRuntimeException(cause, message);

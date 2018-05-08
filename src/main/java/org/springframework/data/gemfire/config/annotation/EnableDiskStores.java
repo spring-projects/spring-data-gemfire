@@ -28,8 +28,8 @@ import org.springframework.context.annotation.Import;
 
 /**
  * The {@link EnableDiskStores} annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
- * annotated application class to configure 1 or more GemFire/Geode {@link org.apache.geode.cache.DiskStore} beans
- * in the Spring context in which to persist or overflow data from 1 or more GemFire/Geode
+ * annotated application class to configure 1 or more Pivotal GemFire/Apache Geode {@link org.apache.geode.cache.DiskStore} beans
+ * in the Spring context in which to persist or overflow data from 1 or more Pivotal GemFire/Apache Geode
  * {@link org.apache.geode.cache.Region Regions}
  *
  * @author John Blum
@@ -74,7 +74,7 @@ public @interface EnableDiskStores {
 	long maxOplogSize() default 1024L;
 
 	/**
-	 * Defines 1 or more GemFire/Geode {@link org.apache.geode.cache.DiskStore DiskStores}.
+	 * Defines 1 or more Pivotal GemFire/Apache Geode {@link org.apache.geode.cache.DiskStore DiskStores}.
 	 */
 	EnableDiskStore[] diskStores();
 

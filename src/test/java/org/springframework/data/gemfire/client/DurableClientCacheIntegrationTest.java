@@ -65,8 +65,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.SocketUtils;
 
 /**
- * The DurableClientCacheIntegrationTest class is a test suite of test cases testing GemFire's Durable Client
- * functionality in the context of Spring Data GemFire.
+ * The DurableClientCacheIntegrationTest class is a test suite of test cases testing Pivotal GemFire's Durable Client
+ * functionality in the context of SDG.
  *
  * @author John Blum
  * @see org.junit.Test

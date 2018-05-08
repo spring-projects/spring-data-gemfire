@@ -1,16 +1,16 @@
 [[data-access]]
 = Using the Data Access Namespace
 
-In addition to the core XML namespace (`gfe`), _Spring Data GemFire_ provides a `gfe-data` XML namespace
-primarily intended to simplify the development of Pivotal GemFire client applications. This namespace currently contains
-support for GemFire <<gemfire-repositories, Repositories>> and function <<function-execution, execution>> as well as
-includes a `<datasource>` tag that offers a convenient way to connect to the Pivotal GemFire data grid.
+In addition to the core XML namespace (`gfe`), _Spring Data for Pivotal GemFire_ provides a data access XML namespace (`gfe-data`),
+which is primarily intended to simplify the development of Pivotal GemFire client applications. This namespace currently contains
+support for Pivotal GemFire <<gemfire-repositories, Repositories>> and function <<function-execution, execution>>
+as well as includes a `<datasource>` tag offering a convenient way to connect to a Pivotal GemFire cluster.
 
 [[data-access:datasource]]
-== An Easy Way to Connect to GemFire
+== An Easy Way to Connect to Pivotal GemFire
 
-For many applications, a basic connection to a GemFire data grid using default values is sufficient.
-_Spring Data GemFire's_ `<datasource>` tag provides a simple way to access data. The data source creates
+For many applications, a basic connection to a Pivotal GemFire data grid using default values is sufficient.
+_Spring Data for Pivotal GemFire's_ `<datasource>` tag provides a simple way to access data. The data source creates
 a `ClientCache` and connection `Pool`. In addition, it will query the cluster servers for all existing root Regions
 and create an (empty) client Region proxy for each one.
 

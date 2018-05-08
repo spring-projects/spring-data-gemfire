@@ -71,9 +71,9 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	private String diskStoreReference;
 
 	/**
-	 * Constructs an instance of the AsyncEventQueueFactoryBean for creating an GemFire AsyncEventQueue.
+	 * Constructs an instance of the AsyncEventQueueFactoryBean for creating an Pivotal GemFire AsyncEventQueue.
 	 *
-	 * @param cache the GemFire Cache reference.
+	 * @param cache the Pivotal GemFire Cache reference.
 	 * @see #AsyncEventQueueFactoryBean(org.apache.geode.cache.Cache, org.apache.geode.cache.asyncqueue.AsyncEventListener)
 	 */
 	public AsyncEventQueueFactoryBean(final Cache cache) {
@@ -81,9 +81,9 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	}
 
 	/**
-	 * Constructs an instance of the AsyncEventQueueFactoryBean for creating an GemFire AsyncEventQueue.
+	 * Constructs an instance of the AsyncEventQueueFactoryBean for creating an Pivotal GemFire AsyncEventQueue.
 	 *
-	 * @param cache the GemFire Cache reference.
+	 * @param cache the Pivotal GemFire Cache reference.
 	 * @param asyncEventListener required {@link AsyncEventListener}
 	 */
 	public AsyncEventQueueFactoryBean(Cache cache, AsyncEventListener asyncEventListener) {

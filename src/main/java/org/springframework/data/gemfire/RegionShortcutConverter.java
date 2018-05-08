@@ -21,7 +21,7 @@ import org.springframework.core.convert.converter.Converter;
 
 /**
  * The RegionShortcutConverter class is a Spring Converter implementation converting String value Region Shortcut
- * representations into actual GemFire RegionShortcut enumerated values.
+ * representations into actual Pivotal GemFire RegionShortcut enumerated values.
  *
  * @author John Blum
  * @see org.springframework.core.convert.converter.Converter

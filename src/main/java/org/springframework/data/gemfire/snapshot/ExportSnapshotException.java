@@ -18,7 +18,7 @@ package org.springframework.data.gemfire.snapshot;
 
 /**
  * The ExportSnapshotException class is a RuntimeException indicating an error occurred while saving a snapshhot
- * of GemFire's Cache Regions.
+ * of Pivotal GemFire's Cache Regions.
  *
  * @author John Blum
  * @see java.lang.RuntimeException

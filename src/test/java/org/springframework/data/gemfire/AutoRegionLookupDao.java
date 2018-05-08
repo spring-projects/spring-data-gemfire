@@ -29,10 +29,10 @@ import org.springframework.dao.support.DaoSupport;
 import org.springframework.stereotype.Repository;
 
 /**
- * The AutoRegionLookupDao class is a Data Access Object (DAO) encapsulating references to several GemFire Cache Regions
- * defined in native GemFire cache.xml and registered as beans in the Spring context using Spring Data GemFire's
- * auto Region lookup functionality.  This class is used in the AutoRegionLookupWithComponentScanningIntegrationTests
- * class to ensure this @Repository component is auto-wired properly.
+ * The AutoRegionLookupDao class is a Data Access Object (DAO) encapsulating references to several Pivotal GemFireCache Regions
+ * defined in native Pivotal GemFirecache.xml and registered as beans in the Spring context using SDG's auto Region lookup
+ * functionality.  This class is used in the AutoRegionLookupWithComponentScanningIntegrationTests class to ensure
+ * this @Repository component is auto-wired properly.
  *
  * @author John Blum
  * @see org.springframework.dao.support.DaoSupport
@@ -40,8 +40,6 @@ import org.springframework.stereotype.Repository;
  * @see org.apache.geode.cache.Region
  * @since 1.5.0
  */
-/*
-*/
 @DependsOn("gemfireCache")
 //@Lazy
 @Repository("autoRegionLookupDao")
@@ -85,5 +83,4 @@ public class AutoRegionLookupDao extends DaoSupport {
 		assertRegionMetaData(nativeReplicateGrandchild, "NativeReplicateGrandchild",
 			"/NativeReplicateParent/NativeReplicateChild/NativeReplicateGrandchild", DataPolicy.REPLICATE);
 	}
-
 }

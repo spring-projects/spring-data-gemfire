@@ -96,7 +96,7 @@ public class GemFireAsLastResourceConnectionAcquiringAspectUnitTests {
 		verify(aspect, times(1)).resolveGemFireJcaResourceAdapterJndiName();
 		verify(mockGemFireConnectionFactory, times(1)).getConnection();
 		verify(mockLogger, times(1))
-			.trace(eq(String.format("Acquiring GemFire Connection from GemFire JCA ResourceAdapter registered at [%s]...",
+			.trace(eq(String.format("Acquiring Pivotal GemFire Connection from Pivotal GemFire JCA ResourceAdapter registered at [%s]...",
 				GemFireAsLastResourceConnectionAcquiringAspect.DEFAULT_GEMFIRE_JCA_RESOURCE_ADAPTER_JNDI_NAME)));
 	}
 

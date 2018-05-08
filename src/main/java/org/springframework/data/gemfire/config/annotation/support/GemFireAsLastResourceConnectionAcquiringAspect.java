@@ -27,7 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * The {@link GemFireAsLastResourceConnectionAcquiringAspect} class is a {@link AbstractGemFireAsLastResourceAspectSupport}
- * implementation responsible for acquiring a GemFire Connection from GemFire's JCA ResourceAdapter,
+ * implementation responsible for acquiring a Pivotal GemFire Connection from Pivotal GemFire's JCA ResourceAdapter,
  * {@link GFConnectionFactory} after a CMT/JTA Transaction is began, which is initiated by
  * Spring's Transaction infrastructure.
  *
@@ -48,18 +48,17 @@ public class GemFireAsLastResourceConnectionAcquiringAspect extends AbstractGemF
 	private GFConnectionFactory gemfireConnectionFactory;
 
 	/**
-	 * Acquires (opens) a GemFire JCA ResourceAdapter Connection after the Spring CMT/JTA Transaction begins.
+	 * Acquires (opens) a Pivotal GemFire JCA ResourceAdapter Connection after the Spring CMT/JTA Transaction begins.
 	 */
 	@Before("atTransactionalType() || atTransactionalMethod()")
 	public void doGemFireConnectionFactoryGetConnection() {
 
-		logTraceInfo("Acquiring GemFire Connection from GemFire JCA ResourceAdapter registered at [%s]...",
+		logTraceInfo("Acquiring Pivotal GemFire Connection from Pivotal GemFire JCA ResourceAdapter registered at [%s]...",
 			resolveGemFireJcaResourceAdapterJndiName());
 
 		GemFireConnectionHolder.acquire(resolveGemFireConnectionFactory(), isThrowOnError(), this::logError);
 	}
 
-	/* (non-Javadoc) */
 	synchronized GFConnectionFactory resolveGemFireConnectionFactory() {
 
 		GFConnectionFactory connectionFactory = getGemFireConnectionFactory();

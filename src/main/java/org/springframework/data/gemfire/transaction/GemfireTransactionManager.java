@@ -43,7 +43,7 @@ import org.springframework.util.Assert;
  * Local Transaction Management for Pivotal GemFire. Provides a Spring {@link PlatformTransactionManager} implementation
  * for the Pivotal GemFire {@link CacheTransactionManager}.
  *
- * Binds one or multiple GemFire {@link Region Regions} for the specified {@link GemFireCache} to the thread,
+ * Binds one or multiple Pivotal GemFire {@link Region Regions} for the specified {@link GemFireCache} to the thread,
  * potentially allowing for one {@link Region} per {@link GemFireCache} model.
  *
  * <p>
@@ -141,12 +141,12 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 			GemFireCache cache = getCache();
 
 			if (logger.isDebugEnabled()) {
-				logger.debug(String.format("Acquired GemFire Cache [%s] for local cache transaction", cache));
+				logger.debug(String.format("Acquired Pivotal GemFire Cache [%s] for local cache transaction", cache));
 			}
 
 			CacheTransactionManager cacheTransactionManager = getCacheTransactionManager();
 
-			// begin GemFire local cache transaction
+			// begin Pivotal GemFire local cache transaction
 			cacheTransactionManager.begin();
 
 			TransactionId transactionId = cacheTransactionManager.getTransactionId();
@@ -315,11 +315,11 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	}
 
 	/**
-	 * Sets the GemFire cache {@link Region} as an alternative in setting in the {@link GemFireCache} directly.
+	 * Sets the Pivotal GemFire cache {@link Region} as an alternative in setting in the {@link GemFireCache} directly.
 	 *
 	 * @param <K> {@link Class} type of the {@link Region} key.
 	 * @param <V> {@link Class} type of the {@link Region} value.
-	 * @param region GemFire cache {@link Region} directly involved in the local cache transaction.
+	 * @param region Pivotal GemFire cache {@link Region} directly involved in the local cache transaction.
 	 * @throws IllegalArgumentException if {@link Region} is {@literal null}.
 	 * @see org.apache.geode.cache.Region
 	 */
@@ -337,9 +337,9 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	}
 
 	/***
-	 * Sets the timeout used to wait for the GemFire cache transaction to resume.
+	 * Sets the timeout used to wait for the Pivotal GemFire cache transaction to resume.
 	 *
-	 * @param resumeWaitTime long value with the timeout used to wait for the GemFire cache transaction to resume.
+	 * @param resumeWaitTime long value with the timeout used to wait for the Pivotal GemFire cache transaction to resume.
 	 * @see org.apache.geode.cache.CacheTransactionManager#tryResume(TransactionId, long, TimeUnit)
 	 */
 	public void setResumeWaitTime(Long resumeWaitTime) {
@@ -347,9 +347,9 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	}
 
 	/***
-	 * Returns the timeout used to wait for the GemFire cache transaction to resume.
+	 * Returns the timeout used to wait for the Pivotal GemFire cache transaction to resume.
 	 *
-	 * @return the long value with the timeout used to wait for the GemFire cache transaction to resume.
+	 * @return the long value with the timeout used to wait for the Pivotal GemFire cache transaction to resume.
 	 * @see org.apache.geode.cache.CacheTransactionManager#tryResume(TransactionId, long, TimeUnit)
 	 */
 	protected Long getResumeWaitTime() {
@@ -357,10 +357,10 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	}
 
 	/**
-	 * Determines whether the user specified a wait time for resuming a GemFire cache transaction.
+	 * Determines whether the user specified a wait time for resuming a Pivotal GemFire cache transaction.
 	 *
 	 * @return a boolean value to indicate whether the user specified a wait time
-	 * for resuming a GemFire cache transaction.
+	 * for resuming a Pivotal GemFire cache transaction.
 	 * @see org.apache.geode.cache.CacheTransactionManager#tryResume(TransactionId, long, TimeUnit)
 	 * @see #getResumeWaitTime()
 	 */
@@ -370,9 +370,9 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	}
 
 	/**
-	 * Sets the {@link TimeUnit} used in the wait timeout when resuming a GemFire cache transaction.
+	 * Sets the {@link TimeUnit} used in the wait timeout when resuming a Pivotal GemFire cache transaction.
 	 *
-	 * @param resumeWaitTimeUnit {@link TimeUnit} used in the wait timeout when resuming a GemFire cache transaction.
+	 * @param resumeWaitTimeUnit {@link TimeUnit} used in the wait timeout when resuming a Pivotal GemFire cache transaction.
 	 * @see org.apache.geode.cache.CacheTransactionManager#tryResume(TransactionId, long, TimeUnit)
 	 */
 	public void setResumeWaitTimeUnit(TimeUnit resumeWaitTimeUnit) {
@@ -380,11 +380,11 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	}
 
 	/**
-	 * Returns the {@link TimeUnit} used in the wait timeout when resuming a GemFire cache transaction.
+	 * Returns the {@link TimeUnit} used in the wait timeout when resuming a Pivotal GemFire cache transaction.
 	 *
 	 * Defaults to {@link TimeUnit#SECONDS}.
 	 *
-	 * @return the {@link TimeUnit} used in the wait timeout when resuming a GemFire cache transaction.
+	 * @return the {@link TimeUnit} used in the wait timeout when resuming a Pivotal GemFire cache transaction.
 	 * @see org.apache.geode.cache.CacheTransactionManager#tryResume(TransactionId, long, TimeUnit)
 	 */
 	protected TimeUnit getResumeWaitTimeUnit() {
@@ -392,7 +392,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	}
 
 	/**
-	 * GemFire local transaction object.
+	 * Pivotal GemFire local transaction object.
 	 *
 	 * @author Costin Leau
 	 * @author John Blum
@@ -438,7 +438,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	}
 
 	/**
-	 * Holder of GemFire cache transaction state.
+	 * Holder of Pivotal GemFire cache transaction state.
 	 */
 	protected static class CacheHolder {
 

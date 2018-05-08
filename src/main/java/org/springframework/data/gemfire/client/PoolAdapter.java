@@ -28,9 +28,9 @@ import org.apache.geode.cache.query.QueryService;
  * the {@link Pool} interface that conveniently enables implementing classes to extend this adapter
  * and choose which {@link Pool} methods/operations are supported by this implementation.
  *
- * For instance, one possible implementation is Spring Data GemFire's {@link PoolFactoryBean}, which can act as
- * a {@link Pool} in a context where only the {@link Pool}'s "configuration" and meta-data are required,
- * but no actual connections or operating state information (e.g. pendingEventCount) is needed.
+ * For instance, one possible implementation is SDG's {@link PoolFactoryBean}, which can act as a {@link Pool}
+ * in a context where only the {@link Pool}'s "configuration" and meta-data are required, but no actual connections
+ * or operating state information (e.g. pendingEventCount) is needed.
  *
  * @author John Blum
  * @see org.springframework.data.gemfire.client.PoolFactoryBean

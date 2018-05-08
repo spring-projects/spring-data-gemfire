@@ -18,7 +18,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to declare an interface as a GemFire OnRegion Function Execution
+ * Annotation to declare an interface as a Pivotal GemFire OnRegion Function Execution
  * @author David Turanski
  *
  */
@@ -27,16 +27,16 @@ import java.lang.annotation.Target;
 public @interface OnRegion {
 
 	/**
-	 * The bean name of the POJO interface defining the GemFire Function executions.
+	 * The bean name of the POJO interface defining the Pivotal GemFire Function executions.
 	 *
-	 * @return the bean name (id) of the POJO interface defining the GemFire Function executions.
+	 * @return the bean name (id) of the POJO interface defining the Pivotal GemFire Function executions.
 	 */
 	String id() default "";
 
 	/**
-	 * A reference to the bean id of the GemFire Region.
+	 * A reference to the bean id of the Pivotal GemFire Region.
 	 *
-	 * @return the bean name (id) of the GemFire Region.
+	 * @return the bean name (id) of the Pivotal GemFire Region.
 	 */
 	String region();
 

@@ -75,9 +75,10 @@ public class GemfireCacheUnitTests {
 
 	@Test
 	public void constructGemfireCacheWithNullRegion() {
+
 		exception.expect(IllegalArgumentException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage(is(equalTo("GemFire Region must not be null")));
+		exception.expectMessage(is(equalTo("Region must not be null")));
 
 		new GemfireCache(null);
 	}

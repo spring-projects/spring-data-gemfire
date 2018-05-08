@@ -79,7 +79,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * The {@link EntityDefinedRegionsConfiguration} class is Spring {@link ImportBeanDefinitionRegistrar} used in
- * the {@link EnableEntityDefinedRegions} annotation to dynamically create GemFire/Geode {@link Region Regions}
+ * the {@link EnableEntityDefinedRegions} annotation to dynamically create Pivotal GemFire/Apache Geode {@link Region Regions}
  * based on the application persistent entity classes.
  *
  * @author John Blum

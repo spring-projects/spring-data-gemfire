@@ -19,7 +19,7 @@ package org.springframework.data.gemfire.expiration;
 import org.apache.geode.cache.ExpirationAction;
 
 /**
- * The ExpirationActionType enum is a enumeration of GemFire ExpirationActions on expired Cache Region entries.
+ * The ExpirationActionType enum is a enumeration of Pivotal GemFire ExpirationActions on expired Cache Region entries.
  *
  * @author John Blum
  * @see org.apache.geode.cache.ExpirationAction
@@ -37,9 +37,9 @@ public enum ExpirationActionType {
 	private final ExpirationAction expirationAction;
 
 	/**
-	 * Constructs an instance of the ExpirationActionType enum initialized with the matching GemFire ExpirationAction.
+	 * Constructs an instance of the ExpirationActionType enum initialized with the matching Pivotal GemFire ExpirationAction.
 	 *
-	 * @param expirationAction the matching GemFire ExpirationAction for this enumerated value.
+	 * @param expirationAction the matching Pivotal GemFire ExpirationAction for this enumerated value.
 	 * @see org.apache.geode.cache.ExpirationAction
 	 */
 	ExpirationActionType(final ExpirationAction expirationAction) {
@@ -47,11 +47,11 @@ public enum ExpirationActionType {
 	}
 
 	/**
-	 * A null-safe operation to extract the corresponding GemFire ExpirationAction for the ExpirationActionType.
+	 * A null-safe operation to extract the corresponding Pivotal GemFire ExpirationAction for the ExpirationActionType.
 	 *
 	 * @param expirationActionType the ExpirationActionType enumerated value from which to extract
-	 * the corresponding GemFire ExpirationAction.
-	 * @return a GemFire ExpirationAction given the ExpirationActionType enumerated value.
+	 * the corresponding Pivotal GemFire ExpirationAction.
+	 * @return a Pivotal GemFire ExpirationAction given the ExpirationActionType enumerated value.
 	 * @see org.apache.geode.cache.ExpirationAction
 	 */
 	public static ExpirationAction getExpirationAction(final ExpirationActionType expirationActionType) {
@@ -59,10 +59,10 @@ public enum ExpirationActionType {
 	}
 
 	/**
-	 * Returns the ExpirationActionType enumerated value matching the given GemFire ExpirationAction.
+	 * Returns the ExpirationActionType enumerated value matching the given Pivotal GemFire ExpirationAction.
 	 *
-	 * @param expirationAction the GemFire ExpirationAction used to match the ExpirationActionType.
-	 * @return a matching ExpirationActionType enumerated value given a GemFire ExpirationAction
+	 * @param expirationAction the Pivotal GemFire ExpirationAction used to match the ExpirationActionType.
+	 * @return a matching ExpirationActionType enumerated value given a Pivotal GemFire ExpirationAction
 	 * or null if no match was found.
 	 * @see org.apache.geode.cache.ExpirationAction
 	 * @see #getExpirationAction()
@@ -97,9 +97,9 @@ public enum ExpirationActionType {
 	}
 
 	/**
-	 * Gets the matching GemFire ExpirationAction for this enumerated value.
+	 * Gets the matching Pivotal GemFire ExpirationAction for this enumerated value.
 	 *
-	 * @return the GemFire ExpirationAction instance corresponding to this enumerated value.
+	 * @return the Pivotal GemFire ExpirationAction instance corresponding to this enumerated value.
 	 * @see org.apache.geode.cache.ExpirationAction
 	 */
 	public ExpirationAction getExpirationAction() {
