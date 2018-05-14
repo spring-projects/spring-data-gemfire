@@ -39,10 +39,10 @@ import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
-import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -248,7 +248,7 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 	 */
 	@Override
 	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(Key key,
-			EvaluationContextProvider evaluationContextProvider) {
+			QueryMethodEvaluationContextProvider evaluationContextProvider) {
 
 		return Optional.of((Method method, RepositoryMetadata repositoryMetadata, ProjectionFactory projectionFactory,
 			NamedQueries namedQueries) -> {
@@ -275,7 +275,7 @@ public class GemfireRepositoryFactory extends RepositoryFactorySupport {
 
 	@SuppressWarnings({ "unchecked", "unused" })
 	protected <T extends QueryMethod> T newQueryMethod(Method method, RepositoryMetadata repositoryMetadata,
-			ProjectionFactory projectionFactory, EvaluationContextProvider evaluationContextProvider) {
+			ProjectionFactory projectionFactory, QueryMethodEvaluationContextProvider evaluationContextProvider) {
 
 		return (T) new GemfireQueryMethod(method, repositoryMetadata, projectionFactory, getMappingContext());
 	}
