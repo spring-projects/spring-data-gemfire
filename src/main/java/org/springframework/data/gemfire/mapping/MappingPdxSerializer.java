@@ -15,6 +15,9 @@
  */
 package org.springframework.data.gemfire.mapping;
 
+import static org.springframework.data.gemfire.mapping.MappingPdxSerializer.ExcludeComGemstoneGemFireTypesFilter.EXCLUDE_COM_GEMSTONE_GEMFIRE_TYPES;
+import static org.springframework.data.gemfire.mapping.MappingPdxSerializer.ExcludeNullTypesFilter.EXCLUDE_NULL_TYPES;
+
 import java.util.Collections;
 import java.util.Map;
 
@@ -22,8 +25,8 @@ import com.gemstone.gemfire.pdx.PdxReader;
 import com.gemstone.gemfire.pdx.PdxSerializer;
 import com.gemstone.gemfire.pdx.PdxWriter;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -31,6 +34,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.convert.EntityInstantiators;
+import org.springframework.data.gemfire.util.Filter;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
@@ -65,42 +69,59 @@ import org.springframework.util.ObjectUtils;
  */
 public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAware {
 
-	private final ConversionService conversionService;
-
-	private EntityInstantiators entityInstantiators;
-
-	private final GemfireMappingContext mappingContext;
-
-	protected final Log log = LogFactory.getLog(getClass());
-
-	private Map<?, PdxSerializer> customPdxSerializers;
-
-	// TODO: decide what to do with this; SpELContext is not used
-	private SpELContext context;
-
+	/**
+	 * Factory method used to construct a new instance of {@link MappingPdxSerializer} initialized with
+	 * a provided {@link GemfireMappingContext} and default {@link ConversionService}.
+	 *
+	 * @return a new instance of {@link MappingPdxSerializer}.
+	 * @see #create(GemfireMappingContext, ConversionService)
+	 * @see #newMappingContext()
+	 * @see #newConversionService()
+	 */
 	public static MappingPdxSerializer newMappingPdxSerializer() {
 		return create(newMappingContext(), newConversionService());
 	}
 
+	/**
+	 * Factory method used to construct a new instance of {@link MappingPdxSerializer} initialized with
+	 * the given {@link ConversionService} and a provided {@link GemfireMappingContext}.
+	 *
+	 * @param conversionService {@link ConversionService} used to convert persistent values to entity properties.
+	 * @return a new instance of {@link MappingPdxSerializer} initialized with the given {@link ConversionService}.
+	 * @see org.springframework.core.convert.ConversionService
+	 * @see #create(GemfireMappingContext, ConversionService)
+	 * @see #newMappingContext()
+	 */
 	public static MappingPdxSerializer create(ConversionService conversionService) {
 		return create(newMappingContext(), conversionService);
 	}
 
+	/**
+	 * Factory method used to construct a new instance of {@link MappingPdxSerializer} initialized with
+	 * the given {@link GemfireMappingContext mapping context} supplying entity mapping meta-data,
+	 * using a provided, default {@link ConversionService}.
+	 *
+	 * @param mappingContext {@link GemfireMappingContext} used to supply entity mapping meta-data.
+	 * @return a new instance of {@link MappingPdxSerializer} initialized with
+	 * the given {@link GemfireMappingContext mapping context}.
+	 * @see org.springframework.data.gemfire.mapping.GemfireMappingContext
+	 * @see #create(GemfireMappingContext, ConversionService)
+	 * @see #newConversionService()
+	 */
 	public static MappingPdxSerializer create(GemfireMappingContext mappingContext) {
 		return create(mappingContext, newConversionService());
 	}
 
 	/**
-	 * Factory method used to construct a new instance of the {@link MappingPdxSerializer} initialized with
+	 * Factory method used to construct a new instance of {@link MappingPdxSerializer} initialized with
 	 * the given {@link GemfireMappingContext mapping context} and {@link ConversionService conversion service}.
 	 *
 	 * If either the {@link GemfireMappingContext mapping context} or the {@link ConversionService conversion service}
 	 * are {@literal null}, then this factory method will provide default instances for each.
 	 *
-	 * @param mappingContext {@link GemfireMappingContext} used by the {@link MappingPdxSerializer} to map
-	 * between application domain object types and PDX serialized bytes based on the entity mapping meta-data.
-	 * @param conversionService {@link ConversionService} used by the {@link MappingPdxSerializer} to convert
-	 * PDX serialized data to application object property types.
+	 * @param mappingContext {@link GemfireMappingContext} used to map between application domain model object types
+	 * and PDX serialized bytes based on the entity's mapping meta-data.
+	 * @param conversionService {@link ConversionService} used to convert persistent values to entity properties.
 	 * @return an initialized instance of the {@link MappingPdxSerializer}.
 	 * @see org.springframework.core.convert.ConversionService
 	 * @see org.springframework.data.gemfire.mapping.MappingPdxSerializer
@@ -159,6 +180,21 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 		return mappingContext != null ? mappingContext : newMappingContext();
 	}
 
+	private final ConversionService conversionService;
+
+	private EntityInstantiators entityInstantiators;
+
+	private final GemfireMappingContext mappingContext;
+
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+
+	private Map<?, PdxSerializer> customPdxSerializers;
+
+	private Filter typeFilters = EXCLUDE_NULL_TYPES.and(EXCLUDE_COM_GEMSTONE_GEMFIRE_TYPES);
+
+	// TODO: decide what to do with this; SpELContext is not used
+	private SpELContext spelContext;
+
 	/**
 	 * Constructs a new instance of {@link MappingPdxSerializer} using a default {@link GemfireMappingContext}
 	 * and {@link DefaultConversionService}.
@@ -185,14 +221,14 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 */
 	public MappingPdxSerializer(GemfireMappingContext mappingContext, ConversionService conversionService) {
 
-		Assert.notNull(mappingContext, "MappingContext is required");
-		Assert.notNull(conversionService, "ConversionService is required");
+		Assert.notNull(mappingContext, "MappingContext must not be null");
+		Assert.notNull(conversionService, "ConversionService must not be null");
 
 		this.mappingContext = mappingContext;
 		this.conversionService = conversionService;
 		this.entityInstantiators = new EntityInstantiators();
 		this.customPdxSerializers = Collections.emptyMap();
-		this.context = new SpELContext(PdxReaderPropertyAccessor.INSTANCE);
+		this.spelContext = new SpELContext(PdxReaderPropertyAccessor.INSTANCE);
 	}
 
 	/**
@@ -200,7 +236,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 */
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.context = new SpELContext(context, applicationContext);
+		this.spelContext = new SpELContext(this.spelContext, applicationContext);
 	}
 
 	/**
@@ -211,7 +247,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 * @see org.springframework.core.convert.ConversionService
 	 */
 	protected ConversionService getConversionService() {
-		return conversionService;
+		return this.conversionService;
 	}
 
 	/**
@@ -226,7 +262,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 */
 	public void setCustomPdxSerializers(Map<?, PdxSerializer> customPdxSerializers) {
 
-		Assert.notNull(customPdxSerializers, "Custom PdxSerializers are required");
+		Assert.notNull(customPdxSerializers, "Custom PdxSerializers must not be null");
 
 		this.customPdxSerializers = customPdxSerializers;
 	}
@@ -307,10 +343,31 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	/**
 	 * Configures the {@link EntityInstantiator}s used to create the instances read by this PdxSerializer.
 	 *
-	 * @param gemfireInstantiators must not be {@literal null}.
+	 * @param entityInstantiators {@link EntityInstantiator EntityInstantiators} used to create the instances
+	 * read by this {@link PdxSerializer}; must not be {@literal null}.
+	 * @see org.springframework.data.convert.EntityInstantiator
+	 */
+	public void setGemfireInstantiators(EntityInstantiators entityInstantiators) {
+
+		Assert.notNull(entityInstantiators, "EntityInstantiators must not be null");
+
+		this.entityInstantiators = entityInstantiators;
+	}
+
+	/**
+	 * Configures the {@link EntityInstantiator EntityInstantiators} used to create the instances
+	 * read by this {@link PdxSerializer}.
+	 *
+	 * @param gemfireInstantiators mapping of {@link Class types} to {@link EntityInstantiator} objects;
+	 * must not be {@literal null}.
+	 * @see org.springframework.data.convert.EntityInstantiator
+	 * @see java.util.Map
+>>>>>>> 3ed1599... SGF-745 - Add ability to filter types de/serialized by the o.s.d.g.mapping.MappingPdxSerializer.
 	 */
 	public void setGemfireInstantiators(Map<Class<?>, EntityInstantiator> gemfireInstantiators) {
+
 		Assert.notNull(gemfireInstantiators, "GemFire EntityInstantiators are required");
+
 		this.entityInstantiators = new EntityInstantiators(gemfireInstantiators);
 	}
 
@@ -333,14 +390,14 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	}
 
 	/**
-	 * Returns a reference to the configured {@link Log} used to log {@link String messages}
+	 * Returns a reference to the configured {@link Logger} used to log {@link String messages}
 	 * about the functions of this {@link PdxSerializer}.
 	 *
-	 * @return a reference to the configured {@link Log}.
+	 * @return a reference to the configured {@link Logger}.
 	 * @see org.apache.commons.logging.Log
 	 */
-	protected Log getLogger() {
-		return this.log;
+	protected Logger getLogger() {
+		return this.logger;
 	}
 
 	/**
@@ -378,8 +435,49 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 		return getMappingContext().getPersistentEntity(entityType);
 	}
 
+	/**
+	 * Sets the {@link Filter type filters} used to filter {@link Class types} serializable
+	 * by this {@link MappingPdxSerializer PDX serializer}.
+	 *
+	 * This operation is null-safe and rather than overriding the existing {@link Filter type filters},
+	 * this set operation combines the given {@link Filter type filters} with
+	 * the exiting {@link Filter type filters} joined by {@literal and}.
+	 *
+	 * @param typeFilters {@link Filter type filters} used to to filter {@link Class type} serializable
+	 * by this {@link MappingPdxSerializer PDX serializer}.
+	 * @see org.springframework.data.gemfire.util.Filter
+	 */
+	public void setTypeFilters(Filter<Class<?>> typeFilters) {
+		this.typeFilters = typeFilters != null ? this.typeFilters.and(typeFilters) : this.typeFilters;
+	}
+
+	/**
+	 * Returns the {@link Filter type filters} used to filter {@link Class types} serializable
+	 * by this {@link MappingPdxSerializer PdxSerializer}.
+	 *
+	 * @return the resolved {@link Filter type filter}.
+	 * @see org.springframework.data.gemfire.util.Filter
+	 */
+	protected Filter<Class<?>> getTypeFilters() {
+		return this.typeFilters;
+	}
+
 	@Override
-	public Object fromData(final Class<?> type, final PdxReader reader) {
+	public Object fromData(Class<?> type, PdxReader reader) {
+		return getTypeFilters().accept(type) ? doFromData(type, reader) : null;
+	}
+
+	/**
+	 * Converts a set of PDX serialized bytes to an {@link Object} of the specified {@link Class type}.
+	 *
+	 * @param type desired {@link Class type} of the {@link Object}.
+	 * @param reader {@link PdxReader} used to access the PDX bytes to convert.
+	 * @return an {@link Object} of the specified {@link Class type} converted from the PDX bytes.
+	 * @see com.gemstone.gemfire.pdx.PdxReader
+	 * @see java.lang.Object
+	 * @see java.lang.Class
+	 */
+	Object doFromData(final Class<?> type, final PdxReader reader) {
 
 		final GemfirePersistentEntity<?> entity = getPersistentEntity(type);
 
@@ -412,10 +510,6 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 							? customPdxSerializer.fromData(persistentProperty.getType(), reader)
 							: reader.readField(persistentProperty.getName()));
 
-						if (getLogger().isDebugEnabled()) {
-							getLogger().debug(String.format("... with value [%s]", value));
-						}
-
 						propertyAccessor.setProperty(persistentProperty, value);
 					}
 					catch (Exception cause) {
@@ -431,7 +525,21 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 		return propertyAccessor.getBean();
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * Determines whether the {@link PersistentProperty persistent property}
+	 * of the given {@link PersistentEntity entity } is writable.
+	 *
+	 * The {@link PersistentProperty persistent property} is considered {@literal writable} if the property
+	 * is not a constructor parameter of the {@link PersistentEntity entity's} {@link Class type}, the property
+	 * has a {@literal setter} method and the property is not {@literal transient}.
+	 *
+	 * @param entity {@link GemfirePersistentEntity} containing the {@link GemfirePersistentProperty property}.
+	 * @param persistentProperty {@link GemfirePersistentProperty} to evaluate.
+	 * @return a boolean value indicating whether the {@link PersistentProperty persistent property}
+	 * of the given {@link PersistentEntity entity } is writable.
+	 * @see org.springframework.data.gemfire.mapping.GemfirePersistentEntity
+	 * @see org.springframework.data.gemfire.mapping.GemfirePersistentProperty
+	 */
 	boolean isWritable(GemfirePersistentEntity<?> entity, GemfirePersistentProperty persistentProperty) {
 
 		return !entity.isConstructorArgument(persistentProperty)
@@ -440,12 +548,26 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	}
 
 	@Override
+	public boolean toData(Object value, PdxWriter writer) {
+		return getTypeFilters().accept(resolveType(value)) && doToData(value, writer);
+	}
+
+	/**
+	 * Converts the given {@link Object} into a stream of PDX bytes.
+	 *
+	 * @param value {@link Object} to convert.
+	 * @param writer {@link PdxWriter} used to stream the given {@link Object} into a stream of PDX bytes.
+	 * @return a boolean value indicating whether this {@link MappingPdxSerializer PDX serializer} was able to
+	 * write the given {@link Object} as a stream of PDX bytes.
+	 * @see com.gemstone.gemfire.pdx.PdxWriter
+	 * @see java.lang.Object
+	 */
 	@SuppressWarnings("unchecked")
-	public boolean toData(Object value, final PdxWriter writer) {
+	boolean doToData(Object value, final PdxWriter writer) {
 
 		final GemfirePersistentEntity<?> entity = getPersistentEntity(value);
 
-		// Entity will be null for simple types
+		// Entity will be null for simple types (e.g. int, Long, String, etc).
 		if (entity != null) {
 
 			final PersistentPropertyAccessor propertyAccessor =
@@ -501,12 +623,56 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 
 			return true;
 		}
-
 		return false;
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * Determines whether the given {@link PersistentProperty persistent property} is readable.
+	 *
+	 * The {@link PersistentProperty persistent property} is considered {@literal readable}
+	 * if the property is not {@literal transient}.
+	 *
+	 * @param persistentProperty {@link GemfirePersistentProperty} to evaluate.
+	 * @return a boolean value indicating whether the {@link PersistentProperty persistent property}
+	 * is readable.
+	 * @see org.springframework.data.gemfire.mapping.GemfirePersistentProperty
+	 */
 	boolean isReadable(GemfirePersistentProperty persistentProperty) {
 		return !persistentProperty.isTransient();
+	}
+
+	/**
+	 * Resolves the {@link Class type} of the given {@link Object}.
+	 *
+	 * @param obj {@link Object} to evaluate.
+	 * @return the {@link Class type} of the given {@link Object}.
+	 * @see java.lang.Object#getClass()
+	 * @see java.lang.Class
+	 */
+	Class<?> resolveType(Object obj) {
+		return obj != null ? obj.getClass() : null;
+	}
+
+	public static class ExcludeComGemstoneGemFireTypesFilter extends org.springframework.data.gemfire.util.AbstractFilter<Class<?>> {
+
+		public static final Filter<Class<?>> EXCLUDE_COM_GEMSTONE_GEMFIRE_TYPES =
+			new ExcludeComGemstoneGemFireTypesFilter();
+
+		protected static final String COM_GEMSTONE_GEMFIRE_PACKAGE_NAME = "com.gemstone.gemfire";
+
+		@Override
+		public boolean accept(Class<?> type) {
+			return type != null && !type.getPackage().getName().startsWith(COM_GEMSTONE_GEMFIRE_PACKAGE_NAME);
+		}
+	}
+
+	public static class ExcludeNullTypesFilter extends org.springframework.data.gemfire.util.AbstractFilter<Class<?>> {
+
+		public static final Filter<Class<?>> EXCLUDE_NULL_TYPES = new ExcludeNullTypesFilter();
+
+		@Override
+		public boolean accept(Class<?> type) {
+			return type != null;
+		}
 	}
 }
