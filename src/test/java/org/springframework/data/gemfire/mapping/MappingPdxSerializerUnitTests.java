@@ -17,13 +17,17 @@
 package org.springframework.data.gemfire.mapping;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.atMost;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -48,8 +52,14 @@ import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.convert.EntityInstantiators;
+import org.springframework.data.gemfire.repository.sample.Account;
 import org.springframework.data.gemfire.repository.sample.Address;
+import org.springframework.data.gemfire.repository.sample.Customer;
 import org.springframework.data.gemfire.repository.sample.Person;
+import org.springframework.data.gemfire.repository.sample.Programmer;
+import org.springframework.data.gemfire.repository.sample.RootUser;
+import org.springframework.data.gemfire.repository.sample.User;
+import org.springframework.data.gemfire.test.model.Gender;
 import org.springframework.data.gemfire.test.support.MapBuilder;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
@@ -79,12 +89,12 @@ public class MappingPdxSerializerUnitTests {
 
 	ConversionService conversionService;
 
+	@Mock
+	EntityInstantiator mockInstantiator;
+
 	GemfireMappingContext mappingContext;
 
 	MappingPdxSerializer pdxSerializer;
-
-	@Mock
-	EntityInstantiator mockInstantiator;
 
 	@Mock
 	PdxReader mockReader;
@@ -97,7 +107,7 @@ public class MappingPdxSerializerUnitTests {
 
 		this.conversionService = new GenericConversionService();
 		this.mappingContext = new GemfireMappingContext();
-		this.pdxSerializer = new MappingPdxSerializer(this.mappingContext, this.conversionService);
+		this.pdxSerializer = spy(new MappingPdxSerializer(this.mappingContext, this.conversionService));
 	}
 
 	private String toFullyQualifiedPropertyName(PersistentProperty<?> persistentProperty) {
@@ -138,7 +148,7 @@ public class MappingPdxSerializerUnitTests {
 		}
 		catch (IllegalArgumentException expected) {
 
-			assertThat(expected).hasMessage("ConversionService is required");
+			assertThat(expected).hasMessage("ConversionService must not be null");
 			assertThat(expected).hasNoCause();
 
 			throw expected;
@@ -153,7 +163,7 @@ public class MappingPdxSerializerUnitTests {
 		}
 		catch (IllegalArgumentException expected) {
 
-			assertThat(expected).hasMessage("MappingContext is required");
+			assertThat(expected).hasMessage("MappingContext must not be null");
 			assertThat(expected).hasNoCause();
 
 			throw expected;
@@ -227,7 +237,7 @@ public class MappingPdxSerializerUnitTests {
 		}
 		catch (IllegalArgumentException expected) {
 
-			assertThat(expected).hasMessage("Custom PdxSerializers are required");
+			assertThat(expected).hasMessage("Custom PdxSerializers must not be null");
 			assertThat(expected).hasNoCause();
 
 			throw expected;
@@ -236,7 +246,7 @@ public class MappingPdxSerializerUnitTests {
 
 	@Test
 	@SuppressWarnings("all")
-	public void getCustomPdxSerializerForMappedPersistentPropertyReturnsSerializerForProperty() {
+	public void getCustomPdxSerializerForMappedPersistentPropertyReturnsPdxSerializerForProperty() {
 
 		PdxSerializer mockNamedSerializer = mock(PdxSerializer.class);
 		PdxSerializer mockPropertySerializer = mock(PdxSerializer.class);
@@ -257,7 +267,7 @@ public class MappingPdxSerializerUnitTests {
 
 	@Test
 	@SuppressWarnings("all")
-	public void getCustomPdxSerializerForMappedPersistentPropertyReturnsSerializerForPropertyName() {
+	public void getCustomPdxSerializerForMappedPersistentPropertyReturnsPdxSerializerForPropertyName() {
 
 		PdxSerializer mockNamedSerializer = mock(PdxSerializer.class);
 		PdxSerializer mockTypedSerializer = mock(PdxSerializer.class);
@@ -276,7 +286,7 @@ public class MappingPdxSerializerUnitTests {
 
 	@Test
 	@SuppressWarnings("all")
-	public void getCustomPdxSerializerForMappedPersistentPropertyReturnsSerializerForPropertyType() {
+	public void getCustomPdxSerializerForMappedPersistentPropertyReturnsPdxSerializerForPropertyType() {
 
 		PdxSerializer mockNamedSerializer = mock(PdxSerializer.class);
 		PdxSerializer mockTypedSerializer = mock(PdxSerializer.class);
@@ -309,7 +319,7 @@ public class MappingPdxSerializerUnitTests {
 
 	@Test
 	@SuppressWarnings("deprecation")
-	public void getCustomSerializerForMappedType() {
+	public void getCustomSerializerForMappedTypeReturnsPdxSerializer() {
 
 		PdxSerializer mockPdxSerializer = mock(PdxSerializer.class);
 
@@ -361,7 +371,7 @@ public class MappingPdxSerializerUnitTests {
 		}
 		catch (IllegalArgumentException expected) {
 
-			assertThat(expected).hasMessage("EntityInstantiators are required");
+			assertThat(expected).hasMessage("EntityInstantiators must not be null");
 			assertThat(expected).hasNoCause();
 
 			throw expected;
@@ -627,7 +637,48 @@ public class MappingPdxSerializerUnitTests {
 	}
 
 	@Test
-	public void toDataSerializesApplicationDomainObjectToPdx() {
+	public void fromDataWithTypeFilterAcceptsApplicationDomainTypes() {
+
+		this.pdxSerializer.setTypeFilters(type -> User.class.getPackage().equals(type.getPackage()));
+
+		doReturn("test").when(this.pdxSerializer).doFromData(any(Class.class), any(PdxReader.class));
+
+		assertThat(this.pdxSerializer.fromData(Account.class, this.mockReader)).isEqualTo("test");
+		assertThat(this.pdxSerializer.fromData(Customer.class, this.mockReader)).isEqualTo("test");
+		assertThat(this.pdxSerializer.fromData(Programmer.class, this.mockReader)).isEqualTo("test");
+		assertThat(this.pdxSerializer.fromData(User.class, this.mockReader)).isEqualTo("test");
+		assertThat(this.pdxSerializer.fromData(org.springframework.data.gemfire.test.model.Person.class, this.mockReader)).isNull();
+		assertThat(this.pdxSerializer.fromData(null, this.mockReader)).isNull();
+
+		verify(this.pdxSerializer, times(1)).doFromData(eq(Account.class), eq(this.mockReader));
+		verify(this.pdxSerializer, times(1)).doFromData(eq(Customer.class), eq(this.mockReader));
+		verify(this.pdxSerializer, times(1)).doFromData(eq(Programmer.class), eq(this.mockReader));
+		verify(this.pdxSerializer, times(1)).doFromData(eq(User.class), eq(this.mockReader));
+		verify(this.pdxSerializer, never()).doFromData(isNull(), eq(this.mockReader));
+		verify(this.pdxSerializer, never())
+			.doFromData(eq(org.springframework.data.gemfire.test.model.Person.class), eq(this.mockReader));
+	}
+
+	@Test
+	public void fromDataWithTypeFilterFiltersApacheGeodeTypeReturnsNull() {
+		assertThat(this.pdxSerializer.fromData(org.apache.geode.cache.EntryEvent.class, this.mockReader)).isNull();
+	}
+
+	@Test
+	public void fromDataWithTypeFilterFiltersApplicationDomainTypeReturnsNull() {
+
+		this.pdxSerializer.setTypeFilters(type -> !ApplicationDomainType.class.equals(type));
+
+		assertThat(this.pdxSerializer.fromData(ApplicationDomainType.class, this.mockReader)).isNull();
+	}
+
+	@Test
+	public void fromDataWithTypeFilterFiltersNullTypeReturnsNull() {
+		assertThat(this.pdxSerializer.fromData(null, this.mockReader)).isNull();
+	}
+
+	@Test
+	public void toDataSerializesApplicationDomainObjectToPdxBytes() {
 
 		Address address = new Address();
 
@@ -708,4 +759,51 @@ public class MappingPdxSerializerUnitTests {
 			verify(this.mockWriter, never()).markIdentityField(anyString());
 		}
 	}
+
+	@Test
+	public void toDataFiltersNullTypeReturnsFalse() {
+		assertThat(this.pdxSerializer.toData(null, this.mockWriter)).isFalse();
+	}
+
+	@Test
+	public void toDataFiltersApacheGeodeTypeReturnsFalse() {
+		assertThat(this.pdxSerializer.toData(mock(org.apache.geode.cache.EntryEvent.class), this.mockWriter)).isFalse();
+	}
+
+	@Test
+	public void toDataFiltersApplicationDomainTypeReturnsFalse() {
+
+		this.pdxSerializer.setTypeFilters(type -> !ApplicationDomainType.class.equals(type));
+
+		assertThat(this.pdxSerializer.toData(new ApplicationDomainType(), this.mockWriter)).isFalse();
+	}
+
+	@Test
+	public void toDataAcceptsApplicationDomainObjectTypeReturnsTrue() {
+
+		org.springframework.data.gemfire.test.model.Person jonDoe =
+			new org.springframework.data.gemfire.test.model.Person("Jon", "Doe",
+				null, Gender.MALE);
+
+		this.pdxSerializer.setTypeFilters(type -> User.class.getPackage().equals(type.getPackage()));
+
+		doReturn(true).when(this.pdxSerializer).doToData(any(), any(PdxWriter.class));
+
+		assertThat(this.pdxSerializer.toData(new Account(1L), this.mockWriter)).isTrue();
+		assertThat(this.pdxSerializer.toData(new Customer(1L), this.mockWriter)).isTrue();
+		assertThat(this.pdxSerializer.toData(new Programmer("jxblum"), this.mockWriter)).isTrue();
+		assertThat(this.pdxSerializer.toData(new RootUser("jxblum"), this.mockWriter)).isTrue();
+		assertThat(this.pdxSerializer.toData(null, this.mockWriter)).isFalse();
+		assertThat(this.pdxSerializer.toData(jonDoe, this.mockWriter)).isFalse();
+
+		verify(this.pdxSerializer, times(1)).doToData(isA(Account.class), eq(this.mockWriter));
+		verify(this.pdxSerializer, times(1)).doToData(isA(Customer.class), eq(this.mockWriter));
+		verify(this.pdxSerializer, times(1)).doToData(isA(Programmer.class), eq(this.mockWriter));
+		verify(this.pdxSerializer, times(1)).doToData(isA(RootUser.class), eq(this.mockWriter));
+		verify(this.pdxSerializer, never()).doToData(isNull(), eq(this.mockWriter));
+		verify(this.pdxSerializer, never()).doToData(isA(jonDoe.getClass()), eq(this.mockWriter));
+	}
+
+	private static class ApplicationDomainType { }
+
 }
