@@ -73,11 +73,10 @@ import org.springframework.data.mapping.model.ParameterValueProvider;
  * @author John Blum
  * @see org.junit.Rule
  * @see org.junit.Test
- * @see org.junit.rules.ExpectedException
  * @see org.junit.runner.RunWith
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
- * @see org.mockito.runners.MockitoJUnitRunner
+ * @see org.mockito.junit.MockitoJUnitRunner
  * @see org.springframework.core.convert.ConversionService
  * @see org.springframework.data.gemfire.mapping.MappingPdxSerializer
  * @see org.apache.geode.pdx.PdxReader
@@ -87,20 +86,20 @@ import org.springframework.data.mapping.model.ParameterValueProvider;
 @RunWith(MockitoJUnitRunner.class)
 public class MappingPdxSerializerUnitTests {
 
-	ConversionService conversionService;
+	private ConversionService conversionService;
 
 	@Mock
-	EntityInstantiator mockInstantiator;
+	private EntityInstantiator mockInstantiator;
 
-	GemfireMappingContext mappingContext;
+	private GemfireMappingContext mappingContext;
 
-	MappingPdxSerializer pdxSerializer;
-
-	@Mock
-	PdxReader mockReader;
+	private MappingPdxSerializer pdxSerializer;
 
 	@Mock
-	PdxWriter mockWriter;
+	private PdxReader mockReader;
+
+	@Mock
+	private PdxWriter mockWriter;
 
 	@Before
 	public void setUp() {
@@ -532,8 +531,18 @@ public class MappingPdxSerializerUnitTests {
 	}
 
 	@Test
+	public void resolveTypeWithNonNullType() {
+		assertThat(this.pdxSerializer.resolveType("test")).isEqualTo(String.class);
+	}
+
+	@Test
+	public void resolveTypeWithNullType() {
+		assertThat(this.pdxSerializer.resolveType(null)).isNull();
+	}
+
+	@Test
 	@SuppressWarnings("unchecked")
-	public void fromDataDeserializesPdxBytesAndMapsToApplicationDomainObject() {
+	public void fromDataDeserializesPdxBytesAndMapsToEntity() {
 
 		Address expectedAddress = new Address();
 
@@ -637,7 +646,7 @@ public class MappingPdxSerializerUnitTests {
 	}
 
 	@Test
-	public void fromDataWithTypeFilterAcceptsApplicationDomainTypes() {
+	public void fromDataWithTypeFilterAcceptsDeclaredEntityTypes() {
 
 		this.pdxSerializer.setTypeFilters(type -> User.class.getPackage().equals(type.getPackage()));
 
@@ -665,7 +674,12 @@ public class MappingPdxSerializerUnitTests {
 	}
 
 	@Test
-	public void fromDataWithTypeFilterFiltersApplicationDomainTypeReturnsNull() {
+	public void fromDataWithTypeFilterFiltersNullTypeReturnsNull() {
+		assertThat(this.pdxSerializer.fromData(null, this.mockReader)).isNull();
+	}
+
+	@Test
+	public void fromDataWithTypeFilterFiltersUndeclaredEntityTypesReturnsNull() {
 
 		this.pdxSerializer.setTypeFilters(type -> !ApplicationDomainType.class.equals(type));
 
@@ -673,12 +687,7 @@ public class MappingPdxSerializerUnitTests {
 	}
 
 	@Test
-	public void fromDataWithTypeFilterFiltersNullTypeReturnsNull() {
-		assertThat(this.pdxSerializer.fromData(null, this.mockReader)).isNull();
-	}
-
-	@Test
-	public void toDataSerializesApplicationDomainObjectToPdxBytes() {
+	public void toDataSerializesEntityToPdxBytes() {
 
 		Address address = new Address();
 
@@ -761,6 +770,14 @@ public class MappingPdxSerializerUnitTests {
 	}
 
 	@Test
+	public void toDataFiltersUndeclaredEntityTypeReturnsFalse() {
+
+		this.pdxSerializer.setTypeFilters(type -> !ApplicationDomainType.class.equals(type));
+
+		assertThat(this.pdxSerializer.toData(new ApplicationDomainType(), this.mockWriter)).isFalse();
+	}
+
+	@Test
 	public void toDataFiltersNullTypeReturnsFalse() {
 		assertThat(this.pdxSerializer.toData(null, this.mockWriter)).isFalse();
 	}
@@ -771,15 +788,7 @@ public class MappingPdxSerializerUnitTests {
 	}
 
 	@Test
-	public void toDataFiltersApplicationDomainTypeReturnsFalse() {
-
-		this.pdxSerializer.setTypeFilters(type -> !ApplicationDomainType.class.equals(type));
-
-		assertThat(this.pdxSerializer.toData(new ApplicationDomainType(), this.mockWriter)).isFalse();
-	}
-
-	@Test
-	public void toDataAcceptsApplicationDomainObjectTypeReturnsTrue() {
+	public void toDataAcceptsDeclaredEntityTypeReturnsTrue() {
 
 		org.springframework.data.gemfire.test.model.Person jonDoe =
 			new org.springframework.data.gemfire.test.model.Person("Jon", "Doe",

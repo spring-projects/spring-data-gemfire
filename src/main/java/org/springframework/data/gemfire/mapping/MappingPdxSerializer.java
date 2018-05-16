@@ -673,10 +673,10 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 		EXCLUDE_COM_GEMSTONE_GEMFIRE_TYPES {
 
 			@Override
-			public boolean accept(@Nullable Class<?> obj) {
+			public boolean accept(@Nullable Class<?> type) {
 
-				return Optional.ofNullable(obj)
-					.filter(type -> !type.getPackage().getName().startsWith(COM_GEMSTONE_GEMFIRE_PACKAGE_NAME))
+				return Optional.ofNullable(type)
+					.filter(it -> !it.getPackage().getName().startsWith(COM_GEMSTONE_GEMFIRE_PACKAGE_NAME))
 					.isPresent();
 			}
 		},
@@ -684,18 +684,18 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 		EXCLUDE_NULL_TYPES {
 
 			@Override
-			public boolean accept(@Nullable Class<?> obj) {
-				return obj != null;
+			public boolean accept(@Nullable Class<?> type) {
+				return type != null;
 			}
 		},
 
 		EXCLUDE_ORG_APACHE_GEODE_TYPES {
 
 			@Override
-			public boolean accept(Class<?> obj) {
+			public boolean accept(Class<?> type) {
 
-				return Optional.ofNullable(obj)
-					.filter(type -> !type.getPackage().getName().startsWith(ORG_APACHE_GEODE_PACKAGE_NAME))
+				return Optional.ofNullable(type)
+					.filter(it -> !it.getPackage().getName().startsWith(ORG_APACHE_GEODE_PACKAGE_NAME))
 					.isPresent();
 			}
 		},

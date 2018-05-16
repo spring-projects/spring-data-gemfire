@@ -121,6 +121,21 @@ public class FilterUnitTests {
 
 	@Test
 	@SuppressWarnings("unchecked")
+	public void negateReturnsTrueForFalse() {
+
+		Filter<Object> mockFilter = mock(Filter.class);
+
+		when(mockFilter.accept(any())).thenReturn(false);
+		when(mockFilter.negate()).thenCallRealMethod();
+		when(mockFilter.test(any())).thenCallRealMethod();
+
+		assertThat(mockFilter.negate().test("test")).isTrue();
+
+		verify(mockFilter, times(1)).accept(eq("test"));
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
 	public void predicateTestCallsFilterAcceptReturnsTrue() {
 
 		Filter<Object> mockFilter = mock(Filter.class);
