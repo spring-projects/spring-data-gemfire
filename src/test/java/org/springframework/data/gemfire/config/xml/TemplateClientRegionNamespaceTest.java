@@ -44,7 +44,7 @@ import org.apache.geode.cache.util.ObjectSizer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.StringUtils;
 
 /**
@@ -61,7 +61,7 @@ import org.springframework.util.StringUtils;
  * @see org.apache.geode.cache.Region
  * @since 1.5.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @SuppressWarnings("unused")
 public class TemplateClientRegionNamespaceTest {
@@ -69,7 +69,8 @@ public class TemplateClientRegionNamespaceTest {
 	@Resource(name = "TemplateBasedClientRegion")
 	private Region<Integer, Object> templateBasedClientRegion;
 
-	protected void assertCacheListeners(final Region<?, ?> region, final String... expectedNames) {
+	private void assertCacheListeners(Region<?, ?> region, String... expectedNames) {
+
 		assertNotNull(region);
 		assertNotNull(region.getAttributes());
 		assertNotNull(region.getAttributes().getCacheListeners());
@@ -81,31 +82,28 @@ public class TemplateClientRegionNamespaceTest {
 		}
 	}
 
-	protected void assertCacheLoader(final Region<?, ?> region, final String expectedName) {
+	private void assertCacheLoader(Region<?, ?> region, String expectedName) {
 		assertNotNull(region);
 		assertNotNull(region.getAttributes());
 		assertTrue(region.getAttributes().getCacheLoader() instanceof TestCacheLoader);
 		assertEquals(expectedName, region.getAttributes().getCacheLoader().toString());
 	}
 
-	protected void assertCacheWriter(final Region<?, ?> region, final String expectedName) {
+	private void assertCacheWriter(Region<?, ?> region, String expectedName) {
 		assertNotNull(region);
 		assertNotNull(region.getAttributes());
 		assertTrue(region.getAttributes().getCacheWriter() instanceof TestCacheWriter);
 		assertEquals(expectedName, region.getAttributes().getCacheWriter().toString());
 	}
 
-	protected void assertDefaultEvictionAttributes(final EvictionAttributes evictionAttributes) {
+	private void assertDefaultEvictionAttributes(EvictionAttributes evictionAttributes) {
 		assumeNotNull(evictionAttributes);
 		assertEvictionAttributes(evictionAttributes, EvictionAction.NONE, EvictionAlgorithm.NONE, 0, null);
 	}
 
-	protected void assertEvictionAttributes(final EvictionAttributes evictionAttributes,
-											final EvictionAction expectedAction,
-											final EvictionAlgorithm expectedAlgorithm,
-											final int expectedMaximum,
-											final ObjectSizer expectedObjectSizer)
-	{
+	private void assertEvictionAttributes(EvictionAttributes evictionAttributes, EvictionAction expectedAction,
+			EvictionAlgorithm expectedAlgorithm, int expectedMaximum, ObjectSizer expectedObjectSizer) {
+
 		assertNotNull("The 'EvictionAttributes' must not be null!", evictionAttributes);
 		assertEquals(expectedAction, evictionAttributes.getAction());
 		assertEquals(expectedAlgorithm, evictionAttributes.getAlgorithm());
@@ -113,22 +111,22 @@ public class TemplateClientRegionNamespaceTest {
 		assertEquals(expectedObjectSizer, evictionAttributes.getObjectSizer());
 	}
 
-	protected void assertDefaultExpirationAttributes(final ExpirationAttributes expirationAttributes) {
+	private void assertDefaultExpirationAttributes(ExpirationAttributes expirationAttributes) {
 		assumeNotNull(expirationAttributes);
 		assertEquals(ExpirationAction.INVALIDATE, expirationAttributes.getAction());
 		assertEquals(0, expirationAttributes.getTimeout());
 	}
 
-	protected void assertExpirationAttributes(final ExpirationAttributes expirationAttributes,
-											  final ExpirationAction expectedAction,
-											  final int expectedTimeout)
-	{
+	private void assertExpirationAttributes(ExpirationAttributes expirationAttributes, ExpirationAction expectedAction,
+			int expectedTimeout) {
+
 		assertNotNull("The 'ExpirationAttributes' must not be null!", expirationAttributes);
 		assertEquals(expectedAction, expirationAttributes.getAction());
 		assertEquals(expectedTimeout, expirationAttributes.getTimeout());
 	}
 
-	protected void assertDefaultRegionAttributes(final Region region) {
+	private void assertDefaultRegionAttributes(Region region) {
+
 		assertNotNull("The Region must not be null!", region);
 		assertNotNull(String.format("The Region (%1$s) must have 'RegionAttributes' defined!",
 			region.getFullPath()), region.getAttributes());
@@ -141,23 +139,24 @@ public class TemplateClientRegionNamespaceTest {
 		assertDefaultExpirationAttributes(region.getAttributes().getRegionIdleTimeout());
 	}
 
-	protected static void assertEmpty(final Object[] array) {
+	private static void assertEmpty(Object[] array) {
 		assertTrue((array == null || array.length == 0));
 	}
 
-	protected static void assertEmpty(final Iterable<?> collection) {
+	private static void assertEmpty(Iterable<?> collection) {
 		assertTrue(collection == null || !collection.iterator().hasNext());
 	}
 
-	protected static void assertNullEmpty(final String value) {
+	private static void assertNullEmpty(String value) {
 		assertFalse(StringUtils.hasText(value));
 	}
 
-	protected static void assertRegionMetaData(final Region<?, ?> region, final String expectedRegionName) {
+	private static void assertRegionMetaData(Region<?, ?> region, String expectedRegionName) {
 		assertRegionMetaData(region, expectedRegionName, Region.SEPARATOR + expectedRegionName);
 	}
 
-	protected static void assertRegionMetaData(final Region<?, ?> region, final String expectedRegionName, final String expectedRegionPath) {
+	private static void assertRegionMetaData(Region<?, ?> region, String expectedRegionName, String expectedRegionPath) {
+
 		assertNotNull(String.format("The '%1$s' Region was not properly configured and initialized!",
 			expectedRegionName), region);
 		assertEquals(expectedRegionName, region.getName());
@@ -168,6 +167,7 @@ public class TemplateClientRegionNamespaceTest {
 
 	@Test
 	public void testTemplateBasedClientRegion() {
+
 		assertRegionMetaData(templateBasedClientRegion, "TemplateBasedClientRegion");
 		assertDefaultRegionAttributes(templateBasedClientRegion);
 		assertCacheListeners(templateBasedClientRegion, "XYZ");
@@ -193,7 +193,7 @@ public class TemplateClientRegionNamespaceTest {
 
 		private String name;
 
-		public void setName(final String name) {
+		public void setName(String name) {
 			this.name = name;
 		}
 
@@ -207,18 +207,17 @@ public class TemplateClientRegionNamespaceTest {
 
 		private String name;
 
-		public void setName(final String name) {
+		public void setName(String name) {
 			this.name = name;
 		}
 
 		@Override
-		public Object load(final LoaderHelper loaderHelper) throws CacheLoaderException {
+		public Object load(LoaderHelper loaderHelper) throws CacheLoaderException {
 			return null;
 		}
 
 		@Override
-		public void close() {
-		}
+		public void close() { }
 
 		@Override
 		public String toString() {
@@ -230,7 +229,7 @@ public class TemplateClientRegionNamespaceTest {
 
 		private String name;
 
-		public void setName(final String name) {
+		public void setName(String name) {
 			this.name = name;
 		}
 
@@ -239,5 +238,4 @@ public class TemplateClientRegionNamespaceTest {
 			return name;
 		}
 	}
-
 }

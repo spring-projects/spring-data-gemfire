@@ -50,6 +50,8 @@ import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.RegionLookupFactoryBean;
 import org.springframework.data.gemfire.config.annotation.RegionConfigurer;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
+import org.springframework.data.gemfire.eviction.EvictingRegionFactoryBean;
+import org.springframework.data.gemfire.expiration.ExpiringRegionFactoryBean;
 import org.springframework.data.gemfire.util.RegionUtils;
 import org.springframework.data.gemfire.util.SpringUtils;
 import org.springframework.util.Assert;
@@ -77,7 +79,8 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
  */
 @SuppressWarnings("unused")
-public class ClientRegionFactoryBean<K, V> extends ConfigurableRegionFactoryBean<K, V> implements DisposableBean {
+public class ClientRegionFactoryBean<K, V> extends ConfigurableRegionFactoryBean<K, V>
+		implements EvictingRegionFactoryBean, ExpiringRegionFactoryBean<K, V>, DisposableBean {
 
 	public static final String DEFAULT_POOL_NAME = "DEFAULT";
 	public static final String GEMFIRE_POOL_NAME = GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME;
@@ -306,6 +309,8 @@ public class ClientRegionFactoryBean<K, V> extends ConfigurableRegionFactoryBean
 
 		stream(nullSafeArray(this.cacheListeners, CacheListener.class)).forEach(clientRegionFactory::addCacheListener);
 
+		clientRegionFactory.setStatisticsEnabled(resolveStatisticsEnabled());
+
 		Optional.ofNullable(this.cloningEnabled).ifPresent(clientRegionFactory::setCloningEnabled);
 		Optional.ofNullable(this.compressor).ifPresent(clientRegionFactory::setCompressor);
 		Optional.ofNullable(this.concurrencyChecksEnabled).ifPresent(clientRegionFactory::setConcurrencyChecksEnabled);
@@ -326,7 +331,6 @@ public class ClientRegionFactoryBean<K, V> extends ConfigurableRegionFactoryBean
 
 		Optional.ofNullable(this.regionIdleTimeout).ifPresent(clientRegionFactory::setRegionIdleTimeout);
 		Optional.ofNullable(this.regionTimeToLive).ifPresent(clientRegionFactory::setRegionTimeToLive);
-		Optional.ofNullable(this.statisticsEnabled).ifPresent(clientRegionFactory::setStatisticsEnabled);
 		Optional.ofNullable(this.valueConstraint).ifPresent(clientRegionFactory::setValueConstraint);
 
 		return clientRegionFactory;
@@ -722,6 +726,28 @@ public class ClientRegionFactoryBean<K, V> extends ConfigurableRegionFactoryBean
 
 	public void setStatisticsEnabled(Boolean statisticsEnabled) {
 		this.statisticsEnabled = statisticsEnabled;
+	}
+
+	public Boolean getStatisticsEnabled() {
+		return this.statisticsEnabled;
+	}
+
+	public boolean isStatisticsEnabled() {
+		return Boolean.TRUE.equals(getStatisticsEnabled());
+	}
+
+	protected boolean resolveStatisticsEnabled() {
+
+		return isStatisticsEnabled()
+			|| this.customEntryIdleTimeout != null
+			|| this.customEntryTimeToLive != null
+			|| this.entryIdleTimeout != null
+			|| this.entryTimeToLive != null
+			|| this.regionIdleTimeout != null
+			|| this.regionTimeToLive != null
+			|| Optional.ofNullable(getAttributes())
+				.map(RegionAttributes::getStatisticsEnabled)
+				.orElse(false);
 	}
 
 	/**

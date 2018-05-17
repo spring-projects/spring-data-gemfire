@@ -27,17 +27,23 @@ import java.lang.annotation.Target;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.ObjectSizer;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.gemfire.eviction.EvictionActionType;
 import org.springframework.data.gemfire.eviction.EvictionPolicyType;
 
 /**
- * The {@link EnableEviction} annotation marks a Spring {@link org.springframework.context.annotation.Configuration @Configuration}
- * annotated class to enable {@link Region} Eviction.
+ * The {@link EnableEviction} annotation marks a Spring {@link Configuration @Configuration} annotated class
+ * to enable {@link Region} Eviction.
  *
  * @author John Blum
+ * @see org.apache.geode.cache.EvictionAttributes
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.util.ObjectSizer
  * @see org.springframework.context.annotation.Import
  * @see org.springframework.data.gemfire.config.annotation.EvictionConfiguration
+ * @see org.springframework.data.gemfire.eviction.EvictionActionType
+ * @see org.springframework.data.gemfire.eviction.EvictionPolicyType
  * @see org.apache.geode.cache.Region
  * @since 1.9.0
  */

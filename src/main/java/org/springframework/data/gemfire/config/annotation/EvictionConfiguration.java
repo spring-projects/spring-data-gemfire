@@ -27,7 +27,6 @@ import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -48,6 +47,8 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.data.gemfire.RegionLookupFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
+import org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport;
+import org.springframework.data.gemfire.eviction.EvictingRegionFactoryBean;
 import org.springframework.data.gemfire.eviction.EvictionActionType;
 import org.springframework.data.gemfire.eviction.EvictionAttributesFactoryBean;
 import org.springframework.data.gemfire.eviction.EvictionPolicyType;
@@ -58,23 +59,27 @@ import org.springframework.util.StringUtils;
  * Eviction policy configuration on cache {@link Region Regions}.
  *
  * @author John Blum
+ * @see org.apache.geode.cache.EvictionAttributes
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.util.ObjectSizer
  * @see org.springframework.beans.factory.config.BeanPostProcessor
  * @see org.springframework.context.ApplicationContext
  * @see org.springframework.context.ApplicationContextAware
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.context.annotation.ImportAware
+ * @see org.springframework.data.gemfire.RegionFactoryBean
+ * @see org.springframework.data.gemfire.RegionLookupFactoryBean
+ * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
+ * @see org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport
  * @see org.springframework.data.gemfire.eviction.EvictionActionType
  * @see org.springframework.data.gemfire.eviction.EvictionAttributesFactoryBean
  * @see org.springframework.data.gemfire.eviction.EvictionPolicyType
- * @see org.springframework.data.gemfire.RegionFactoryBean
- * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
- * @see org.apache.geode.cache.EvictionAttributes
- * @see org.apache.geode.cache.Region
  * @since 1.9.0
  */
 @Configuration
-public class EvictionConfiguration implements ApplicationContextAware, ImportAware {
+public class EvictionConfiguration extends AbstractAnnotationConfigSupport
+		implements ApplicationContextAware, ImportAware {
 
 	private ApplicationContext applicationContext;
 
@@ -87,31 +92,9 @@ public class EvictionConfiguration implements ApplicationContextAware, ImportAwa
 	 * @see java.lang.annotation.Annotation
 	 * @see java.lang.Class
 	 */
+	@Override
 	protected Class<? extends Annotation> getAnnotationType() {
 		return EnableEviction.class;
-	}
-
-	/**
-	 * Returns the name of the {@link Annotation} type that enables and configures Eviction.
-	 *
-	 * @return the name of the {@link Annotation} type that enables and configures Eviction.
-	 * @see java.lang.Class#getName()
-	 * @see #getAnnotationType()
-	 */
-	protected String getAnnotationTypeName() {
-		return getAnnotationType().getName();
-	}
-
-	/**
-	 * Returns the simple name of the {@link Annotation} type that enables and configures Eviction.
-	 *
-	 * @return the simple name of the {@link Annotation} type that enables and configures Eviction.
-	 * @see java.lang.Class#getSimpleName()
-	 * @see #getAnnotationType()
-	 */
-	@SuppressWarnings("unused")
-	protected String getAnnotationTypeSimpleName() {
-		return getAnnotationType().getSimpleName();
 	}
 
 	/**
@@ -128,40 +111,39 @@ public class EvictionConfiguration implements ApplicationContextAware, ImportAwa
 	}
 
 	/**
-	 * Determines whether the Spring bean is an instance of {@link RegionFactoryBean}
-	 * or {@link ClientRegionFactoryBean}.
-	 *
-	 * @param bean Spring bean to evaluate.
-	 * @return a boolean value indicating whether the Spring bean is an instance of {@link RegionFactoryBean}
-	 * or the {@link ClientRegionFactoryBean}.
-	 * @see org.springframework.data.gemfire.RegionFactoryBean
-	 * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
-	 */
-	protected static boolean isRegionFactoryBean(Object bean) {
-		return (bean instanceof RegionFactoryBean || bean instanceof ClientRegionFactoryBean);
-	}
-
-	/**
 	 * @inheritDoc
 	 */
 	@Override
 	public void setImportMetadata(AnnotationMetadata importMetadata) {
 
-		if (importMetadata.hasAnnotation(getAnnotationTypeName())) {
-			Map<String, Object> enableEvictionAttributes =
-				importMetadata.getAnnotationAttributes(getAnnotationTypeName());
+		if (isAnnotationPresent(importMetadata)) {
 
-			AnnotationAttributes[] policies = (AnnotationAttributes[]) enableEvictionAttributes.get("policies");
+			AnnotationAttributes enableEvictionAttributes = getAnnotationAttributes(importMetadata);
+
+			AnnotationAttributes[] policies = enableEvictionAttributes.getAnnotationArray("policies");
 
 			for (AnnotationAttributes evictionPolicyAttributes : nullSafeArray(policies, AnnotationAttributes.class)) {
-				this.evictionPolicyConfigurer = ComposableEvictionPolicyConfigurer.compose(
-					this.evictionPolicyConfigurer, EvictionPolicyMetaData.from(evictionPolicyAttributes,
-						this.applicationContext));
+				this.evictionPolicyConfigurer = ComposableEvictionPolicyConfigurer
+					.compose(this.evictionPolicyConfigurer,
+						EvictionPolicyMetaData.from(evictionPolicyAttributes, this.applicationContext));
 			}
 
 			this.evictionPolicyConfigurer = Optional.ofNullable(this.evictionPolicyConfigurer)
 				.orElseGet(EvictionPolicyMetaData::fromDefaults);
 		}
+	}
+
+	/**
+	 * Determines whether the Spring bean is an instance of {@link EvictingRegionFactoryBean}.
+	 *
+	 * @param bean Spring bean to evaluate.
+	 * @return a boolean value indicating whether the Spring bean is an instance of {@link EvictingRegionFactoryBean}.
+	 * @see org.springframework.data.gemfire.eviction.EvictingRegionFactoryBean
+	 * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
+	 * @see org.springframework.data.gemfire.RegionFactoryBean
+	 */
+	protected static boolean isRegionFactoryBean(Object bean) {
+		return bean instanceof EvictingRegionFactoryBean;
 	}
 
 	/**
@@ -184,12 +166,7 @@ public class EvictionConfiguration implements ApplicationContextAware, ImportAwa
 
 			@Override
 			public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-				return (isRegionFactoryBean(bean) ? getEvictionPolicyConfigurer().configure(bean) : bean);
-			}
-
-			@Override
-			public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-				return bean;
+				return isRegionFactoryBean(bean) ? getEvictionPolicyConfigurer().configure(bean) : bean;
 			}
 		};
 	}
@@ -271,7 +248,7 @@ public class EvictionConfiguration implements ApplicationContextAware, ImportAwa
 		 * multiple {@link EvictionPolicyConfigurer} objects using the Composite Software Design Pattern.
 		 */
 		protected static EvictionPolicyConfigurer compose(EvictionPolicyConfigurer one, EvictionPolicyConfigurer two) {
-			return (one == null ? two : (two == null ? one : new ComposableEvictionPolicyConfigurer(one, two)));
+			return one == null ? two : (two == null ? one : new ComposableEvictionPolicyConfigurer(one, two));
 		}
 
 		/**
@@ -291,7 +268,7 @@ public class EvictionConfiguration implements ApplicationContextAware, ImportAwa
 		 */
 		@Override
 		public Object configure(Object regionFactoryBean) {
-			return two.configure(one.configure(regionFactoryBean));
+			return this.two.configure(this.one.configure(regionFactoryBean));
 		}
 	}
 
@@ -418,7 +395,7 @@ public class EvictionConfiguration implements ApplicationContextAware, ImportAwa
 		 * @see #accepts(Supplier)
 		 */
 		protected boolean accepts(Object regionFactoryBean) {
-			return (isRegionFactoryBean(regionFactoryBean) && accepts(() -> resolveRegionName(regionFactoryBean)));
+			return isRegionFactoryBean(regionFactoryBean) && accepts(() -> resolveRegionName(regionFactoryBean));
 		}
 
 		/**
@@ -428,7 +405,7 @@ public class EvictionConfiguration implements ApplicationContextAware, ImportAwa
 		 * @return a boolean value if the named {@link Region} is accepted for Eviction policy configuration.
 		 */
 		protected boolean accepts(Supplier<String> regionName) {
-			return (this.regionNames.isEmpty() || this.regionNames.contains(regionName.get()));
+			return this.regionNames.isEmpty() || this.regionNames.contains(regionName.get());
 		}
 
 		/**
@@ -439,8 +416,10 @@ public class EvictionConfiguration implements ApplicationContextAware, ImportAwa
 		 * @see org.springframework.data.gemfire.RegionLookupFactoryBean#resolveRegionName()
 		 */
 		protected String resolveRegionName(Object regionFactoryBean) {
-			return (regionFactoryBean instanceof RegionLookupFactoryBean
-				? ((RegionLookupFactoryBean) regionFactoryBean).resolveRegionName() : null);
+
+			return regionFactoryBean instanceof RegionLookupFactoryBean
+				? ((RegionLookupFactoryBean) regionFactoryBean).resolveRegionName()
+				: null;
 		}
 
 		/**
@@ -450,29 +429,23 @@ public class EvictionConfiguration implements ApplicationContextAware, ImportAwa
 		 * @param regionFactoryBean {@link RegionFactoryBean} or {@link ClientRegionFactoryBean} on which to
 		 * set the {@link EvictionAttributes} encapsulating the Eviction policy for the targeted {@link Region}.
 		 * @return the {@code regionFactoryBean}.
-		 * @see org.springframework.data.gemfire.RegionFactoryBean#setEvictionAttributes(EvictionAttributes)
-		 * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean#setEvictionAttributes(EvictionAttributes)
+		 * @see org.springframework.data.gemfire.eviction.EvictingRegionFactoryBean#setEvictionAttributes(EvictionAttributes)
 		 * @see org.apache.geode.cache.EvictionAttributes
 		 * @see #getEvictionAttributes()
 		 */
-		protected Object setEvictionAttributes(Object regionFactoryBean) {
+		protected EvictingRegionFactoryBean setEvictionAttributes(EvictingRegionFactoryBean regionFactoryBean) {
 
-			if (regionFactoryBean instanceof RegionFactoryBean) {
-				((RegionFactoryBean) regionFactoryBean).setEvictionAttributes(getEvictionAttributes());
-			}
-			else {
-				((ClientRegionFactoryBean) regionFactoryBean).setEvictionAttributes(getEvictionAttributes());
-			}
+			regionFactoryBean.setEvictionAttributes(getEvictionAttributes());
 
 			return regionFactoryBean;
 		}
 
-		/**
-		 * @inheritDoc
-		 */
 		@Override
 		public Object configure(Object regionFactoryBean) {
-			return (accepts(regionFactoryBean) ? setEvictionAttributes(regionFactoryBean) : regionFactoryBean);
+
+			return accepts(regionFactoryBean)
+				? setEvictionAttributes((EvictingRegionFactoryBean) regionFactoryBean)
+				: regionFactoryBean;
 		}
 	}
 }

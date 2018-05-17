@@ -106,6 +106,7 @@ abstract class ParsingUtils {
 		PropertyValue propertyValue = source.getPropertyValues().getPropertyValue(propertyName);
 
 		if (propertyValue != null) {
+
 			builder.addPropertyValue(propertyValue.getName(), propertyValue.getValue());
 
 			if (withDependsOn && propertyValue.getValue() instanceof RuntimeBeanReference) {
@@ -141,8 +142,8 @@ abstract class ParsingUtils {
 
 		Object beanRef = ParsingUtils.getBeanReference(element, parserContext, "bean");
 
-		return (beanRef != null ? beanRef : parserContext.getDelegate().parseCustomElement(
-			element, builder.getBeanDefinition()));
+		return beanRef != null ? beanRef
+			: parserContext.getDelegate().parseCustomElement(element, builder.getBeanDefinition());
 	}
 
 	/**
@@ -236,6 +237,7 @@ abstract class ParsingUtils {
 		Element evictionElement = DomUtils.getChildElementByTagName(element, "eviction");
 
 		if (evictionElement != null) {
+
 			BeanDefinitionBuilder evictionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
 				EvictionAttributesFactoryBean.class);
 
@@ -246,8 +248,10 @@ abstract class ParsingUtils {
 			Element objectSizerElement = DomUtils.getChildElementByTagName(evictionElement, "object-sizer");
 
 			if (objectSizerElement != null) {
+
 				Object sizer = parseRefOrNestedBeanDeclaration(objectSizerElement, parserContext,
 					evictionAttributesBuilder);
+
 				evictionAttributesBuilder.addPropertyValue("objectSizer", sizer);
 			}
 
@@ -270,13 +274,15 @@ abstract class ParsingUtils {
 	 */
 	@SuppressWarnings("unused")
 	static boolean parseSubscription(Element element, ParserContext parserContext,
+
 		BeanDefinitionBuilder regionAttributesBuilder) {
 
 		Element subscriptionElement = DomUtils.getChildElementByTagName(element, "subscription");
 
 		if (subscriptionElement != null) {
-			BeanDefinitionBuilder subscriptionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
-				SubscriptionAttributesFactoryBean.class);
+
+			BeanDefinitionBuilder subscriptionAttributesBuilder =
+				BeanDefinitionBuilder.genericBeanDefinition(SubscriptionAttributesFactoryBean.class);
 
 			setPropertyValue(subscriptionElement, subscriptionAttributesBuilder, "type", "interestPolicy");
 
@@ -290,6 +296,7 @@ abstract class ParsingUtils {
 	}
 
 	static void parseTransportFilters(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+
 		Element transportFilterElement = DomUtils.getChildElementByTagName(element, "transport-filter");
 
 		if (transportFilterElement != null) {
@@ -312,9 +319,10 @@ abstract class ParsingUtils {
 	 * @return a boolean indicating whether Region expiration attributes were specified.
 	 */
 	static boolean parseExpiration(Element element, ParserContext parserContext,
-		BeanDefinitionBuilder regionAttributesBuilder) {
+			BeanDefinitionBuilder regionAttributesBuilder) {
 
-		boolean result = parseExpiration(element, "region-ttl", "regionTimeToLive", regionAttributesBuilder);
+		boolean result = parseExpiration(element, "region-ttl", "regionTimeToLive",
+			regionAttributesBuilder);
 
 		result |= parseExpiration(element, "region-tti", "regionIdleTimeout", regionAttributesBuilder);
 		result |= parseExpiration(element, "entry-ttl", "entryTimeToLive", regionAttributesBuilder);
@@ -325,7 +333,7 @@ abstract class ParsingUtils {
 			regionAttributesBuilder);
 
 		if (result) {
-			// turn on statistics
+			// enable statistics
 			regionAttributesBuilder.addPropertyValue("statisticsEnabled", Boolean.TRUE);
 		}
 
@@ -361,6 +369,7 @@ abstract class ParsingUtils {
 
 	@SuppressWarnings({ "deprecation", "unused" })
 	static void parseMembershipAttributes(Element element, ParserContext parserContext,
+
 		BeanDefinitionBuilder regionAttributesBuilder) {
 
 		Element membershipAttributes = DomUtils.getChildElementByTagName(element, "membership-attributes");
@@ -387,6 +396,7 @@ abstract class ParsingUtils {
 	}
 
 	static void parseScope(Element element, BeanDefinitionBuilder builder) {
+
 		String scopeAttributeValue = element.getAttribute("scope");
 
 		if (StringUtils.hasText(scopeAttributeValue)) {
@@ -400,8 +410,9 @@ abstract class ParsingUtils {
 		Element expirationElement = DomUtils.getChildElementByTagName(rootElement, elementName);
 
 		if (expirationElement != null) {
-			BeanDefinitionBuilder expirationAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
-				ExpirationAttributesFactoryBean.class);
+
+			BeanDefinitionBuilder expirationAttributesBuilder =
+				BeanDefinitionBuilder.genericBeanDefinition(ExpirationAttributesFactoryBean.class);
 
 			setPropertyValue(expirationElement, expirationAttributesBuilder, "action");
 			setPropertyValue(expirationElement, expirationAttributesBuilder, "timeout");
@@ -419,6 +430,7 @@ abstract class ParsingUtils {
 		Element expirationElement = DomUtils.getChildElementByTagName(rootElement, elementName);
 
 		if (expirationElement != null) {
+
 			Object customExpiry =
 				parseRefOrSingleNestedBeanDeclaration(expirationElement, parserContext, regionAttributesBuilder);
 
@@ -443,6 +455,7 @@ abstract class ParsingUtils {
 
 	@SuppressWarnings("unused")
 	static void assertGemFireFeatureAvailable(Element element, ParserContext parserContext) {
+
 		if (GemfireUtils.isGemfireFeatureUnavailable(element)) {
 			parserContext.getReaderContext().error(String.format("'%1$s' is not supported in %2$s v%3$s",
 				element.getLocalName(), GemfireUtils.GEMFIRE_NAME, GemfireUtils.GEMFIRE_VERSION), element);
@@ -473,11 +486,13 @@ abstract class ParsingUtils {
 		String elementName, String attributeName, ParserContext parserContext) {
 
 		if (GemfireUtils.isGemfireFeatureUnavailable(feature)) {
+
 			String messagePrefix = (attributeName != null)
 				? String.format("Attribute '%1$s' of element '%2$s'", attributeName, elementName)
 				: String.format("Element '%1$s'", elementName);
-			parserContext.getReaderContext().error(
-				String.format("%1$s requires Pivotal GemFire version 7 or later. The current version is %2$s.",
+
+			parserContext.getReaderContext()
+				.error(String.format("%1$s requires Pivotal GemFire version 7 or later. The current version is %2$s.",
 					messagePrefix, GemfireUtils.GEMFIRE_VERSION), null);
 		}
 	}

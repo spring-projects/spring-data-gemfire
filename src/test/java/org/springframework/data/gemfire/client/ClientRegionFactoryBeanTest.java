@@ -155,7 +155,7 @@ public class ClientRegionFactoryBeanTest {
 		verify(mockClientRegionFactory, times(1)).setPoolName(eq("TestPoolTwo"));
 		verify(mockClientRegionFactory, times(1)).setRegionIdleTimeout(any(ExpirationAttributes.class));
 		verify(mockClientRegionFactory, times(1)).setRegionTimeToLive(any(ExpirationAttributes.class));
-		verify(mockClientRegionFactory, times(1)).setStatisticsEnabled(eq(true));
+		verify(mockClientRegionFactory, times(2)).setStatisticsEnabled(eq(true));
 		verify(mockClientRegionFactory, times(1)).setValueConstraint(eq(Number.class));
 		verify(mockClientRegionFactory, times(1)).create(eq("TestRegion"));
 		verify(mockRegion, never()).loadSnapshot(any(InputStream.class));

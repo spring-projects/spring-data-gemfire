@@ -25,7 +25,10 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CustomExpiry;
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
@@ -45,6 +48,8 @@ import org.springframework.data.gemfire.RegionShortcutWrapper;
 import org.springframework.data.gemfire.ReplicatedRegionFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.config.annotation.RegionConfigurer;
+import org.springframework.data.gemfire.eviction.EvictingRegionFactoryBean;
+import org.springframework.data.gemfire.expiration.ExpiringRegionFactoryBean;
 import org.springframework.util.StringUtils;
 
 /**
@@ -54,7 +59,10 @@ import org.springframework.util.StringUtils;
  *
  * @author John Blum
  * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.CustomExpiry
  * @see org.apache.geode.cache.DataPolicy
+ * @see org.apache.geode.cache.EvictionAttributes
+ * @see org.apache.geode.cache.ExpirationAttributes
  * @see org.apache.geode.cache.GemFireCache
  * @see org.apache.geode.cache.Region
  * @see org.apache.geode.cache.RegionAttributes
@@ -71,15 +79,19 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.data.gemfire.ReplicatedRegionFactoryBean
  * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
+ * @see org.springframework.data.gemfire.eviction.EvictingRegionFactoryBean
+ * @see org.springframework.data.gemfire.expiration.ExpiringRegionFactoryBean
  * @since 1.9.0
  */
 @SuppressWarnings("unused")
-public class CacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> {
+public class CacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
+		implements EvictingRegionFactoryBean, ExpiringRegionFactoryBean<K, V> {
 
 	private GemFireCache gemfireCache;
 
 	private Boolean close = false;
 	private Boolean offHeap = false;
+	private Boolean statisticsEnabled = false;
 
 	private Class<K> keyConstraint;
 	private Class<V> valueConstraint;
@@ -88,7 +100,17 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFactoryBe
 
 	private Compressor compressor;
 
+	private CustomExpiry<K, V> customEntryIdleTimeout;
+	private CustomExpiry<K, V> customEntryTimeToLive;
+
 	private DataPolicy dataPolicy = DataPolicy.DEFAULT;
+
+	private EvictionAttributes evictionAttributes;
+
+	private ExpirationAttributes entryIdleTimeout;
+	private ExpirationAttributes entryTimeToLive;
+	private ExpirationAttributes regionIdleTimeout;
+	private ExpirationAttributes regionTimeToLive;
 
 	private List<RegionConfigurer> regionConfigurers = Collections.emptyList();
 
@@ -108,8 +130,9 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFactoryBe
 	@Override
 	public Region<K, V> createRegion(GemFireCache gemfireCache, String regionName) throws Exception {
 
-		return (GemfireUtils.isClient(gemfireCache) ? newClientRegion(gemfireCache, regionName)
-			: newServerRegion(gemfireCache, regionName));
+		return GemfireUtils.isClient(gemfireCache)
+			? newClientRegion(gemfireCache, regionName)
+			: newServerRegion(gemfireCache, regionName);
 	}
 
 	/**
@@ -143,6 +166,9 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFactoryBe
 		clientRegionFactory.setValueConstraint(getValueConstraint());
 
 		getPoolName().ifPresent(clientRegionFactory::setPoolName);
+
+		configureEviction(clientRegionFactory);
+		configureExpiration(clientRegionFactory);
 
 		clientRegionFactory.afterPropertiesSet();
 
@@ -194,6 +220,9 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFactoryBe
 		serverRegionFactory.setShortcut(getServerRegionShortcut());
 		serverRegionFactory.setValueConstraint(getValueConstraint());
 
+		configureEviction(serverRegionFactory);
+		configureExpiration(serverRegionFactory);
+
 		serverRegionFactory.afterPropertiesSet();
 
 		return serverRegionFactory.getObject();
@@ -224,12 +253,29 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFactoryBe
 			return new PartitionedRegionFactoryBean<>();
 		}
 		else if (resolvedDataPolicy.withReplication()) {
+
 			ReplicatedRegionFactoryBean<K, V> replicatedRegionFactoryBean = new ReplicatedRegionFactoryBean<>();
+
 			replicatedRegionFactoryBean.setScope(getScope());
+
 			return replicatedRegionFactoryBean;
 		}
 
 		return new GenericRegionFactoryBean<>();
+	}
+
+	protected void configureEviction(EvictingRegionFactoryBean regionFactoryBean) {
+		regionFactoryBean.setEvictionAttributes(getEvictionAttributes());
+	}
+
+	protected void configureExpiration(ExpiringRegionFactoryBean<K, V> regionFactoryBean) {
+
+		regionFactoryBean.setCustomEntryIdleTimeout(getCustomEntryIdleTimeout());
+		regionFactoryBean.setCustomEntryTimeToLive(getCustomEntryTimeToLive());
+		regionFactoryBean.setEntryIdleTimeout(getEntryIdleTimeout());
+		regionFactoryBean.setEntryTimeToLive(getEntryTimeToLive());
+		regionFactoryBean.setRegionIdleTimeout(getRegionIdleTimeout());
+		regionFactoryBean.setRegionTimeToLive(getRegionTimeToLive());
 	}
 
 	public void setAttributes(RegionAttributes<K, V> regionAttributes) {
@@ -280,6 +326,22 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFactoryBe
 		return this.compressor;
 	}
 
+	public void setCustomEntryIdleTimeout(CustomExpiry<K, V> customEntryIdleTimeout) {
+		this.customEntryIdleTimeout = customEntryIdleTimeout;
+	}
+
+	protected CustomExpiry<K, V> getCustomEntryIdleTimeout() {
+		return customEntryIdleTimeout;
+	}
+
+	public void setCustomEntryTimeToLive(CustomExpiry<K, V> customEntryTimeToLive) {
+		this.customEntryTimeToLive = customEntryTimeToLive;
+	}
+
+	protected CustomExpiry<K, V> getCustomEntryTimeToLive() {
+		return customEntryTimeToLive;
+	}
+
 	public void setDataPolicy(DataPolicy dataPolicy) {
 		this.dataPolicy = dataPolicy;
 	}
@@ -294,6 +356,30 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFactoryBe
 
 	protected String getDiskStoreName() {
 		return this.diskStoreName;
+	}
+
+	public void setEvictionAttributes(EvictionAttributes evictionAttributes) {
+		this.evictionAttributes = evictionAttributes;
+	}
+
+	protected EvictionAttributes getEvictionAttributes() {
+		return evictionAttributes;
+	}
+
+	public void setEntryIdleTimeout(ExpirationAttributes entryIdleTimeout) {
+		this.entryIdleTimeout = entryIdleTimeout;
+	}
+
+	protected ExpirationAttributes getEntryIdleTimeout() {
+		return entryIdleTimeout;
+	}
+
+	public void setEntryTimeToLive(ExpirationAttributes entryTimeToLive) {
+		this.entryTimeToLive = entryTimeToLive;
+	}
+
+	protected ExpirationAttributes getEntryTimeToLive() {
+		return entryTimeToLive;
 	}
 
 	public void setKeyConstraint(Class<K> keyConstraint) {
@@ -358,6 +444,22 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFactoryBe
 	 */
 	public void setRegionConfigurers(List<RegionConfigurer> regionConfigurers) {
 		this.regionConfigurers = Optional.ofNullable(regionConfigurers).orElseGet(Collections::emptyList);
+	}
+
+	public void setRegionIdleTimeout(ExpirationAttributes regionIdleTimeout) {
+		this.regionIdleTimeout = regionIdleTimeout;
+	}
+
+	protected ExpirationAttributes getRegionIdleTimeout() {
+		return regionIdleTimeout;
+	}
+
+	public void setRegionTimeToLive(ExpirationAttributes regionTimeToLive) {
+		this.regionTimeToLive = regionTimeToLive;
+	}
+
+	protected ExpirationAttributes getRegionTimeToLive() {
+		return regionTimeToLive;
 	}
 
 	public void setScope(Scope scope) {
