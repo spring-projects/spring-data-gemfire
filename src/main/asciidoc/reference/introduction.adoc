@@ -1,29 +1,29 @@
 [[ref-introduction]]
 = Document Structure
 
-The following chapters explain the core functionality offered by _Spring Data for Pivotal GemFire_.
+The following chapters explain the core functionality offered by Spring Data for Pivotal GemFire:
 
-<<bootstrap>> describes the configuration support provided for configuring, initializing and accessing
-Pivotal GemFire Caches, Regions, and other related Distributed System components.
+* <<bootstrap>> describes the configuration support provided for configuring, initializing, and accessing
+Pivotal GemFire caches, regions, and related distributed system components.
 
-<<apis>> explains the integration between the Pivotal GemFire APIs and the various data access features
-available in _Spring_, such as data access, exception translation, transaction management and caching.
+* <<apis>> explains the integration between the Pivotal GemFire APIs and the various data access features
+available in Spring, such as data access, exception translation, transaction management, and caching.
 
-<<serialization>> describes enhancements to Pivotal GemFire's (de)serialization of managed objects.
+* <<serialization>> describes enhancements to Pivotal GemFire's serialization and deserialization of managed objects.
 
-<<mapping>> describes persistence mapping for POJOs stored in Pivotal GemFire using _Spring Data_.
+* <<mapping>> describes persistence mapping for POJOs stored in Pivotal GemFire using Spring Data.
 
-<<gemfire-repositories>> describes how to create and use _Spring Data Repositories_ to access data
-stored in Pivotal GemFire using basic CRUD and simple query operations.
+* <<gemfire-repositories>> describes how to create and use Spring Data Repositories to access data
+stored in Pivotal GemFire by using basic CRUD and simple query operations.
 
-<<function-annotations>> describes how to create and use Pivotal GemFire Functions using Annotations
+* <<function-annotations>> describes how to create and use Pivotal GemFire functions by using annotations
 to perform distributed computations where the data lives.
 
-<<apis:continuous-query>> describes how to use Pivotal GemFire's Continuous Query (CQ) functionality
-to process a stream of events based on interest defined and registered using a Pivotal GemFire OQL query.
+* <<apis:continuous-query>> describes how to use Pivotal GemFire's Continuous Query (CQ) functionality
+to process a stream of events based on interest defined and registered using a Pivotal GemFire OQL (Object Query Language) query.
 
-<<gemfire-bootstrap>> describes how to bootstrap a _Spring_ `ApplicationContext` running in an Pivotal GemFire server
-using _Gfsh_.
+* <<gemfire-bootstrap>> describes how to bootstrap a Spring `ApplicationContext` running in an Pivotal GemFire server
+by using `Gfsh`.
 
-<<samples>> describes the examples provided with the distribution to illustrate the various features
-available in _Spring Data for Pivotal GemFire_.
+* <<samples>> describes the examples provided with the distribution to illustrate the various features
+available in Spring Data for Pivotal GemFire.

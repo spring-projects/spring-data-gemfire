@@ -1,7 +1,6 @@
 [[appendix-schema]]
 [appendix]
 = Spring Data for Pivotal GemFire Schema
-:resourcesDir: {basedocdir}/../resources
 
-- http://www.springframework.org/schema/gemfire/spring-gemfire.xsd[Spring Data for Pivotal GemFire Core Schema (`gfe`-namespace)]
-- http://www.springframework.org/schema/gemfire/spring-data-gemfire.xsd[Spring Data for Pivotal GemFire Data Access Schema (`gfe-data`-namespace)]
+* http://www.springframework.org/schema/gemfire/spring-gemfire.xsd[Spring Data for Pivotal GemFire Core Schema (`gfe` namespace)]
+* http://www.springframework.org/schema/gemfire/spring-data-gemfire.xsd[Spring Data for Pivotal GemFire Data Access Schema (`gfe-data` namespace)]

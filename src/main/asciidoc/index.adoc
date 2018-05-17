@@ -1,10 +1,17 @@
 = Spring Data for Pivotal GemFire Reference Guide
-Costin Leau , David Turanski , John Blum , Oliver Gierke
+Costin Leau; David Turanski; John Blum; Oliver Gierke; Jay Bryant
 :revnumber: {version}
 :revdate: {localdate}
+:linkcss:
+:doctype: book
+:docinfo: shared
+:toc: left
+:toclevels: 4
+:source-highlighter: prettify
+:icons: font
+:imagesdir: images
+ifdef::backend-epub3[:front-cover-image: image:epub-cover.png[Front Cover,1050,1600]]
 :spring-data-commons-docs: {basedocdir}/../../../../spring-data-commons/src/main/asciidoc
-:toc:
-:!toc-placement:
 
 (C) 2010-2018 The original authors.
 
@@ -12,39 +19,27 @@ NOTE: Copies of this document may be made for your own use and for distribution 
 charge any fee for such copies and further provided that each copy contains this Copyright Notice
 whether distributed in print or electronically.
 
-toc::[]
-
 [[preface]]
 include::{basedocdir}/preface.adoc[]
 
-ifndef::leveloffset[:leveloffset: 0]
-
-:leveloffset: +1
-
-include::{basedocdir}/introduction/introduction.adoc[]
-include::{basedocdir}/introduction/requirements.adoc[]
-include::{basedocdir}/introduction/new-features.adoc[]
-
-:leveloffset: -1
+include::{basedocdir}/introduction/introduction.adoc[leveloffset=+1]
+include::{basedocdir}/introduction/requirements.adoc[leveloffset=+1]
+include::{basedocdir}/introduction/new-features.adoc[leveloffset=+1]
 
 [[reference]]
 = Reference Guide
 
-:leveloffset: +1
-
-include::{basedocdir}/reference/introduction.adoc[]
-include::{basedocdir}/reference/bootstrap.adoc[]
-include::{basedocdir}/reference/bootstrap-annotations.adoc[]
-include::{basedocdir}/reference/data.adoc[]
-include::{basedocdir}/reference/serialization.adoc[]
-include::{basedocdir}/reference/mapping.adoc[]
-include::{basedocdir}/reference/repositories.adoc[]
-include::{basedocdir}/reference/function-annotations.adoc[]
-include::{basedocdir}/reference/lucene.adoc[]
-include::{basedocdir}/reference/gemfire-bootstrap.adoc[]
-include::{basedocdir}/reference/samples.adoc[]
-
-:leveloffset: -1
+include::{basedocdir}/reference/introduction.adoc[leveloffset=+1]
+include::{basedocdir}/reference/bootstrap.adoc[leveloffset=+1]
+include::{basedocdir}/reference/bootstrap-annotations.adoc[leveloffset=+1]
+include::{basedocdir}/reference/data.adoc[leveloffset=+1]
+include::{basedocdir}/reference/serialization.adoc[leveloffset=+1]
+include::{basedocdir}/reference/mapping.adoc[leveloffset=+1]
+include::{basedocdir}/reference/repositories.adoc[leveloffset=+1]
+include::{basedocdir}/reference/function-annotations.adoc[leveloffset=+1]
+include::{basedocdir}/reference/lucene.adoc[leveloffset=+1]
+include::{basedocdir}/reference/gemfire-bootstrap.adoc[leveloffset=+1]
+include::{basedocdir}/reference/samples.adoc[leveloffset=+1]
 
 [[resources]]
 = Resources
@@ -53,22 +48,14 @@ In addition to this reference documentation, there are a number of other resourc
 how to use Pivotal GemFire with the _Spring Framework_. These additional, third-party resources are enumerated
 in this section.
 
-:leveloffset: +1
-
-include::{basedocdir}/links.adoc[]
-
-:leveloffset: -1
+include::{basedocdir}/links.adoc[leveloffset=+1]
 
 [[appendices]]
 = Appendices
 
 :!sectnums:
-:leveloffset: +1
-
-include::{spring-data-commons-docs}/repository-namespace-reference.adoc[]
-include::{spring-data-commons-docs}/repository-populator-namespace-reference.adoc[]
-include::{spring-data-commons-docs}/repository-query-keywords-reference.adoc[]
-include::{spring-data-commons-docs}/repository-query-return-types-reference.adoc[]
-include::{basedocdir}/appendix/appendix-schema.adoc[]
-
-:leveloffset: -1
+include::{spring-data-commons-docs}/repository-namespace-reference.adoc[leveloffset=+1]
+include::{spring-data-commons-docs}/repository-populator-namespace-reference.adoc[leveloffset=+1]
+include::{spring-data-commons-docs}/repository-query-keywords-reference.adoc[leveloffset=+1]
+include::{spring-data-commons-docs}/repository-query-return-types-reference.adoc[leveloffset=+1]
+include::{basedocdir}/appendix/appendix-schema.adoc[leveloffset=+1]
