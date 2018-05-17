@@ -1,17 +1,15 @@
 [[gemfire-repositories]]
 = Spring Data for Pivotal GemFire Repositories
 
-== Introduction
-
-_Spring Data for Pivotal GemFire_ provides support to use the _Spring Data Repository_ abstraction to easily persist entities
-into Pivotal GemFire along with execute queries.  A general introduction to the _Repository programming model_ is provided
+Spring Data for Pivotal GemFire provides support for using the Spring Data Repository abstraction to easily persist entities
+into Pivotal GemFire along with execute queries. A general introduction to the repository programming model is provided
 http://docs.spring.io/spring-data/data-commons/docs/current/reference/html/#repositories[here].
 
 [[gemfire-repositories.spring-configuration-xml]]
 == Spring XML Configuration
 
-To bootstrap _Spring Data Repositories_, you use the `<repositories/>` element from the _Spring Data for Pivotal GemFire_
-Data namespace:
+To bootstrap Spring Data Repositories, use the `<repositories/>` element from the Spring Data for Pivotal GemFire
+Data namespace, as the following example shows:
 
 .Bootstrap Spring Data for Pivotal GemFire Repositories in XML
 ====
@@ -30,20 +28,19 @@ Data namespace:
 ----
 ====
 
-This configuration snippet looks for interfaces below the configured base package and creates _Repository_ instances
-for those interfaces backed by a `SimplePivotal GemFireRepository`.
+The preceding configuration snippet looks for interfaces below the configured base package and creates repository instances
+for those interfaces backed by a https://docs.spring.io/spring-data/geode/docs/current/api/org/springframework/data/gemfire/repository/support/SimpleGemfireRepository.html[`SimpleGemFireRepository`].
 
-IMPORTANT: You must have your application domain classes correctly mapped to configured Regions
-or the bootstrap process will fail otherwise.
+IMPORTANT: The bootstrap process fails unless you have your application domain classes correctly mapped to configured regions.
 
 [[gemfire-repositories.spring-configuration-java]]
 == Spring Java-based Configuration
 
-Alternatively, many users prefer to use _Spring's_
+Alternatively, many developers prefer to use Spring's
 https://docs.spring.io/spring/docs/current/spring-framework-reference/core.html#beans-java[Java-based container configuration].
 
-Using this approach, it is a simple matter to bootstrap _Spring Data Repositories_ using the SDG `@EnableGemfireRepositories`
-annotation:
+Using this approach, you can bootstrap Spring Data Repositories by using the SDG `@EnableGemfireRepositories`
+annotation, as the following example shows:
 
 .Bootstrap _Spring Data for Pivotal GemFire Repositories_ with `@EnableGemfireRepositories`
 ====
@@ -58,46 +55,46 @@ class SpringDataApplication {
 ====
 
 Rather than use the `basePackages` attribute, you may prefer to use the type-safe `basePackageClasses` attribute instead.
-The `basePackageClasses` allows you to specify the package containing all your application _Repository_ classes
-by specifying just one of your application _Repository_ interface types.  Consider creating a special no-op marker class
-or interface in each package that serves no other purpose than to identify the location of application _Repositories_
+The `basePackageClasses` lets you specify the package that contains all your application repository classes
+by specifying only one of your application repository interface types. Consider creating a special no-op marker class
+or interface in each package that serves no purpose other than to identify the location of application repositories
 referenced by this attribute.
 
-In addition to the `basePackage[sClasses]` attributes, like _Spring's_
+In addition to the `basePackage[sClasses]` attributes, such as Spring's
 https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/context/annotation/ComponentScan.html[`@ComponentScan`] annotation,
-the `@EnableGemfireRepositories` annotation provides _include_ and _exclude_ filters, based on _Spring's_
+the `@EnableGemfireRepositories` annotation provides include and exclude filters, based on Spring's
 https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/context/annotation/ComponentScan.Filter.html[`ComponentScan.Filter`] type.
-You can use the `filterType` attribute to filter by different aspects, such as whether an application _Repository_ type
-is annotated with a particular `Annotation` or extends a particular class type, and so on.  See the
-https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/context/annotation/FilterType.html[`FilterType` _Javadoc_]
+You can use the `filterType` attribute to filter by different aspects, such as whether an application repository type
+is annotated with a particular annotation or extends a particular class type and so on. See the
+https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/context/annotation/FilterType.html[`FilterType` Javadoc]
 for more details.
 
-The `@EnableGemfireRepositories` annotation also provides the ability to specify the location of named OQL queries,
-which reside in a Java `Properties` file, using the `namedQueriesLocation` attribute.  The property name must match
-the name of a _Repository_ query method and the property value is the OQL query you want executed when
-the _Repository_ query method is called.
+The `@EnableGemfireRepositories` annotation also lets you specify the location of named OQL queries,
+which reside in a Java `Properties` file, by using the `namedQueriesLocation` attribute. The property name must match
+the name of a repository query method and the property value is the OQL query you want executed when
+the repository query method is called.
 
-The `repositoryImplementationPostfix` attribute can be set to an alternate value (defaults to "_Impl_") if your
-application requires 1 or more https://docs.spring.io/spring-data/commons/docs/current/reference/html/#repositories.custom-implementations[custom _Repository_ implementations].
-This feature is commonly used to extend the _Spring Data Repository_ infrastructure in order to implement a feature
-not provided out-of-the-box (OOTB) by the data store (e.g. SDG).
+The `repositoryImplementationPostfix` attribute can be set to an alternate value (defaults to `Impl`) if your
+application requires one or more https://docs.spring.io/spring-data/commons/docs/current/reference/html/#repositories.custom-implementations[custom repository implementations].
+This feature is commonly used to extend the Spring Data repository infrastructure to implement a feature
+not provided by the data store (for example, SDG).
 
-One example of where custom _Repository_ implementations are needed with Pivotal GemFire is when performing _Joins_.
-_Joins_ are not supported by SDG _Repositories_ OOTB.  With a Pivotal GemFire `PARTITION` Region, the _Join_ must be
-performed on collocated `PARTITION` Regions even, since Pivotal GemFire does not support "distributed" _Joins_.
-In addition, the _Equi-Join_ OQL Query must be performed inside a Pivotal GemFire Function.
+One example of where custom repository implementations are needed with Pivotal GemFire is when performing joins.
+Joins are not supported by SDG repositories. With a Pivotal GemFire `PARTITION` Region, the join must be
+performed on co-located `PARTITION` regions, since Pivotal GemFire does not support "`distributed`" joins.
+In addition, the Equi-Join OQL Query must be performed inside a Pivotal GemFire function.
 See http://gemfire91.docs.pivotal.io/geode/developing/partitioned_regions/join_query_partitioned_regions.html[here]
 for more details on Pivotal GemFire _Equi-Join Queries_.
 
-Many other aspects of the SDG's _Repository_ infrastructure extension maybe customized as well.  See the
-https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/repository/config/EnableGemfireRepositories.html[`@EnableGemfireRepositories` _Javadoc_]
+Many other aspects of the SDG's repository infrastructure extension may be customized as well. See the
+https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/repository/config/EnableGemfireRepositories.html[`@EnableGemfireRepositories` Javadoc]
 for more details on all configuration settings.
 
 [[gemfire-repositories.queries.executing]]
 == Executing OQL Queries
 
-_Spring Data for Pivotal GemFire Repositories_ enable the definition of query methods to easily execute Pivotal GemFire OQL Queries
-against the Region the managed entity is mapped to.
+Spring Data for Pivotal GemFire Repositories enable the definition of query methods to easily execute Pivotal GemFire OQL queries
+against the region the managed entity maps to, as the following example shows:
 
 .Sample Repository
 ====
@@ -124,12 +121,14 @@ public interface PersonRepository extends CrudRepository<Person, Long> {
 ----
 ====
 
-The first query method listed here will cause the following OQL query to be derived:
-`SELECT x FROM /People x WHERE x.emailAddress = $1`.  The second query method works the same way except
-it's returning all entities found whereas the first query method expects a single result to be found.
+The first query method listed in the preceding example causes the following OQL query to be derived:
+`SELECT x FROM /People x WHERE x.emailAddress = $1`. The second query method works the same way except
+it returns all entities found, whereas the first query method expects a single result to be found.
 
-In case the supported keywords are not sufficient to expresss and declare your OQL query, or the method name
-becomes too verbose, you can annotate the query methods with `@Query` as seen for methods 3 and 4.
+If the supported keywords are not sufficient to express and declare your OQL query, or the method name
+becomes too verbose, you can annotate the query methods with `@Query` as shown on the third and fourth methods.
+
+The following table gives brief samples of the supported keywords that you can use in query methods:
 
 [cols="1,2,2", options="header"]
 .Supported keywords for query methods
@@ -196,28 +195,28 @@ becomes too verbose, you can annotate the query methods with `@Query` as seen fo
 |===
 
 [[gemfire-repositories.queries.oql-extensions]]
-== OQL Query Extensions using Annotations
+== OQL Query Extensions Using Annotations
 
 Many query languages, such as Pivotal GemFire's OQL (Object Query Language), have extensions that are not directly
-supported by _Spring Data Commons' Repository_ infrastructure.
+supported by Spring Data Commons' repository infrastructure.
 
-One of _Spring Data Commons' Repository_ infrastructure goals is to function as the lowest common denominator
-in order to maintain support for and portability across the widest array of data stores available and in use
-for application development today.  Technically, this means developers can access multiple different data stores
-supported by _Spring Data Commons_ within their applications by reusing their existing application-specific
-Repository interfaces, a very convenient and powerful abstraction.
+One of Spring Data Commons' repository infrastructure goals is to function as the lowest common denominator
+to maintain support for and portability across the widest array of data stores available and in use
+for application development today. Technically, this means developers can access multiple different data stores
+supported by Spring Data Commons within their applications by reusing their existing application-specific
+repository interfaces -- a convenient and powerful abstraction.
 
 To support Pivotal GemFire's OQL Query language extensions and preserve portability across different data stores,
-_Spring Data for Pivotal GemFire_ adds support for OQL Query extensions using Java Annotations.  These Annotations will be ignored
-by other _Spring Data Repository_ implementations (e.g. _Spring Data_ JPA or _Spring Data Redis_) that do not have
+Spring Data for Pivotal GemFire adds support for OQL Query extensions by using Java annotations. These Annotations are ignored
+by other Spring Data repository implementations (such as Spring Data JPA or Spring Data Redis) that do not have
 similar query language extensions.
 
-For instance, many data stores will most likely not implement Pivotal GemFire's OQL `IMPORT` keyword.  By implementing `IMPORT`
-as an Annotation (i.e. `@Import`) rather than as part of the query method signature (specifically, the method 'name'),
-then this will not interfere with the parsing infrastructure when evaluating the query method name to construct
+For instance, many data stores most likely do not implement Pivotal GemFire's OQL `IMPORT` keyword. Implementing `IMPORT`
+as an annotation (that is, `@Import`) rather than as part of the query method signature (specifically, the method 'name')
+does not interfere with the parsing infrastructure when evaluating the query method name to construct
 another data store language appropriate query.
 
-Currently, the set of Pivotal GemFire OQL Query language extensions that are supported by _Spring Data for Pivotal GemFire_ include:
+Currently, the set of Pivotal GemFire OQL Query language extensions that are supported by Spring Data for Pivotal GemFire include:
 
 [cols="1,2,2,2", options="header"]
 .Supported Pivotal GemFire OQL extensions for Repository query methods
@@ -229,7 +228,7 @@ Currently, the set of Pivotal GemFire OQL Query language extensions that are sup
 
 | http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/query_index/query_index_hints.html#topic_cfb_mxn_jq[HINT]
 | `@Hint`
-| OQL Query Index Hints
+| OQL query index hints
 | `String[]` (e.g. @Hint({ "IdIdx", "TxDateIdx" }))
 
 | http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/query_select/the_import_statement.html#concept_2E9F15B2FE9041238B54736103396BF7[IMPORT]
@@ -244,12 +243,12 @@ Currently, the set of Pivotal GemFire OQL Query language extensions that are sup
 
 | http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/query_additional/query_debugging.html#concept_2D557E24AAB24044A3DB36B3124F6748[TRACE]
 | `@Trace`
-| Enable OQL Query specific debugging.
+| Enable OQL query-specific debugging.
 | NA
 |===
 
-As an example, suppose you have a `Customers` application domain class and corresponding Pivotal GemFire Region along with a
-`CustomerRepository` and a query method to lookup `Customers` by last name, like so...
+As an example, suppose you have a `Customers` application domain class and corresponding Pivotal GemFire region along with a
+`CustomerRepository` and a query method to lookup `Customers` by last name, as follows:
 
 .Sample Customers Repository
 ====
@@ -291,15 +290,14 @@ public interface CustomerRepository extends GemfireRepository<Customer, Long> {
 ----
 ====
 
-This will result in the following OQL Query:
+The preceding example results in the following OQL Query:
 
 `<TRACE> <HINT 'LastNameIdx'> IMPORT org.example.app.domain.Customer; SELECT * FROM /Customers x WHERE x.lastName = $1 LIMIT 10`
 
-_Spring Data for Pivotal GemFire's Repository_ extension and support is careful not to create conflicting declarations when
+Spring Data for Pivotal GemFire's repository extension and support is careful not to create conflicting declarations when
 the OQL Annotation extensions are used in combination with the `@Query` annotation.
 
-As another example, suppose you have a raw `@Query` annotated query method defined in your `CustomerRepository`
-like so...
+As another example, suppose you have a raw `@Query` annotated query method defined in your `CustomerRepository`, as follows:
 
 .CustomerRepository
 ====
@@ -317,33 +315,33 @@ public interface CustomerRepository extends GemfireRepository<Customer, Long> {
 ----
 ====
 
-This query method results in the following OQL Query:
+The preceding query method results in the following OQL Query:
 
 `IMPORT org.example.app.domain.Customer; <TRACE> <HINT 'ReputationIdx'> SELECT DISTINCT * FROM /Customers x
 WHERE x.reputation > $1 ORDER BY c.reputation DESC LIMIT 5`
 
-As you can see, the `@Limit(10)` annotation will +not+ override the `LIMIT` defined explicitly in the raw query.
-As well, `@Hint("CustomerIdx")` annotation does +not+ override the `HINT` explicitly defined in the raw query.
+The `@Limit(10)` annotation does not override the `LIMIT` defined explicitly in the raw query.
+Also, the `@Hint("CustomerIdx")` annotation does not override the `HINT` explicitly defined in the raw query.
 Finally, the `@Trace` annotation is redundant and has no additional effect.
 
 [NOTE]
 ====
-The "ReputationIdx" Index is probably not the most sensible index given the number of Customers who will possibly have
-the same value for their reputation, which will effectively reduce the effectiveness of the index.  Please choose
-indexes and other optimizations wisely as an improper or poorly choosen index can have the opposite effect on your
-performance given the overhead in maintaining the index.  The "ReputationIdx" was only used to serve the purpose
+The `ReputationIdx` index is probably not the most sensible index, given the number of customers who may possibly have
+the same value for their reputation, which reduces the effectiveness of the index. Please choose
+indexes and other optimizations wisely, as an improper or poorly chosen index can have the opposite effect on your
+performance because of the overhead in maintaining the index. The `ReputationIdx` was used only to serve the purpose
 of the example.
 ====
 
 [[gemfire-repositories.queries.post-processing]]
 == Query Post Processing
 
-Using the Spring Data _Repository_ abstraction, query method convention for defining data store specific queries
-(e.g. OQL) is easy and convenient.  However, it is sometimes desirable to still want to inspect or even possibly
-modify the query "generated" from the _Repository_ query method.
+Thanks to using the Spring Data repository abstraction, the query method convention for defining data store specific queries
+(e.g. OQL) is easy and convenient. However, it is sometimes desirable to still want to inspect or even possibly
+modify the query generated from the repository query method.
 
-Since 2.0.x, _Spring Data for Pivotal GemFire_ introduces the `o.s.d.gemfire.repository.query.QueryPostProcessor`
-functional interface.  The interface is loosely defined as follows...
+Since 2.0.x, Spring Data for Pivotal GemFire includes the `o.s.d.gemfire.repository.query.QueryPostProcessor`
+functional interface. The interface is loosely defined as follows:
 
 .QueryPostProcessor
 ====
@@ -365,31 +363,31 @@ interface QueryPostProcessor<T extends Repository, QUERY> extends Ordered {
 ----
 ====
 
-There are additional default methods provided to allow users to compose instances of `QueryPostProcessor` very similar
+There are additional default methods provided that let you compose instances of `QueryPostProcessor` similar
 to how https://docs.oracle.com/javase/8/docs/api/java/util/function/Function.html#compose-java.util.function.Function-[java.util.function.Function.andThen(:Function)]
 and https://docs.oracle.com/javase/8/docs/api/java/util/function/Function.html#compose-java.util.function.Function-[java.util.function.Function.compose(:Function)]
 work.
 
-Additionally, you will notice that the `QueryPostProcessor` interface implements the
+Additionally, the `QueryPostProcessor` interface implements the
 https://docs.spring.io/spring/docs/5.0.2.RELEASE/javadoc-api/org/springframework/core/Ordered.html[`org.springframework.core.Ordered`]
 interface, which is useful when multiple `QueryPostProcessors` are declared and registered in the Spring context
 and used to create a pipeline of processing for a group of generated query method queries.
 
 Finally, the `QueryPostProcessor` accepts type arguments corresponding to the type parameters, `T` and `QUERY`,
-respectively.  Type of `T` extends the _Spring Data Commons_ marker interface,
+respectively. Type of `T` extends the Spring Data Commons marker interface,
 https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/Repository.html[`org.springframework.data.repository.Repository`].
-We will discuss this further below.  All `QUERY` type parameter arguments in _Spring Data for Pivotal GemFire's_ case
-will be of type `java.lang.String`.
+We discuss this further later in this section. All `QUERY` type parameter arguments in Spring Data for Pivotal GemFire's case
+are of type `java.lang.String`.
 
-NOTE: It is useful to define the query as type `QUERY` since this `QueryPostProcessor` interface maybe ported to
-_Spring Data Commons_ and therefore must handle all forms of queries by different data stores (e.g. JPA, MongoDB,
+NOTE: It is useful to define the query as type `QUERY`, since this `QueryPostProcessor` interface may be ported to
+Spring Data Commons and therefore must handle all forms of queries by different data stores (such as JPA, MongoDB,
 or Redis).
 
-As user may implement this interface to receive a callback with the query that was generated from the application
+You can implement this interface to receive a callback with the query that was generated from the application
 `Repository` interface method when the method is called.
 
-For example, I might want to log all queries from all application _Repository_ interface definitions.  I could do so
-using the following `QueryPostProcessor` implementation...
+For example, you might want to log all queries from all application repository interface definitions. You could do so by
+using the following `QueryPostProcessor` implementation:
 
 .LoggingQueryPostProcessor
 ====
@@ -415,10 +413,10 @@ class LoggingQueryPostProcessor implements QueryPostProcessor<Repository, String
 ====
 
 The `LoggingQueryPostProcessor` was typed to the Spring Data `org.springframework.data.repository.Repository`
-marker interface, and therefore, will log all application _Repository_ interface query method "generated" queries.
+marker interface, and, therefore, logs all application repository interface query method generated queries.
 
-You could limit the scope of this logging to queries only from certain types of application _Repository_ interfaces,
-such as, say, an `CustomerRepository`...
+You could limit the scope of this logging to queries only from certain types of application repository interfaces,
+such as, say, a `CustomerRepository`, as the following example shows:
 
 .CustomerRepository
 ====
@@ -434,7 +432,7 @@ interface CustomerRepository extends CrudRepository<Customer, Long> {
 ----
 ====
 
-Then, I could have typed the `LoggingQueryPostProcessor` specifically to the `CustomerRepository`, like so...
+Then you could have typed the `LoggingQueryPostProcessor` specifically to the `CustomerRepository`, as follows:
 
 .CustomerLoggingQueryPostProcessor
 ====
@@ -444,12 +442,12 @@ class LoggingQueryPostProcessor implements QueryPostProcessor<CustomerRepository
 ----
 ====
 
-As result, only queries defined in the `CustomerRepository` interface (e.g. `findByAccountNumber`) would be logged.
+As a result, only queries defined in the `CustomerRepository` interface (such as `findByAccountNumber`) are logged.
 
-I might want to create a `QueryPostProcessor` for a specific query defined by a _Repository_ query method.  For example,
-say I want to "`LIMIT`" the OQL query generated from the `CustomerRepository.findByLastNameLike(:String)` query method
-to only return 5 results and I want to order the `Customers` by `firstName`, ascending.  Well, then, I can define
-a custom `QueryPostProcessor` like so...
+You might want to create a `QueryPostProcessor` for a specific query defined by a repository query method. For example,
+suppose you want to limit the OQL query generated from the `CustomerRepository.findByLastNameLike(:String)` query method
+to only return five results and want to order the `Customers` by `firstName`, ascending. To do so, you can define
+a custom `QueryPostProcessor`, as the following example shows:
 
 .OrderedLimitedCustomerByLastNameQueryPostProcessor
 ====
@@ -477,8 +475,8 @@ class OrderedLimitedCustomerByLastNameQueryPostProcessor implements QueryPostPro
 ----
 ====
 
-While this works, it possible to achieve the same affect just using the Spring Data _Repository_ convention and extensions
-provided by _Spring Data for Pivotal GemFire_.  For instance, the same query could be defined as...
+While the preceding example works, you can achieve the same effect by using the Spring Data repository convention and extensions
+provided by Spring Data for Pivotal GemFire.  For instance, the same query could be defined as follows:
 
 .CustomerRepository using the convention
 ====
@@ -494,11 +492,11 @@ interface CustomerRepository extends CrudRepository<Customer, Long> {
 ====
 
 However, if you do not have control over the application `CustomerRepository` interface definition,
-then the `QueryPostProcessor` (i.e. `OrderedLimitedCustomerByLastNameQueryPostProcessor`) is convenient.
+then the `QueryPostProcessor` (that is, `OrderedLimitedCustomerByLastNameQueryPostProcessor`) is convenient.
 
-If I want to ensure the `LoggingQueryPostProcessor` always comes after the other application-defined `QueryPostProcessors`
-that I may have declared and registered in the Spring `ApplicationContext`, then I can set the `order` property
-by overriding the `o.s.core.Ordered.getOrder()` method.
+If you want to ensure that the `LoggingQueryPostProcessor` always comes after the other application-defined `QueryPostProcessors`
+that may have declared and registered in the Spring `ApplicationContext`, you can set the `order` property
+by overriding the `o.s.core.Ordered.getOrder()` method, as the following example shows:
 
 .Defining the `order` property
 ====
@@ -522,9 +520,9 @@ class CustomerQueryPostProcessor implements QueryPostProcessor<CustomerRepositor
 ----
 ====
 
-This ensures that I will always see the affects of the post processing applied by my other `QueryPostProcessors`
-before my `LoggingQueryPostProcessor` logs the query.
+This ensures that you always see the effects of the post processing applied by other `QueryPostProcessors`
+before the `LoggingQueryPostProcessor` logs the query.
 
 You can define as many `QueryPostProcessors` in the Spring `ApplicationContext` as you like and apply them in any
-order, to all or specific application _Repository_ interfaces, and be a granular as yuo like using the provided
+order, to all or specific application repository interfaces, and be as granular as you like by using the provided
 arguments to the `postProcess(..)` method callback.

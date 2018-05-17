@@ -1,98 +1,103 @@
+The following example shows how to configure a region bean in Java:
+
 [[bootstrap-annotation-config]]
 = Bootstrapping Pivotal GemFire using Spring Annotations
 
-_Spring Data for Pivotal GemFire_ (SDG) 2.0 introduces a **new** Annotation-based configuration model
-to configure and bootstrap Pivotal GemFire using the Spring container.
+Spring Data for Pivotal GemFire (SDG) 2.0 introduces a new annotation-based configuration model
+to configure and bootstrap Pivotal GemFire by using the Spring container.
 
-The primary motivation for introducing an Annotation-based approach to the configuration of Pivotal GemFire in
-a Spring context is to enable application developers to _**get up and running** as **quickly**
-and as **easily** as possible_.
+The primary motivation for introducing an annotation-based approach to the configuration of Pivotal GemFire in
+a Spring context is to enable application developers to get up and running as quickly
+and as easily as possible.
 
 [[bootstrap-annotation-config-introduction]]
 == Introduction
 
-Pivotal GemFire can be very difficult to setup and use correctly given all the
+Pivotal GemFire can be difficult to set up and use correctly, given all the
 http://gemfire.docs.pivotal.io/geode/reference/topics/gemfire_properties.html[configuration properties],
 configuration options:
-(http://gemfire-93-javadocs.docs.pivotal.io/)[Java API],
-(http://gemfire.docs.pivotal.io/geode/reference/topics/chapter_overview_cache_xml.html[cache.xml],
-http://gemfire.docs.pivotal.io/gemfire/tools_modules/gfsh/chapter_overview.html[_Gfsh_]
-with http://gemfire.docs.pivotal.io/geode/configuring/chapter_overview.html[_Cluster Configuration_],
-<<bootstrap,Spring XML/Java-based configuration>>)
-in addition to different supported _topologies_
-(http://gemfire.docs.pivotal.io/geode/topologies_and_comm/cs_configuration/chapter_overview.html[client/server],
-http://gemfire.docs.pivotal.io/geode/topologies_and_comm/p2p_configuration/chapter_overview.html[P2P],
-http://gemfire.docs.pivotal.io/geode/topologies_and_comm/multi_site_configuration/chapter_overview.html[WAN])
-and https://cwiki.apache.org/confluence/display/GEODE/Geode+Internal+Architecture?src=contextnavpagetreemode[_Distributed System Design Patterns_]
-(e.g. shared-nothing architecture). The Annotation-based configuration model aims to simplify all this plus more.
 
-The Annotation-based configuration model is an alternative to XML-based configuration using _Spring Data for Pivotal GemFire's_
-XML Namespace.  With XML, an application developer would use the `spring-gemfire` (`gfe`) schema for configuration
-and the `spring-data-gemfire` (`gfe-data`) schema for data access related concerns.  See <<bootstrap, Bootstrapping
-Pivotal GemFire with the Spring Container>> for more details.
 
-NOTE: As of SDG 2.0, the new Annotation-based configuration model does not yet have configuration support
+* (http://gemfire-93-javadocs.docs.pivotal.io/)[Java API]
+* (http://gemfire.docs.pivotal.io/geode/reference/topics/chapter_overview_cache_xml.html[cache.xml]
+* http://gemfire.docs.pivotal.io/gemfire/tools_modules/gfsh/chapter_overview.html[_Gfsh_]
+with http://gemfire.docs.pivotal.io/geode/configuring/chapter_overview.html[cluster configuration]
+* <<bootstrap,Spring XML/Java-based configuration>>)
+
+Further complexity comes from the different supported topologies:
+* (http://gemfire.docs.pivotal.io/geode/topologies_and_comm/cs_configuration/chapter_overview.html[client/server]
+* http://gemfire.docs.pivotal.io/geode/topologies_and_comm/p2p_configuration/chapter_overview.html[P2P]
+* http://gemfire.docs.pivotal.io/geode/topologies_and_comm/multi_site_configuration/chapter_overview.html[WAN])
+* https://cwiki.apache.org/confluence/display/GEODE/Geode+Internal+Architecture?src=contextnavpagetreemode[distributed system design patterns]
+(such as shared-nothing architecture).
+
+The Annotation-based configuration model aims to simplify all this and more.
+
+The Annotation-based configuration model is an alternative to XML-based configuration using Spring Data for Pivotal GemFire's
+XML Namespace. With XML, you could use the `spring-gemfire` (`gfe`) schema for configuration
+and the `spring-data-gemfire` (`gfe-data`) schema for data access-related concerns. See "`<<bootstrap>>`" for more details.
+
+NOTE: As of SDG 2.0, the annotation-based configuration model does not yet have configuration support
 for Pivotal GemFire's WAN components and topology.
 
-Like _Spring Boot_, _Spring Data for Pivotal GemFire's_ Annotation-based configuration model was designed as an opinionated,
-_convention over configuration_ approach for using Pivotal GemFire.  Indeed, this Annotation-based configuration model
-was inspired by _Spring Boot_ as well as several other Spring and _Spring Data_ projects.
+Like Spring Boot, Spring Data for Pivotal GemFire's annotation-based configuration model was designed as an opinionated,
+convention-over-configuration approach for using Pivotal GemFire. Indeed, this annotation-based configuration model
+was inspired by Spring Boot as well as several other Spring and Spring Data projects.
 
-By following convention, all Annotations provide reasonable and sensible defaults for all configuration attributes
-out-of-the-box. The default value for a given Annotation attribute directly corresponds to the default value
+By following convention, all annotations provide reasonable and sensible defaults for all configuration attributes.
+ The default value for a given annotation attribute directly corresponds to the default value
 provided in Pivotal GemFire for the same configuration property or setting.
 
-The intention is to let an application developer enable a Pivotal GemFire feature or an embedded service by simply
-declaring the Annotation on his/her Spring `@Configuration` or `@SpringBootApplication` class without needing to
+The intention is to let you enable a Pivotal GemFire feature or an embedded service by
+declaring the annotation on your Spring `@Configuration` or `@SpringBootApplication` class without needing to
 unnecessarily configure a large number of attributes or properties just to use the feature.
 
-Again, _getting up and running as quickly and as easily as possible_ is the primary objective.
+Again, getting up and running as quickly and as easily as possible is the primary objective.
 
-However, the option to customize the configuration meta-data and behavior of Pivotal GemFire is there should an application
-developer need it and _Spring Data for Pivotal GemFire's_ Annotation-based configuration will quietly back away.  The application
-developer simply just needs to specify the configuration attributes s/he wishes to adjust.  And, as we will see below,
-there are several ways to configure an Pivotal GemFire feature or embedded service using Annotations.
+However, the option to customize the configuration metadata and behavior of Pivotal GemFire is there if you
+need it, and Spring Data for Pivotal GemFire's Annotation-based configuration quietlys back away. You need
+only specify the configuration attributes you wish to adjust. Also, as we see later in this document,
+there are several ways to configure a Pivotal GemFire feature or embedded service by using annotations.
 
-All the **new** SDG Annotations can be found in the `org.springframework.data.gemfire.config.annotation` package.
+You can find all the new SDG Annotations in the `org.springframework.data.gemfire.config.annotation` package.
 
 [[bootstrap-annotation-config-geode-applications]]
-== Bootstrapping Pivotal GemFire applications with Spring
+== Bootstrapping Pivotal GemFire Applications with Spring
 
-Like all _Spring Boot_ applications that begin by annotating the application class with `@SpringBootApplication`,
-a _Spring Boot_ application can easily become an Pivotal GemFire cache application simply by declaring
-1 of 3 main Annotations:
+Like all Spring Boot applications that begin by annotating the application class with `@SpringBootApplication`,
+a Spring Boot application can easily become a Pivotal GemFire cache application by declaring any one of three main Annotations:
 
-1. `@ClientCacheApplication`
-2. `@PeerCacheApplication`
-3. `@CacheServerApplication`
+* `@ClientCacheApplication`
+* `@PeerCacheApplication`
+* `@CacheServerApplication`
 
-These 3 Annotations are the Spring/Pivotal GemFire application developer's starting point.
+These three annotations are the Spring and Pivotal GemFire application developer's starting point.
 
-To realize the intent behind these Annotations, a user must understand that there are 2 types of cache instances
-that can be created with Pivotal GemFire: a _client_ or a _peer_.
+To realize the intent behind these annotations, you must understand that there are two types of cache instances
+that can be created with Pivotal GemFire: a client or a peer.
 
-A _Spring Boot_ application can be configured as an Pivotal GemFire cache client (i.e. with an instance of `ClientCache`),
+You can configure a Spring Boot application as aa Pivotal GemFire cache client (that is, with an instance of `ClientCache`),
 which communicates with an existing, standalone cluster of Pivotal GemFire servers used to manage the application's data.
-The _client/server_ topology is the most typical system architecture employed when using Pivotal GemFire and the user
-can make her _Spring Boot_ application a cache client simply by annotating it with `@ClientCacheApplication`.
+The client-server topology is the most typical system architecture employed when using Pivotal GemFire and you
+can make your Spring Boot application a cache client by annotating it with `@ClientCacheApplication`.
 
-Alternatively, a _Spring Boot_ application may be a peer member of an Pivotal GemFire cluster.  That is, the application
-itself is just another server in the cluster of servers that will manage data.  The _Spring Boot_ application creates
-an "embedded" peer `Cache` instance when a developer annotates his/her application class with `@PeerCacheApplication`.
+Alternatively, a Spring Boot application may be a peer member of an Pivotal GemFire cluster. That is, the application
+itself is another server in the cluster of servers that manage data. The Spring Boot application creates
+an "`embedded`" peer `Cache` instance when you annotate your application class with `@PeerCacheApplication`.
 
-By extension, the application may also serve as a `CacheServer` serving cache clients, allowing clients to connect
-and perform data access operations on the server.  This is accomplished by annotating the application class with
-`@CacheServerApplication` instead of `@PeerCacheApplication`, which will create a peer `Cache` instance along with
+By extension, the application may also serve as a `CacheServer`, serving cache clients and letting clients connect
+and perform data access operations on the server. This is accomplished by annotating the application class with
+`@CacheServerApplication` instead of `@PeerCacheApplication`, which creates a peer `Cache` instance along with
 the `CacheServer`.
 
-NOTE: An Pivotal GemFire Server is not necessarily a "_Cache Server_" by default.  That is, a server is not necessarily
-setup to serve cache clients just because it is a "server".  A Pivotal GemFire Server can just be a peer member/data node
-of the cluster that manages data without serving any clients while other peer members in the cluster are indeed setup
-to serve  clients in addition to managing data.  It also possible to setup certain peer members as non-data node,
+NOTE: A Pivotal GemFire Server is not necessarily a cache server by default. That is, a server is not necessarily
+set up to serve cache clients just because it is a server.  A Pivotal GemFire Server can be a peer member (or data node)
+of the cluster that manages data without serving any clients while other peer members in the cluster are indeed set up
+to serve clients in addition to managing data. It also possible to set up certain peer members as non-data nodes,
 http://gemfire.docs.pivotal.io/geode/developing/region_options/data_hosts_and_accessors.html[data accessors]
-that can service clients as `CacheServers` as well, but is beyond the scope of this document.
+that can service clients as `CacheServers` as well, but doing so is beyond the scope of this document.
 
-By way of example, if I wanted to create a _Spring Boot_, Pivotal GemFire cache client application, I would start with...
+By way of example, if you want to create a Spring Boot Pivotal GemFire cache client application, you can start with the following:
 
 .Spring-based Pivotal GemFire `ClientCache` application
 [source, java]
@@ -102,8 +107,8 @@ By way of example, if I wanted to create a _Spring Boot_, Pivotal GemFire cache 
 class ClientApplication { .. }
 ----
 
-And, if I wanted to create a _Spring Boot_ application with an embedded peer `Cache` instance, where my application
-will be a server and peer member of a cluster, or distributed system formed by Pivotal GemFire, then I would start with...
+Also, if you want to create a Spring Boot application with an embedded peer `Cache` instance, where your application
+is a server and a peer member of a cluster or distributed system formed by Pivotal GemFire, you could start with the following:
 
 .Spring-based Pivotal GemFire embedded peer `Cache` application
 [source, java]
@@ -113,9 +118,9 @@ will be a server and peer member of a cluster, or distributed system formed by P
 class ServerApplication { .. }
 ----
 
-Alternatively, a user may use the `@CacheServerApplication` annotation instead of `@PeerCacheApplication` to create
-both an "embedded" peer `Cache` instance along with a `CacheServer` running on "_localhost_", listening on
-the default cache server port, *40404*...
+Alternatively, you can use the `@CacheServerApplication` annotation instead of `@PeerCacheApplication` to create
+both an embedded peer `Cache` instance and a `CacheServer` running on localhost, listening on
+the default cache server port, 40404, as follows:
 
 .Spring-based Pivotal GemFire embedded `CacheServer` Application
 [source, java]
@@ -126,35 +131,34 @@ class ServerApplication { .. }
 ----
 
 [[bootstrap-annotation-config-client-server-applications]]
-== Going in-detail on _client/server_ applications
-
+== Going in-detail on Client-server Applications
 
 There are multiple ways that a client can connect to and communicate with servers in an Pivotal GemFire cluster.
 The most common and recommended approach is to use Pivotal GemFire Locators.
 
-NOTE: A cache client can connect to 1 or more Locators in the Pivotal GemFire cluster instead of directly to a
-`CacheServer`.  The advantage of using Locators over direct `CacheServer` connections is that Locators provide meta-data
-about the cluster to which clients are connected.  This meta-data includes information like which servers contain
-the data of interests to the client, or which servers have the least amount of load.  A Locator also provides fail-over
-capabilities in case a `CacheServer` goes down.  By enabling the PR single-hop capability in the client `Pool`,
-the client is routed directly to the server containing the data the client needs access to, to obtain the data requested.
+NOTE: A cache client can connect to one or more locators in the Pivotal GemFire cluster instead of directly to a
+`CacheServer`.  The advantage of using locators over direct `CacheServer` connections is that locators provide metadata
+about the cluster to which clients are connected. This metadata includes information such as which servers contain
+the data of interest to the client or which servers have the least amount of load. A locator also provides fail-over
+capabilities in case a `CacheServer` goes down. By enabling the PR single-hop capability in the client `Pool`,
+the client is routed directly to the server containing the data the client needs to obtain the data requested.
 
-NOTE: Locators are also peer members in a cluster.  Locators actually constitute what makes up a cluster of Pivotal GemFire
-nodes; i.e. all nodes connected by a Locator make up a cluster of peers and new members use Locators to join a cluster
+NOTE: Locators are also peer members in a cluster. Locators actually constitute what makes up a cluster of Pivotal GemFire
+nodes. That is, all nodes connected by a locator make up a cluster of peers, and new members use locators to join a cluster
 and find other members.
 
-Since Pivotal GemFire sets up a "DEFAULT" `Pool` connected to a `CacheServer` running on "_localhost_", listening on port
-**40404** by default when a `ClientCache` instance is created, and a `CacheServer` listens on port **40404** accepting
-connections on all system NICs, there is nothing special a user needs to do to utilize the _client/server_ topology.
-Simply annotate your server-side _Spring Boot_ application with `@CacheServerApplication` and your client-side
-_Spring Boot_ application with `@ClientCacheApplication` and you are ready to go.
+Pivotal GemFire sets up a `DEFAULT` `Pool` connected to a `CacheServer` running on localhost, listening on port
+40404 (by default) when a `ClientCache` instance is created. A `CacheServer` listens on port 40404, accepting
+connections on all system NICs. You need do nothing special to use the client-server topology.
+To do so, annotate your server-side Spring Boot application with `@CacheServerApplication` and your client-side
+Spring Boot application with `@ClientCacheApplication`, and you are ready to go.
 
-You can even start your servers using _Gfsh's_ `start server` command if you prefer.  Your _Spring Boot_
-`@ClientCacheApplication` will still connect to the server regardless of how it is started.  Although, we think you
-will prefer to configure and start your servers using the _Spring Data for Pivotal GemFire_ approach, with Annotations.
+If you prefer, you can even start your servers by using Gfsh's `start server` command. Your Spring Boot
+`@ClientCacheApplication` still connects to the server regardless of how it is started. However, you
+may prefer to configure and start your servers by using the Spring Data for Pivotal GemFire approach: with annotations.
 
-As an application developer, you will no doubt want to customize the "DEFAULT" `Pool` setup by Pivotal GemFire
-to possibly connect to 1 or more Locators, for instance...
+As an application developer, you will no doubt want to customize the `DEFAULT` `Pool` set up by Pivotal GemFire
+to possibly connect to one or more locators, as the following example shows:
 
 .Spring-based Pivotal GemFire `ClientCache` application using Locators
 [source, java]
@@ -168,18 +172,20 @@ class ClientApplication { .. }
 ----
 
 Along with the `locators` attribute, the `@ClientCacheApplication` annotation has a `servers` attribute that can be used
-to specify 1 or more nested `@Server` annotations that enable the cache client to connect directly to 1 or more servers,
+to specify one or more nested `@Server` annotations that let the cache client connect directly to one or more servers,
 if necessary.
 
-NOTE: You can only use either the `locators` or `servers` attribute, but not both, which is enforced by Pivotal GemFire.
+NOTE: You can use either the `locators` or `servers` attribute, but not both (this is enforced by Pivotal GemFire).
 
-A user may also configure additional `Pools`, other than the "DEFAULT" `Pool` provided by Pivotal GemFire when
-a `ClientCache` instance is created with the `@ClientCacheApplication` annotation, by using the `@EnablePool`
+You can also configure additional `Pool` instances (other than the `DEFAULT` `Pool` provided by Pivotal GemFire when
+a `ClientCache` instance is created with the `@ClientCacheApplication` annotation) by using the `@EnablePool`
 and `@EnablePools` annotations.
 
 NOTE: `@EnablePools` is a composite annotation that aggregates several nested `@EnablePool` annotations on
-a single class.  Java 8 and earlier does not allow more than 1 annotation of the same type to be declared
+a single class. Java 8 and earlier does not allow more than one annotation of the same type to be declared
 on a class.
+
+The following example uses the `@EnablePool` and `@EnablePools` annotations:
 
 .Spring-based Pivotal GemFire `ClientCache` application using multiple named `Pools`
 [source, java]
@@ -201,12 +207,12 @@ on a class.
 class ClientApplication { .. }
 ----
 
-The `name` attribute is the only required attribute of the `@EnablePool` annotation.  As we will see below, the value
-of `name` corresponds to both the name of the `Pool` bean created in the Spring context as well as the name used to
-reference the corresponding configuration properties.  It is also the name of the `Pool` registered and used
+The `name` attribute is the only required attribute of the `@EnablePool` annotation.  As we see later, the value
+of `name` corresponds to both the name of the `Pool` bean created in the Spring context and the name used to
+reference the corresponding configuration properties. It is also the name of the `Pool` registered and used
 in Pivotal GemFire.
 
-Similarly, on the server, a user can configure multiple `CacheServers` that a client can connect to...
+Similarly, on the server, you can configure multiple `CacheServers` that a client can connect to, as follows:
 
 .Spring-based Pivotal GemFire `CacheServer` application using multiple named `CacheServers`
 [source, java]
@@ -223,39 +229,39 @@ class ServerApplication { .. }
 ----
 
 NOTE: Like `@EnablePools`, `@EnableCacheServers` is a composite annotation for aggregating multiple `@EnableCacheServer`
-annotations on a single class.  Again, Java 8 and earlier does not allow more than 1 annotation of the same type
+annotations on a single class. Again, Java 8 and earlier does not allow more than one annotation of the same type
 to be declared on a class.
 
-One thing an observant reader may have noticed is, in all cases, the user is specifying hard-coded values for hostnames,
-ports as well other configuration-oriented Annotation attributes.  This is not ideal when a user's application gets
+One thing an observant reader may have noticed is that, in all cases, you specify hard-coded values for hostnames,
+ports, and configuration-oriented annotation attributes. This is not ideal when a user's application gets
 promoted and deployed to different environments, such as from DEV to QA to STAGING to PROD.
 
-How does an application developer handle dynamic configuration determined at runtime?
+The next section covers how to handle dynamic configuration determined at runtime.
 
 [[bootstrap-annotation-config-configurers]]
 == Runtime configuration using `Configurers`
 
-Another goal when designing the Annotation-based configuration model was to preserve _Type-Safety_ in the Annotation
-attributes.  For example, if the configuration attribute could be expressed as an `int`, like a port number, then
+Another goal when designing the Annotation-based configuration model was to preserve type safety in the annotation
+attributes. For example, if the configuration attribute could be expressed as an `int` (such as a port number),
 the attribute's type should be an `int`.
 
 Unfortunately, this is not conducive to dynamic and resolvable configuration at runtime.
 
-One of the finer features of Spring is the ability to use _property placeholders_ and/or _SpEL expressions_
-in properties or attributes of the configuration meta-data when configuring beans in a Spring context.
-Although, this would require all Annotation attributes to be `Strings` thereby giving up _Type-Safety_; not acceptable!
+One of the finer features of Spring is the ability to use property placeholders and SpEL expressions
+in properties or attributes of the configuration metadata when configuring beans in a Spring context.
+However, this would require all annotation attributes to be `String` objects, thereby giving up type safety, which is not acceptable.
 
-So, _Spring Data for Pivotal GemFire_ borrows from another commonly used pattern in Spring, `Configurers`.  Many different
-`Configurer` interfaces are provided out-of-the-box in Spring Web MVC, such as the
+So, Spring Data for Pivotal GemFire borrows from another commonly used pattern in Spring, `Configurers`. Many different
+`Configurer` interfaces are provided in Spring Web MVC, including the
 https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/web/servlet/config/annotation/ContentNegotiationConfigurer.html[`org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer`].
 
-The `Configurers` design pattern are a way to allow application developers to receive a callback to customize
-the configuration of a component, or bean on startup.  The framework calls back to user-provided code to adjust
+The `Configurers` design pattern is a way to let application developers receive a callback to customize
+the configuration of a component or bean on startup. The framework calls back to user-provided code to adjust
 the configuration at runtime. One of the more common uses of this pattern is to supply conditional configuration
 based on the application's runtime environment.
 
-_Spring Data for Pivotal GemFire_ provides several `Configurer` callback interfaces to customize different aspects of Annotation-based
-configuration meta-data at runtime, before the _Spring_ managed beans that the Annotations create are initialized:
+Spring Data for Pivotal GemFire provides several `Configurer` callback interfaces to customize different aspects of annotation-based
+configuration metadata at runtime, before the Spring managed beans that the annotations create are initialized:
 
 * `ClientCacheConfigurer`
 * `PeerCacheConfigurer`
@@ -266,10 +272,10 @@ configuration meta-data at runtime, before the _Spring_ managed beans that the A
 * `PoolConfigurer`
 * `RegionConfigurer`
 
-For example, we can use the `CacheServerConfigurer` and `ClientCacheConfigurer` to customize the port numbers
-used by our _Spring Boot_ `CacheServer` and `ClientCache` applications, respectively.
+For example, you can use the `CacheServerConfigurer` and `ClientCacheConfigurer` to customize the port numbers
+used by your Spring Boot `CacheServer` and `ClientCache` applications, respectively.
 
-First, in our server application...
+Consider the following example from a server application:
 
 .Customizing a Spring Boot `CacheServer` application with a `CacheServerConfigurer`
 [source, java]
@@ -292,7 +298,7 @@ class ServerApplication {
 }
 ----
 
-Then, in our client application...
+Next, consider the following example from a client application:
 
 .Customizing a Spring Boot `ClientCache` application with a `ClientCacheConfigurer`
 [source, java]
@@ -313,39 +319,39 @@ class ClientApplication {
 }
 ----
 
-By using the provided `Configurers`, a user is able to receive a callback in order to further customize
-the configuration that is enabled by the associated Annotation at runtime, during startup.
+By using the provided `Configurers`, you can receive a callback in order to further customize
+the configuration that is enabled by the associated annotation at runtime, during startup.
 
 In addition, when the `Configurer` is declared as a bean in the Spring context, the bean definition can take advantage
-of other Spring container features, such as _property placeholders_, or _SpEL expressions_ using the `@Value` annotation
+of other Spring container features, such as property placeholders, SpEL expressions that use the `@Value` annotation
 on factory method parameters, and so on.
 
-All _Spring Data for Pivotal GemFire_-provided `Configurers` take 2 bits of information in the callback: the name of the bean created
-in the Spring context by the Annotation along with a reference to the `FactoryBean` used by the Annotation to
-create and configure the Pivotal GemFire component (e.g. a `ClientCache` instance is created and configured with
+All `Configurers` provided by Spring Data for Pivotal GemFire take two bits of information in the callback: the name of the bean created
+in the Spring context by the annotation and a reference to the `FactoryBean` used by the annotation to
+create and configure the Pivotal GemFire component (for example, a `ClientCache` instance is created and configured with
 SDG's `ClientCacheFactoryBean`).
 
-NOTE: SDG `FactoryBeans` are part of the SDG public API and are what an application developer would use in Spring's
+NOTE: SDG `FactoryBeans` are part of the SDG public API and are what you would use in Spring's
 https://docs.spring.io/spring/docs/current/spring-framework-reference/core.html#beans-java[Java-based container configuration]
-if this **new** Annotation-based configuration model were not provided.  Indeed, the Annotations themselves are using
-these very same `FactoryBeans` for their configuration.  So, in essence, the Annotations are a facade
+if this new annotation-based configuration model were not provided. Indeed, the annotations themselves are using
+these same `FactoryBeans` for their configuration. So, in essence, the annotations are a facade
 and provide an extra layer of abstraction for convenience.
 
-Given a `Configurer` can be declared as a regular bean definition like any other POJO, it is not difficult to imagine
-a user combining different Spring configuration options, such as the use of _Spring Profiles_ with `Conditions`
-using both Property Placeholders and SpEL expressions  as well as other nifty features to create
-even more sophisticated and flexible configuration.
+Given that a `Configurer` can be declared as a regular bean definition like any other POJO, you can combine
+different Spring configuration options, such as the use of Spring Profiles with `Conditions` that
+use both property placeholders and SpEL expressions. These and other nifty features let you create
+even more sophisticated and flexible configurations.
 
 However, `Configurers` are not the only option.
 
 [[bootstrap-annotation-config-properties]]
-== Runtime configuration using `Properties`
+== Runtime Configuration Using `Properties`
 
-In addition to `Configurers`, each Annotation attribute in the Annotation-based configuration model is associated
-with a corresponding configuration _property_, prefixed with `spring.data.gemfire.`, that can be declared in a
-_Spring Boot_ `application.properties` file.
+In addition to `Configurers`, each annotation attribute in the annotation-based configuration model is associated
+with a corresponding configuration property (prefixed with `spring.data.gemfire.`) that can be declared in a
+Spring Boot `application.properties` file.
 
-Building on our examples above, the client's `application.properties` would define...
+Building on the earlier examples, the client's `application.properties` file would define the following set of properties:
 
 .Client `application.properties`
 [source, java]
@@ -364,7 +370,7 @@ spring.data.gemfire.pool.Neptune.servers=saturn[41414],neptune[42424]
 spring.data.gemfire.pool.Neptune.min-connections=25
 ----
 
-And, the server's application.properties would define...
+Also, the server's `application.properties` file would define the following properties:
 
 .Server `application.properties`
 [source, java]
@@ -376,7 +382,7 @@ spring.data.gemfire.cache.server.Saturn.port=41414
 spring.data.gemfire.cache.server.Neptune.port=41414
 ----
 
-Then, we can simplify the `@ClientCacheApplication` class to...
+Then you can simplify the `@ClientCacheApplication` class to the following:
 
 .Spring `@ClientCacheApplication` class
 [source, java]
@@ -391,7 +397,7 @@ Then, we can simplify the `@ClientCacheApplication` class to...
 class ClientApplication { .. }
 ----
 
-And, the `@CacheServerApplication` class as...
+Also, the `@CacheServerApplication` class can become the following:
 
 .Spring `@CacheServerApplication` class
 [source, java]
@@ -406,10 +412,10 @@ And, the `@CacheServerApplication` class as...
 class ServerApplication { .. }
 ----
 
-The example above illustrates why it is import to "name" your Annotation-based beans (other than, it is required
-in certain cases).  Doing so makes it possible to reference the bean in a Spring context from XML, properties
-and even Java.  It is even possible to inject Annotation-defined beans into an application class,
-for whatever purpose; for example...
+The preceding example shows why it is important to "`name`" your annotation-based beans (other than because it is required
+in certain cases). Doing so makes it possible to reference the bean in a Spring context from XML, properties,
+and Java. It is even possible to inject annotation-defined beans into an application class,
+for whatever purpose, as the following example shows:
 
 [source, java]
 ----
@@ -423,13 +429,13 @@ class MyApplicationComponent {
 }
 ----
 
-Likewise, naming a Annotation-defined bean allows you to code a `Configurer` to customize a specific, "named" bean
+Likewise, naming an annotation-defined bean lets you code a `Configurer` to customize a specific, "`named`" bean
 since the `beanName` is 1 of 2 arguments passed to the callback.
 
-Often times, an associated Annotation attribute property takes 2 forms: a "named" property along with
-an "unnamed" property.
+Oftentimes, an associated annotation attribute property takes two forms: a "`named`" property along with
+an "`unnamed`" property.
 
-For example...
+The following example shows such an arrangement:
 
 [source, java]
 ----
@@ -439,19 +445,20 @@ spring.data.gemfire.cache.server.Saturn...
 spring.data.gemfire.cache.server.Neptune...
 ----
 
-While there are 3 named `CacheServers` above, there is 1 unnamed `CacheServer` property that serves as the default
-value for any unspecified value for that property even for "named" `CacheServers`.  So, while "Venus" sets
-and overrides its own `bind-address`, "Saturn" and "Neptune" inherit from the unnamed
+While there are three named `CacheServers` above, there is one unnamed `CacheServer` property that serves as the default
+value for any unspecified value for that property, even for "`named`" `CacheServers`. So, while `Venus` sets
+and overrides its own `bind-address`, `Saturn` and `Neptune` inherit from the "`unnamed`"
 `spring.data.gemfire.cache.server.bind-address` property.
 
-Refer to an Annotation's _Javadoc_ for which Annotation attributes support property-based configuration, and whether
-they support "named" properties over just default, "unnamed" properties.
+See an annotation's Javadoc for which annotation attributes support property-based configuration and whether
+they support "`named`" properties over default, "`unnamed`" properties.
 
 [[bootstrap-annotation-config-properties-of-properties]]
 === `Properties` of `Properties`
 
-Of course, in Spring fashion, you can even express `Properties` in terms of other `Properties`, whether that is
-using a _Spring Boot_ `application.properties` file or by using the `@Value` annotation in your Java class...
+In the usual Spring fashion, you can even express `Properties` in terms of other `Properties`, whether that is
+by using a Spring Boot `application.properties` file or by using the `@Value` annotation in your Java class.
+The following example shows a nested property being set in an `application.properties` file:
 
 .Properties of Properties
 [source, java]
@@ -459,7 +466,7 @@ using a _Spring Boot_ `application.properties` file or by using the `@Value` ann
 spring.data.gemfire.cache.server.port=${gemfire.cache.server.port:40404}
 ----
 
-Or, in Java...
+The following example shows a nested property being set in Java:
 
 [source, java]
 ----
@@ -472,23 +479,23 @@ Or, in Java...
 }
 ----
 
-Property placeholder nesting can be arbitrarily deep.
+TIP: Property placeholder nesting can be arbitrarily deep.
 
 [[bootstrap-annotation-config-embedded-services]]
-== Configuring embedded services
+== Configuring Embedded Services
 
-Pivotal GemFire provides the ability to start many different embedded services required by an application depending on
+Pivotal GemFire provides the ability to start many different embedded services that are required by an application, depending on
 the use case.
 
 [[bootstrap-annotation-config-embedded-services-locator]]
-=== Configuring an embedded Locator
+=== Configuring an Embedded Locator
 
-As mentioned previously, Pivotal GemFire Locators are used by clients to connect with and find servers in a cluster
+As mentioned previously, Pivotal GemFire locators are used by clients to connect with and find servers in a cluster
 as well as by new members joining an existing cluster to find other peers.
 
-It is often convenient for application developers as they are developing their _Spring Boot_, _Spring Data for Pivotal GemFire_
-applications to startup up a small cluster of 2 or 3 Pivotal GemFire servers.  Rather than starting a separate Locator
-process, a user can simply annotate her _Spring Boot_ `@CacheServerApplication` class with `@EnableLocator`.
+It is often convenient for application developers as they are developing their Spring Boot and Spring Data for Pivotal GemFire
+applications to startup up a small cluster of two or three Pivotal GemFire servers. Rather than starting a separate locator
+process, you can annotate your Spring Boot `@CacheServerApplication` class with `@EnableLocator`, as follows:
 
 .Spring, Pivotal GemFire `CacheServer` application running an embedded Locator
 [source, java]
@@ -499,16 +506,16 @@ process, a user can simply annotate her _Spring Boot_ `@CacheServerApplication` 
 class ServerApplication { .. }
 ----
 
-The `@EnableLocator` annotation starts an embedded Locator in the Spring, Pivotal GemFire `CacheServer` application
-process running on "_localhost_", listening on the default Locator port **10334**.  It is possible to customize
-the `host` (a.k.a bind address) and `port` that the embedded Locator binds to using the corresponding
-Annotation attributes.
+The `@EnableLocator` annotation starts an embedded locator in the Spring Pivotal GemFire `CacheServer` application
+process running on localhost, listening on the default Locator port: 10334. You can customize
+the `host` (that is, the bind address) and `port` that the embedded locator binds to by using the corresponding
+annotation attributes.
 
-Additionally, the `@EnableLocator` attributes may be set with the `spring.data.gemfire.locator.host`
-and `spring.data.gemfire.locator.port` properties in `application.properties` as well.
+Additionally, you can set the `@EnableLocator` attributes by setting the `spring.data.gemfire.locator.host`
+and `spring.data.gemfire.locator.port` properties in `application.properties`.
 
-Then, it is possible to start other _Spring Boot_, `@CacheServerApplication` enabled applications connecting to this
-Locator with...
+Then you can start other Spring Boot `@CacheServerApplication`-enabled applications by connecting to this
+Locator with the following:
 
 .Spring, Pivotal GemFire `CacheServer` application connecting to a Locator
 [source, java]
@@ -518,9 +525,9 @@ Locator with...
 class ServerApplication { .. }
 ----
 
-You can even combine both application classes shown above into a single class and use your IDE to create different
-run profile configurations to run different instances of the same class with slightly modified configuration using
-Java System Properties...
+You can even combine both application classes shown earlier into a single class and use your IDE to create different
+run profile configurations to run different instances of the same class with slightly modified configuration by using
+Java system properties, as follows:
 
 .Spring `CacheServer` application running an embedded Locator and connecting to the Locator
 [source, java]
@@ -540,7 +547,7 @@ public class ServerApplication {
 }
 ----
 
-Then, for each run profile, a user simply sets and changes the following System properties...
+Then, for each run profile, you can set and change the following system properties:
 
 .IDE run profile configuration
 [source, java]
@@ -551,35 +558,37 @@ spring.profiles.active=embedded-locator
 ----
 
 Only 1 of the run profiles for the `ServerApplication` class should be set with the
-`-Dspring.profiles.active=embedded-locator` Java System Property.  Then, simply change the `..name`
-and `..cache.server.port` for each of the other run profiles and you'll have yourself a small cluster/distributed system
-of Pivotal GemFire Servers running on your local system.  Pretty slick!
+`-Dspring.profiles.active=embedded-locator` Java system property. Then you can change the `..name`
+and `..cache.server.port` for each of the other run profiles and have a small cluster or distributed system
+of Pivotal GemFire Servers running on your local system.
 
 NOTE: The `@EnableLocator` annotation was meant to be a development-time annotation only and not something
-an application developer should use in production.  It is strongly recommended that Locators be stand-alone,
+an application developer should use in production. We strongly recommend that locators be standalone,
 independent processes in the cluster.
 
-More details on how Pivotal GemFire Locators work can be found
+More details on how Pivotal GemFire locators work can be found
 http://gemfire.docs.pivotal.io/geode/topologies_and_comm/topology_concepts/how_member_discovery_works.html[here].
 
 [[bootstrap-annotation-config-embedded-services-manager]]
-=== Configuring an embedded Manager
+=== Configuring an Embedded Manager
 
-An Pivotal GemFire Manager is another peer member/node in the cluster that is responsible for "management" activities.
-Management activities include things like creating Regions, Indexes, DiskStores, etc along with monitoring the runtime
+A Pivotal GemFire Manager is another peer member or node in the cluster that is responsible for "`management`" activities.
+Management activities include creating regions, indexes, diskstores, and so on, along with monitoring the runtime
 operations and behavior of these components.
 
-The Manager allows a JMX-enabled client (e.g. the _Gfsh_ shell tool) to connect to the Manager to manage the cluster.
-It is also possible to connect to a Manager with JDK provided tools like _JConsole_ or _JVisualVM_, given these are
+The manager lets a JMX-enabled client (such as the Gfsh shell tool) connect to the manager to manage the cluster.
+It is also possible to connect to a manager with JDK-provided tools such as JConsole or JVisualVM, given that these are
 both JMX-enabled clients as well.
 
-Perhaps we would also like to make our Spring `@CacheServerApplication` shown above a Manager as well.  Simply annotate
-your Spring `@Configuration` or `@SpringBootApplication` class with `@EnableManager` and you are in business.
+Perhaps you would also like to make the Spring `@CacheServerApplication` shown earlier be a manager as well. To do so, annotate
+your Spring `@Configuration` or `@SpringBootApplication` class with `@EnableManager`.
 
-By default, the Manager binds to "_localhost_" listening on the default Pivotal GemFire Manager port **1099**.
-Several aspects of the Manager can be configured with the Annotation attributes or corresponding properties.
+By default, the manager binds to localhost, listening on the default Pivotal GemFire Manager port of 1099.
+Several aspects of the manager can be configured with annotation attributes or the corresponding properties.
 
-.Spring `CacheServer` application running an embedded Manager
+The following example shows how to create an embedded manager in Java:
+
+.Spring `CacheServer` application running an embedded manager
 [source, java]
 ----
 @SpringBootApplication
@@ -598,7 +607,7 @@ public class ServerApplication {
 }
 ----
 
-With the above class, you can even use _Gfsh_ to connect to this server and manage it!
+With the preceding class, you can even use Gfsh to connect to this server and manage it, as follows:
 
 [source, java]
 ----
@@ -624,10 +633,10 @@ SpringCacheServerTwo   | 10.99.199.5(SpringCacheServerTwo:14844)<v1>:1025
 SpringCacheServerThree | 10.99.199.5(SpringCacheServerThree:14846)<v2>:1026
 ----
 
-Because we also have the embedded Locator enabled, we are able to connect indirectly to the Manager through
-the Locator.  A Locator allows JMX clients to connect and find a Manager node in the cluster.  If none exist,
-the Locator will assume the role of a Manager.  However, if no existing Locator is present, then we would need to
-connect directly to the Manager using...
+Because we also have the embedded locator enabled, we can connect indirectly to the manager through
+the locator. A locator lets JMX clients connect and find a manager node in the cluster. If none exists,
+the locator assumes the role of a manager. However, if no locator exists, we would need to
+connect directly to the Manager by using the following:
 
 .Gfsh `connect` command connecting directly to the Manager
 [source, java]
@@ -635,28 +644,28 @@ connect directly to the Manager using...
 gfsh>connect --jmx-manager=localhost[1099]
 ----
 
-NOTE: Like the `@EnableLocator` annotation, the `@EnableManager` annotation was also meant to be a development-time
-only annotation and not something an application developer should use in production.  It is strongly recommended
-that Managers, like Locators, be stand-alone, independent and dedicated processes in the cluster.
+NOTE: Like the `@EnableLocator` annotation, the `@EnableManager` annotation is also meant to be a development-time
+only annotation and not something an application developer should use in production. We strongly recommend
+that managers, like Locators, be standalone, independent, and dedicated processes in the cluster.
 
-More details on Pivotal GemFire Management and Monitoring can be found
+More details on Pivotal GemFire management and monitoring can be found
 http://gemfire.docs.pivotal.io/gemfire/managing/book_intro.html[here].
 
 [[bootstrap-annotation-config-embedded-services-http]]
-=== Configuring the embedded HTTP Server
+=== Configuring the Embedded HTTP Server
 
-Pivotal GemFire is also capable of running an embedded HTTP server.  The current implementation is backed by
+Pivotal GemFire is also capable of running an embedded HTTP server. The current implementation is backed by
 https://www.eclipse.org/jetty/[Eclipse Jetty].
 
-The embedded HTTP server is used to host Pivotal GemFire's Management (Admin) REST API (not a publicly advertised API),
-the http://gemfire.docs.pivotal.io/geode/rest_apps/book_intro.html[Developer REST API]
+The embedded HTTP server is used to host Pivotal GemFire's management (admin) REST API (not a publicly advertised API),
+the http://gemfire.docs.pivotal.io/geode/rest_apps/book_intro.html[Developer REST API],
 and the http://gemfire.docs.pivotal.io/geode/tools_modules/pulse/pulse-overview.html[Pulse Monitoring Web Application].
 
-However, to use any of these Pivotal GemFire provided Web applications, you must have a full installation of Pivotal GemFire
+However, to use any of these Pivotal GemFire-provided web applications, you must have a full installation of Pivotal GemFire
 installed on your system, and you must set the `GEODE_HOME` environment variable to your installation directory.
 
-To enable the embedded HTTP server, simply add the `@EnableHttpService` annotation to any `@PeerCacheApplication`
-or `@CacheServerApplication` annotated class...
+To enable the embedded HTTP server, add the `@EnableHttpService` annotation to any `@PeerCacheApplication`
+or `@CacheServerApplication` annotated class, as follows:
 
 .Spring `CacheServer` application running an embedded HTTP server
 [source, java]
@@ -667,20 +676,20 @@ or `@CacheServerApplication` annotated class...
 public class ServerApplication { .. }
 ----
 
-By default, the embedded HTTP server listens on port **7070** for HTTP client requests.  Of course, you can use
-the Annotation attributes or corresponding configuration properties to adjust the configuration as needed.
+By default, the embedded HTTP server listens on port 7070 for HTTP client requests. Of course, you can use
+the annotation attributes or corresponding configuration properties to adjust the port as needed.
 
-Follow the links above for more details on HTTP support and the services provided.
+Follow the earlier links for more details on HTTP support and the services provided.
 
 [[bootstrap-annotation-config-embedded-services-memcached]]
 === Configuring the embedded Memcached Server (Gemcached)
 
-Pivotal GemFire also implements the Memcached protocol with the ability to service Memcached clients.  That is Memcached
-clients can connect to an Pivotal GemFire cluster and perform Memcached operations as if the Pivotal GemFire Servers
-in the cluster were actual Memcached Servers.
+Pivotal GemFire also implements the memcached protocol with the ability to service memcached clients. That is, memcached
+clients can connect to an Pivotal GemFire cluster and perform memcached operations as if the Pivotal GemFire servers
+in the cluster were actual memcached servers.
 
-To enable the embedded Memcached Service, simply add the `@EnableMemcachedServer` annotation to any
-`@PeerCacheApplication` or `@CacheServerApplication` annotated class...
+To enable the embedded memcached service, add the `@EnableMemcachedServer` annotation to any
+`@PeerCacheApplication` or `@CacheServerApplication` annotated class, as follows:
 
 .Spring `CacheServer` application running an embedded Memcached Server
 [source, java]
@@ -691,18 +700,18 @@ To enable the embedded Memcached Service, simply add the `@EnableMemcachedServer
 public class ServerApplication { .. }
 ----
 
-More details on Pivotal GemFire's _Gemcached_ service can be found
+More details on Pivotal GemFire's Gemcached service can be found
 http://gemfire.docs.pivotal.io/geode/tools_modules/gemcached/chapter_overview.html[here].
 
 [[bootstrap-annotation-config-embedded-services-redis]]
-=== Configuring the embedded Redis Server
+=== Configuring the Embedded Redis Server
 
-Pivotal GemFire also implements the Redis Server protocol, which enables Redis clients to connect to and communicate with
-a cluster of Pivotal GemFire Servers to issue Redis commands.  As of this writing, the Redis Server protocol support
+Pivotal GemFire also implements the Redis server protocol, which enables Redis clients to connect to and communicate with
+a cluster of Pivotal GemFire Servers to issue Redis commands. As of this writing, the Redis server protocol support
 in Pivotal GemFire is still experimental.
 
-To enable the embedded Redis Service, simply add the `@EnableRedisServer` annotation to any `@PeerCacheApplication`
-or `@CacheServerApplication` annotated class...
+To enable the embedded Redis service, add the `@EnableRedisServer` annotation to any `@PeerCacheApplication`
+or `@CacheServerApplication` annotated class, as follows:
 
 .Spring `CacheServer` application running an embedded Redis Server
 [source, java]
@@ -713,16 +722,16 @@ or `@CacheServerApplication` annotated class...
 public class ServerApplication { .. }
 ----
 
-More details on Pivotal GemFire's Redis Adapter can be found
+More details on Pivotal GemFire's Redis adapter can be found
 http://gemfire.docs.pivotal.io/geode/tools_modules/redis_adapter.html[here].
 
 [[bootstrap-annotation-config-logging]]
 == Configuring Logging
 
-Often times it is necessary to turn up logging in order to understand exactly what Pivotal GemFire is doing and when.
+Oftentimes, it is necessary to turn up logging in order to understand exactly what Pivotal GemFire is doing and when.
 
-To enable _Logging_, simply annotate your application class with `@EnableLogging` and set the appropriate attributes
-or associated properties...
+To enable Logging, annotate your application class with `@EnableLogging` and set the appropriate attributes
+or associated properties, as follows:
 
 .Spring `ClientCache` application with Logging enabled
 [source, java]
@@ -734,26 +743,26 @@ public class ClientApplication { .. }
 ----
 
 While the `logLevel` attribute can be specified with all the cache-based application annotations
-(e.g. `@ClientCacheApplication(logLevel="info")`), it is easier to customize logging behavior with
+(for example, `@ClientCacheApplication(logLevel="info")`), it is easier to customize logging behavior with
 the `@EnableLogging` annotation.
 
-Additionally, you can specify the `log-level` using the `spring.data.gemfire.logging.level` property
+Additionally, you can specify the `log-level` by setting the `spring.data.gemfire.logging.level` property
 in `application.properties`.
 
-See the `@EnableLogging` annotation _Javadoc_ for more details.
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableLogging.html[`@EnableLogging` annotation Javadoc] for more details.
 
 [[bootstrap-annotation-config-statistics]]
 == Configuring Statistics
 
-To gain even deeper insight into Pivotal GemFire at runtime, an application developer can enable _Statistics_.
-Gathering statistical data facilitates system analysis and troubleshooting when complex problems occur,
-which are often distributed in nature and where timing is a crucial factor.
+To gain even deeper insight into Pivotal GemFire at runtime, you can enable statistics.
+Gathering statistical data facilitates system analysis and troubleshooting when complex problems,
+which are often distributed in nature and where timing is a crucial factor, occur.
 
-When _Statistics_ are enabled, a user can use Pivotal GemFire's
-http://gemfire.docs.pivotal.io/gemfire/tools_modules/vsd/chapter_overview.html[VSD (_Visual Statistics Display_)] tool
+When statistics are enabled, you can use Pivotal GemFire's
+http://gemfire.docs.pivotal.io/gemfire/tools_modules/vsd/chapter_overview.html[VSD (Visual Statistics Display)] tool
 to analyze the statistical data that is collected.
 
-To enable _Statistics_, simply annotate your application class with `@EnableStatistics`...
+To enable statistics, annotate your application class with `@EnableStatistics`, as follows:
 
 .Spring `ClientCache` application with Statistics enabled
 [source, java]
@@ -764,41 +773,41 @@ To enable _Statistics_, simply annotate your application class with `@EnableStat
 public class ClientApplication { .. }
 ----
 
-Enabling _Statistics_ on a server is particularly valuable when evaluating performance, which is as simple as
-annotating your `@PeerCacheApplication` or `@CacheServerApplication` class with `@EnableStatistics`.
+Enabling statistics on a server is particularly valuable when evaluating performance. To do so,
+annotate your `@PeerCacheApplication` or `@CacheServerApplication` class with `@EnableStatistics`.
 
-Use the `@EnableStatistics` annotation attributes or associated properties to customize the _Statistics_ gathering
+You can use the `@EnableStatistics` annotation attributes or associated properties to customize the statistics gathering
 and collection process.
 
-See the `@EnableStatistics` annotation _Javadoc_ for more details.
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableStatistics.html[`@EnableStatistics` annotation Javadoc] for more details.
 
-More details on Pivotal GemFire's _Statistics_ can be found
+More details on Pivotal GemFire's statistics can be found
 http://gemfire.docs.pivotal.io/gemfire/managing/statistics/chapter_overview.html[here].
 
 [[bootstrap-annotation-config-pdx]]
 == Configuring PDX
 
 One of the more powerful features of Pivotal GemFire is
-http://gemfire.docs.pivotal.io/geode/developing/data_serialization/gemfire_pdx_serialization.html[PDX Serialization].
+http://gemfire.docs.pivotal.io/geode/developing/data_serialization/gemfire_pdx_serialization.html[PDX serialization].
 While a complete discussion on PDX is beyond the scope of this document, serialization using PDX is a much better
-alternative to _Java Serialization_, with the following benefits...
+alternative to Java serialization, with the following benefits:
 
-1. PDX uses a centralized _Type Registry_ to keep the serialized bytes of an object more compact.
-2. PDX is a neutral serialization format allowing both Java and Native Clients to operate on the same data set.
-3. PDX supports versioning and allows object fields to be added or removed with affecting existing applications
-using either older or newer versions of the PDX serialized, application domain objects that have changed,
+* PDX uses a centralized type registry to keep the serialized bytes of an object more compact.
+* PDX is a neutral serialization format, allowing both Java and Native clients to operate on the same data set.
+* PDX supports versioning and lets object fields be added or removed without affecting existing applications
+using either older or newer versions of the PDX serialized application domain objects that have changed,
 and without data loss.
-4. PDX allows object fields to be accessed individually or in OQL query projections and predicates without
+* PDX lets object fields be accessed individually or in OQL query projections and predicates without
 the object needing to be de-serialized first.
 
-In general, serialization in Pivotal GemFire is needed anytime data is transferred to/from clients and servers or between
+In general, serialization in Pivotal GemFire is needed any time data is transferred to or from clients and servers or between
 peers in a cluster for normal distribution and replication processes as well as when data is overflowed or persisted
 to disk.
 
 Enabling PDX serialization is much simpler than modifying all of your application domain object types to be
-`java.io.Serializable`, which maybe undesirable to impose such restrictions on your application domain model.
+`java.io.Serializable`, especially when it may be undesirable to impose such restrictions on your application domain model.
 
-To enable PDX, simply annotate your application class with `@EnablePdx`...
+To enable PDX, annotate your application class with `@EnablePdx`, as follows:
 
 .Spring `ClientCache` application with PDX enabled
 [source, java]
@@ -809,28 +818,28 @@ To enable PDX, simply annotate your application class with `@EnablePdx`...
 public class ClientApplication { .. }
 ----
 
-Typically, an application's domain object types will either implement the
+Typically, an application's domain object types either implements the
 http://gemfire-91-javadocs.docs.pivotal.io/org/apache/geode/pdx/PdxSerializable.html[`org.apache.geode.pdx.PdxSerializable`]
-interface, or an application developer will choose to implement and register a non-invasive implementation of the
+interface or you can implement and register a non-invasive implementation of the
 http://gemfire-91-javadocs.docs.pivotal.io/org/apache/geode/pdx/PdxSerializer.html[`org.apache.geode.pdx.PdxSerializer`]
 interface to handle all the application domain object types that need to be serialized.
 
-Unfortunately, Pivotal GemFire only allows one `PdxSerializer` to be registered, which suggests that all application
-domain object types should be handled by a "single" `PdxSerializer` instance.  But, that is a serious anti-pattern
-and unmaintainable practice to be sure.
+Unfortunately, Pivotal GemFire only lets one `PdxSerializer` be registered, which suggests that all application
+domain object types should be handled by a single `PdxSerializer` instance. However, that is a serious anti-pattern
+and an unmaintainable practice.
 
-Even though only a single `PdxSerializer` instance can be registered with Pivotal GemFire , it makes sense to create a
+Even though only a single `PdxSerializer` instance can be registered with Pivotal GemFire, it makes sense to create a
 single `PdxSerializer` implementation per application domain object type.
 
-By using the https://en.wikipedia.org/wiki/Composite_pattern[Composite Software Design Pattern], the application
-developer can provide an implementation of the  `PdxSerializer` interface that aggregates all of the application
-domain object type-specific `PdxSerializer` instances, but acts as a single `PdxSerializer` instance, and register it.
+By using the https://en.wikipedia.org/wiki/Composite_pattern[Composite Software Design Pattern], you
+can provide an implementation of the `PdxSerializer` interface that aggregates all of the application
+domain object type-specific `PdxSerializer` instances but acts as a single `PdxSerializer` instance and register it.
 
-You can declare this _Composite_ `PdxSerializer` as a managed bean in the Spring context and refer to this
-_Composite_ `PdxSerializer` by bean name in the `@EnablePdx` annotation using the `serializerBeanName` attribute.
-_Spring Data for Pivotal GemFire_ will take care of registering it with Pivotal GemFire on the user's behalf.
+You can declare this composite `PdxSerializer` as a managed bean in the Spring context and refer to this
+composite `PdxSerializer` by its bean name in the `@EnablePdx` annotation by using the `serializerBeanName` attribute.
+Spring Data for Pivotal GemFire takes care of registering it with Pivotal GemFire on your behalf. The following example shows how to create a custom composite `PdxSerializer`:
 
-.Spring `ClientCache` application with PDX enabled, using a custom, composite `PdxSerializer`
+.Spring `ClientCache` application with PDX enabled, using a custom composite `PdxSerializer`
 [source, java]
 ----
 @SpringBootApplication
@@ -847,25 +856,24 @@ public class ClientApplication {
 
 It is also possible to declare Pivotal GemFire's
 http://gemfire-91-javadocs.docs.pivotal.io/org/apache/geode/pdx/ReflectionBasedAutoSerializer.html[`org.apache.geode.pdx.ReflectionBasedAutoSerializer`]
-as a bean definition in a Spring context.  Alternatively, you should use _Spring Data for Pivotal GemFire's_ more robust,
+as a bean definition in a Spring context. Alternatively, you should use Spring Data for Pivotal GemFire's more robust
 https://docs.spring.io/spring-data-gemfire/docs/current/api/org/springframework/data/gemfire/mapping/MappingPdxSerializer.html[`org.springframework.data.gemfire.mapping.MappingPdxSerializer`],
-which uses _Spring Data_ mapping meta-data and infrastructure applied to the serialization process for more efficient
+which uses Spring Data mapping metadata and infrastructure applied to the serialization process for more efficient
 handling than reflection alone.
 
 Many other aspects and features of PDX can be adjusted with the `@EnablePdx` annotation attributes
 or associated configuration properties.
 
-See the `@EnablePdx` annotation _Javadoc_ for more details.
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnablePdx.html[`@EnablePdx` annotation Javadoc] for more details.
 
 [[bootstrap-annotation-config-ssl]]
 == Configuring SSL
 
-Equally important to serializing data to be transferred over-the-wire is securing the data while in transit.
-Of course, the common way to accomplish this in _Java_ is using the _Secure Sockets Extension_ (SSE)
-and _Transport Layer Security_ (TLS).
+Equally important to serializing data to be transferred over the wire is securing the data while in transit.
+Of course, the common way to accomplish this in Java is by using the Secure Sockets Extension (SSE)
+and Transport Layer Security (TLS).
 
-To enable SSL, simply annotate your application class with `@EnableSsl` and set the necessary SSL configuration
-attributes or properties (e.g. keystores, usernames/passwords, etc)...
+To enable SSL, annotate your application class with `@EnableSsl`, as follows:
 
 .Spring `ClientCache` application with SSL enabled
 [source, java]
@@ -876,11 +884,13 @@ attributes or properties (e.g. keystores, usernames/passwords, etc)...
 public class ClientApplication { .. }
 ----
 
-Different Pivotal GemFire components: `GATEWAY`, `HTTP`, `JMX`, `LOCATOR`, `SERVER` can be individually configured
-with SSL, or they can all be collectively configured at once to use SSL using the `CLUSTER` enumerated value.
+Then you need to set the necessary SSL configuration attributes or properties (keystores, usernames/passwords, and so on).
 
-It is easy to specify which Pivotal GemFire components that the SSL configuration settings should applied to using
-the nested `@EnableSsl` annotation `Component` enum...
+You can individually configure different Pivotal GemFire components (`GATEWAY`, `HTTP`, `JMX`, `LOCATOR`, and `SERVER`)
+with SSL, or you can collectively configure them to use SSL by using the `CLUSTER` enumerated value.
+
+You can specify which Pivotal GemFire components the SSL configuration settings should applied to by using
+the nested `@EnableSsl` annotation `Component` enum, as follows:
 
 .Spring `ClientCache` application with SSL enabled by Aache Pivotal GemFire component
 [source, java]
@@ -891,10 +901,10 @@ the nested `@EnableSsl` annotation `Component` enum...
 public class ClientApplication { .. }
 ----
 
-In addition component-level SSL configuration, `ciphers`, `protocols` and `keystore`/`truststore` information can
-also be specified using the corresponding Annotation attribute or associated configuration properties.
+In addition, you can also specify component-level SSL configuration (`ciphers`, `protocols` and `keystore`/`truststore` information)
+by using the corresponding annotation attribute or associated configuration properties.
 
-See the `@EnableSsl` annotation _Javadoc_ for more details.
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableSsl.html[`@EnableSsl` annotation Javadoc] for more details.
 
 More details on Pivotal GemFire SSL support can be found
 http://gemfire.docs.pivotal.io/geode/managing/security/ssl_overview.html[here].
@@ -903,22 +913,22 @@ http://gemfire.docs.pivotal.io/geode/managing/security/ssl_overview.html[here].
 == Configuring Pivotal GemFire Properties
 
 While many of the http://gemfire.docs.pivotal.io/geode/reference/topics/gemfire_properties.html[gemfire.properties]
-are conveniently encapsulated in and abstracted with an Annotation in the SDG Annotation-based configuration model,
-the less commonly used _Pivotal GemFire Properties_ are still accessible from the `@EnablePivotal GemFireProperties` annotation.
+are conveniently encapsulated in and abstracted with an annotation in the SDG annotation-based configuration model,
+the less commonly used Pivotal GemFire properties are still accessible from the `@EnablePivotal GemFireProperties` annotation.
 
 Using the `@EnablePivotal GemFireProperties` annotation on your application class is convenient and a nice alternative to
-creating a `gemfire.properties` file or setting _Pivotal GemFire Properties_ as Java System properties on the command-line
+creating a `gemfire.properties` file or setting Pivotal GemFire properties as Java system properties on the command line
 when launching your application.
 
-TIP: It is recommended that these _Pivotal GemFire Properties_ be set in a `gemfire.properties` file when deploying
-your application to production.  But, at development-time, it can be convenient to set these properties individually,
+TIP: We recommend that these Pivotal GemFire properties be set in a `gemfire.properties` file when deploying
+your application to production. However, at development time, it can be convenient to set these properties individually,
 as needed, for prototyping and testing purposes.
 
-A few examples of some of the less common _Pivotal GemFire Properties_ that a user usually need not worry about include,
-but are not limited to: `ack-wait-threshold`, `disable-tcp`, `socket-buffer-size`, etc.
+A few examples of some of the less common Pivotal GemFire properties that you usually need not worry about include,
+but are not limited to: `ack-wait-threshold`, `disable-tcp`, `socket-buffer-size`, and others.
 
-To individually set any _Pivotal GemFire Property_, simply annotate your application class with `@EnablePivotal GemFireProperties`
-and set the _Pivotal GemFire Properties_ you want to change from the default, out-of-the-box value set by Pivotal GemFire...
+To individually set any Pivotal GemFire property, annotate your application class with `@EnablePivotal GemFireProperties`
+and set the Pivotal GemFire properties you want to change from the default value set by Pivotal GemFire, as follows:
 
 .Spring `ClientCache` application with specific _Pivotal GemFire Properties_ set
 [source, java]
@@ -929,9 +939,9 @@ and set the _Pivotal GemFire Properties_ you want to change from the default, ou
 public class ClientApplication { .. }
 ----
 
-Keep in mind, some of the _Pivotal GemFire Properties_ are client specific (e.g. `conflateEvents`) while others are
-server specific (e.g. `distributedSystemId`, `enableNetworkPartitionDetection`, `enforceUniqueHost`, `memberTimeout`,
-`redundancyZone`, etc).
+Keep in mind that some of the Pivotal GemFire properties are client-specific (for example, `conflateEvents`), while others are
+server-specific (for examplem `distributedSystemId`, `enableNetworkPartitionDetection`, `enforceUniqueHost`, `memberTimeout`,
+`redundancyZone`, and others).
 
 More details on Pivotal GemFire properties can be found
 http://gemfire.docs.pivotal.io/geode/reference/topics/gemfire_properties.html[here].
@@ -940,23 +950,25 @@ http://gemfire.docs.pivotal.io/geode/reference/topics/gemfire_properties.html[he
 == Configuring Regions
 
 So far, outside of PDX, our discussion has centered around configuring Pivotal GemFire's more administrative functions:
-creating a cache instance, starting embedded services, enabling Logging, Statistics and SSL, using `gemfire.properties`
-to affect very low-level configuration and behavior.  While all these configuration options are important, none of them
-relate directly to the application.  In other words, we still need some place to store our application data and make it
+creating a cache instance, starting embedded services, enabling logging, statistics, SSL, and using `gemfire.properties`
+to affect low-level configuration and behavior. While all these configuration options are important, none of them
+relate directly to the application. In other words, we still need some place to store our application data and make it
 generally available and accessible.
 
 Pivotal GemFire organizes data in a cache into
-http://gemfire.docs.pivotal.io/geode/basic_config/data_regions/chapter_overview.html[Regions].  You can think of a
-Region as a table in a relational database.  Generally, a Region should only store a single type of object making it
-more conducive for building effective `Indexes` and writing queries.  We will talk about Indexing
+http://gemfire.docs.pivotal.io/geode/basic_config/data_regions/chapter_overview.html[regions]. You can think of a
+region as a table in a relational database. Generally, a region should only store a single type of object, which makes it
+more conducive for building effective `indexes` and writing queries. We cover indexing
 <<bootstrap-annotation-config-indexes,later>>.
 
-Previously, _Spring Data for Pivotal GemFire_ users needed to explicitly define and declare the Regions used in their applications
-to store data by writing very verbose Spring configuration meta-data, whether a user was using SDG's `FactoryBeans`
+Previously, Spring Data for Pivotal GemFire users needed to explicitly define and declare the regions used in their applications
+to store data by writing very verbose Spring configuration metadata, whether a user was using SDG's `FactoryBeans`
 from the API in Spring's
-https://docs.spring.io/spring/docs/current/spring-framework-reference/core.html#beans-java[Java-based container configuration]...
+https://docs.spring.io/spring/docs/current/spring-framework-reference/core.html#beans-java[Java-based container configuration] or using <<bootstrap:region, XML>>.
 
-.Example Region bean definition using Spring Java-based container configuration
+The following example shows how to configure a region bean in Java:
+
+.Example region bean definition using Spring Java-based container configuration
 [source, java]
 ----
 @Configuration
@@ -979,7 +991,7 @@ class Pivotal GemFireConfiguration {
 }
 ----
 
-Or, using <<bootstrap:region, XML>>...
+The following example shows how to configure a region bean in XML:
 
 .Example Region bean definition using the SDG XML Namespace
 [source, xml]
@@ -989,25 +1001,23 @@ Or, using <<bootstrap:region, XML>>...
   </gfe:partitioned-region>
 ----
 
-While neither Java nor XML configuration is all that difficult to do, it is cumbersome, especially if an application
-has a large number of Regions that need to be defined.  Many relational database-based applications can literally
+While neither Java nor XML configuration is all that difficult, either one can be cumbersome, especially if an application
+has a large number of regions that need to be defined. Many relational database-based applications can literally
 have hundreds or even thousands of tables.
 
-Ugh!
+Now you can define and configure regions based on their application domain objects (that is, entities). No longer do
+you need to explicitly define `region` bean definitions in Spring configuration metadata, unless you require finer-grained
+control.
 
-Now users can define and configure Regions based on their application domain objects (i.e. entities).  No longer will
-a user need to explicitly define `Region` bean definitions in Spring configuration meta-data, unless finer-grained
-control is required.
+To simplify region creation, Spring Data for Pivotal GemFire combines the use of Spring Data Repositories with the expressive
+power of annotation-based configuration using the new `@EnableEntityDefinedRegions` annotation.
 
-To simplify Region creation, _Spring Data for Pivotal GemFire_ combines the use of _Spring Data_ _Repositories_ with the expressive
-power of Annotation-based configuration using the **new** `@EnableEntityDefinedRegions` annotation.
-
-NOTE: Most _Spring Data_ application developers should already be familiar with the
-https://docs.spring.io/spring-data/commons/docs/current/reference/html/#repositories[_Spring Data Repository_ abstraction]
-and _Spring Data for Pivotal GemFire's_  <<gemfire-repositories,implementation/extension>> of _Spring Data's_ _Repository abstraction_,
+NOTE: Most Spring Data application developers should already be familiar with the
+https://docs.spring.io/spring-data/commons/docs/current/reference/html/#repositories[Spring Data Repository abstraction]
+and Spring Data for Pivotal GemFire's <<gemfire-repositories,implementation/extension>> of Spring Data's_ _Repository abstraction,
 which has been specifically customized to optimize data access operations for Pivotal GemFire.
 
-First, an application developer starts by defining the application domain objects...
+First, an application developer starts by defining the application domain objects, as follows:
 
 .Application domain object type modeling a Book
 [source, java]
@@ -1031,8 +1041,8 @@ class Book {
 }
 ----
 
-Next, an application developer would define a basic _Repository_ for `Books` by extending _Spring Data Commons_
-`org.springframework.data.repository.CrudRepository` interface...
+Next, you can define a basic repository for `Books` by extending Spring Data Commons
+`org.springframework.data.repository.CrudRepository` interface, as follows:
 
 .Repository for Books
 [source, java]
@@ -1041,23 +1051,23 @@ interface BookRepository extends CrudRepository<Book, ISBN> { .. }
 ----
 
 The `org.springframe.data.repository.CrudRepository` is a Data Access Object (DAO) providing basic data access
-operations (CRUD) along with support for simple queries (e.g. `findById(..)`).  The user can define additional,
-more sophisticated queries simply by declaring query methods on the _Repository_ interface
-(e.g. `List<BooK> findByAuthor(Author author);`).
+operations (CRUD) along with support for simple queries (such as `findById(..)`). You can define additional,
+more sophisticated queries by declaring query methods on the repository interface
+(for example, `List<BooK> findByAuthor(Author author);`).
 
-Under-the-hood, _Spring Data for Pivotal GemFire_ provides an implementation of the applications _Repository_ interface when
-the Spring container is bootstrapped. SDG will even implement the query methods defined by the user so long as
-the user follows simple <<gemfire-repositories.executing-queries,conventions>>.
+Under the hood, Spring Data for Pivotal GemFire provides an implementation of the applications repository interface when
+the Spring container is bootstrapped. SDG even implements the query methods that you define, so long as
+you follow these <<gemfire-repositories.executing-queries,conventions>>.
 
-Now, when a user defined the `Book` class, she also specified the Region in which instances of `Book` will be mapped
-and stored by declaring the _Spring Data for Pivotal GemFire_ mapping annotation, `@Region` on the entity's type.  Of course, if
-the entity type (i.e. `Book`) referenced in the type parameter of the _Repository_ interface (i.e. `BookRepository`)
-is not annotated with `@Region`, the name is derived from the simple class name of the entity type (i.e. "Book").
+Now, when you defined the `Book` class, you also specified the region in which instances of `Book` are mapped
+and stored by declaring the Spring Data for Pivotal GemFire mapping annotation, `@Region` on the entity's type. Of course, if
+the entity type (`Book`, in this case) referenced in the type parameter of the repository interface (`BookRepository`, in this case)
+is not annotated with `@Region`, the name is derived from the simple class name of the entity type (`Book`, in this case).
 
-_Spring Data for Pivotal GemFire_ uses the mapping context containing mapping meta-data for all the entities defined in your
-application to determine all the Regions that will be needed at runtime.
+Spring Data for Pivotal GemFire uses the mapping context, which contains mapping metadata for all the entities defined in your
+application, to determine all the regions that are needed at runtime.
 
-To enable and use this feature, simply annotate the application class with `@EnableEntityDefinedRegions`...
+To enable and use this feature, annotate the application class with `@EnableEntityDefinedRegions`, as follows:
 
 .Entity-defined Region Configuration
 [source, java]
@@ -1069,19 +1079,19 @@ To enable and use this feature, simply annotate the application class with `@Ena
 class ClientApplication { .. }
 ----
 
-TIP: Creating Regions from entity classes is the most useful when using _Spring Data Repositories_ in your application.
-_Spring Data for Pivotal GemFire's_ _Repository_ support is enabled with the `@EnableGemfireRepositories` annotation, as shown
-in the example above.
+TIP: Creating regions from entity classes is most useful when using Spring Data repositories in your application.
+Spring Data for Pivotal GemFire's repository support is enabled with the `@EnableGemfireRepositories` annotation, as shown
+in the preceding example.
 
-By default, the `@EnableEntityDefinedRegions` annotation will scan for entity classes recursively starting from
+By default, the `@EnableEntityDefinedRegions` annotation scans for entity classes recursively, starting from
 the package of the configuration class on which the `@EnableEntityDefinedRegions` annotation is declared.
 
 However, it is common to limit the search during the scan by setting the `basePackages` attribute with the package names
-containing your application entity classes.
+that contain your application entity classes.
 
-Alternatively, a user can use the more type-safe `basePackageClasses` attribute for specifying the package to scan
-by setting the attribute to an entity type in the package containing the entity's class, or by using a non-entity
-placeholder class in the package specifically created for identifying the package to scan.  For example...
+Alternatively, you can use the more type-safe `basePackageClasses` attribute for specifying the package to scan
+by setting the attribute to an entity type in the package that contains the entity's class or by using a non-entity
+placeholder class specifically created for identifying the package to scan. The following example shows how to specify the entity types for which to scan for our book repository example:
 
 .Entity-defined Region Configuration using the Entity class type
 [source, java]
@@ -1096,56 +1106,56 @@ placeholder class in the package specifically created for identifying the packag
 class ClientApplication { .. }
 ----
 
-In addition to specifying the location where to begin the scan, like Spring's `@ComponentScan` annotation, a user can
+In addition to specifying where to begin the scan, like Spring's `@ComponentScan` annotation, you can
 specify `include` and `exclude` filters with all the same semantics of the
 `org.springframework.context.annotation.ComponentScan.Filter` annotation.
 
-See the `@EnableEntityDefinedRegion` annotation _Javadoc_ for more details.
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableEntityDefinedRegions.html[`@EnableEntityDefinedRegions` annotation Javadoc] for more details.
 
 [[bootstrap-annotation-config-region-types]]
 === Configuring Type-specific Regions
 
 Pivotal GemFire supports many different
-http://gemfire.docs.pivotal.io/geode/developing/region_options/region_types.html[types of Regions].
-Each type corresponds to the Region's
+http://gemfire.docs.pivotal.io/geode/developing/region_options/region_types.html[types of regions].
+Each type corresponds to the region's
 http://gemfire-91-javadocs.docs.pivotal.io/org/apache/geode/cache/DataPolicy.html[`DataPolicy`],
 which determines exactly how the data in the Region will be managed (e.g. distributed/replicated, etc).
 
-NOTE: Other configuration settings also can affect how data is managed like the Region's `scope`.
-See http://gemfire.docs.pivotal.io/geode/developing/region_options/storage_distribution_options.html[Storage and Distribution Options]
+NOTE: Other configuration settings (such as the region's `scope`) can also affect how data is managed.
+See http://gemfire.docs.pivotal.io/geode/developing/region_options/storage_distribution_options.html["`Storage and Distribution Options`"]
 in the Pivotal GemFire User Guide for more details.
 
-When the user annotates her application domain object types with the generic `@Region` mapping annotation,
-_Spring Data for Pivotal GemFire_ will decide which type of `Region` to create.  SDG's default strategy takes the cache type
-into consideration when determining the type of `Region` to create.
+When you annotates your application domain object types with the generic `@Region` mapping annotation,
+Spring Data for Pivotal GemFire decides which type of region to create. SDG's default strategy takes the cache type
+into consideration when determining the type of region to create.
 
-For example, if the application was declared as a `ClientCache` using the `@ClientCacheApplication` annotation,
-then SDG would create a client `PROXY` `Region`.  Or, if the application was declared as a peer `Cache` using either the
-`@PeerCacheApplication` or `@CacheServerApplication` annotations, then SDG would create a server `PARTITION` `Region`.
+For example, if you declare the application as a `ClientCache` by using the `@ClientCacheApplication` annotation,
+SDG creates a client `PROXY` `Region`. Alternatively, if you declare the application as a peer `Cache` by using either the
+`@PeerCacheApplication` or `@CacheServerApplication` annotations, SDG creates a server `PARTITION` `Region`.
 
-Of course, an application developer is always able to override the default when necessary.  To override the default
-applied by _Spring Data for Pivotal GemFire_, 4 new Region mapping annotations have been introduced:
+Of course, you can always override the default when necessary. To override the default
+applied by Spring Data for Pivotal GemFire, four new region mapping annotations have been introduced:
 
-* `ClientRegion`
-* `LocalRegion`
-* `PartitionRegion`
-* `ReplicateRegion`
+* `@ClientRegion`
+* `@LocalRegion`
+* `@PartitionRegion`
+* `@ReplicateRegion`
 
-The `ClientRegion` mapping annotation is specific to client applications.  All other Region mapping annotations
-listed above can only be used in server applications with an embedded peer `Cache`.
+The `@ClientRegion` mapping annotation is specific to client applications. All of the other region mapping annotations
+listed above can be used only in server applications that have an embedded peer `Cache`.
 
-It is sometimes necessary for client applications to create and use "local-only" Regions, perhaps to aggregate data
-from other Regions in order to analyze the data locally and carry out some function performed by the application
-for the user. In this case, the data may not need to be distributed back to the server, not unless other applications
-need access to the results.  This Region might even be temporary and discarded after use, which could be accomplished
-with Idle-Timeout (TTI) and Time-To-Live (TTL) expiration policies on the Region itself.
+It is sometimes necessary for client applications to create and use "`local-only`" regions, perhaps to aggregate data
+from other regions in order to analyze the data locally and carry out some function performed by the application
+for the user. In this case, the data does not need to be distributed back to the server unless other applications
+need access to the results. This region might even be temporary and discarded after use, which could be accomplished
+with Idle-Timeout (TTI) and Time-To-Live (TTL) expiration policies on the region itself. (See "`<<bootstrap-annotation-config-region-expiration>>`" for more about expiration policies.)
 
 NOTE: Region-level Idle-Timeout (TTI) and Time-To-Live (TTL) expiration policies are independent of and different from
-entry-level TTI/TTL expiration policies.
+entry-level TTI and TTL expiration policies.
 
-In any case, if a user wanted to create a local-only, client Region where the data is not gong to be distributed to
-a corresponding Region with the same name on the server, the user would simply declare the `@ClientRegion`
-mapping annotation and set the `shortcut` attribute to `ClientRegionShortcut.LOCAL`...
+In any case, if you want to create a local-only client region where the data is not going to be distributed to
+a corresponding region with the same name on the server, you can declare the `@ClientRegion`
+mapping annotation and set the `shortcut` attribute to `ClientRegionShortcut.LOCAL`, as follows:
 
 .Spring `ClientCache` application with a local-only, client Region
 [source, java]
@@ -1155,35 +1165,35 @@ class ClientLocalEntityType { .. }
 ----
 
 All `Region` type-specific annotations provide additional attributes that are both common across `Region` types
-as well as specific to only that type of `Region` (e.g. the `collocatedWith` and `redundantCopies` attributes
-in the `PartitionRegion` annotation apply to `PARTITION` Regions only).
+as well as specific to only that type of region (for example, the `collocatedWith` and `redundantCopies` attributes
+in the `PartitionRegion` annotation apply to `PARTITION` regions only).
 
-More details on Pivotal GemFire Region Types can be found
+More details on Pivotal GemFire region types can be found
 http://gemfire.docs.pivotal.io/geode/developing/region_options/region_types.html[here].
 
 [[bootstrap-annotation-config-region-eviction]]
 === Configuring Eviction
 
-Managing data with Pivotal GemFire is an active task.  More than likely, tuning will be required and a combination
-of features (e.g. both _Eviction_ and <<bootstrap-annotation-config-region-expiration, _Expiration_>>) will need to
-be employed to effectively manage your data in memory with Pivotal GemFire.
+Managing data with Pivotal GemFire is an active task. Tuning is generally required, and you must employ a combination
+of features (for example, both eviction and <<bootstrap-annotation-config-region-expiration, expiration>>)
+to effectively manage your data in memory with Pivotal GemFire.
 
-Given that Pivotal GemFire is an _In-Memory Data Grid_ (IMDG), data is managed in "memory" and distributed to other nodes
+Given that Pivotal GemFire is an In-Memory Data Grid (IMDG), data is managed in-memory and distributed to other nodes
 that participate in a cluster in order to minimize latency, maximize throughput and ensure that data is highly available.
-Since not all of an application's data is going to typically fit in memory, even across an entire cluster of nodes,
-much less on a single node, capacity can be increased by adding new nodes to the cluster.  This is commonly referred to
-as linear scale-out (rather than scaling up, which means to add more memory, more CPU, more disk, more network bandwidth,
+Since not all of an application's data is going to typically fit in memory (even across an entire cluster of nodes,
+much less on a single node), you can increase capacity by adding new nodes to the cluster. This is commonly referred to
+as linear scale-out (rather than scaling up, which means adding more memory, more CPU, more disk, or more network bandwidth --
 basically more of every system resource in order to handle the load).
 
 Still, even with a cluster of nodes, it is usually imperative that only the most important data be kept in memory.
-Running out-of-memory, or even venturing near full capacity, is rarely, if ever, a good thing.  Stop-the-world GCs
-or worse, `OutOfMemoryErrors`, will bring your application to a screaming halt.
+Running out of memory, or even venturing near full capacity, is rarely, if ever, a good thing. Stop-the-world GCs
+or worse, `OutOfMemoryErrors`, bring your application to a screaming halt.
 
-So, to help manage memory and keep the most important data around, Pivotal GemFire supports LRU-based _Eviction_.
-That is, Pivotal GemFire evicts Region entries based on when those entries were last accessed by using
-the _Least Recently Used_ algorithm.
+So, to help manage memory and keep the most important data around, Pivotal GemFire supports Least Recently Used (LRU) eviction.
+That is, Pivotal GemFire evicts region entries based on when those entries were last accessed by using
+the Least Recently Used algorithm.
 
-To enable _Eviction_, simply annotate the application class with `@EnableEviction`...
+To enable eviction, annotate the application class with `@EnableEviction`, as follows:
 
 .Spring application with Eviction enabled
 [source, java]
@@ -1199,19 +1209,19 @@ To enable _Eviction_, simply annotate the application class with `@EnableEvictio
 class ServerApplication { .. }
 ----
 
-Eviction policies are usually set on the Regions in the server(s).
+Eviction policies are usually set on the regions in the servers.
 
-As shown above, the `policies` attribute can specify 1 or more nested `@EvictionPolicy` annotations, each 1 individually
-catered to 1 or more Regions where the Eviction policy needs to be applied.
+As shown earlier, the `policies` attribute can specify one or more nested `@EvictionPolicy` annotations, with each one being individually
+catered to one or more regions where the rviction policy needs to be applied.
 
 Additionally, a user can reference a custom implementation of Pivotal GemFire's
 http://gemfire-91-javadocs.docs.pivotal.io/org/apache/geode/cache/util/ObjectSizer.html[`org.apache.geode.cache.util.ObjectSizer`] interface,
-which can be defined as a bean in the Spring context and referenced by name using the `objectSizerName` attribute.
+which can be defined as a bean in the Spring context and referenced by name by using the `objectSizerName` attribute.
 
-An `ObjectSizer` allows the user to define the criteria used to evaluate and determine the the size of objects
-stored in a Region.
+An `ObjectSizer` let you define the criteria used to evaluate and determine the the size of objects
+stored in a region.
 
-See the `@EnableEviction` annotation _Javadoc_ for a complete list of Eviction configuration options.
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableEviction.html[`@EnableEviction` annotation Javadoc] for a complete list of eviction configuration options.
 
 More details on Pivotal GemFire Eviction can be found
 http://gemfire.docs.pivotal.io/geode/developing/eviction/chapter_overview.html[here].
@@ -1219,29 +1229,28 @@ http://gemfire.docs.pivotal.io/geode/developing/eviction/chapter_overview.html[h
 [[bootstrap-annotation-config-region-expiration]]
 === Configuring Expiration
 
-Along with <<bootstrap-annotation-config-region-eviction, _Eviction_>>, _Expiration_ can also be used to manage memory
-by allowing entries stored in a Region to expire.  Both _Time-to-Live_ (TTL) and _Idle-Timeout_ (TTI) based entry
-expiration policies are supported in Pivotal GemFire.
+Along with <<bootstrap-annotation-config-region-eviction, Eviction>>, Expiration can also be used to manage memory
+by allowing entries stored in a region to expire. Pivotal GemFire supports both Time-to-Live (TTL)-based and Idle-Timeout (TTI)-based entry
+expiration policies.
 
-_Spring Data for Pivotal GemFire's_ Annotation-based Expiration configuration is based on
-<<bootstrap:region:expiration:annotation, earlier and existing entry expiration annotation support>>  added in
-_Spring Data for Pivotal GemFire_ version 1.5.
+Spring Data for Pivotal GemFire's annotation-based expiration configuration is based on the
+<<bootstrap:region:expiration:annotation, earlier and existing entry expiration annotation support>> added in
+Spring Data for Pivotal GemFire version 1.5.
 
-Essentially, _Spring Data for Pivotal GemFire's_ Expiration annotation support is based on a provided, custom implementation of
+Essentially, Spring Data for Pivotal GemFire's expiration annotation support is based on a custom implementation of
 Pivotal GemFire's http://gemfire-91-javadocs.docs.pivotal.io/org/apache/geode/cache/CustomExpiry.html[`org.apache.geode.cache.CustomExpiry`] interface.
-This `o.a.g.cache.CustomExpiry` implementation inspects the user's application domain objects stored in a Region
-for the presence of type-level Expiration annotations.
+This `o.a.g.cache.CustomExpiry` implementation inspects the user's application domain objects stored in a region
+for the presence of type-level expiration annotations.
 
-_Spring Data for Pivotal GemFire_ provides the following Expiration annotations used on application domain object types,
-out-of-the-box...
+Spring Data for Pivotal GemFire provides the following expiration annotations used on application domain object types:
 
 * `Expiration`
 * `IdleTimeoutExpiration`
 * `TimeToLiveExpiration`
 
-An application domain object type can be annotated with 1 or more of the Expiration annotations, like so...
+An application domain object type can be annotated with one or more of the expiration annotations, as follows:
 
-.Applicaton domain object specific Expiration policy
+.Applicaton domain object specific expiration policy
 [source, java]
 ----
 @Region("Books")
@@ -1260,10 +1269,10 @@ To enable _Expiration_, simply annotate the application class with `@EnableExpir
 class ServerApplication { .. }
 ----
 
-In addition to application domain object type-level Expiration policies, individual Expiration policies on a
-Region-by-Region basis can be configured directly with the `@EnableExpiration` annotation as well.
+In addition to application domain object type-level expiration policies, you can directly configure individual expiration policies on a
+region-by-region basis by using the `@EnableExpiration` annotation, as follows:
 
-.Spring application with global Expiration policies
+.Spring application with region-specific expiration policies
 [source, java]
 ----
 @SpringBootApplication
@@ -1276,9 +1285,11 @@ Region-by-Region basis can be configured directly with the `@EnableExpiration` a
 class ServerApplication { .. }
 ----
 
-Expiration policies are usually set on the Regions in the server(s).
+The preceding example sets expiration policies for the `Books`, `Customers`, and `Orders` regions.
 
-See the `@EnableExpiration` annotation _Javadoc_ for a complete list of Expiration configuration options.
+Expiration policies are usually set on the regions in the servers.
+
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableExpiration.html[`@EnableExpiration` annotation Javadoc] for a complete list of Expiration configuration options.
 
 More details on Pivotal GemFire Expiration can be found
 http://gemfire.docs.pivotal.io/geode/developing/expiration/chapter_overview.html[here].
@@ -1286,18 +1297,18 @@ http://gemfire.docs.pivotal.io/geode/developing/expiration/chapter_overview.html
 [[bootstrap-annotation-config-region-compression]]
 === Configuring Compression
 
-In addition to <<bootstrap-annotation-config-region-expiration,_Eviction_>>
-and <<bootstrap-annotation-config-region-expiration,_Expiration_>>, a user may also configure his or her data Regions
-to use Compression in order to reduce memory consumption.
+In addition to <<bootstrap-annotation-config-region-expiration,eviction>>
+and <<bootstrap-annotation-config-region-expiration,expiration>>, you can also configure your data regions
+to use compression to reduce memory consumption.
 
-Pivotal GemFire allows users to compress in-memory Region values using pluggable
+Pivotal GemFire lets you compress in-memory region values by using pluggable
 http://gemfire-91-javadocs.docs.pivotal.io/org/apache/geode/compression/Compressor.html[`Compressors`],
-or different compression codecs.  Out-of-the-box, Pivotal GemFire uses Google's http://google.github.io/snappy/[Snappy]
+or different compression codecs.Pivotal GemFire uses Google's http://google.github.io/snappy/[Snappy]
 compression library.
 
-To enable Compression support, simply annotate the application class with `@EnableCompression`...
+To enable compression support, annotate the application class with `@EnableCompression`, as follows:
 
-.Spring application with Compression enabled
+.Spring application with compression enabled
 [source, java]
 ----
 @SpringBootApplication
@@ -1308,42 +1319,41 @@ class ClientApplication { .. }
 
 NOTE: Neither the `compressorBeanName` nor the `regionNames` attribute are required.
 
-The `compressorBeanName` defaults to "`SnappyCompressor`" enabling Pivotal GemFire's provided
-http://gemfire-91-javadocs.docs.pivotal.io/org/apache/geode/compression/SnappyCompressor.html[`SnappyCompressor`]
-by default.
+The `compressorBeanName` defaults to `SnappyCompressor`, enabling Pivotal GemFire's
+http://gemfire-91-javadocs.docs.pivotal.io/org/apache/geode/compression/SnappyCompressor.html[`SnappyCompressor`].
 
-The `regionNames` attribute is an array of Region names specifying the Regions that will have compression enabled.
-By default, all Regions will compress values if the `regionNames` attribute is not explicitly set.
+The `regionNames` attribute is an array of region names that specify the regions that have compression enabled.
+By default, all regions compress values if the `regionNames` attribute is not explicitly set.
 
-TIP: Alternatively, a user may use the `spring.data.gemfire.cache.compression.compressor-bean-name`
+TIP: Alternatively, you can use the `spring.data.gemfire.cache.compression.compressor-bean-name`
 and `spring.data.gemfire.cache.compression.region-names` properties in the `application.properties` file
 to set and configure the values of these `@EnableCompression` annotation attributes.
 
 WARNING: To use Pivotal GemFire's Region Compression feature, you must include the `org.iq80.snappy:snappy` dependency
-in your application _Maven_ `pom.xml` file, or `build.gradle` file when using _Gradle_.  This is only necessary
-if you use Pivotal GemFire's default, out-of-the-box support for Region Compression, which uses the
+in your application's `pom.xml` file (for Maven) or `build.gradle` file (for Gradle). This is necessary only
+if you use Pivotal GemFire's default support for region compression, which uses the
 http://gemfire-91-javadocs.docs.pivotal.io/org/apache/geode/compression/SnappyCompressor.html[`SnappyCompressor`]
-by default.  Of course, if you are using another compression library, you will need to include dependencies
-for that compression library on your application's classpath.  Additionally, you will need to implement Pivotal GemFire's
+by default. Of course, if you use another compression library, you need to include dependencies
+for that compression library on your application's classpath. Additionally, you need to implement Pivotal GemFire's
 http://gemfire-91-javadocs.docs.pivotal.io/org/apache/geode/compression/Compressor.html[`Compressor`] interface
-to adapt your compression library of choice, define it as a bean in the _Spring_ context, and then set
+to adapt your compression library of choice, define it as a bean in the _Spring_ context, and set
 the `compressorBeanName` to this custom bean definition.
 
-See the `@EnableCompression` annotation _Javadoc_ for more details.
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableCompression.html[`@EnableCompression` annotation Javadoc] for more details.
 
 More details on Pivotal GemFire Compression can be found
 http://gemfire91.docs.pivotal.io/geode/managing/region_compression.html[here].
 
 [[bootstrap-annotation-config-region-off-heap]]
-=== Configuring Off-Heap
+=== Configuring Off-Heap Memory
 
-Another effective means for reducing pressure on the JVM's Heap memory and minimize GC activity is to use
-Pivotal GemFire's _Off-Heap_ memory support.  Rather than storing Region entries on the JVM Heap, entries are stored
-in the system's main memory.  Off-Heap generally works best when the objects being stored are uniform in size,
-are mostly less than 128K and do not need to be deserialized frequently, as explained in the Pivotal GemFire
+Another effective means for reducing pressure on the JVM's Heap memory and minimizeing GC activity is to use
+Pivotal GemFire's off-heap memory support. Rather than storing region entries on the JVM Heap, entries are stored
+in the system's main memory. Off-heap memory generally works best when the objects being stored are uniform in size,
+are mostly less than 128K, and do not need to be deserialized frequently, as explained in the Pivotal GemFire
 http://gemfire.docs.pivotal.io/geode/managing/heap_use/off_heap_management.html[User Guide].
 
-To enable _Off-Heap_ support, simple annotate the application class with `@EnableOffHeap`...
+To enable off-heap support, annotate the application class with `@EnableOffHeap`, as follows:
 
 .Spring application with Off-Heap enabled
 [source, java]
@@ -1354,38 +1364,38 @@ To enable _Off-Heap_ support, simple annotate the application class with `@Enabl
 class ServerApplication { .. }
 ----
 
-The `memorySize` attribute is required.  The value for the `memorySize` attribute specifies the amount of main memory
-a Region is allowed to use in either megabytes (`m`) or gigabytes (`g`).
+The `memorySize` attribute is required. The value for the `memorySize` attribute specifies the amount of main memory
+a region can use in either megabytes (`m`) or gigabytes (`g`).
 
-The `regionNames` attribute is an array of Region names specifying the Regions that will store entries in main memory.
-By default, all Regions will use main memory if the `regionNames` attribute is not explicitly set.
+The `regionNames` attribute is an array of region names that specifies the regions that store entries in main memory.
+By default, all regions use main memory if the `regionNames` attribute is not explicitly set.
 
-TIP: Alternatively, a user may use the `spring.data.gemfire.cache.off-heap.memory-size`
+TIP: Alternatively, you can use the `spring.data.gemfire.cache.off-heap.memory-size`
 and `spring.data.gemfire.cache.off-heap.region-names` properties in the `application.properties` file
 to set and configure the values of these `@EnableOffHeap` annotation attributes.
 
-See the `@EnableOffHeap` annotation _Javadoc_ for more details.
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableOffHeap.html[`@EnableOffHeap` annotation Javadoc] for more details.
 
 [[bootstrap-annotation-config-region-indexes]]
 === Configuring Indexes
 
-There is not much use in storing data in Regions unless the data can be accessed.
+There is not much use in storing data in regions unless the data can be accessed.
 
-In addition to `Region.get(key)` operations, particularly when the key of the value of interest is known in advance,
-data is commonly retrieved by executing queries on the Regions containing the data.  With Pivotal GemFire, queries are
-written using the _Object Query Language_ (OQL), and the specific data set that a client wishes to access is expressed
-in the query's predicate (e.g. `SELECT * FROM /Books b WHERE b.author.name = 'Jon Doe'`).
+In addition to `Region.get(key)` operations, particularly when the key is known in advance,
+data is commonly retrieved by executing queries on the regions that contain the data. With Pivotal GemFire, queries are
+written by using the Object Query Language (OQL), and the specific data set that a client wishes to access is expressed
+in the query's predicate (for example, `SELECT * FROM /Books b WHERE b.author.name = 'Jon Doe'`).
 
-Generally, querying without Indexes is not very efficient.  When executing queries without an Index, Pivotal GemFire
+Generally, querying without indexes is inefficient. When executing queries without an index, Pivotal GemFire
 performs the equivalent of a full table scan.
 
-Indexes are created and maintained for fields on objects used in query predicates to match the data of interests,
-expressed by the query's projection.  Different types of Indexes can be created, such as
-http://gemfire.docs.pivotal.io/geode/developing/query_index/creating_key_indexes.html[Key]
-and http://gemfire.docs.pivotal.io/geode/developing/query_index/creating_hash_indexes.html[Hash] Indexes.
+Indexes are created and maintained for fields on objects used in query predicates to match the data of interest, as
+expressed by the query's projection. Different types of indexes, such as
+http://gemfire.docs.pivotal.io/geode/developing/query_index/creating_key_indexes.html[key]
+and http://gemfire.docs.pivotal.io/geode/developing/query_index/creating_hash_indexes.html[hash] indexes, can be created.
 
-_Spring Data for Pivotal GemFire_ makes it very easy to create Indexes on Regions where the data is stored and accessed.
-Rather than explicitly declaring `Index` bean definitions using Spring config as before...
+Spring Data for Pivotal GemFire makes it easy to create indexes on regions where the data is stored and accessed.
+Rather than explicitly declaring `Index` bean definitions by using Spring config as before, we can create an index bean definition in Java, as follows:
 
 .Index bean definition using Java config
 [source, java]
@@ -1405,7 +1415,7 @@ IndexFactoryBean bookIsbnIndex(Pivotal GemFireCache gemfireCache) {
 }
 ----
 
-Or, in <<bootstrap:indexing, XML>>...
+Alternatively, we can use <<bootstrap:indexing, XML>> to create an index bean definition, as follows:
 
 .Index bean definition using XML
 [source, xml]
@@ -1413,14 +1423,14 @@ Or, in <<bootstrap:indexing, XML>>...
   <gfe:index id="BooksIsbnIndex" expression="isbn" from="/Books" type="KEY"/>
 ----
 
-Indexes can now be defined directly on the fields declared in application domain object types that a user knows
-will be used in query predicates to speedup those queries.  Indexes will even be applied for OQL queries generated
-from user-defined query methods on an application's _Repository_ interfaces.
+You can now directly define indexes on the fields declared in the application domain object types that you know
+are used in query predicates to speed up those queries. You can even apply indexes for OQL queries generated
+from user-defined query methods on an application's repository interfaces.
 
-Re-using the example `Book` class from above, we can annotate the fields on `Book` that we know will be used in queries
-we define with query methods in the `BookRepository` interface...
+Re-using the example `Book` class from earlier, we can annotate the fields on `Book` that we know are used in queries that
+we define with query methods in the `BookRepository` interface, as follows:
 
-.Application domain object type modeling a Book using Indexes
+.Application domain object type modeling a book using indexes
 [source, java]
 ----
 @Region("Books")
@@ -1445,24 +1455,24 @@ class Book {
 ----
 
 In our new `Book` class definition, we annotated the `author` field with `@Indexed` and the `title` field
-with `@LuceneIndexed`.  Also, the `isbn` field had previously been annotated with _Spring Data's_ `@Id` annotation,
-which identifies the field containing the unique identifier for `Book` instances, and in _Spring Data for Pivotal GemFire_,
-the `@Id` annotated field or property is used as the key in the Region when storing the entry.
+with `@LuceneIndexed`. Also, the `isbn` field had previously been annotated with Spring Data's `@Id` annotation,
+which identifies the field containing the unique identifier for `Book` instances, and, in Spring Data for Pivotal GemFire,
+the `@Id` annotated field or property is used as the key in the region when storing the entry.
 
-* `@Id` annotated fields/properties result in the creation of an Pivotal GemFire KEY Index.
-* `@Indexed` annotated fields/properties result in the creation of an Pivotal GemFire HASH Index (default).
-* `@LuceneIndexed` annotated fields/properties result in the creation of an Pivotal GemFire Lucene Index, used in
-text-based searches with Pivotal GemFire's Lucene Integration and support.
+* `@Id` annotated fields or properties result in the creation of an Pivotal GemFire `KEY` Index.
+* `@Indexed` annotated fields or properties result in the creation of an Pivotal GemFire `HASH` Index (the default).
+* `@LuceneIndexed` annotated fields or properties result in the creation of an Pivotal GemFire Lucene Index, used in
+text-based searches with Pivotal GemFire's Lucene integration and support.
 
-When the `@Indexed` annotation is used without setting any attributes, the Index `name`, `expression`, and `fromClause`
-are derived from the field/property of the class on which the `@Indexed` annotation has been added.  The `expression`
-is exactly the name of the field or property.  The `fromClause` is derived from the `@Region` annotation on
+When the `@Indexed` annotation is used without setting any attributes, the index `name`, `expression`, and `fromClause`
+are derived from the field or property of the class on which the `@Indexed` annotation has been added. The `expression`
+is exactly the name of the field or property. The `fromClause` is derived from the `@Region` annotation on
 the domain object's class (or the simple name of the domain object class if the `@Region` annotation was not specified).
 
-Of course, any of the `@Indexed` annotation attributes may be explicitly set to override the default values
-provided by _Spring Data for Pivotal GemFire_.
+Of course, you can explicitly set any of the `@Indexed` annotation attributes to override the default values
+provided by Spring Data for Pivotal GemFire.
 
-.Application domain object type modeling a Book using cutomized Indexes
+.Application domain object type modeling a book by using customized indexes
 [source, java]
 ----
 @Region("Books")
@@ -1486,14 +1496,14 @@ class Book {
 }
 ----
 
-The `name` of the Index, which is auto-generated when not explicitly set, is also used as the name of the bean
-registered in the Spring context for the Index.  If necessary, this Index bean could even be injected by name
+The `name` of the index, which is auto-generated when not explicitly set, is also used as the name of the bean
+registered in the Spring context for the index. If necessary, this index bean ca  even be injected by name
 into another application component.
 
-The generated name of the Index follows the pattern: `<Region Name><Field/Property Name><Index Type>Idx`.
-For example, the name of the `author` Index would be, "`BooksAuthorHashIdx`".
+The generated name of the index follows this pattern: `<Region Name><Field/Property Name><Index Type>Idx`.
+For example, the name of the `author` index would be, `BooksAuthorHashIdx`.
 
-To enable Indexing, simply annotate the application class with `@EnableIndexing`...
+To enable indexing, annotate the application class with `@EnableIndexing`, as follows:
 
 .Spring application with Indexing enabled
 [source, java]
@@ -1506,71 +1516,70 @@ class ServerApplication { .. }
 ----
 
 NOTE: The `@EnablingIndexing` annotation has no effect unless the `@EnableEntityDefinedRegions` is also declared.
-Essentially, Indexes are defined from fields/properties on the entity class types, and entity classes must be scanned
-in order to inspect the entity's fields and properties for the presence of Index annotations.  Without this scan,
-Index annotations would not be found.  It is also strongly recommended that you limit the scope of the scan.
+Essentially, indexes are defined from fields or properties on the entity class types, and entity classes must be scanned
+to inspect the entity's fields and properties for the presence of index annotations. Without this scan,
+index annotations cannot be found. We also strongly recommend that you limit the scope of the scan.
 
-While Lucene queries are not supported on _Spring Data for Pivotal GemFire_ _Repositories_ (yet), SDG does provide comprehensive
+While Lucene queries are not (yet) supported on Spring Data for Pivotal GemFire repositories, SDG does provide comprehensive
 https://docs.spring.io/spring-data-gemfire/docs/current/reference/html/#bootstrap:lucene[support] for Pivotal GemFire
-Lucene queries using the familiar Spring _Template_ design pattern.
+Lucene queries by using the familiar Spring template design pattern.
 
-Finally, we close with a few extra tips to keep in mind when using Indexes:
+Finally, we close this section with a few extra tips to keep in mind when using indexes:
 
-1. While OQL Indexes are not required to execute OQL Queries, Lucene Indexes are required to execute Lucene,
+* While OQL indexes are not required to execute OQL Queries, Lucene Indexes are required to execute Lucene
 text-based searches.
-2. In addition, OQL Indexes are not persisted to disk; they are maintained only in memory.  So, when an Pivotal GemFire
+* OQL Indexes are not persisted to disk. They are maintained only in memory.  So, when an Pivotal GemFire
 node is restarted, the Index must be rebuilt.
-3. You also need to be aware of the overhead associated in maintaining Indexes, particularly since an Index is stored
-exclusively in memory, and especially when Region entries are updated.  Index "maintenance" can be
+* You also need to be aware of the overhead associated in maintaining indexes, particularly since an index is stored
+exclusively in memory and especially when region entries are updated. Index "`maintenance`" can be
 http://gemfire-91-javadocs.docs.pivotal.io/org/apache/geode/cache/RegionFactory.html#setIndexMaintenanceSynchronous-boolean-[configured]
 as an asynchronous task.
 
-Another optimization that may be utilized when re-starting your Spring application where Indexes have to be rebuilt
-is to first define all the Indexes upfront and then create them all at once, which, in _Spring Data for Pivotal GemFire_, happens
+Another optimization that you can use when restarting your Spring application where indexes have to be rebuilt
+is to first define all the indexes up front and then create them all at once, which, in Spring Data for Pivotal GemFire, happens
 when the Spring context is refreshed.
 
-Indexes can be defined upfront then created all at once by setting the `define` attribute on the `@EnableIndexing`
+You can define indexes up front and then create them all at once by setting the `define` attribute on the `@EnableIndexing`
 annotation to `true`.
 
-See http://gemfire.docs.pivotal.io/geode/developing/query_index/create_multiple_indexes.html[Creating Multiple Indexes at Once]
+See http://gemfire.docs.pivotal.io/geode/developing/query_index/create_multiple_indexes.html["`Creating Multiple Indexes at Once`"]
 in Pivotal GemFire's User Guide for more details.
 
-Creating sensible Indexes is an important task since it is possible for an Index to do more harm than good
-if not properly designed.
+Creating sensible indexes is an important task, since it is possible for a poorly designed index to do more harm than good.
 
-See both the `@Indexed` annotation and `@LuceneIndexed` annotation _Javadoc_ for complete list of configuration options.
+See both the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/mapping/annotation/Indexed.html[`@Indexed`] annotation and https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/mapping/annotation/LuceneIndexed.html[`@LuceneIndexed`] annotation Javadoc for complete list of configuration options.
 
-More details on Pivotal GemFire OQL Queries can be found
+More details on Pivotal GemFire OQL queries can be found
 http://gemfire.docs.pivotal.io/geode/developing/querying_basics/chapter_overview.html[here].
 
-More details on Pivotal GemFire Indexes can be found
+More details on Pivotal GemFire indexes can be found
 http://gemfire.docs.pivotal.io/geode/developing/query_index/query_index.html[here].
 
-More details on Pivotal GemFire Lucene Queries can be found
+More details on Pivotal GemFire Lucene queries can be found
 http://gemfire.docs.pivotal.io/geode/tools_modules/lucene_integration.html[here].
 
 [[bootstrap-annotation-config-region-continuous-queries]]
 === Configuring Disk Stores
 
-Regions can be configured to persist data to disk.  Regions can also be configured to overflow data to disk when
-Region entries are evicted.  In both cases, a `DiskStore` is required to persist or overflow the data.  When an
-explicit `DiskStore` has not been set on a Region with persistence or overflow configured, then Pivotal GemFire
-will use the "DEFAULT" `DiskStore`.
+You can configure regions to persist data to disk. You can also configure regions to overflow data to disk when
+region entries are evicted. In both cases, a `DiskStore` is required to persist or overflow the data. When an
+explicit `DiskStore` has not been set on a region with persistence or overflow configured, Pivotal GemFire
+uses the `DEFAULT` `DiskStore`.
 
-However, it is possible and recommended to define Region-specific `DiskStores` when persisting or overflowing data
+However, we recommend defining region-specific `DiskStores` when persisting or overflowing data
 to disk.
 
-_Spring Data for Pivotal GemFire_ provides Annotation support for defining and creating application Region `DiskStores`
+Spring Data for Pivotal GemFire provides annotation support for defining and creating application region `DiskStores`
 by annotating the application class with the `@EnableDiskStore` and `@EnableDiskStores` annotations.
 
-TIP: `@EnableDiskStores` is a composite annotation for aggregating 1 or more `@EnableDiskStore` annotations.
+TIP: `@EnableDiskStores` is a composite annotation for aggregating one or more `@EnableDiskStore` annotations.
 
-For example, while `Book` product information might mostly consist of reference data, from some external data source
-(e.g. Amazon), `Order` data is most likely going to be transactional in nature and something the application is going to
-need to retain, maybe even overflow to disk if the transaction volume is high enough, or so any Book publisher
+For example, while `Book` product information might mostly consist of reference data from some external data source
+(such as Amazon), `Order` data is most likely going to be transactional in nature and something the application is going to
+need to retain (and maybe even overflow to disk if the transaction volume is high enough) -- or so any book publisher
 and author hopes, anyway.
 
-Using the `@EnableDiskStore` annotation, I can define and create a `DiskStore` as follows...
+Using the `@EnableDiskStore` annotation, you can define and create a `DiskStore` as follows:
 
 .Spring application defining a `DiskStore`
 [source, java]
@@ -1582,20 +1591,20 @@ Using the `@EnableDiskStore` annotation, I can define and create a `DiskStore` a
 class ServerApplication { .. }
 ----
 
-Again, more than 1 `DiskStore` can be defined using the composite, `@EnableDiskStores` annotation.
+Again, more than one `DiskStore` can be defined by using the composite, `@EnableDiskStores` annotation.
 
-Like other Annotations in _Spring Data for Pivotal GemFire's_ Annotation-based configuration model, both `@EnableDiskStore`
+As other Annotations in Spring Data for Pivotal GemFire's annotation-based configuration model, both `@EnableDiskStore`
 and `@EnableDiskStores` have many attributes along with associated configuration properties to customize
 the `DiskStores` created at runtime.
 
-Additionally, the `@EnableDiskStores` annotation defines certain, common `DiskStore` attributes that apply to all
+Additionally, the `@EnableDiskStores` annotation defines certain common `DiskStore` attributes that apply to all
 `DiskStores` created from `@EnableDiskStore` annotations composed with the `@EnableDiskStores` annotation itself.
-Individual `DiskStore` configuration will override a particular global setting, but the `@EnableDiskStores`
-annotation conveniently defines common configuration attributes applied across all `DiskStores` aggregated by
+Individual `DiskStore` configuration override a particular global setting, but the `@EnableDiskStores`
+annotation conveniently defines common configuration attributes that apply across all `DiskStores` aggregated by
 the annotation.
 
-_Spring Data for Pivotal GemFire_ also provides the `DiskStoreConfigurer` callback interface, which can be declared in Java config
-and used instead of configuration properties to customize a `DiskStore` at runtime...
+Spring Data for Pivotal GemFire also provides the `DiskStoreConfigurer` callback interface, which can be declared in Java configuration
+and used instead of configuration properties to customize a `DiskStore` at runtime, as the following example shows:
 
 .Spring application with custom DiskStore configuration
 [source, java]
@@ -1620,10 +1629,10 @@ class ServerApplication {
 }
 ----
 
-See the `@EnableDiskStore` and `@EnableDiskStores` annotation _Javadoc_ for more details on the available
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableDiskStore.html[`@EnableDiskStore`] and https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableDiskStores.html[`@EnableDiskStores`] annotation Javadoc for more details on the available
 attributes as well as associated configuration properties.
 
-More details on Pivotal GemFire Region Persistence and Overflow (using Disk Stores) can be found
+More details on Pivotal GemFire Region Persistence and Overflow (using disk stores) can be found
 http://gemfire.docs.pivotal.io/geode/developing/storing_data_on_disk/chapter_overview.html[here].
 
 [[bootstrap-annotation-config-continuous-queries]]
@@ -1632,26 +1641,26 @@ http://gemfire.docs.pivotal.io/geode/developing/storing_data_on_disk/chapter_ove
 Another very important and useful feature of Pivotal GemFire is
 http://gemfire.docs.pivotal.io/geode/developing/continuous_querying/chapter_overview.html[Continuous Querying].
 
-In a world of Internet-enabled things, events and streams of data are coming in from everywhere.  Being able to handle
-and process a large stream of data and react to events in real-time, as they happen, is becoming an increasingly
-important requirement for many applications.  One example is self-driving vehicles.  Being able to receive, filter,
-transform, analyze and act on data in real-time is a key differentiator and characteristic of real-time enabled
+In a world of Internet-enabled things, events and streams of data come from everywhere. Being able to handle
+and process a large stream of data and react to events in real time is an increasingly
+important requirement for many applications. One example is self-driving vehicles. Being able to receive, filter,
+transform, analyze, and act on data in real time is a key differentiator and characteristic of real-time
 applications.
 
-Fortunately, Pivotal GemFire was ahead of its time in this regard.  Using _Continuous Queries_ (CQ), a client application
-can express the data, or events it is interested in and register listeners to handle and process the events as they
-occur.  The data that a client application may be interested in is expressed as an OQL query, where the query predicate
-is used to filter, or identify the data of interests.  When data is changed or added, and it matches the criteria
+Fortunately, Pivotal GemFire was ahead of its time in this regard. By using Continuous Queries (CQ), a client application
+can express the data or events it is interested in and register listeners to handle and process the events as they
+occur. The data that a client application may be interested in is expressed as an OQL query, where the query predicate
+is used to filter or identify the data of interest. When data is changed or added and it matches the criteria
 defined in the query predicate of the registered CQ, the client application is notified.
 
-_Spring Data for Pivotal GemFire_ makes defining and registering CQs along with an associated listener to handle and process CQ
-events without all the cruft of Pivotal GemFire's plumbing, a non-event (no pun intended).  SDG's new Annotation-based
-configuration for CQs builds on the existing _Continuous Query_ support in the
-<<apis:continuous-query, _Continuous Query Listener Container_>>.
+Spring Data for Pivotal GemFire makes it easy to define and register CQs, along with an associated listener to handle and process CQ
+events without all the cruft of Pivotal GemFire's plumbing. SDG's new annotation-based
+configuration for CQs builds on the existing continuous query support in the
+<<apis:continuous-query, continuous query listener container>>.
 
-For instance, say a Book publisher wants to register interests in and receive notification anytime orders (demand)
-for a `Book` exceeds the current inventory (supply), then the publisher's print application might register
-the following CQ...
+For instance, say a book publisher wants to register interest in and receive notification any time orders (demand)
+for a `Book` exceeds the current inventory (supply). Then the publisher's print application might register
+the following CQ:
 
 .Spring `ClientCache` application with registered CQ and Listener.
 [source, java]
@@ -1678,41 +1687,41 @@ class PublisherPrintApplication {
 }
 ----
 
-To enable _Continuous Queries_, simply annotate your application class with `@EnableContinuousQueries`.
+To enable continuous queries, annotate your application class with `@EnableContinuousQueries`.
 
-Defining _Continuous Queries_ is as simple as annotating any Spring `@Component` annotated POJO class methods
-with the `@ContinuousQuery` annotation, in similar fashion to SDG's Function annotated POJO methods.  A POJO method
-defined with a CQ using the `@ContinuousQuery` annotation will be called anytime data matching the query predicate
+Defining Continuous Queries consists of annotating any Spring `@Component`-annotated POJO class methods
+with the `@ContinuousQuery` annotation (in similar fashion to SDG's function-annotated POJO methods). A POJO method
+defined with a CQ by using the `@ContinuousQuery` annotation is called any time data matching the query predicate
 is added or changed.
 
 Additionally, the POJO method signature should adhere to the requirements outlined in the section on
-<<apis:continuous-query:adapter, ContinuousQueryListener and ContinuousQueryListenerAdapter>>.
+<<apis:continuous-query:adapter, the `ContinuousQueryListener` and the `ContinuousQueryListenerAdapter`>>.
 
-See the `@EnableContinuousQueries` and `@ContinuousQuery` annotation _Javadoc_ for more details on
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableContinuousQueries.html[`@EnableContinuousQueries`] and https://docs.spring.io/spring-data/gemfire/docs/current/api/index.html?org/springframework/data/gemfire/config/annotation/EnableContinuousQueries.html[`@ContinuousQuery`] annotation Javadoc for more details on
 available attributes and configuration settings.
 
-More details on _Spring Data for Pivotal GemFire's_ Continuous Query support can be found
+More details on Spring Data for Pivotal GemFire's continuous query support can be found
 <<apis:continuous-query, here>>.
 
-More details on Pivotal GemFire's Continuous Queries can be found
+More details on Pivotal GemFire's continuous queries can be found
 http://gemfire.docs.pivotal.io/geode/developing/continuous_querying/chapter_overview.html[here].
 
 [[bootstrap-annotation-config-caching]]
 == Configuring Spring's Cache Abstraction
 
-With _Spring Data for Pivotal GemFire_, Pivotal GemFire can be used as a caching provider in Spring's
-https://docs.spring.io/spring/docs/current/spring-framework-reference/integration.html#cache[Cache Abstraction].
+With Spring Data for Pivotal GemFire, Pivotal GemFire can be used as a caching provider in Spring's
+https://docs.spring.io/spring/docs/current/spring-framework-reference/integration.html#cache[cache abstraction].
 
-In _Spring's Cache Abstraction_, the caching annotations (e.g. `@Cacheable`) identify the cache on which a cache lookup
-is performed before invoking a potentially expensive operation, or where the results of an application service method
+In Spring's cache abstraction, the caching annotations (such as `@Cacheable`) identify the cache on which a cache lookup
+is performed before invoking a potentially expensive operation or where the results of an application service method
 are cached after the operation is invoked.
 
-In _Spring Data for Pivotal GemFire_, a Spring `Cache` corresponds directly to a Region.  The Region must exist before any
-`@Cacheable` application service methods are called.  This is true for any of Spring's caching annotations
-(i.e. `@Cacheable`, `@CachePut` and `@CacheEvict`) that identify the cache to use in the operation.
+In Spring Data for Pivotal GemFire, a Spring `Cache` corresponds directly to a region. The region must exist before any
+`@Cacheable` application service methods are called. This is true for any of Spring's caching annotations
+(that is, `@Cacheable`, `@CachePut` and `@CacheEvict`) that identify the cache to use in the operation.
 
-For instance, our publisher's Point-of-Sale (POS) application might have a feature to determine, or lookup
-the `Price` of a `Book` during a sales transaction.
+For instance, our publisher's Point-of-Sale (PoS) application might have a feature to determine or lookup
+the `Price` of a `Book` during a sales transaction, as the following example shows:
 
 [source, java]
 ----
@@ -1733,10 +1742,10 @@ class PointOfSaleService
 }
 ----
 
-To make the application developer's life easier when using _Spring Data for Pivotal GemFire_ and Pivotal GemFire with
-_Spring's Cache Abstraction_, 2 new features have been added to the **new** Annotation-based configuration model.
+To make your work easier when you use Spring Data for Pivotal GemFire and Pivotal GemFire with
+Spring's cache abstraction, two new features have been added to the ne annotation-based configuration model.
 
-Given the following Spring caching configuration...
+Consider the following Spring caching configuration:
 
 .Enabling Caching using Pivotal GemFire with Spring Data for Pivotal GemFire
 [source, java]
@@ -1774,7 +1783,7 @@ class CachingConfiguration {
 }
 ----
 
-Using _Spring Data for Pivotal GemFire's_ new features, the same caching configuration can be simplified to...
+Using Spring Data for Pivotal GemFire's new features, you can simplify the same caching configuration to the following:
 
 .Enabling Pivotal GemFire Caching
 [source, java]
@@ -1790,80 +1799,80 @@ class CachingConfiguration {
 }
 ----
 
-First, the `@EnableGemfireCaching` annotation replaces both the Spring `EnableCaching` annotation along with
+First, the `@EnableGemfireCaching` annotation replaces both the Spring `@EnableCaching` annotation and
 the need to declare an explicit `cacheManager` bean definition in the Spring config.
 
 Second, the `@EnableCachingDefinedRegions` annotation, like the `@EnableEntityDefinedRegions` annotation described in
-<<bootstrap-annotation-config-regions, Configuring Regions>>, inspects all the Spring application, caching annotated
-service components to identify all the caches that will be needed by the application at runtime and creates Regions
+"`<<bootstrap-annotation-config-regions, Configuring Regions>>`", inspects the entire Spring application, caching annotated
+service components to identify all the caches that are needed by the application at run time and creating regions
 in Pivotal GemFire for these caches on application startup.
 
-The Region created is local to the application process that created the Region.  If the application is a peer `Cache`,
-then the Region will only exist on the application node.  If the application is a `ClientCache`, then SDG creates
-a client `PROXY` Region and expects that a Region with the same name already exists on the servers in the cluster.
+The created region is local to the application process that created the region. If the application is a peer `Cache`,
+the Region exists only on the application node. If the application is a `ClientCache`, then SDG creates
+a client `PROXY` Region and expects that a region with the same name already exists on the servers in the cluster.
 
 NOTE: SDG cannot determine the cache required by a service method using a Spring `CacheResolver` to resolve the cache
 used in the operation at runtime.
 
-TIP: SDG also supports _JCache_, JSR-107 cache annotations on application service components as well.
-Refer to the core https://docs.spring.io/spring/docs/current/spring-framework-reference/integration.html#cache-jsr-107[_Spring Framework Reference Guide_]
-for the equivalent Spring caching annotation to use in place of _JCache_, JSR-107 caching annotations.
+TIP: SDG also supports JCache (JSR-107) cache annotations on application service components.
+See the core https://docs.spring.io/spring/docs/current/spring-framework-reference/integration.html#cache-jsr-107[_Spring Framework Reference Guide_]
+for the equivalent Spring caching annotation to use in place of JCache caching annotations.
 
-Refer to the section, <<apis:spring-cache-abstraction, Support for the Spring Cache Abstraction>> for more details on
-using Pivotal GemFire as a caching provider in _Spring's Cache Abstraction_.
+Refer to the <<apis:spring-cache-abstraction, "`Support for the Spring Cache Abstraction`">> section for more details on
+using Pivotal GemFire as a caching provider in Spring's Cache abstraction.
 
-More details on _Spring's Cache Abstraction_ can be found
+More details on Spring's Cache Abstraction can be found
 https://docs.spring.io/spring/docs/current/spring-framework-reference/integration.html#cache[here].
 
 [[bootstrap-annotation-config-cluster]]
 == Configuring Cluster Configuration Push
 
-This may be the most exciting **new** feature in _Spring Data for Pivotal GemFire_.
+This may be the most exciting new feature in Spring Data for Pivotal GemFire.
 
-When a client application class is annotated with `@EnableClusterConfiguration`, any Regions or Indexes defined
-and declared as beans in the Spring context by the client application are "pushed" to the cluster of servers to
-which the client is connected.  Not only that, but this "push" is performed in such a way that Pivotal GemFire will
-remember the configuration pushed by the client, when using HTTP.  If all the nodes in the cluster go down, they
-will come back up with the same configuration as before.
+When a client application class is annotated with `@EnableClusterConfiguration`, any regions or indexes defined
+and declared as beans in the Spring context by the client application are "`pushed`" to the cluster of servers to
+which the client is connected. Not only that, but this "`push`" is performed in such a way that Pivotal GemFire
+remembers the configuration pushed by the client when using HTTP. If all the nodes in the cluster go down, they
+come back up with the same configuration as before.
 
-In a sense, this feature is not much different than if a user were to use _Gfsh_ to create the Regions and Indexes
-on all the servers in the cluster, manually.  Except now, with _Spring Data for Pivotal GemFire_, users does **not** need to use
-_Gfsh_ to create Regions and Indexes.  The user's _Spring Boot_ application, enabled with the power of
-_Spring Data for Pivotal GemFire_, already contains all the configuration meta-data needed to create Regions and Indexes
+In a sense, this feature is not much different than if a user were to use Gfsh to manually create the regions and indexes
+on all the servers in the cluster. Except that now, with Spring Data for Pivotal GemFire, you need not use
+Gfsh to create regions and indexes.  Your Spring Boot application, enabled with the power of
+Spring Data for Pivotal GemFire, already contains all the configuration metadata needed to create regions and indexes
 for the user.
 
-When users are using the _Spring Data Repository_ abstraction, we know all the Regions (e.g. `@Region` annotated
-entity types) and Indexes (e.g. `@Indexed` annotated entity fields and properties) that the users' application
-will need.  When users are using _Spring's Cache Abstraction_, we also know all the Regions for all the caches
-identified in the caching annotations needed by the application's service components.  Essentially, the user is
-already telling us everything we need to know just by developing her application with the entire _Spring Framework_
-and all of its provided services, infrastructure, etc, whether expressed in Annotation meta-data, Java, XML
+When you use the Spring Data repository abstraction, we know all the Regions (such as those defined by the `@Region`annotated
+entity types) and indexes (such as those defined by the `@Indexed`-annotated entity fields and properties) that your application
+needs. When you use Spring's Cache Abstraction, we also know all the regions for all the caches
+identified in the caching annotations needed by the application's service components. Essentially, you are
+already telling us everything we need to know by developing your application with the Spring Framework
+and all of its provided services, infrastructure, and other components, whether expressed in annotation metadata, Java, XML
 or otherwise, and whether for configuration, for mapping, or whatever purpose.
 
-The point is, users can focus on their application business logic along with using the framework provided services
-and supporting infrastructure (e.g. _Spring Data Repositories_, _Spring's Transaction Management_, _Spring Caching_,
-and so on) and _Spring Data for Pivotal GemFire_ will take care of all the Pivotal GemFire plumbing required by those framework
-services on the user's behalf.
+The point is that you can focus on your application's business logic while using the framework's services
+and supporting infrastructure (such Spring Data Repositories, Spring's Transaction Management, Spring Caching,
+and so on) and Spring Data for Pivotal GemFire takes care of all the Pivotal GemFire plumbing required by those framework
+services on the your behalf.
 
 Pushing configuration from the client to the servers in the cluster and having the cluster remember it is made possible
-in part by the use of Pivotal GemFire's http://gemfire.docs.pivotal.io/geode/configuring/cluster_config/gfsh_persist.html[_Cluster Configuration_]
-service.  Pivotal GemFire's _Cluster Configuration_ service is also the same service used by _Gfsh_ to record
-schema-related changes (e.g. `gfsh> create region --name=Example --type=PARTITION`) issued by the user to the cluster
+in part by the use of Pivotal GemFire's http://gemfire.docs.pivotal.io/geode/configuring/cluster_config/gfsh_persist.html[Cluster Configuration]
+service. Pivotal GemFire's Cluster Configuration service is also the same service used by Gfsh to record
+schema-related changes (for example, `gfsh> create region --name=Example --type=PARTITION`) issued by the user to the cluster
 from the shell.
 
-Of course, since the cluster "remembers" the prior configuration pushed by a client from a previous run, perhaps,
-_Spring Data for Pivotal GemFire_ is careful not to stomp on any existing Regions and Indexes already defined in the servers.
-This is especially important when Regions already contain data, for instance.
+Of course, since the cluster may "`remember`" the prior configuration pushed by a client from a previous run,
+Spring Data for Pivotal GemFire is careful not to stomp on any existing regions and indexes already defined in the servers.
+This is especially important, for instance, when regions already contain data.
 
-NOTE: Currently there is no option to overwrite any existing Region or Index definitions.  To recreate a Region
-or Index, the user must use _Gfsh_ to destroy the Region or Index first and then restart the client application
-so that configuration will be pushed up to the server again.  Alternatively a user can just use _Gfsh_ to
-(re-)define the Regions and Indexes manually.
+NOTE: Currently, there is no option to overwrite any existing region or index definitions. To re-create a region
+or index, you must use Gfsh to first destroy the region or index and then restart the client application
+so that configuration is pushed up to the server again. Alternatively, you can use Gfsh to
+(re-)define the regions and indexes manually.
 
-NOTE: Unlike _Gfsh_, _Spring Data for Pivotal GemFire_ only supports the creation of Regions and Indexes on the servers from a client.
-For advanced configuration and use cases, _Gfsh_ should be used to manage the cluster.
+NOTE: Unlike Gfsh, Spring Data for Pivotal GemFire supports the creation of regions and indexes only on the servers from a client.
+For advanced configuration and use cases, you should use Gfsh to manage the cluster.
 
-For a moment, just imagine the power expressed in the following configuration...
+Consider the power expressed in the following configuration:
 
 .Spring `ClientCache` application
 [source, java]
@@ -1879,77 +1888,78 @@ For a moment, just imagine the power expressed in the following configuration...
 class ClientApplication { .. }
 ----
 
-An application developer instantly gets a _Spring Boot_, Pivotal GemFire `ClientCache` application using
-_Spring Data Repositories_ with _Spring's Cache Abstraction_, using Pivotal GemFire as the caching provider,
-where Regions and Indexes are not only created on the client, but pushed to the servers in the cluster.
+You instantly get a Spring Boot application that uses Pivotal GemFire `ClientCache`,
+Spring Data repositories, Spring's cache abstraction, and Pivotal GemFire as the caching provider
+(where regions and indexes are not only created on the client but pushed to the servers in the cluster).
 
-All the application developer need do is define the application's domain model objects annotated with mapping
-and Index annotations, define Repository interfaces supporting basic data access operations and simple queryies
-for each of the entity types, define the service components containing the business logic transacting
-the entities, declare the appropriate annotations on service methods that require caching, transactional
-behavior, etc, and the developer is in business.  Nothing the user did in this case pertains to infrastructure
-and plumbing required in the application's back-end services (e.g. Pivotal GemFire).  Database users have similar
-features.  Now Spring, Pivotal GemFire developers can too!
+From there, you need to do the following:
 
-When combined with a couple more _Spring Data for Pivotal GemFire_ Annotations...
+* Define the application's domain model objects annotated with mapping and index annotations.
+* Define repository interfaces to support basic data access operations and simple queries for each of the entity types.
+* Define the service components containing the business logic transacting the entities.
+* Declare the appropriate annotations on service methods that require caching, transactional behavior, and so on.
+
+Nothing in this case pertains to the infrastructure
+and plumbing required in the application's back-end services (such as Pivotal GemFire). Database users have similar
+features. Now Spring and Pivotal GemFire developers can, too.
+
+When combined with the following Spring Data for Pivotal GemFire annotations, this application really starts to take flight, with minimal effort:
 
 * `@EnableContinuousQueries`
 * `@EnableGemfireFunctionExecutions`
 * `@EnableGemfireCacheTransactions`
 
-Then, this application is really going to start to take flight, with very minimal effort.
-
-See the `@EnableClusterConfiguration` annotation _Javadoc_ for more details.
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/index.html?org/springframework/data/gemfire/config/annotation/EnableClusterConfiguration.html[`@EnableClusterConfiguration` annotation Javadoc] for more details.
 
 [[bootstrap-annotation-config-security]]
 == Configuring Security
 
-Without a doubt, application _Security_ is extremely important and _Spring Data for Pivotal GemFire_ provides comprehensive support
+Without a doubt, application Security is extremely important, and Spring Data for Pivotal GemFire provides comprehensive support
 for securing both Pivotal GemFire clients and servers.
 
-Recently, Pivotal GemFire introduced a new http://gemfire.docs.pivotal.io/geode/managing/security/implementing_security.html[Integrated Security] framework,
-replacing its old Authentication and Authorization Security model, for handling authentication and authorization.
-One of the main features and benefits of this new Security framework is that it integrates with
+Recently, Pivotal GemFire introduced a new http://gemfire.docs.pivotal.io/geode/managing/security/implementing_security.html[Integrated Security] framework
+(replacing its old authentication and authorization security model) for handling authentication and authorization.
+One of the main features and benefits of this new security framework is that it integrates with
 https://shiro.apache.org/[Apache Shiro] and can therefore delegate both authentication and authorization requests
 to Apache Shiro when enforcing security.
 
-The following demonstrates how _Spring Data for Pivotal GemFire_ can simplify Pivotal GemFire's Security story even further.
+The remainder of this section demonstrates how Spring Data for Pivotal GemFire can simplify Pivotal GemFire's Security story even further.
 
 [[bootstrap-annotation-config-security-server]]
 === Configuring Server Security
 
-There are several different ways in which a user can configure Security for servers in an Pivotal GemFire cluster.
+There are several different ways in which you can configure security for servers in an Pivotal GemFire cluster.
 
-1. Implement the Pivotal GemFire `org.apache.geode.security.SecurityManager` interface and set Pivotal GemFire's
-`security-manager` property to refer to your application `SecurityManager` implementation by the FQCN.
+* Implement the Pivotal GemFire `org.apache.geode.security.SecurityManager` interface and set Pivotal GemFire's
+`security-manager` property to refer to your application `SecurityManager` implementation by the fully qualified class name.
 Alternatively, users can construct and initialize an instance of their `SecurityManager` implementation and set it
-with  http://gemfire-91-javadocs.docs.pivotal.io/org/apache/geode/cache/CacheFactory.html#setSecurityManager-org.apache.geode.security.SecurityManager-[CacheFactory.setSecurityManager(:SecurityManager)]
-method when creating an instance of an Pivotal GemFire peer `Cache`.
+with the http://gemfire-91-javadocs.docs.pivotal.io/org/apache/geode/cache/CacheFactory.html#setSecurityManager-org.apache.geode.security.SecurityManager[CacheFactory.setSecurityManager(:SecurityManager)]
+method when creating a Pivotal GemFire peer `Cache`.
 
-2. Create an Apache Shiro https://shiro.apache.org/configuration.html[`shiro.ini`] file with the _users_, _roles_
-and _permissions_ defined for your application, then set the Pivotal GemFire `security-shiro-init` property to refer
+* Create an Apache Shiro https://shiro.apache.org/configuration.html[`shiro.ini`] file with the users, roles,
+and permissions defined for your application and then set the Pivotal GemFire `security-shiro-init` property to refer
 to this `shiro.ini` file, which must be available in the `CLASSPATH`.
 
-3. Using just Apache Shiro, annotate your _Spring Boot_ application class with _Spring Data for Pivotal GemFire's_ **new**
-`@EnableSecurity` annotation and define 1 or more Apache Shiro https://shiro.apache.org/realm.html[`Realms`] (as needed)
-as beans in the Spring context for accessing your application's Security meta-data (i.e. _authorized users_, _roles_
-and _permissions_), and your done!
+* Using only Apache Shiro, annotate your Spring Boot application class with Spring Data for Pivotal GemFire's new
+`@EnableSecurity` annotation and define one or more Apache Shiro https://shiro.apache.org/realm.html[`Realms`] (as needed)
+as beans in the Spring context for accessing your application's Security metadata (that is, authorized users, roles,
+and permissions).
 
-The problem with the first approach is that a user must implement his/her own `SecurityManager`, which can be quite
-tedious and error prone.  Implementing a custom `SecurityManager` does afford a user some flexibility in accessing
-Security meta-data from whatever data source stores the meta-data, such as LDAP or even a proprietary, internal
-data source, but then that is a problem already solved by configuring and using Apache Shiro `Realms`, which is more
-universally known and non-Pivotal GemFire specific.
+The problem with the first approach is that you must implement your own `SecurityManager`, which can be quite
+tedious and error-prone. Implementing a custom `SecurityManager` offers some flexibility in accessing
+security metadata from whatever data source stores the metadata, such as LDAP or even a proprietary, internal
+data source. However, that problem has already been solved by configuring and using Apache Shiro `Realms`, which is more
+universally known and non-Pivotal GemFire-specific.
 
 TIP: See Pivotal GemFire's Security examples for http://gemfire.docs.pivotal.io/geode/managing/security/authentication_examples.html[Authentication]
-and http://gemfire.docs.pivotal.io/geode/managing/security/authorization_example.html[Authorization]  as 1 possible way
-to implement your own custom, application specific `SecurityManager`.  However, this is strongly **not** recommended.
+and http://gemfire.docs.pivotal.io/geode/managing/security/authorization_example.html[Authorization] as one possible way
+to implement your own custom, application-specific `SecurityManager`. However, we strongly recommend *against* doing so.
 
-The second approach using an Apache Shiro INI file is marginally better, but a user still needs to be familiar with
-the INI file format in the first place.  Additionally, an INI file is static and not easily updatable at runtime.
+The second approach, using an Apache Shiro INI file, is marginally better, but you still need to be familiar with
+the INI file format in the first place. Additionally, an INI file is static and not easily updatable at run time.
 
-The third approach is the most ideal since it adheres to widely known and industry accepted concepts
-(i.e. Apache Shiro's Security framework) and is easy to setup...
+The third approach is the most ideal, since it adheres to widely known and industry-accepted concepts
+(that is, Apache Shiro's Security framework) and is easy to set up, as the following example shows:
 
 .Spring server application using Apache Shiro
 [source, java]
@@ -1972,24 +1982,27 @@ class ServerApplication {
 }
 ----
 
-TIP: The configured `Realm` shown in the example above could have easily been any of Apache Shiro's supported `Realms`
-out-of-the-box: (https://shiro.apache.org/static/1.3.2/apidocs/org/apache/shiro/realm/activedirectory/package-frame.html[ActiveDirectory],
-https://shiro.apache.org/static/1.3.2/apidocs/org/apache/shiro/realm/jdbc/package-frame.html[JDBC],
-https://shiro.apache.org/static/1.3.2/apidocs/org/apache/shiro/realm/jndi/package-frame.html[JNDI],
-https://shiro.apache.org/static/1.3.2/apidocs/org/apache/shiro/realm/ldap/package-frame.html[LDAP],
-or even a `Realm` supporting the https://shiro.apache.org/static/1.3.2/apidocs/org/apache/shiro/realm/text/IniRealm.html[INI format])
-or perhaps a custom implementation of an Apache Shiro `Realm` implemented by the user.  See Apache Shiro's
-https://shiro.apache.org/realm.html[documentation on Realms] for more details.
+TIP: The configured `Realm` shown in the preceding example could easily have been any of Apache Shiro's supported `Realms`:
 
-When Apache Shiro is on the `CLASSPATH` of the servers in the cluster and 1 or more Apache Shiro `Realms` have been
-defined as beans in the Spring context, _Spring Data for Pivotal GemFire_ will detect this configuration and use Apache Shiro
-as the Security provider to secure your Pivotal GemFire servers when the `@EnableSecurity` annotation is used.
+* https://shiro.apache.org/static/1.3.2/apidocs/org/apache/shiro/realm/activedirectory/package-frame.html[ActiveDirectory]
+* https://shiro.apache.org/static/1.3.2/apidocs/org/apache/shiro/realm/jdbc/package-frame.html[JDBC]
+* https://shiro.apache.org/static/1.3.2/apidocs/org/apache/shiro/realm/jndi/package-frame.html[JNDI]
+* https://shiro.apache.org/static/1.3.2/apidocs/org/apache/shiro/realm/ldap/package-frame.html[LDAP]
+* A `Realm` supporting the https://shiro.apache.org/static/1.3.2/apidocs/org/apache/shiro/realm/text/IniRealm.html[INI format].
 
-TIP: Earlier, information was posted on _Spring Data for Pivotal GemFire's_ support for Pivotal GemFire's **new** Integrated Security
+You could even create a custom implementation of an Apache Shiro `Realm`.
+
+See Apache Shiro's https://shiro.apache.org/realm.html[documentation on Realms] for more details.
+
+When Apache Shiro is on the `CLASSPATH` of the servers in the cluster and one or more Apache Shiro `Realms` have been
+defined as beans in the Spring context, Spring Data for Pivotal GemFire detects this configuration and uses Apache Shiro
+as the security provider to secure your Pivotal GemFire servers when the `@EnableSecurity` annotation is used.
+
+TIP: You can find more information about Spring Data for Pivotal GemFire's support for Pivotal GemFire's new integrated security
 framework using Apache Shiro in this
-https://spring.io/blog/2016/11/10/spring-data-geode-1-0-0-incubating-release-released[spring.io blob post].
+https://spring.io/blog/2016/11/10/spring-data-geode-1-0-0-incubating-release-released[spring.io blog post].
 
-See the `@EnableSecurity` annotation _Javadoc_ for more details on available attributes
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/index.html?org/springframework/data/gemfire/config/annotation/EnableSecurity.html[`@EnableSecurity` annotation Javadoc] for more details on available attributes
 and associated configuration properties.
 
 More details on Pivotal GemFire Security can be found
@@ -1998,26 +2011,26 @@ http://gemfire.docs.pivotal.io/geode/managing/security/chapter_overview.html[her
 [[bootstrap-annotation-config-security-client]]
 === Configuring Client Security
 
-The Security story would not be complete without discussing how to secure Spring-based, Pivotal GemFire cache client
+The Security story would not be complete without discussing how to secure Spring-based Pivotal GemFire cache client
 applications.
 
-Pivotal GemFire's process to securing a client application is, well, rather involved.  In a nutshell, a user essentially
-needs to...
+Pivotal GemFire's process for securing a client application is, honestly, rather involved. In a nutshell, you
+need to:
 
-1. Provide an implementation of the
+. Provide an implementation of the
 http://gemfire-91-javadocs.docs.pivotal.io/org/apache/geode/security/AuthInitialize.html[`org.apache.geode.security.AuthInitialize`] interface.
-2. Set the Pivotal GemFire `security-client-auth-init` (System) property to refer to the custom, application-provided
+. Set the Pivotal GemFire `security-client-auth-init` (System) property to refer to the custom, application-provided
 `AuthInitialize` interface.
-3. And finally, a user would typically specify the user credentials in a proprietary, Pivotal GemFire
+. Specify the user credentials in a proprietary, Pivotal GemFire
 `gfsecurity.properties` file.
 
-_Spring Data for Pivotal GemFire_ simplifies all of that using the same `@EnableSecurity` annotation as applied to
-server applications.  In other words, the same `@EnableSecurity` annotation handles Security for both client
-and server applications.  This makes it easier for users when they decide to switch their applications from
-an embedded peer `Cache` application to a `ClientCache` application, for instance.  Simply change the SDG annotation
-from `@PeerCacheApplication` or `@CacheServerApplication` to `@ClientCacheApplication` and you are done.
+Spring Data for Pivotal GemFire simplifies all of those steps by using the same `@EnableSecurity` annotation on
+server applications. In other words, the same `@EnableSecurity` annotation handles security for both client
+and server applications. This feature makes it easier for users when (for instance) they decide to switch their applications from
+an embedded peer `Cache` application to a `ClientCache` application. Change the SDG annotation
+from `@PeerCacheApplication` or `@CacheServerApplication` to `@ClientCacheApplication`, and you are done.
 
-Effectively, all a user need do on the client is...
+Effectively, all you need do on the client is the following:
 
 .Spring client application using `@EnableSecurity`
 [source, java]
@@ -2028,8 +2041,7 @@ Effectively, all a user need do on the client is...
 class ClientApplication { .. }
 ----
 
-Then define the familiar _Spring Boot_ `application.properties` file containing the required _username_ and _password_
-Security properties and you are all set.
+Then you can define the familiar Spring Boot `application.properties` file containing the required username and password, as the following example shows, and you are all set:
 
 .Spring Boot `application.properties` file with the required Security credentials
 [source, java]
@@ -2038,13 +2050,11 @@ spring.data.gemfire.security.username=jackBlack
 spring.data.gemfire.security.password=b@cK!nB1@cK
 ----
 
-That was easy!
+TIP: By default, Spring Boot can find an `application.properties` file when it is placed in the root of
+the application's `CLASSPATH`. Of course, Spring supports may ways to locate resources by using its
+https://docs.spring.io/spring/docs/current/spring-framework-reference/core.html#resources[resource abstraction].
 
-TIP: By default, _Spring Boot_ can find an `application.properties` file when placed in the root of
-the application's `CLASSPATH`.  Of course, Spring supports may ways to locate resources using its
-https://docs.spring.io/spring/docs/current/spring-framework-reference/core.html#resources[Resource abstraction].
-
-See the `@EnableSecurity` annotation _Javadoc_ for more details on available attributes
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/index.html?org/springframework/data/gemfire/config/annotation/EnableSecurity.html[`@EnableSecurity` annotation Javadoc] for more details on available attributes
 and associated configuration properties.
 
 More details on Pivotal GemFire Security can be found
@@ -2053,19 +2063,22 @@ http://gemfire.docs.pivotal.io/geode/managing/security/chapter_overview.html[her
 [[bootstrap-annotation-config-tips]]
 == Configuration Tips
 
-The following tips will help users get the most out of using the **new** Annotation-based configuration model.
+The following tips can help you get the most out of using the new annotation-based configuration model:
+
+* <<bootstrap-annotation-config-tips-organization>>
+* <<bootstrap-annotation-config-tips-undocumented-annotations>>
 
 [[bootstrap-annotation-config-tips-organization]]
-== Configuration Organization
+=== Configuration Organization
 
-As we saw in the section on <<bootstrap-annotation-config-cluster, _Configuring Cluster Configuration Push_>>, when
-many Pivotal GemFire and/or _Spring Data for Pivotal GemFire_ features are enabled using Annotations, we start to stack a lot of
-Annotations on the Spring `@Configuration` or `@SpringBootApplication` class.  In this situation, it makes sense
+As we saw in the section on <<bootstrap-annotation-config-cluster, "`Configuring Cluster Configuration Push`">>, when
+many Pivotal GemFire or Spring Data for Pivotal GemFire features are enabled by using annotations, we start to stack a lot of
+annotations on the Spring `@Configuration` or `@SpringBootApplication` class. In this situation, it makes sense
 to start compartmentalizing the configuration a bit.
 
-For instance, given...
+For instance, consider the following declaration:
 
-.Spring `ClientCache` application with the kitcken sink to boot
+.Spring `ClientCache` application with the kitchen sink
 [source, java]
 ----
 @SpringBootApplication
@@ -2082,7 +2095,7 @@ For instance, given...
 class ClientApplication { .. }
 ----
 
-We could break this configuration down by concern.  For example...
+We could break this configuration down by concern, as follows:
 
 .Spring `ClientCache` application with the kitcken sink to boot
 [source, java]
@@ -2120,66 +2133,66 @@ class QueriesConfiguration {
 class RepositoriesConfiguration { .. }
 ----
 
-Spring does not care.  Organize your application configuration as you see fit.
+While it does not matter to the Spring framework, we generally recommend aiming for readability, for the sake of the next person who has to maintain the code (which might be you at some point in the future).
 
 [[bootstrap-annotation-config-tips-undocumented-annotations]]
-== Additional Configuration-based Annotations
+=== Additional Configuration-based Annotations
 
-_SDG Annotations you never heard of..._
+The following SDG Annotations were not discussed in this reference documentation, either because the annotation supports
+a deprecated feature of Pivotal GemFire or because there are better, alternative ways to accomplishing the function that
+the annotation provides:
 
-The following SDG Annotations were not discussed in this reference documentation either because the Annotation supports
-a deprecated feature of Pivotal GemFire, or there are better, alternative ways to accomplishing the function that
-the Annotation provides.
-
-* `@EnableAuth` - enable Pivotal GemFire's old Authentication/Authorization Security model.  (_Deprecated_;
-use Pivotal GemFire's new _Integrated Security_ framework discussed <<bootstrap-annotation-config-security, here>>).
-Again, Pivotal GemFire's new _Integrated Security_ framework can be enabled on both clients and servers using SDG's
-`@EnableSecurity` annotation as described in <<bootstrap-annotation-config-security, Configuring Security>>.
-* `@EnableAutoRegionLookup` - Not recommended.  Essentially, this Annotation supports finding Regions defined in
-external configuration meta-data (e.g. `cache.xml`, or _Cluster Configuration_ when applied to a server) and registers
-those Regions as beans in the Spring context automatically.  Users should generally prefer Spring config when
-using Spring and _Spring Data for Pivotal GemFire_.  See <<bootstrap-annotation-config-regions, Configuring Regions>>
-and <<bootstrap-annotation-config-cluster, Configuring Cluster Configuration Push>> instead.
-* `@EnableBeanFactoryLocator` - enables the SDG `GemfireBeanFactoryLocator` feature, which is only useful, again,
-when using external configuration meta-data (e.g. `cache.xml`).  For example, if a user defines a `CacheLoader` on
-a Region defined in `cache.xml`, the user can still auto-wire this `CacheLoader` with say, a relational database
-`DataSource` bean defined in Spring config.  This Annotation takes advantage of this SDG <<apis:declarable, feature>>
-and might be useful for users who have a large amount of legacy configuration meta-data, like `cache.xml` files.
-* `@EnablePivotal GemFireAsLastResource` - is actually discussed in
+* `@EnableAuth`: Enables Pivotal GemFire's old authentication and authorization security model. (Deprecated.
+Pivotal GemFire's new integrated security framework can be enabled on both clients and servers by using SDG's
+`@EnableSecurity` annotation, as described in "`<<bootstrap-annotation-config-security>>`".)
+* `@EnableAutoRegionLookup`: Not recommended. Essentially, this annotation supports finding regions defined in
+external configuration metadata (such as `cache.xml` or cluster configuration when applied to a server) and automatically registers
+those regions as beans in the Spring context. Users should generally prefer Spring configuration when
+using Spring and Spring Data for Pivotal GemFire. See "`<<bootstrap-annotation-config-regions>>`"
+and "`<<bootstrap-annotation-config-cluster>>`" instead.
+* `@EnableBeanFactoryLocator`: Enables the SDG `GemfireBeanFactoryLocator` feature, which is only useful
+when using external configuration metadata (for example, `cache.xml`). For example, if you define a `CacheLoader` on
+a region defined in `cache.xml`, you can still auto-wire this `CacheLoader` with, say, a relational database
+`DataSource` bean defined in Spring configuration. This annotation takes advantage of this SDG <<apis:declarable, feature>>
+and might be useful if you have a large amount of legacy configuration metadata, such as `cache.xml` files.
+* `@EnablePivotal GemFireAsLastResource`: Discussed in
 <<apis:global-transaction-management, Global - JTA Transaction Management>> with Pivotal GemFire.
-* `@EnableMcast` - enables Pivotal GemFire's old peer discovery mechanism using UDP-based Multi-cast Networking.
-(_Deprecated_; users should be using Pivotal GemFire Locators instead; see
-<<bootstrap-annotation-config-embedded-services-locator, Configuring Locators>>.
-* `@EnableRegionDataAccessTracing` - is useful for debugging purposes; the Annotation enables tracing for all
-data access operations performed on a Region by registering an AOP Aspect that proxies all Regions declared
-as beans in the Spring context, intercepting the Region op and logging the event.
+* `@EnableMcast`: Enables Pivotal GemFire's old peer discovery mechanism that uses UDP-based multi-cast networking.
+(_Deprecated_. Use Pivotal GemFire locators instead. See
+"`<<bootstrap-annotation-config-embedded-services-locator>>`".
+* `@EnableRegionDataAccessTracing`: Useful for debugging purposes. The Annotation enables tracing for all
+data access operations performed on a region by registering an AOP Aspect that proxies all regions declared
+as beans in the Spring context, intercepting the region operation and logging the event.
 
 [[bootstrap-annotation-config-conclusion]]
 == Conclusion
 
-As we learned in the previous sections, there is a tremendous amount of power provided by _Spring Data for Pivotal GemFire_'s
-**new** Annotation-based configuration model.  Hopefully, it lives up to its goal of making it easier for users
+As we learned in the previous sections, Spring Data for Pivotal GemFire's
+new annotation-based configuration model provides a tremendous amout of power. Hopefully, it lives up to its goal of making it easier for you
 to get started quickly when using Pivotal GemFire with Spring.
 
-Keep in mind when using the new Annotations that it does not preclude you, the application developer, from using
-Java config, or even XML, if you prefer.  You can even combine all 3 approaches by using Spring's
+Keep in mind that, when you use the new annotations, you can still use
+Java configuration or XML configuration. You can even combine all three approaches by using Spring's
 https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/context/annotation/Import.html[`@Import`]
 and https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/context/annotation/ImportResource.html[`@ImportResource`]
-annotations on a Spring `@Configuration` or `@SpringBootApplication` class, if you like.  The moment you explicitly
-provide a bean definition that would otherwise be provided by _Spring Data for Pivotal GemFire_ using an Annotation,
-the Annotation-based configuration backs away.
+annotations on a Spring `@Configuration` or `@SpringBootApplication` class. The moment you explicitly
+provide a bean definition that would otherwise be provided by Spring Data for Pivotal GemFire by using an annotation,
+the annotation-based configuration backs away.
 
-In certain cases you may even need to fallback to Java config, as in the `Configurers` case, to handle more complex
-or conditional configuration logic that is not easily expressed in or cannot be accomplished using Annotations.
-Do not be alarmed; this is to be expected.
+[NOTE]
+====
+In certain cases, you may even need to fall back to Java configuration, as in the `Configurers` case, to handle more complex
+or conditional configuration logic that is not easily expressed in or cannot be accomplished by using annotations.
+Do not be alarmed. This behavior is to be expected.
 
-For example, another case where Java config or XML will be needed is when configuring Pivotal GemFire WAN components,
-which currently do not have any Annotation configuration support.  However, defining and registering WAN components
-is as simple as using the `org.springframework.data.gemfire.wan.GatewayReceiverFactoryBean`
-and `org.springframework.data.gemfire.wan.GatewaySenderFactoryBean` API classes in Java configuration of your Spring
+For example, another case where you need Java or XML configuration is when configuring Pivotal GemFire WAN components,
+which currently do not have any annotation configuration support. However, defining and registering WAN components
+requires only using the `org.springframework.data.gemfire.wan.GatewayReceiverFactoryBean`
+and `org.springframework.data.gemfire.wan.GatewaySenderFactoryBean` API classes in the Java configuration of your Spring
 `@Configuration` or `@SpringBootApplication` classes (recommended).
+====
 
-The Annotations were not meant to handle every situation; the Annotations were meant to help application developers
-**get up and running** as **quickly** and as **easily** as possible, especially during development.
+The Annotations were not meant to handle every situation. The Annotations were meant to help you
+get up and running as quickly and as easily as possible, especially during development.
 
 We hope you will enjoy these new capabilities!

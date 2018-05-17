@@ -4,43 +4,42 @@
 NOTE: Sample applications are now maintained in the
 https://github.com/spring-projects/spring-gemfire-examples[Spring Pivotal GemFire Examples] repository.
 
-The _Spring Data for Pivotal GemFire_ project also includes one sample application.  Named "Hello World", the sample application
-demonstrates how to configure and use Pivotal GemFire inside a _Spring_ application.  At runtime, the sample offers
-a *shell* to the user allowing her to run various commands against the data grid.  It provides an excellent
-starting point for users unfamiliar with the essential components or with _Spring_ and Pivotal GemFire concepts.
+The Spring Data for Pivotal GemFire project also includes one sample application. Named "`Hello World`", the sample application
+demonstrates how to configure and use Pivotal GemFire inside a Spring application. At run time, the sample offers
+a shell that lets you run various commands against the data grid. It provides an excellent
+starting point for developers who are unfamiliar with the essential components or with Spring and Pivotal GemFire concepts.
 
-The sample is bundled with the distribution and is Maven-based.  A developer can easily import them into any
-Maven-aware IDE (such as https://spring.io/tools/sts[Spring Tool Suite]) or run them from the command-line.
+The sample is bundled with the distribution and is Maven-based. You can import it into any
+Maven-aware IDE (such as the https://spring.io/tools/sts[Spring Tool Suite]) or run them from the command-line.
 
 [[samples:hello-world]]
 == Hello World
 
-The Hello World sample application demonstrates the core functionality of the _Spring Data for Pivotal GemFire_ project.
-It bootstraps Pivotal GemFire, configures it, executes arbitrary commands against the cache and shuts it down
-when the application exits.  Multiple instances of the application can be started at the same time
-and they will work together, sharing data without any user intervention.
+The "`Hello World`" sample application demonstrates the core functionality of the Spring Data for Pivotal GemFire project.
+It bootstraps Pivotal GemFire, configures it, executes arbitrary commands against the cache, and shuts it down
+when the application exits. Multiple instances of the application can be started at the same time
+and work together, sharing data without any user intervention.
 
 .Running under Linux
 NOTE: If you experience networking problems when starting Pivotal GemFire or the samples, try adding the following
-system property `java.net.preferIPv4Stack=true` to the command line (e.g. `-Djava.net.preferIPv4Stack=true`).
-For an alternative (global) fix especially on Ubuntu see https://jira.spring.io/browse/SGF-28[SGF-28].
+system property `java.net.preferIPv4Stack=true` to the command line (for example, `-Djava.net.preferIPv4Stack=true`).
+For an alternative (global) fix (especially on Ubuntu), see https://jira.spring.io/browse/SGF-28[SGF-28].
 
 [[samples:hello-world:start-stop]]
-=== Starting and stopping the sample
+=== Starting and Stopping the Sample
 
-Hello World is designed as a stand-alone Java application. It features a `main` class which can be started
-either from your IDE of choice (in Eclipse/STS through `Run As/Java Application`) or from the command-line
-through Maven using `mvn exec:java`.  A developer can also use `java` directly on the resulting artifact
-if the classpath is properly set.
+The "`Hello World`" sample application is designed as a stand-alone Java application. It features a `main` class that can be started
+either from your IDE (in Eclipse or STS, through `Run As/Java Application`) or from the command line
+through Maven with `mvn exec:java`. If the classpath is properly set, you can also use `java` directly on the resulting artifact.
 
-To stop the sample, simply type `exit` at the command-line or press `Ctrl+C` to stop the JVM and shutdown
-the _Spring_ container.
+To stop the sample, type `exit` at the command line or press `Ctrl+C` to stop the JVM and shutdown
+the Spring container.
 
 [[samples:hello-world:run]]
-=== Using the sample
+=== Using the Sample
 
-Once started, the sample will create a shared data grid and allow the user to issue commands against it.
-The output will likely look as follows:
+Once started, the sample creates a shared data grid and lets you issue commands against it.
+The output should resemble the following:
 
 [source]
 ----
@@ -57,7 +56,7 @@ remove <key> - removes an entry (by key) from the grid
 ...
 ----
 
-For example to add new items to the grid one can use:
+For example, to add new items to the grid, you can use the following commands:
 
 [source]
 ----
@@ -76,8 +75,8 @@ null
 2
 ----
 
-Multiple instances can be ran at the same time.  Once started, the new VMs automatically see the existing Region
-and its information:
+Multiple instances can be ran at the same time. Once started, the new VMs automatically see the existing region
+and its information, as the following example shows:
 
 [source]
 ----
@@ -93,22 +92,22 @@ Hello World!
 [one, two]
 ----
 
-Experiment with the example, start (and stop) as many instances as you want, run various commands in one instance
-and see how the others react.  To preserve data, at least one instance needs to be alive all times.  If all instances
+We encourage you to experiment with the example, start (and stop) as many instances as you want, and run various commands in one instance
+and see how the others react. To preserve data, at least one instance needs to be alive all times. If all instances
 are shutdown, the grid data is completely destroyed.
 
 [[samples:hello-world:explained]]
 === Hello World Sample Explained
 
-Hello World uses both _Spring_ XML and annotations for its configuration.  The initial bootstrapping configuration is
+The "`Hello World`" sample uses both Spring XML and annotations for its configuration. The initial bootstrapping configuration is
 `app-context.xml`, which includes the cache configuration defined in the `cache-context.xml` file
 and performs classpath
 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-classpath-scanning[component scanning]
-for _Spring_
+for Spring
 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-annotation-config[components].
 
-The cache configuration defines the Pivotal GemFire cache, Region and for illustrative purposes, a simple `CacheListener`
+The cache configuration defines the Pivotal GemFire cache, a region, and for illustrative purposes, a `CacheListener`
 that acts as a logger.
 
-The main *beans* are `HelloWorld` and `CommandProcessor` which rely on the `GemfireTemplate` to interact with
-the distributed fabric.  Both classes use annotations to define their dependency and life-cycle callbacks.
+The main beans are `HelloWorld` and `CommandProcessor`, which rely on the `GemfireTemplate` to interact with
+the distributed fabric. Both classes use annotations to define their dependency and life-cycle callbacks.
