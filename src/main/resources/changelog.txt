@@ -3,6 +3,20 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.1.0.M3 (2018-05-17)
+----------------------------------------
+* SGF-747 - Properly enable statistics when Annotation-based Expiration Policies are enabled with EnableExpiration.
+* SGF-746 - Adapt to SpEL Extension API changes in Spring Data Commons.
+* SGF-745 - Add ability to filter types de/serialized by the o.s.d.g.mapping.MappingPdxSerializer.
+* SGF-742 - Upgrade to Pivotal GemFire 9.5.
+* SGF-741 - Add support for enforcing Lucene Index creation before Region creation.
+* SGF-739 - Add support for setting a LuceneSerializer on LuceneIndex creation.
+* SGF-738 - Avoid Pool Already Exists Exception on Spring container initialization.
+* SGF-737 - Release 2.1 M3 (Lovelace).
+* SGF-734 - Upgrade to Pivotal GemFire 9.4.
+* SGF-732 - Change branding from Spring Data GemFire to Spring Data for Pivotal GemFire.
+
+
 Changes in version 2.0.7.RELEASE (2018-05-08)
 ---------------------------------------------
 * SGF-741 - Add support for enforcing Lucene Index creation before Region creation.
