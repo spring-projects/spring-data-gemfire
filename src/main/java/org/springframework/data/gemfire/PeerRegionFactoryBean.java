@@ -85,13 +85,12 @@ import org.springframework.util.StringUtils;
  * @see org.apache.geode.cache.asyncqueue.AsyncEventQueue
  * @see org.springframework.beans.factory.DisposableBean
  * @see org.springframework.context.SmartLifecycle
- * @see RegionLookupFactoryBean
+ * @see org.springframework.data.gemfire.ResolvableRegionFactoryBean
  * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
  */
 @SuppressWarnings("unused")
-// TODO: Rename to PeerRegionFactoryBean in SD Lovelace
-public abstract class RegionFactoryBean<K, V> extends ConfigurableRegionFactoryBean<K, V>
+public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFactoryBean<K, V>
 		implements EvictingRegionFactoryBean, ExpiringRegionFactoryBean<K, V>, DisposableBean, SmartLifecycle {
 
 	private boolean close = true;
@@ -212,11 +211,11 @@ public abstract class RegionFactoryBean<K, V> extends ConfigurableRegionFactoryB
 
 	/**
 	 * Creates an instance of {@link RegionFactory} with the given {@link Cache} which is then used to construct,
-	 * configure and initialize the {@link Region} specified by this {@link RegionFactoryBean}.
+	 * configure and initialize the {@link Region} specified by this {@link PeerRegionFactoryBean}.
 	 *
 	 * @param cache reference to the {@link Cache}.
 	 * @return a {@link RegionFactory} used to construct, configure and initialized the {@link Region} specified by
-	 * this {@link RegionFactoryBean}.
+	 * this {@link PeerRegionFactoryBean}.
 	 * @see org.apache.geode.cache.Cache#createRegionFactory(org.apache.geode.cache.RegionShortcut)
 	 * @see org.apache.geode.cache.Cache#createRegionFactory(org.apache.geode.cache.RegionAttributes)
 	 * @see org.apache.geode.cache.Cache#createRegionFactory()
@@ -242,7 +241,7 @@ public abstract class RegionFactoryBean<K, V> extends ConfigurableRegionFactoryB
 	}
 
 	/**
-	 * Configures the {@link RegionFactory} based on the configuration settings of this {@link RegionFactoryBean}.
+	 * Configures the {@link RegionFactory} based on the configuration settings of this {@link PeerRegionFactoryBean}.
 	 *
 	 * @param regionFactory {@link RegionFactory} to configure
 	 * @return the given {@link RegionFactory}.
@@ -297,10 +296,10 @@ public abstract class RegionFactoryBean<K, V> extends ConfigurableRegionFactoryB
 
 	/**
 	 * Post-process the {@link RegionFactory} used to create the {@link Region} specified by
-	 * this {@link RegionFactoryBean} during initialization.
+	 * this {@link PeerRegionFactoryBean} during initialization.
 	 *
 	 * The {@link RegionFactory} has been already constructed, configured and initialized by
-	 * this {@link RegionFactoryBean} before this method gets invoked.
+	 * this {@link PeerRegionFactoryBean} before this method gets invoked.
 	 *
 	 * @param regionFactory {@link RegionFactory} used to create the {@link Region}.
 	 * @return the given {@link RegionFactory}.
@@ -316,7 +315,7 @@ public abstract class RegionFactoryBean<K, V> extends ConfigurableRegionFactoryB
 	/*
 	 * (non-Javadoc)
 	 *
-	 * This method is not considered part of the RegionFactoryBean API and is strictly used for testing purposes!
+	 * This method is not considered part of the PeerRegionFactoryBean API and is strictly used for testing purposes!
 	 *
 	 * NOTE: Cannot pass RegionAttributes.class as the "targetType" in the second invocation of getFieldValue(..)
 	 * since the "regionAttributes" field is naively declared as a instance of the implementation class type
@@ -359,8 +358,8 @@ public abstract class RegionFactoryBean<K, V> extends ConfigurableRegionFactoryB
 	 *
 	 * @param <K> the Class type fo the Region key.
 	 * @param <V> the Class type of the Region value.
-	 * @param regionFactory the Pivotal GemFire RegionFactory used to configure and create the Region that is the product
-	 * of this RegionFactoryBean.
+	 * @param regionFactory the GemFire RegionFactory used to configure and create the Region that is the product
+	 * of this PeerRegionFactoryBean.
 	 * @param regionAttributes the RegionAttributes containing the Region configuration settings to merge to the
 	 * RegionFactory.
 	 * @return the RegionFactory with the configuration settings of the RegionAttributes merged.
@@ -463,7 +462,7 @@ public abstract class RegionFactoryBean<K, V> extends ConfigurableRegionFactoryB
 	/*
 	 * (non-Javadoc)
 	 *
-	 * This method is not part of the RegionFactoryBean API and is strictly used for testing purposes!
+	 * This method is not part of the PeerRegionFactoryBean API and is strictly used for testing purposes!
 	 *
 	 * @see org.apache.geode.cache.AttributesFactory#validateAttributes(:RegionAttributes)
 	 */
@@ -475,7 +474,7 @@ public abstract class RegionFactoryBean<K, V> extends ConfigurableRegionFactoryB
 	/*
 	 * (non-Javadoc)
 	 *
-	 * This method is not part of the RegionFactoryBean API and is strictly used for testing purposes!
+	 * This method is not part of the PeerRegionFactoryBean API and is strictly used for testing purposes!
 	 *
 	 * NOTE unfortunately, must resort to using a Pivotal GemFire internal class, ugh!
 	 *

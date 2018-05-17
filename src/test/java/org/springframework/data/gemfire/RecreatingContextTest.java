@@ -28,7 +28,7 @@ import org.springframework.context.support.GenericXmlApplicationContext;
  */
 public abstract class RecreatingContextTest {
 
-	protected GenericXmlApplicationContext ctx;
+	protected GenericXmlApplicationContext applicationContext;
 
 	protected abstract String location();
 
@@ -37,16 +37,16 @@ public abstract class RecreatingContextTest {
 
 	@Before
 	public void createCtx() {
-		ctx = new GenericXmlApplicationContext();
+		applicationContext = new GenericXmlApplicationContext();
 		configureContext();
-		ctx.load(location());
-		ctx.registerShutdownHook();
-		ctx.refresh();
+		applicationContext.load(location());
+		applicationContext.registerShutdownHook();
+		applicationContext.refresh();
 	}
 
 	@After
 	public void destroyCtx() {
-		if (ctx != null)
-			ctx.destroy();
+		if (applicationContext != null)
+			applicationContext.destroy();
 	}
 }

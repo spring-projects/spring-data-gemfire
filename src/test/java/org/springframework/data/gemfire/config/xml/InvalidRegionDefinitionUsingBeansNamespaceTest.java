@@ -22,7 +22,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.data.gemfire.RegionFactoryBean;
+import org.springframework.data.gemfire.PeerRegionFactoryBean;
 
 /**
  * The InvalidRegionDefinitionUsingBeansNamespaceTest class is a test suite of test cases testing the definition of
@@ -32,7 +32,7 @@ import org.springframework.data.gemfire.RegionFactoryBean;
  *
  * @author John Blum
  * @see org.junit.Test
- * @see org.springframework.data.gemfire.RegionFactoryBean
+ * @see PeerRegionFactoryBean
  * @since 1.6.0
  */
 public class InvalidRegionDefinitionUsingBeansNamespaceTest {
@@ -57,6 +57,6 @@ public class InvalidRegionDefinitionUsingBeansNamespaceTest {
 	}
 
 	@SuppressWarnings("unused")
-	public static final class TestRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> { }
+	public static final class TestRegionFactoryBean<K, V> extends PeerRegionFactoryBean<K, V> { }
 
 }

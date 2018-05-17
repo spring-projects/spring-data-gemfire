@@ -39,7 +39,7 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.data.gemfire.RegionLookupFactoryBean;
+import org.springframework.data.gemfire.ResolvableRegionFactoryBean;
 import org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport;
 import org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport;
 import org.springframework.data.gemfire.util.CollectionUtils;
@@ -134,7 +134,7 @@ public class OffHeapConfiguration extends EmbeddedServiceConfigurationSupport {
 
 			return Optional.ofNullable(beanDefinition)
 				.flatMap(it -> resolveBeanClass(it, beanFactory.getBeanClassLoader()))
-				.filter(beanClass -> RegionLookupFactoryBean.class.isAssignableFrom(beanClass))
+				.filter(beanClass -> ResolvableRegionFactoryBean.class.isAssignableFrom(beanClass))
 				.isPresent();
 		}
 

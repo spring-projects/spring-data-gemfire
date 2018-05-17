@@ -40,8 +40,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportAware;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.data.gemfire.RegionFactoryBean;
-import org.springframework.data.gemfire.RegionLookupFactoryBean;
+import org.springframework.data.gemfire.PeerRegionFactoryBean;
+import org.springframework.data.gemfire.ResolvableRegionFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport;
 import org.springframework.data.gemfire.expiration.AnnotationBasedExpiration;
@@ -118,7 +118,7 @@ public class ExpirationConfiguration extends AbstractAnnotationConfigSupport imp
 	 * @return a boolean value indicating whether the Spring bean is an instance of {@link ExpiringRegionFactoryBean}.
 	 * @see org.springframework.data.gemfire.expiration.ExpiringRegionFactoryBean
 	 * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
-	 * @see org.springframework.data.gemfire.RegionFactoryBean
+	 * @see PeerRegionFactoryBean
 	 */
 	protected static boolean isRegionFactoryBean(Object bean) {
 		return bean instanceof ExpiringRegionFactoryBean;
@@ -478,20 +478,20 @@ public class ExpirationConfiguration extends AbstractAnnotationConfigSupport imp
 		}
 
 		/**
-		 * Resolves the name of a given {@link Region} from the corresponding {@link RegionLookupFactoryBean} object.
+		 * Resolves the name of a given {@link Region} from the corresponding {@link ResolvableRegionFactoryBean} object.
 		 *
-		 * @param regionFactoryBean {@link RegionLookupFactoryBean} from which to resolve the {@link Region} name.
-		 * @return the resolved name of the {@link Region} created from the given {@link RegionLookupFactoryBean}.
-		 * @see org.springframework.data.gemfire.RegionLookupFactoryBean#resolveRegionName()
+		 * @param regionFactoryBean {@link ResolvableRegionFactoryBean} from which to resolve the {@link Region} name.
+		 * @return the resolved name of the {@link Region} created from the given {@link ResolvableRegionFactoryBean}.
+		 * @see org.springframework.data.gemfire.ResolvableRegionFactoryBean#resolveRegionName()
 		 */
 		protected String resolveRegionName(Object regionFactoryBean) {
-			return regionFactoryBean instanceof RegionLookupFactoryBean
-				? ((RegionLookupFactoryBean) regionFactoryBean).resolveRegionName() : null;
+			return regionFactoryBean instanceof ResolvableRegionFactoryBean
+				? ((ResolvableRegionFactoryBean) regionFactoryBean).resolveRegionName() : null;
 		}
 
 		/**
 		 * Configures the Expiration policies on the targeted {@link ExpiringRegionFactoryBean}, which may be
-		 * either a {@link RegionFactoryBean} or {@link ClientRegionFactoryBean}.
+		 * either a {@link PeerRegionFactoryBean} or {@link ClientRegionFactoryBean}.
 		 *
 		 * @param regionFactoryBean {@link ExpiringRegionFactoryBean} to configure.
 		 * @return the given {@link ExpiringRegionFactoryBean}.

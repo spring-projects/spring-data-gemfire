@@ -32,6 +32,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.AliasFor;
+import org.springframework.data.gemfire.PeerRegionFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.config.annotation.support.CacheTypeAwareRegionFactoryBean;
 import org.springframework.data.gemfire.mapping.annotation.ClientRegion;
@@ -54,7 +55,7 @@ import org.springframework.data.gemfire.mapping.annotation.ClientRegion;
  * @see org.springframework.context.annotation.ComponentScan.Filter
  * @see org.springframework.context.annotation.Import
  * @see org.springframework.core.annotation.AliasFor
- * @see org.springframework.data.gemfire.RegionFactoryBean
+ * @see PeerRegionFactoryBean
  * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.EntityDefinedRegionsConfiguration
  * @see org.springframework.data.gemfire.config.annotation.IndexConfiguration

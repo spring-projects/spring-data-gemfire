@@ -33,7 +33,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
-import org.springframework.data.gemfire.RegionFactoryBean;
+import org.springframework.data.gemfire.PeerRegionFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.config.annotation.test.entities.CollocatedPartitionRegionEntity;
 import org.springframework.data.gemfire.config.annotation.test.entities.NonEntity;
@@ -52,7 +52,7 @@ import org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor;
  * @see org.apache.geode.cache.Region
  * @see org.springframework.context.ConfigurableApplicationContext
  * @see org.springframework.context.annotation.AnnotationConfigApplicationContext
- * @see org.springframework.data.gemfire.RegionFactoryBean
+ * @see PeerRegionFactoryBean
  * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
  * @see org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor
@@ -187,7 +187,7 @@ public class RegionConfigurerIntegrationTests {
 		private final Set<String> beanNames = new HashSet<>();
 
 		@Override
-		public void configure(String beanName, RegionFactoryBean<?, ?> bean) {
+		public void configure(String beanName, PeerRegionFactoryBean<?, ?> bean) {
 			this.beanNames.add(beanName);
 		}
 

@@ -24,7 +24,7 @@ import org.springframework.util.Assert;
  * @author David Turanski
  * @author John Blum
  */
-public class ReplicatedRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
+public class ReplicatedRegionFactoryBean<K, V> extends PeerRegionFactoryBean<K, V> {
 
 	@Override
 	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, DataPolicy dataPolicy) {

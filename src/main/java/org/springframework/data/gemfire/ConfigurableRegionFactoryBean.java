@@ -27,18 +27,26 @@ import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 import org.apache.geode.cache.Region;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.config.annotation.RegionConfigurer;
 
 /**
- * The ConfigurableRegionFactoryBean class...
+ * {@link ConfigurableRegionFactoryBean} is an abstract base class encapsulating functionality common
+ * to all configurable {@link Region} {@link FactoryBean FactoryBeans}.
+ *
+ * A {@literal configurable} {@link Region} {@link FactoryBean} includes all {@link FactoryBean FactoryBeans}
+ * that create a {@link Region} and allow additional configuration to be applied via a {@link RegionConfigurer}.
  *
  * @author John Blum
- * @see org.springframework.data.gemfire.RegionLookupFactoryBean
+ * @see org.apache.geode.cache.Region
+ * @see org.springframework.beans.factory.FactoryBean
+ * @see org.springframework.data.gemfire.ResolvableRegionFactoryBean
+ * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
  * @since 2.1.0
  */
 @SuppressWarnings("unused")
-public abstract class ConfigurableRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> {
+public abstract class ConfigurableRegionFactoryBean<K, V> extends ResolvableRegionFactoryBean<K, V> {
 
 	private List<RegionConfigurer> regionConfigurers = Collections.emptyList();
 
@@ -127,9 +135,9 @@ public abstract class ConfigurableRegionFactoryBean<K, V> extends RegionLookupFa
 	 */
 	protected void applyRegionConfigurers(String regionName, Iterable<RegionConfigurer> regionConfigurers) {
 
-		if (this instanceof RegionFactoryBean) {
+		if (this instanceof PeerRegionFactoryBean) {
 			StreamSupport.stream(nullSafeIterable(regionConfigurers).spliterator(), false)
-				.forEach(regionConfigurer -> regionConfigurer.configure(regionName, (RegionFactoryBean<K, V>) this));
+				.forEach(regionConfigurer -> regionConfigurer.configure(regionName, (PeerRegionFactoryBean<K, V>) this));
 		}
 		else if (this instanceof ClientRegionFactoryBean) {
 			StreamSupport.stream(nullSafeIterable(regionConfigurers).spliterator(), false)

@@ -33,7 +33,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.data.gemfire.RegionFactoryBean;
+import org.springframework.data.gemfire.PeerRegionFactoryBean;
 import org.springframework.data.gemfire.test.mock.context.GemFireMockObjectsApplicationContextInitializer;
 import org.springframework.lang.Nullable;
 import org.springframework.test.context.ContextConfiguration;
@@ -133,7 +133,7 @@ public class LuceneIndexRegionBeanFactoryPostProcessorIntegrationTests {
 		}
 
 		private boolean isRegionBean(Object bean) {
-			return bean instanceof Region || bean instanceof RegionFactoryBean;
+			return bean instanceof Region || bean instanceof PeerRegionFactoryBean;
 		}
 	}
 }

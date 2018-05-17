@@ -41,7 +41,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
-import org.springframework.data.gemfire.RegionFactoryBean;
+import org.springframework.data.gemfire.PeerRegionFactoryBean;
 import org.springframework.data.gemfire.SimpleCacheListener;
 import org.springframework.data.gemfire.SimplePartitionResolver;
 import org.springframework.data.gemfire.TestUtils;
@@ -96,7 +96,7 @@ public class PartitionedRegionNamespaceTest {
 		assertThat(options.getName()).isEqualTo("redundant");
 		assertThat(options.getAttributes().getOffHeap()).isTrue();
 
-		RegionFactoryBean optionsRegionFactoryBean = applicationContext.getBean("&options", RegionFactoryBean.class);
+		PeerRegionFactoryBean optionsRegionFactoryBean = applicationContext.getBean("&options", PeerRegionFactoryBean.class);
 
 		assertTrue(optionsRegionFactoryBean instanceof PartitionedRegionFactoryBean);
 		assertNull(TestUtils.readField("scope", optionsRegionFactoryBean));
@@ -122,7 +122,7 @@ public class PartitionedRegionNamespaceTest {
 
 		assertTrue(applicationContext.containsBean("complex"));
 
-		RegionFactoryBean complexRegionFactoryBean = applicationContext.getBean("&complex", RegionFactoryBean.class);
+		PeerRegionFactoryBean complexRegionFactoryBean = applicationContext.getBean("&complex", PeerRegionFactoryBean.class);
 
 		CacheListener[] cacheListeners = TestUtils.readField("cacheListeners", complexRegionFactoryBean);
 
@@ -167,7 +167,7 @@ public class PartitionedRegionNamespaceTest {
 	@SuppressWarnings("rawtypes")
 	public void testFixedPartitionRegion() throws Exception {
 
-		RegionFactoryBean fixedRegionFactoryBean = applicationContext.getBean("&fixed", RegionFactoryBean.class);
+		PeerRegionFactoryBean fixedRegionFactoryBean = applicationContext.getBean("&fixed", PeerRegionFactoryBean.class);
 
 		assertNotNull(fixedRegionFactoryBean);
 

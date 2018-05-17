@@ -27,7 +27,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.data.gemfire.RegionFactoryBean;
+import org.springframework.data.gemfire.PeerRegionFactoryBean;
 import org.springframework.data.gemfire.test.StubCache;
 
 /**
@@ -82,12 +82,12 @@ public abstract class AbstractRegionFactoryBeanTests {
 		public Exception exception;
 
 		@SuppressWarnings("rawtypes")
-		public final RegionFactoryBean regionFactoryBean;
+		public final PeerRegionFactoryBean regionFactoryBean;
 
 		public final String regionName;
 
 		@SuppressWarnings("rawtypes")
-		public RegionFactoryBeanConfig(RegionFactoryBean regionFactoryBean, String regionName) {
+		public RegionFactoryBeanConfig(PeerRegionFactoryBean regionFactoryBean, String regionName) {
 			this.regionFactoryBean = regionFactoryBean;
 			this.regionName = regionName;
 			regionFactoryBean.setBeanName(regionName);

@@ -19,14 +19,14 @@ package org.springframework.data.gemfire.config.xml;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
-import org.springframework.data.gemfire.RegionFactoryBean;
+import org.springframework.data.gemfire.PeerRegionFactoryBean;
 import org.w3c.dom.Element;
 
 /**
  * Bean definition parser for &lt;gfe:*-region-template&gt; SDG XML namespace (XSD) elements.
  *
  * @author John Blum
- * @see org.springframework.data.gemfire.RegionFactoryBean
+ * @see PeerRegionFactoryBean
  * @see AbstractRegionParser
  * @since 1.5.0
  */
@@ -37,7 +37,7 @@ class TemplateRegionParser extends AbstractRegionParser {
 	 */
 	@Override
 	protected Class<?> getRegionFactoryClass() {
-		return RegionFactoryBean.class;
+		return PeerRegionFactoryBean.class;
 	}
 
 	/**

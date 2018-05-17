@@ -27,7 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.gemfire.RegionFactoryBean;
+import org.springframework.data.gemfire.PeerRegionFactoryBean;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -51,7 +51,7 @@ public class CacheSubscriptionTest{
 	public void testReplicatedRegionSubscriptionAllPolicy() throws Exception {
 		assertTrue(context.containsBean("replicALL"));
 
-		RegionFactoryBean regionFactoryBean = context.getBean("&replicALL", RegionFactoryBean.class);
+		PeerRegionFactoryBean regionFactoryBean = context.getBean("&replicALL", PeerRegionFactoryBean.class);
 		RegionAttributes regionAttributes = TestUtils.readField("attributes", regionFactoryBean);
 
 		assertNotNull(regionAttributes);
@@ -66,7 +66,7 @@ public class CacheSubscriptionTest{
 	public void testPartitionRegionSubscriptionCacheContentPolicy() throws Exception {
 		assertTrue(context.containsBean("partCACHE_CONTENT"));
 
-		RegionFactoryBean regionFactoryBean = context.getBean("&partCACHE_CONTENT", RegionFactoryBean.class);
+		PeerRegionFactoryBean regionFactoryBean = context.getBean("&partCACHE_CONTENT", PeerRegionFactoryBean.class);
 		RegionAttributes regionAttributes = TestUtils.readField("attributes", regionFactoryBean);
 
 		assertNotNull(regionAttributes);
@@ -81,7 +81,7 @@ public class CacheSubscriptionTest{
 	public void testPartitionRegionSubscriptionDefaultPolicy() throws Exception {
 		assertTrue(context.containsBean("partDEFAULT"));
 
-		RegionFactoryBean regionFactoryBean = context.getBean("&partDEFAULT", RegionFactoryBean.class);
+		PeerRegionFactoryBean regionFactoryBean = context.getBean("&partDEFAULT", PeerRegionFactoryBean.class);
 		RegionAttributes regionAttributes = TestUtils.readField("attributes", regionFactoryBean);
 
 		assertNotNull(regionAttributes);

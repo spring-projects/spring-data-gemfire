@@ -42,8 +42,8 @@ import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.GenericRegionFactoryBean;
 import org.springframework.data.gemfire.LocalRegionFactoryBean;
 import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
-import org.springframework.data.gemfire.RegionFactoryBean;
-import org.springframework.data.gemfire.RegionLookupFactoryBean;
+import org.springframework.data.gemfire.PeerRegionFactoryBean;
+import org.springframework.data.gemfire.ResolvableRegionFactoryBean;
 import org.springframework.data.gemfire.RegionShortcutWrapper;
 import org.springframework.data.gemfire.ReplicatedRegionFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
@@ -74,8 +74,8 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.data.gemfire.GenericRegionFactoryBean
  * @see org.springframework.data.gemfire.LocalRegionFactoryBean
  * @see org.springframework.data.gemfire.PartitionedRegionFactoryBean
- * @see org.springframework.data.gemfire.RegionFactoryBean
- * @see org.springframework.data.gemfire.RegionLookupFactoryBean
+ * @see PeerRegionFactoryBean
+ * @see org.springframework.data.gemfire.ResolvableRegionFactoryBean
  * @see org.springframework.data.gemfire.ReplicatedRegionFactoryBean
  * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
@@ -84,7 +84,7 @@ import org.springframework.util.StringUtils;
  * @since 1.9.0
  */
 @SuppressWarnings("unused")
-public class CacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
+public class CacheTypeAwareRegionFactoryBean<K, V> extends ResolvableRegionFactoryBean<K, V>
 		implements EvictingRegionFactoryBean, ExpiringRegionFactoryBean<K, V> {
 
 	private GemFireCache gemfireCache;
@@ -189,7 +189,7 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFactoryBe
 
 	/**
 	 * Constructs, configures and initializes a new server {@link Region} using a sub-class
-	 * of {@link RegionFactoryBean}.
+	 * of {@link PeerRegionFactoryBean}.
 	 *
 	 * @param gemfireCache reference to the {@link GemFireCache} used to create/initialize the factory
 	 * used to create the server {@link Region}.
@@ -203,7 +203,7 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFactoryBe
 	 */
 	protected Region<K, V> newServerRegion(GemFireCache gemfireCache, String regionName) throws Exception {
 
-		RegionFactoryBean<K, V> serverRegionFactory = newRegionFactoryBean();
+		PeerRegionFactoryBean<K, V> serverRegionFactory = newRegionFactoryBean();
 
 		serverRegionFactory.setAttributes(getRegionAttributes());
 		serverRegionFactory.setBeanFactory(getBeanFactory());
@@ -229,16 +229,16 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFactoryBe
 	}
 
 	/**
-	 * Constructs a {@link Class sub-type} of the {@link RegionFactoryBean} class based on
+	 * Constructs a {@link Class sub-type} of the {@link PeerRegionFactoryBean} class based on
 	 * the {@link #getServerRegionShortcut()} and {@link #getDataPolicy()}.
 	 *
-	 * @return a new instance of the {@link RegionFactoryBean}.
+	 * @return a new instance of the {@link PeerRegionFactoryBean}.
 	 * @see org.springframework.data.gemfire.LocalRegionFactoryBean
 	 * @see org.springframework.data.gemfire.PartitionedRegionFactoryBean
 	 * @see org.springframework.data.gemfire.ReplicatedRegionFactoryBean
-	 * @see org.springframework.data.gemfire.RegionFactoryBean
+	 * @see PeerRegionFactoryBean
 	 */
-	protected RegionFactoryBean<K, V> newRegionFactoryBean() {
+	protected PeerRegionFactoryBean<K, V> newRegionFactoryBean() {
 
 		RegionShortcutWrapper regionShortcutWrapper = RegionShortcutWrapper.valueOf(getServerRegionShortcut());
 
@@ -423,10 +423,10 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFactoryBe
 
 	/**
 	 * Null-safe operation used to set an array of {@link RegionConfigurer RegionConfigurers} used to apply
-	 * additional configuration to this {@link RegionLookupFactoryBean} when using Annotation-based configuration.
+	 * additional configuration to this {@link ResolvableRegionFactoryBean} when using Annotation-based configuration.
 	 *
 	 * @param regionConfigurers array of {@link RegionConfigurer RegionConfigurers} used to apply
-	 * additional configuration to this {@link RegionLookupFactoryBean}.
+	 * additional configuration to this {@link ResolvableRegionFactoryBean}.
 	 * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
 	 * @see #setRegionConfigurers(List)
 	 */
@@ -436,10 +436,10 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends RegionLookupFactoryBe
 
 	/**
 	 * Null-safe operation used to set an {@link Iterable} of {@link RegionConfigurer RegionConfigurers} used to apply
-	 * additional configuration to this {@link RegionLookupFactoryBean} when using Annotation-based configuration.
+	 * additional configuration to this {@link ResolvableRegionFactoryBean} when using Annotation-based configuration.
 	 *
 	 * @param regionConfigurers {@link Iterable} of {@link RegionConfigurer RegionConfigurers} used to apply
-	 * additional configuration to this {@link RegionLookupFactoryBean}.
+	 * additional configuration to this {@link ResolvableRegionFactoryBean}.
 	 * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
 	 */
 	public void setRegionConfigurers(List<RegionConfigurer> regionConfigurers) {

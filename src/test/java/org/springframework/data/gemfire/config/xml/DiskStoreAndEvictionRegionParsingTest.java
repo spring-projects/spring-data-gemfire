@@ -49,7 +49,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
-import org.springframework.data.gemfire.RegionFactoryBean;
+import org.springframework.data.gemfire.PeerRegionFactoryBean;
 import org.springframework.data.gemfire.ReplicatedRegionFactoryBean;
 import org.springframework.data.gemfire.SimpleObjectSizer;
 import org.springframework.data.gemfire.TestUtils;
@@ -119,7 +119,7 @@ public class DiskStoreAndEvictionRegionParsingTest {
 
 		assertTrue(applicationContext.containsBean("replicated-data"));
 
-		RegionFactoryBean replicatedDataRegionFactoryBean = applicationContext.getBean("&replicated-data", RegionFactoryBean.class);
+		PeerRegionFactoryBean replicatedDataRegionFactoryBean = applicationContext.getBean("&replicated-data", PeerRegionFactoryBean.class);
 
 		assertTrue(replicatedDataRegionFactoryBean instanceof ReplicatedRegionFactoryBean);
 		assertEquals(DataPolicy.REPLICATE, replicatedDataRegionFactoryBean.getDataPolicy());
@@ -148,7 +148,7 @@ public class DiskStoreAndEvictionRegionParsingTest {
 	public void testPartitionDataOptions() throws Exception {
 
 		assertTrue(applicationContext.containsBean("partition-data"));
-		RegionFactoryBean fb = applicationContext.getBean("&partition-data", RegionFactoryBean.class);
+		PeerRegionFactoryBean fb = applicationContext.getBean("&partition-data", PeerRegionFactoryBean.class);
 		assertTrue(fb instanceof PartitionedRegionFactoryBean);
 		assertTrue((Boolean) TestUtils.readField("persistent", fb));
 		RegionAttributes attrs = TestUtils.readField("attributes", fb);
@@ -169,7 +169,7 @@ public class DiskStoreAndEvictionRegionParsingTest {
 
 		assertTrue(applicationContext.containsBean("replicated-data"));
 
-		RegionFactoryBean fb = applicationContext.getBean("&replicated-data", RegionFactoryBean.class);
+		PeerRegionFactoryBean fb = applicationContext.getBean("&replicated-data", PeerRegionFactoryBean.class);
 		RegionAttributes attrs = TestUtils.readField("attributes", fb);
 
 		ExpirationAttributes entryTTL = attrs.getEntryTimeToLive();
@@ -196,7 +196,7 @@ public class DiskStoreAndEvictionRegionParsingTest {
 
 		assertTrue(applicationContext.containsBean("replicated-data-custom-expiry"));
 
-		RegionFactoryBean fb = applicationContext.getBean("&replicated-data-custom-expiry", RegionFactoryBean.class);
+		PeerRegionFactoryBean fb = applicationContext.getBean("&replicated-data-custom-expiry", PeerRegionFactoryBean.class);
 		RegionAttributes attrs = TestUtils.readField("attributes", fb);
 
 		assertNotNull(attrs.getCustomEntryIdleTimeout());

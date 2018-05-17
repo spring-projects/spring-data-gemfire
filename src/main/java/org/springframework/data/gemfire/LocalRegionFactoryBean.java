@@ -24,7 +24,7 @@ import org.springframework.util.Assert;
  * @author David Turanski
  * @author John Blum
  */
-public class LocalRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
+public class LocalRegionFactoryBean<K, V> extends PeerRegionFactoryBean<K, V> {
 
 	@Override
 	public void setScope(Scope scope) {

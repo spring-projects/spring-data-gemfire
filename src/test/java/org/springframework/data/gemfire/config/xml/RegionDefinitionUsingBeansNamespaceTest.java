@@ -30,7 +30,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.gemfire.RegionFactoryBean;
+import org.springframework.data.gemfire.PeerRegionFactoryBean;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
@@ -45,7 +45,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @see org.junit.Test
  * @see org.springframework.data.gemfire.PartitionAttributesFactoryBean
  * @see org.springframework.data.gemfire.RegionAttributesFactoryBean
- * @see org.springframework.data.gemfire.RegionFactoryBean
+ * @see PeerRegionFactoryBean
  * @see org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
@@ -82,8 +82,8 @@ public class RegionDefinitionUsingBeansNamespaceTest {
 
 	@Test
 	public void testAnotherExampleRegionFactoryBeanConfiguration() throws Exception {
-		RegionFactoryBean<?, ?> anotherExampleRegionFactoryBean = context.getBean("&AnotherExample",
-			RegionFactoryBean.class);
+		PeerRegionFactoryBean<?, ?> anotherExampleRegionFactoryBean = context.getBean("&AnotherExample",
+			PeerRegionFactoryBean.class);
 
 		assertNotNull(anotherExampleRegionFactoryBean);
 		assertEquals(DataPolicy.PERSISTENT_PARTITION, anotherExampleRegionFactoryBean.getDataPolicy());
@@ -112,7 +112,7 @@ public class RegionDefinitionUsingBeansNamespaceTest {
 		assertEquals(2, anotherExample.getAttributes().getPartitionAttributes().getRedundantCopies());
 	}
 
-	public static final class TestRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
+	public static final class TestRegionFactoryBean<K, V> extends PeerRegionFactoryBean<K, V> {
 	}
 
 }

@@ -57,7 +57,7 @@ import org.springframework.data.gemfire.test.support.AbstractRegionFactoryBeanTe
 import org.springframework.data.gemfire.util.ArrayUtils;
 
 /**
- * Unit tests for {@link RegionFactoryBean}.
+ * Unit tests for {@link PeerRegionFactoryBean}.
  *
  * @author David Turanski
  * @author John Blum
@@ -68,13 +68,13 @@ import org.springframework.data.gemfire.util.ArrayUtils;
  * @see org.apache.geode.cache.RegionAttributes
  * @see org.apache.geode.cache.RegionFactory
  * @see org.apache.geode.cache.RegionShortcut
- * @see org.springframework.data.gemfire.RegionFactoryBean
+ * @see PeerRegionFactoryBean
  * @see org.springframework.data.gemfire.test.support.AbstractRegionFactoryBeanTests
  */
 @SuppressWarnings("unchecked")
-public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
+public class PeerRegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 
-	private final RegionFactoryBean factoryBean = new TestRegionFactoryBean();
+	private final PeerRegionFactoryBean factoryBean = new TestRegionFactoryBean();
 
 	@After
 	public void tearDown() {
@@ -183,7 +183,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 	@Test
 	public void testIsPersistent() {
 
-		RegionFactoryBean<?, ?> factoryBean = new TestRegionFactoryBean<>();
+		PeerRegionFactoryBean<?, ?> factoryBean = new TestRegionFactoryBean<>();
 
 		assertFalse(factoryBean.isPersistent());
 
@@ -199,7 +199,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 	@Test
 	public void testIsNotPersistent() {
 
-		RegionFactoryBean<?, ?> factoryBean = new TestRegionFactoryBean<>();
+		PeerRegionFactoryBean<?, ?> factoryBean = new TestRegionFactoryBean<>();
 
 		assertFalse(factoryBean.isNotPersistent());
 
@@ -226,7 +226,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 
 		AtomicBoolean setDataPolicyCalled = new AtomicBoolean(false);
 
-		RegionFactoryBean factoryBean = new RegionFactoryBean() {
+		PeerRegionFactoryBean factoryBean = new PeerRegionFactoryBean() {
 
 			@Override
 			DataPolicy getDataPolicy(RegionFactory regionFactory, RegionShortcut regionShortcut) {
@@ -265,7 +265,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 
 		when(mockCache.createRegionFactory(eq(mockRegionAttributes))).thenReturn(mockRegionFactory);
 
-		RegionFactoryBean factoryBean = new TestRegionFactoryBean();
+		PeerRegionFactoryBean factoryBean = new TestRegionFactoryBean();
 
 		factoryBean.setAttributes(mockRegionAttributes);
 		factoryBean.setShortcut(null);
@@ -284,7 +284,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 
 		when(mockCache.createRegionFactory()).thenReturn(mockRegionFactory);
 
-		RegionFactoryBean factoryBean = new TestRegionFactoryBean();
+		PeerRegionFactoryBean factoryBean = new TestRegionFactoryBean();
 
 		factoryBean.setAttributes(null);
 		factoryBean.setShortcut(null);
@@ -340,17 +340,15 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 		when(mockRegionAttributes.getStatisticsEnabled()).thenReturn(true);
 		when(mockRegionAttributes.getSubscriptionAttributes()).thenReturn(testSubscriptionAttributes);
 
-		RegionFactoryBean factoryBean = new RegionFactoryBean() {
+		PeerRegionFactoryBean factoryBean = new PeerRegionFactoryBean() {
 
 			@Override
-			boolean isUserSpecifiedEvictionAttributes(RegionAttributes regionAttributes) {
+			boolean isUserSpecifiedEvictionAttributes(final RegionAttributes regionAttributes) {
 				return true;
 			}
 
 			@Override
-			void validateRegionAttributes(RegionAttributes regionAttributes) {
-				// no-op!
-			}
+			void validateRegionAttributes(RegionAttributes regionAttributes) { }
 		};
 
 		factoryBean.mergeRegionAttributes(mockRegionFactory, mockRegionAttributes);
@@ -455,7 +453,7 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 		when(mockRegionAttributes.getStatisticsEnabled()).thenReturn(true);
 		when(mockRegionAttributes.getSubscriptionAttributes()).thenReturn(null);
 
-		RegionFactoryBean factoryBean = new RegionFactoryBean() {
+		PeerRegionFactoryBean factoryBean = new PeerRegionFactoryBean() {
 			@Override boolean isUserSpecifiedEvictionAttributes(final RegionAttributes regionAttributes) {
 				return false;
 			}
@@ -1116,6 +1114,6 @@ public class RegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 		}
 	}
 
-	protected static class TestRegionFactoryBean<K, V> extends RegionFactoryBean<K, V> {
+	protected static class TestRegionFactoryBean<K, V> extends PeerRegionFactoryBean<K, V> {
 	}
 }

@@ -34,8 +34,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.gemfire.RegionFactoryBean;
-import org.springframework.data.gemfire.RegionLookupFactoryBean;
+import org.springframework.data.gemfire.PeerRegionFactoryBean;
+import org.springframework.data.gemfire.ResolvableRegionFactoryBean;
 import org.springframework.data.gemfire.SimpleCacheListener;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.test.mock.context.GemFireMockObjectsApplicationContextInitializer;
@@ -83,7 +83,7 @@ public class LocalRegionNamespaceTest {
 
 		assertTrue(applicationContext.containsBean("pub"));
 
-		RegionFactoryBean publisherRegionFactoryBean = applicationContext.getBean("&pub", RegionFactoryBean.class);
+		PeerRegionFactoryBean publisherRegionFactoryBean = applicationContext.getBean("&pub", PeerRegionFactoryBean.class);
 
 		assertNotNull(publisherRegionFactoryBean);
 		assertEquals(DataPolicy.NORMAL, TestUtils.readField("dataPolicy", publisherRegionFactoryBean));
@@ -102,7 +102,7 @@ public class LocalRegionNamespaceTest {
 
 		assertTrue(applicationContext.containsBean("complex"));
 
-		RegionFactoryBean complexRegionFactoryBean = applicationContext.getBean("&complex", RegionFactoryBean.class);
+		PeerRegionFactoryBean complexRegionFactoryBean = applicationContext.getBean("&complex", PeerRegionFactoryBean.class);
 
 		assertNotNull(complexRegionFactoryBean);
 
@@ -152,7 +152,7 @@ public class LocalRegionNamespaceTest {
 
 		assertTrue(applicationContext.containsBean("lookup"));
 
-		RegionLookupFactoryBean localRegionFactoryBean = applicationContext.getBean("&lookup", RegionLookupFactoryBean.class);
+		ResolvableRegionFactoryBean localRegionFactoryBean = applicationContext.getBean("&lookup", ResolvableRegionFactoryBean.class);
 
 		assertEquals("existing", TestUtils.readField("name", localRegionFactoryBean));
 		assertSame(existing, applicationContext.getBean("lookup"));

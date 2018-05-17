@@ -32,16 +32,16 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.springframework.util.Assert;
 
 /**
- * The LookupRegionFactoryBean class is a concrete implementation of RegionLookupFactoryBean for handling
+ * The LookupRegionFactoryBean class is a concrete implementation of ResolvableRegionFactoryBean for handling
  * &gt;gfe:lookup-region/&lt; SDG XML namespace (XSD) elements.
  *
  * @author John Blum
- * @see RegionLookupFactoryBean
  * @see org.apache.geode.cache.AttributesMutator
+ * @see org.springframework.data.gemfire.ResolvableRegionFactoryBean
  * @since 1.6.0
  */
 @SuppressWarnings("unused")
-public class LookupRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> {
+public class LookupRegionFactoryBean<K, V> extends ResolvableRegionFactoryBean<K, V> {
 
 	private AsyncEventQueue[] asyncEventQueues;
 

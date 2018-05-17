@@ -20,9 +20,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
@@ -39,8 +39,8 @@ import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.junit.AfterClass;
 import org.junit.Test;
+import org.springframework.data.gemfire.PeerRegionFactoryBean;
 import org.springframework.data.gemfire.RecreatingContextTest;
-import org.springframework.data.gemfire.RegionFactoryBean;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor;
 import org.springframework.data.gemfire.wan.GatewaySenderFactoryBean;
@@ -65,24 +65,25 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 
 	@Override
 	protected void configureContext() {
-		ctx.getBeanFactory().addBeanPostProcessor(new GemfireTestBeanPostProcessor());
+		this.applicationContext.getBeanFactory().addBeanPostProcessor(new GemfireTestBeanPostProcessor());
 	}
 
 	@AfterClass
+	@SuppressWarnings("all")
 	public static void tearDown() {
-		for (String name : new File(".").list(new FilenameFilter() {
-			@Override
-			public boolean accept(File file, String filename) {
-				return filename.startsWith("BACKUP");
-			}
-		})) {
+
+		for (String name : nullSafeArray(new File(".")
+				.list((file, filename) -> filename.startsWith("BACKUP")), String.class)) {
+
 			new File(name).delete();
 		}
 	}
 
 	@Test
 	public void testAsyncEventQueue() {
-		AsyncEventQueue asyncEventQueue = ctx.getBean("async-event-queue", AsyncEventQueue.class);
+
+		AsyncEventQueue asyncEventQueue =
+			this.applicationContext.getBean("async-event-queue", AsyncEventQueue.class);
 
 		assertNotNull(asyncEventQueue);
 		assertTrue(asyncEventQueue.isBatchConflationEnabled());
@@ -98,7 +99,9 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 
 	@Test
 	public void testGatewaySender() throws Exception {
-		GatewaySenderFactoryBean gatewaySenderFactoryBean = ctx.getBean("&gateway-sender", GatewaySenderFactoryBean.class);
+
+		GatewaySenderFactoryBean gatewaySenderFactoryBean =
+			this.applicationContext.getBean("&gateway-sender", GatewaySenderFactoryBean.class);
 
 		assertNotNull(gatewaySenderFactoryBean);
 		assertNotNull(TestUtils.readField("cache", gatewaySenderFactoryBean));
@@ -126,12 +129,14 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 	@Test
 	@SuppressWarnings("rawtypes")
 	public void testInnerGatewaySender() throws Exception {
-		Region<?, ?> region = ctx.getBean("region-inner-gateway-sender", Region.class);
+
+		Region<?, ?> region = this.applicationContext.getBean("region-inner-gateway-sender", Region.class);
 
 		assertNotNull(region.getAttributes().getGatewaySenderIds());
 		assertEquals(2, region.getAttributes().getGatewaySenderIds().size());
 
-		RegionFactoryBean regionFactoryBean = ctx.getBean("&region-inner-gateway-sender", RegionFactoryBean.class);
+		PeerRegionFactoryBean regionFactoryBean =
+			this.applicationContext.getBean("&region-inner-gateway-sender", PeerRegionFactoryBean.class);
 
 		Object[] gatewaySenders = TestUtils.readField("gatewaySenders", regionFactoryBean);
 
@@ -173,8 +178,10 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 
 	@Test
 	public void testGatewaySenderWithEventTransportFilterRefs() throws Exception {
-		GatewaySenderFactoryBean gatewaySenderFactoryBean = ctx.getBean("&gateway-sender-with-event-transport-filter-refs",
-			GatewaySenderFactoryBean.class);
+
+		GatewaySenderFactoryBean gatewaySenderFactoryBean =
+			this.applicationContext.getBean("&gateway-sender-with-event-transport-filter-refs",
+				GatewaySenderFactoryBean.class);
 
 		assertNotNull(gatewaySenderFactoryBean);
 		assertNotNull(TestUtils.readField("cache", gatewaySenderFactoryBean));
@@ -189,19 +196,21 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 		assertNotNull(eventFilters);
 		assertEquals(1, eventFilters.size());
 		assertTrue(eventFilters.get(0) instanceof TestEventFilter);
-		assertSame(ctx.getBean("event-filter"), eventFilters.get(0));
+		assertSame(applicationContext.getBean("event-filter"), eventFilters.get(0));
 
 		List<GatewayTransportFilter> transportFilters = TestUtils.readField("transportFilters", gatewaySenderFactoryBean);
 
 		assertNotNull(transportFilters);
 		assertEquals(1, transportFilters.size());
 		assertTrue(transportFilters.get(0) instanceof TestTransportFilter);
-		assertSame(ctx.getBean("transport-filter"), transportFilters.get(0));
+		assertSame(applicationContext.getBean("transport-filter"), transportFilters.get(0));
 	}
 
 	@Test
 	public void testGatewayReceiver() {
-		GatewayReceiver gatewayReceiver = ctx.getBean("gateway-receiver", GatewayReceiver.class);
+
+		GatewayReceiver gatewayReceiver =
+			this.applicationContext.getBean("gateway-receiver", GatewayReceiver.class);
 
 		assertNotNull(gatewayReceiver);
 		assertEquals("192.168.0.1", gatewayReceiver.getBindAddress());
@@ -215,12 +224,10 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 	public static class TestEventFilter implements GatewayEventFilter {
 
 		@Override
-		public void close() {
-		}
+		public void close() { }
 
 		@Override
-		public void afterAcknowledgement(GatewayQueueEvent arg0) {
-		}
+		public void afterAcknowledgement(GatewayQueueEvent arg0) { }
 
 		@Override
 		public boolean beforeEnqueue(GatewayQueueEvent arg0) {
@@ -236,8 +243,7 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 	public static class TestTransportFilter implements GatewayTransportFilter {
 
 		@Override
-		public void close() {
-		}
+		public void close() { }
 
 		@Override
 		public InputStream getInputStream(InputStream arg0) {
@@ -254,8 +260,7 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 	public static class TestAsyncEventListener implements AsyncEventListener {
 
 		@Override
-		public void close() {
-		}
+		public void close() { }
 
 		@Override
 		public boolean processEvents(List<AsyncEvent> arg0) {

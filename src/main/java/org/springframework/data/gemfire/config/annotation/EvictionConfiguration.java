@@ -44,8 +44,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportAware;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.data.gemfire.RegionFactoryBean;
-import org.springframework.data.gemfire.RegionLookupFactoryBean;
+import org.springframework.data.gemfire.PeerRegionFactoryBean;
+import org.springframework.data.gemfire.ResolvableRegionFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport;
 import org.springframework.data.gemfire.eviction.EvictingRegionFactoryBean;
@@ -68,8 +68,8 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.context.annotation.ImportAware
- * @see org.springframework.data.gemfire.RegionFactoryBean
- * @see org.springframework.data.gemfire.RegionLookupFactoryBean
+ * @see PeerRegionFactoryBean
+ * @see org.springframework.data.gemfire.ResolvableRegionFactoryBean
  * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport
  * @see org.springframework.data.gemfire.eviction.EvictionActionType
@@ -140,7 +140,7 @@ public class EvictionConfiguration extends AbstractAnnotationConfigSupport
 	 * @return a boolean value indicating whether the Spring bean is an instance of {@link EvictingRegionFactoryBean}.
 	 * @see org.springframework.data.gemfire.eviction.EvictingRegionFactoryBean
 	 * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
-	 * @see org.springframework.data.gemfire.RegionFactoryBean
+	 * @see PeerRegionFactoryBean
 	 */
 	protected static boolean isRegionFactoryBean(Object bean) {
 		return bean instanceof EvictingRegionFactoryBean;
@@ -177,13 +177,13 @@ public class EvictionConfiguration extends AbstractAnnotationConfigSupport
 	protected interface EvictionPolicyConfigurer {
 
 		/**
-		 * Configure the Eviction policy on the given SDG {@link RegionFactoryBean} or {@link ClientRegionFactoryBean}
-		 * used to create a Pivotal GemFire {@link Region}.
+		 * Configure the Eviction policy on the given SDG {@link PeerRegionFactoryBean} or {@link ClientRegionFactoryBean}
+		 * used to create a GemFire {@link Region}.
 		 *
-		 * @param regionFactoryBean {@link RegionFactoryBean} or {@link ClientRegionFactoryBean} used to create
-		 * a Pivotal GemFire {@link Region}.
+		 * @param regionFactoryBean {@link PeerRegionFactoryBean} or {@link ClientRegionFactoryBean} used to create
+		 * a GemFire {@link Region}.
 		 * @return the given {@code regionFactoryBean}.
-		 * @see org.springframework.data.gemfire.RegionFactoryBean
+		 * @see PeerRegionFactoryBean
 		 * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
 		 */
 		Object configure(Object regionFactoryBean);
@@ -409,24 +409,24 @@ public class EvictionConfiguration extends AbstractAnnotationConfigSupport
 		}
 
 		/**
-		 * Resolves the name of a given {@link Region} from the corresponding {@link RegionLookupFactoryBean} object.
+		 * Resolves the name of a given {@link Region} from the corresponding {@link ResolvableRegionFactoryBean} object.
 		 *
-		 * @param regionFactoryBean {@link RegionLookupFactoryBean} from which to resolve the {@link Region} name.
-		 * @return the resolved name of the {@link Region} created from the given {@link RegionLookupFactoryBean}.
-		 * @see org.springframework.data.gemfire.RegionLookupFactoryBean#resolveRegionName()
+		 * @param regionFactoryBean {@link ResolvableRegionFactoryBean} from which to resolve the {@link Region} name.
+		 * @return the resolved name of the {@link Region} created from the given {@link ResolvableRegionFactoryBean}.
+		 * @see org.springframework.data.gemfire.ResolvableRegionFactoryBean#resolveRegionName()
 		 */
 		protected String resolveRegionName(Object regionFactoryBean) {
 
-			return regionFactoryBean instanceof RegionLookupFactoryBean
-				? ((RegionLookupFactoryBean) regionFactoryBean).resolveRegionName()
+			return regionFactoryBean instanceof ResolvableRegionFactoryBean
+				? ((ResolvableRegionFactoryBean) regionFactoryBean).resolveRegionName()
 				: null;
 		}
 
 		/**
-		 * Sets the {@link EvictionAttributes} on the {@link RegionFactoryBean} or {@link ClientRegionFactoryBean}
+		 * Sets the {@link EvictionAttributes} on the {@link PeerRegionFactoryBean} or {@link ClientRegionFactoryBean}
 		 * used to create the targeted {@link Region}.
 		 *
-		 * @param regionFactoryBean {@link RegionFactoryBean} or {@link ClientRegionFactoryBean} on which to
+		 * @param regionFactoryBean {@link PeerRegionFactoryBean} or {@link ClientRegionFactoryBean} on which to
 		 * set the {@link EvictionAttributes} encapsulating the Eviction policy for the targeted {@link Region}.
 		 * @return the {@code regionFactoryBean}.
 		 * @see org.springframework.data.gemfire.eviction.EvictingRegionFactoryBean#setEvictionAttributes(EvictionAttributes)

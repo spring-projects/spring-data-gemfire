@@ -36,7 +36,7 @@ import org.springframework.util.StringUtils;
  *
  * If lookups are disabled or the {@link Region} does not exist, an exception is thrown.
  *
- * For declaring and configuring new Regions, see {@link RegionFactoryBean}.
+ * For declaring and configuring new Regions, see {@link PeerRegionFactoryBean}.
  *
  * @author Costin Leau
  * @author John Blum
@@ -47,8 +47,7 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.data.gemfire.support.AbstractFactoryBeanSupport
  */
 @SuppressWarnings("unused")
-// TODO: Rename to ResolvableRegionFactoryBean in SD Lovelace
-public abstract class RegionLookupFactoryBean<K, V> extends AbstractFactoryBeanSupport<Region<K, V>>
+public abstract class ResolvableRegionFactoryBean<K, V> extends AbstractFactoryBeanSupport<Region<K, V>>
 		implements InitializingBean {
 
 	private Boolean lookupEnabled = false;
@@ -65,7 +64,7 @@ public abstract class RegionLookupFactoryBean<K, V> extends AbstractFactoryBeanS
 	private String regionName;
 
 	/**
-	 * Initializes this {@link RegionLookupFactoryBean} after properties have been set by the Spring container.
+	 * Initializes this {@link ResolvableRegionFactoryBean} after properties have been set by the Spring container.
 	 *
 	 * @throws Exception if initialization fails.
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
@@ -170,7 +169,7 @@ public abstract class RegionLookupFactoryBean<K, V> extends AbstractFactoryBeanS
 	}
 
 	/**
-	 * Post-process the {@link Region} created by this {@link RegionFactoryBean}.
+	 * Post-process the {@link Region} created by this {@link PeerRegionFactoryBean}.
 	 *
 	 * @param region {@link Region} to process.
 	 * @see org.apache.geode.cache.Region
@@ -180,9 +179,9 @@ public abstract class RegionLookupFactoryBean<K, V> extends AbstractFactoryBeanS
 	}
 
 	/**
-	 * Returns an object reference to the {@link Region} created by this {@link RegionLookupFactoryBean}.
+	 * Returns an object reference to the {@link Region} created by this {@link ResolvableRegionFactoryBean}.
 	 *
-	 * @return an object reference to the {@link Region} created by this {@link RegionLookupFactoryBean}.
+	 * @return an object reference to the {@link Region} created by this {@link ResolvableRegionFactoryBean}.
 	 * @see org.springframework.beans.factory.FactoryBean#getObject()
 	 * @see org.apache.geode.cache.Region
 	 * @see #getRegion()
@@ -193,9 +192,9 @@ public abstract class RegionLookupFactoryBean<K, V> extends AbstractFactoryBeanS
 	}
 
 	/**
-	 * Returns the {@link Class} type of the {@link Region} produced by this {@link RegionLookupFactoryBean}.
+	 * Returns the {@link Class} type of the {@link Region} produced by this {@link ResolvableRegionFactoryBean}.
 	 *
-	 * @return the {@link Class} type of the {@link Region} produced by this {@link RegionLookupFactoryBean}.
+	 * @return the {@link Class} type of the {@link Region} produced by this {@link ResolvableRegionFactoryBean}.
 	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
 	 */
 	@Override

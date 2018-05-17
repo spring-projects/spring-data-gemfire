@@ -32,6 +32,7 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedArray;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.data.gemfire.PeerRegionFactoryBean;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -44,7 +45,7 @@ import org.w3c.dom.Element;
  * @author David Turanski
  * @author John Blum
  * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser
- * @see org.springframework.data.gemfire.RegionFactoryBean
+ * @see PeerRegionFactoryBean
  */
 abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 

@@ -40,7 +40,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportAware;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
-import org.springframework.data.gemfire.RegionLookupFactoryBean;
+import org.springframework.data.gemfire.ResolvableRegionFactoryBean;
 import org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.data.gemfire.util.SpringUtils;
@@ -146,7 +146,7 @@ public class CompressionConfiguration extends AbstractAnnotationConfigSupport im
 
 		return Optional.ofNullable(beanDefinition)
 			.flatMap(it -> resolveBeanClass(it, beanFactory.getBeanClassLoader()))
-			.filter(beanClass -> RegionLookupFactoryBean.class.isAssignableFrom(beanClass))
+			.filter(beanClass -> ResolvableRegionFactoryBean.class.isAssignableFrom(beanClass))
 			.isPresent();
 	}
 
