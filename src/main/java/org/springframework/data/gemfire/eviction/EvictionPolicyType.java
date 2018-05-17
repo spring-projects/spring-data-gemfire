@@ -29,6 +29,7 @@ import org.apache.geode.cache.EvictionAlgorithm;
  */
 @SuppressWarnings("unused")
 public enum EvictionPolicyType {
+
 	ENTRY_COUNT(EvictionAlgorithm.LRU_ENTRY),
 	HEAP_PERCENTAGE(EvictionAlgorithm.LRU_HEAP),
 	MEMORY_SIZE(EvictionAlgorithm.LRU_MEMORY),
@@ -55,7 +56,7 @@ public enum EvictionPolicyType {
 	 * @see #getEvictionAlgorithm()
 	 */
 	public static EvictionAlgorithm getEvictionAlgorithm(final EvictionPolicyType evictionPolicyType) {
-		return (evictionPolicyType != null ? evictionPolicyType.getEvictionAlgorithm() : null);
+		return evictionPolicyType != null ? evictionPolicyType.getEvictionAlgorithm() : null;
 	}
 
 	/**
@@ -67,6 +68,7 @@ public enum EvictionPolicyType {
 	 * @see #getEvictionAlgorithm()
 	 */
 	public static EvictionPolicyType valueOf(final EvictionAlgorithm evictionAlgorithm) {
+
 		for (EvictionPolicyType evictionPolicyType : values()) {
 			if (evictionPolicyType.getEvictionAlgorithm().equals(evictionAlgorithm)) {
 				return evictionPolicyType;
@@ -85,6 +87,7 @@ public enum EvictionPolicyType {
 	 * @see #name()
 	 */
 	public static EvictionPolicyType valueOfIgnoreCase(final String name) {
+
 		for (EvictionPolicyType evictionPolicyType : values()) {
 			if (evictionPolicyType.name().equalsIgnoreCase(name)) {
 				return evictionPolicyType;
@@ -101,7 +104,6 @@ public enum EvictionPolicyType {
 	 * @see org.apache.geode.cache.EvictionAlgorithm
 	 */
 	public EvictionAlgorithm getEvictionAlgorithm() {
-		return evictionAlgorithm;
+		return this.evictionAlgorithm;
 	}
-
 }

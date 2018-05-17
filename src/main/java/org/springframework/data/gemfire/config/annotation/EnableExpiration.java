@@ -39,12 +39,13 @@ import org.springframework.data.gemfire.expiration.TimeToLiveExpiration;
  * cover {@link Region} expiration; {@link Region} expiration must be configure on the {@link Region} definition itself.
  *
  * @author John Blum
+ * @see org.apache.geode.cache.Region
  * @see org.springframework.context.annotation.Import
  * @see org.springframework.data.gemfire.config.annotation.ExpirationConfiguration
  * @see org.springframework.data.gemfire.expiration.Expiration
+ * @see org.springframework.data.gemfire.expiration.ExpirationActionType
  * @see org.springframework.data.gemfire.expiration.IdleTimeoutExpiration
  * @see org.springframework.data.gemfire.expiration.TimeToLiveExpiration
- * @see org.apache.geode.cache.Region
  * @see <a href="http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/#bootstrap:region:expiration:annotation">Annotation-based Data Expiration</a>
  * @see <a href="http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/expiration/chapter_overview.html">Pivotal GemFire Expiration</a>
  * @see <a href="http://geode.incubator.apache.org/docs/guide/developing/expiration/chapter_overview.html">Geode Expiration</a>
@@ -117,7 +118,7 @@ public @interface EnableExpiration {
 		 * Types of Expiration algorithms (Idle Timeout (TTI) or Time to Live (TTL)) configured and used by
 		 * {@link Region Region(s)} to expire entries.
 		 *
-		 * Defaults to both Idle Timeout (TTI).
+		 * Defaults to Idle Timeout (TTI).
 		 *
 		 * @see org.springframework.data.gemfire.config.annotation.EnableExpiration.ExpirationType
 		 */
@@ -150,6 +151,7 @@ public @interface EnableExpiration {
 		 * @see #abbreviation()
 		 */
 		static ExpirationType valueOfAbbreviation(String abbreviation) {
+
 			for (ExpirationType expirationType : values()) {
 				if (expirationType.abbreviation().equalsIgnoreCase(abbreviation)) {
 					return expirationType;

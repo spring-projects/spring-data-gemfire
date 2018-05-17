@@ -36,9 +36,12 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CustomExpiry;
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -57,6 +60,8 @@ import org.springframework.context.SmartLifecycle;
 import org.springframework.core.io.Resource;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.config.annotation.RegionConfigurer;
+import org.springframework.data.gemfire.eviction.EvictingRegionFactoryBean;
+import org.springframework.data.gemfire.expiration.ExpiringRegionFactoryBean;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
@@ -93,8 +98,9 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
  */
 @SuppressWarnings("unused")
+// TODO: Rename to PeerRegionFactoryBean in SD Lovelace
 public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
-		implements DisposableBean, SmartLifecycle {
+		implements EvictingRegionFactoryBean, ExpiringRegionFactoryBean<K, V>, DisposableBean, SmartLifecycle {
 
 	protected final Log log = LogFactory.getLog(getClass());
 
@@ -104,6 +110,7 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 
 	private Boolean offHeap;
 	private Boolean persistent;
+	private Boolean statisticsEnabled;
 
 	private AsyncEventQueue[] asyncEventQueues;
 
@@ -118,9 +125,17 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 
 	private Compressor compressor;
 
+	private CustomExpiry<K, V> customEntryIdleTimeout;
+	private CustomExpiry<K, V> customEntryTimeToLive;
+
 	private DataPolicy dataPolicy;
 
 	private EvictionAttributes evictionAttributes;
+
+	private ExpirationAttributes entryIdleTimeout;
+	private ExpirationAttributes entryTimeToLive;
+	private ExpirationAttributes regionIdleTimeout;
+	private ExpirationAttributes regionTimeToLive;
 
 	private GatewaySender[] gatewaySenders;
 
@@ -294,6 +309,8 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	 */
 	protected RegionFactory<K, V> configure(RegionFactory<K, V> regionFactory) {
 
+		regionFactory.setStatisticsEnabled(resolveStatisticsEnabled());
+
 		stream(nullSafeArray(this.asyncEventQueues, AsyncEventQueue.class))
 			.forEach(asyncEventQueue -> regionFactory.addAsyncEventQueueId(asyncEventQueue.getId()));
 
@@ -305,11 +322,19 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 
 		Optional.ofNullable(this.compressor).ifPresent(regionFactory::setCompressor);
 
+		Optional.ofNullable(this.customEntryIdleTimeout).ifPresent(regionFactory::setCustomEntryIdleTimeout);
+
+		Optional.ofNullable(this.customEntryTimeToLive).ifPresent(regionFactory::setCustomEntryTimeToLive);
+
 		resolveDataPolicy(regionFactory, this.persistent, this.dataPolicy);
 
 		Optional.ofNullable(this.diskStoreName)
 			.filter(name -> isDiskStoreConfigurationAllowed())
 			.ifPresent(regionFactory::setDiskStoreName);
+
+		Optional.ofNullable(this.entryIdleTimeout).ifPresent(regionFactory::setEntryIdleTimeout);
+
+		Optional.ofNullable(this.entryTimeToLive).ifPresent(regionFactory::setEntryTimeToLive);
 
 		Optional.ofNullable(this.evictionAttributes).ifPresent(regionFactory::setEvictionAttributes);
 
@@ -317,6 +342,10 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 			.forEach(gatewaySender -> regionFactory.addGatewaySenderId(((GatewaySender) gatewaySender).getId()));
 
 		Optional.ofNullable(this.keyConstraint).ifPresent(regionFactory::setKeyConstraint);
+
+		Optional.ofNullable(this.regionIdleTimeout).ifPresent(regionFactory::setRegionIdleTimeout);
+
+		Optional.ofNullable(this.regionTimeToLive).ifPresent(regionFactory::setRegionTimeToLive);
 
 		Optional.ofNullable(getScope()).ifPresent(regionFactory::setScope);
 
@@ -378,7 +407,6 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 			.orElseGet(() -> RegionShortcutToDataPolicyConverter.INSTANCE.convert(regionShortcut));
 	}
 
-	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
 	private <T> Optional<T> getFieldValue(Object source, String fieldName, Class<T> targetType) {
 
@@ -461,9 +489,13 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	}
 
 	/**
+	 * Merges the {@link RegionAttributes} into the {@link RegionFactory}.
 	 *
-	 * @param regionFactory
-	 * @param regionAttributes
+	 * @param regionFactory {@link RegionFactory} to configure.
+	 * @param regionAttributes {@link RegionAttributes} used to configure the {@link RegionFactory}
+	 * if not {@literal null}.
+	 * @see org.apache.geode.cache.RegionAttributes
+	 * @see org.apache.geode.cache.RegionFactory
 	 */
 	protected <K, V> void mergePartitionAttributes(RegionFactory<K, V> regionFactory,
 			RegionAttributes<K, V> regionAttributes) {
@@ -573,7 +605,6 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	}
 
 	/**
-<<<<<<< HEAD
 	 * Validates that the settings for Data Policy and the 'persistent' attribute in &lt;gfe:*-region&gt; elements
 	 * are compatible.
 	 *
@@ -597,14 +628,8 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	}
 
 	/**
-=======
->>>>>>> c22ebe6... DATAGEODE-12 - Introduce Spring Configurers to flexibly alter Spring Data GemFire configuration when using Annotation config.
-	 * Validates and sets the Data Policy on the RegionFactory used to create and configure the Region from this
-	 * FactoryBean.
-=======
 	 * Validates and sets the {@link DataPolicy} on the {@link RegionFactory} used to create and configure
 	 * the {@link Region} from this {@link FactoryBean}.
->>>>>>> 12126a1... SGF-732 - Change branding from Spring Data GemFire to Spring Data for Pivotal GemFire.
 	 *
 	 * @param regionFactory the RegionFactory used by this FactoryBean to create and configure the Region.
 	 * @param persistent a boolean value indicating whether the Region should be persistent and persist it's
@@ -661,7 +686,6 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		}
 	}
 
-	/* (non-Javadoc) */
 	private DataPolicy getDataPolicy(RegionAttributes regionAttributes, DataPolicy defaultDataPolicy) {
 		return Optional.ofNullable(regionAttributes).map(RegionAttributes::getDataPolicy).orElse(defaultDataPolicy);
 	}
@@ -669,8 +693,10 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	/**
 	 * Closes and destroys the {@link Region}.
 	 *
-	 * @throws Exception if destroy fails.
+	 * @throws Exception if {@code destroy()} fails.
 	 * @see org.springframework.beans.factory.DisposableBean
+	 * @see org.apache.geode.cache.Region#close()
+	 * @see org.apache.geode.cache.Region#destroyRegion()
 	 */
 	@Override
 	public void destroy() throws Exception {
@@ -694,30 +720,34 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	}
 
 	/**
-	 * The list of AsyncEventQueues to use with this Region.
+	 * Configures an array of {@link AsyncEventQueue AsyncEventQueues} for this {@link Region} used to perform
+	 * asynchronous data access operations, e.g. {@literal asynchronous write-behind}.
 	 *
-	 * @param asyncEventQueues defined as Object for backwards compatibility with Gemfire 6.
+	 * @param asyncEventQueues array of {@link AsyncEventQueue AsyncEventQueues} used by this {@link Region}
+	 * to perform asynchronous data access operations.
+	 * @see org.apache.geode.cache.asyncqueue.AsyncEventQueue
 	 */
 	public void setAsyncEventQueues(AsyncEventQueue[] asyncEventQueues) {
 		this.asyncEventQueues = asyncEventQueues;
 	}
 
 	/**
-	 * Sets the region attributes used for the region used by this factory.
-	 * Allows maximum control in specifying the region settings. Used only when
-	 * a new region is created.
+	 * Sets the {@link RegionAttributes} used to configure this {@link Region}.
 	 *
-	 * @param attributes the attributes to set on a newly created region
+	 * Specifying {@link RegionAttributes} allows maximum control in specifying various {@link Region} settings.
+	 * Used only when the {@link Region} is created and not when the {@link Region} is looked up.
+	 *
+	 * @param attributes {@link RegionAttributes} used to configure this {@link Region}.
+	 * @see org.apache.geode.cache.RegionAttributes
 	 */
 	public void setAttributes(RegionAttributes<K, V> attributes) {
 		this.attributes = attributes;
 	}
 
 	/**
-	 * Returns the attributes used to configure the Region created by this factory as set in the SDG XML namespace
-	 * configuration meta-data, or as set with the setAttributes(:Attributes) method.
+	 * Returns the {@link RegionAttributes} used to configure this {@link Region}.
 	 *
-	 * @return the RegionAttributes used to configure the Region created by this factory.
+	 * @return the {@link RegionAttributes} used to configure this {@link Region}.
 	 * @see org.apache.geode.cache.RegionAttributes
 	 */
 	public RegionAttributes<K, V> getAttributes() {
@@ -725,42 +755,58 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	}
 
 	/**
-	 * Sets the cache listeners used for the region used by this factory. Used
-	 * only when a new region is created.Overrides the settings specified
-	 * through {@link #setAttributes(RegionAttributes)}.
+	 * Configures {@link CacheListener CacheListeners} used to listen for entry events on this {@link Region}.
 	 *
-	 * @param cacheListeners the cacheListeners to set on a newly created region
+	 * Used only when a new {@link Region} is created and not {@link #isLookupEnabled() looked up}.
+	 *
+	 * Overrides the {@link Region} settings specified in {@link RegionAttributes}
+	 * set with {@link #setAttributes(RegionAttributes)}.
+	 *
+	 * @param cacheListeners array {@link CacheListener CacheListeners} to register with this {@link Region}.
+	 * @see org.apache.geode.cache.CacheListener
 	 */
 	public void setCacheListeners(CacheListener<K, V>[] cacheListeners) {
 		this.cacheListeners = cacheListeners;
 	}
 
 	/**
-	 * Sets the cache loader used for the region used by this factory. Used only
-	 * when a new region is created.Overrides the settings specified through
-	 * {@link #setAttributes(RegionAttributes)}.
+	 * Configures the {@link CacheLoader} used by this {@link Region} to perform {@literal synchronous read-through}
+	 * data access operations to an underlying, external data source.
 	 *
-	 * @param cacheLoader the cacheLoader to set on a newly created region
+	 * Used only when a new {@link Region} is created and not {@link #isLookupEnabled() looked up}.
+	 *
+	 * Overrides the {@link Region} settings specified in {@link RegionAttributes}
+	 * set with {@link #setAttributes(RegionAttributes)}.
+	 *
+	 * @param cacheLoader {@link CacheLoader} to register for this {@link Region}.
+	 * @see org.apache.geode.cache.CacheLoader
 	 */
 	public void setCacheLoader(CacheLoader<K, V> cacheLoader) {
 		this.cacheLoader = cacheLoader;
 	}
 
 	/**
-	 * Sets the cache writer used for the region used by this factory. Used only
-	 * when a new region is created. Overrides the settings specified through
-	 * {@link #setAttributes(RegionAttributes)}.
+	 * Configures the {@link CacheWriter} used by this {@link Region} to perform {@literal synchronous write-through}
+	 * data access operations to an underlying, external data source.
 	 *
-	 * @param cacheWriter the cacheWriter to set on a newly created region
+	 * Used only when a new {@link Region} is created and not {@link #isLookupEnabled() looked up}.
+	 *
+	 * Overrides the {@link Region} settings specified in {@link RegionAttributes}
+	 * set with {@link #setAttributes(RegionAttributes)}.
+	 *
+	 * @param cacheWriter {@link CacheWriter} to register for this {@link Region}.
+	 * @see org.apache.geode.cache.CacheWriter
 	 */
 	public void setCacheWriter(CacheWriter<K, V> cacheWriter) {
 		this.cacheWriter = cacheWriter;
 	}
 
 	/**
-	 * Indicates whether the Region referred to by this factory bean will be closed on shutdown (default true).
+	 * Configure whether to close this {@literal Region} during shutdown.
 	 *
-	 * @param close a boolean value indicating whether this Region should be closed on member shutdown.
+	 * Defaults to {@literal true}.
+	 *
+	 * @param close boolean value indicating whether this {@link Region} should be closed during shutdown.
 	 * @see #setDestroy(boolean)
 	 */
 	public void setClose(boolean close) {
@@ -768,29 +814,40 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	}
 
 	/**
-	 * Configures the {@link Compressor} used to compress the this {@link Region Region's} data.
+	 * Configures the {@link Compressor} used to compress this {@link Region Region's} data.
 	 *
-	 * @param compressor {@link Compressor} used to compress the this {@link Region Region's} data.
+	 * @param compressor {@link Compressor} used to compress this {@link Region Region's} data.
 	 * @see org.apache.geode.compression.Compressor
 	 */
 	public void setCompressor(Compressor compressor) {
 		this.compressor = compressor;
 	}
 
+	public void setCustomEntryIdleTimeout(CustomExpiry<K, V> customEntryIdleTimeout) {
+		this.customEntryIdleTimeout = customEntryIdleTimeout;
+	}
+
+	public void setCustomEntryTimeToLive(CustomExpiry<K, V> customEntryTimeToLive) {
+		this.customEntryTimeToLive = customEntryTimeToLive;
+	}
+
 	/**
-	 * Indicates whether the Region referred to by this factory bean will be destroyed on shutdown (default false).
+	 * Configure whether to destroy this {@link Region} during shutdown.
 	 *
-	 * @param destroy a boolean value indicating whether the Region is to be destroy on member shutdown.
-	 * @see #setDestroy(boolean)
+	 * Defaults to {@literal false}.
+	 *
+	 * @param destroy value indicating whether this {@link Region} should be destroyed during shutdown.
+	 * @see #setClose(boolean)
 	 */
 	public void setDestroy(boolean destroy) {
 		this.destroy = destroy;
 	}
 
 	/**
-	 * Sets the DataPolicy of the Region.
+	 * Configure the {@link DataPolicy} for this {@link Region}.
 	 *
-	 * @param dataPolicy the Pivotal GemFire DataPolicy to use when configuring the Region.
+	 * @param dataPolicy {@link DataPolicy} used when configuring this {@link Region}.
+	 * @see org.apache.geode.cache.DataPolicy
 	 * @since 1.4.0
 	 */
 	public void setDataPolicy(DataPolicy dataPolicy) {
@@ -798,11 +855,12 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	}
 
 	/**
-	 * Sets the DataPolicy of the Region as a String.
+	 * Configures the {@link DataPolicy} for this {@link Region} as a {@link String}.
 	 *
-	 * @param dataPolicyName the name of the DataPolicy (e.g. REPLICATE, PARTITION)
+	 * @param dataPolicyName {@link String} containing the name of the {@link DataPolicy},
+	 * (e.g. {@literal PARTITION} or {@literal REPLICATE}, etc).
 	 * @see #setDataPolicy(org.apache.geode.cache.DataPolicy)
-	 * @deprecated as of 1.4.0, use setDataPolicy(:DataPolicy) instead.
+	 * @deprecated as of 1.4.0; use setDataPolicy(:DataPolicy) instead.
 	 */
 	@Deprecated
 	public void setDataPolicy(String dataPolicyName) {
@@ -810,10 +868,12 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	}
 
 	/**
-	 * Gets the "resolved" Data Policy as determined by this RegionFactory when configuring the attributes
-	 * of the Region to be created.
+	 * Returns resolved {@link DataPolicy} as configured with the {@link RegionFactory}
+	 * when creating this {@link Region}.
 	 *
-	 * @return the "resolved" Data Policy to be used to create the Region.
+	 * @return the configured, resolved {@link DataPolicy} used by this {@link Region}.
+	 * @throws IllegalStateException if the {@link DataPolicy} has not been configured
+	 * or is not resolvable.
 	 * @see org.apache.geode.cache.DataPolicy
 	 */
 	public DataPolicy getDataPolicy() {
@@ -822,12 +882,24 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	}
 
 	/**
-	 * Sets the name of Disk Store used for either overflow or persistence, or both.
+	 * Configures the {@link String name} of the {@link DiskStore} used by this {@link Region}
+	 * for overflow and/or persistence.
 	 *
-	 * @param diskStoreName the name of the Disk Store bean in context used for overflow/persistence.
+	 * @param diskStoreName {@link String} containing the name of the {@link DiskStore} bean
+	 * configured for this {@link Region}.
 	 */
 	public void setDiskStoreName(String diskStoreName) {
 		this.diskStoreName = diskStoreName;
+	}
+
+	// TODO: review/add Javadoc from here forward...
+
+	public void setEntryIdleTimeout(ExpirationAttributes entryIdleTimeout) {
+		this.entryIdleTimeout = entryIdleTimeout;
+	}
+
+	public void setEntryTimeToLive(ExpirationAttributes entryTimeToLive) {
+		this.entryTimeToLive = entryTimeToLive;
 	}
 
 	public void setEvictionAttributes(EvictionAttributes evictionAttributes) {
@@ -835,18 +907,22 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	}
 
 	/**
+	 * Configures the {@link GatewaySender GatewaySenders} used to send data and events from this {@link Region}
+	 * to a corresponding {@link Region} in a remote cluster/site.
 	 *
-	 * @param gatewaySenders defined as Object for backward compatibility with
-	 * Gemfire 6
+	 * @param gatewaySenders {@link GatewaySender GatewaySenders} used to send data and events from this {@link Region}
+	 * to a corresponding {@link Region} in a remote cluster/site.
+	 * @see org.apache.geode.cache.wan.GatewaySender
 	 */
 	public void setGatewaySenders(GatewaySender[] gatewaySenders) {
 		this.gatewaySenders = gatewaySenders;
 	}
 
 	/**
-	 * Sets whether to enable this {@link Region} to store it's data in off-heap memory.
+	 * Configures whether to enable this {@link Region} with the ability to store data in {@literal off-heap memory}.
 	 *
-	 * @param offHeap Boolean value indicating whether to enable off-heap memory for this Region.
+	 * @param offHeap {@link Boolean} value indicating whether to enable {@literal off-heap memory}
+	 * for this {@link Region}.
 	 * @see org.apache.geode.cache.RegionFactory#setOffHeap(boolean)
 	 */
 	public void setOffHeap(Boolean offHeap) {
@@ -854,30 +930,50 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 	}
 
 	/**
-	 * Returns a {@link Boolean} value indicating whether off-heap memory was enabled for this {@link Region}.
-	 * Off-heap will be enabled if this method returns a non-{@literal null} {@link Boolean} value that evaluates
-	 * to {@literal true}.
+	 * Returns a {@link Boolean} value indicating whether {@literal off-heap memory} was enabled for this {@link Region}.
 	 *
-	 * @return a {@link Boolean} value indicating whether off-heap is enabled for this {@link Region}.
+	 * {@literal Off-heap memory} will be enabled if this method returns a {@literal non-null} {@link Boolean} value
+	 * evaluating to {@literal true}.
+	 *
+	 * @return a {@link Boolean} value indicating whether {@literal off-heap memory} is enabled for this {@link Region}.
 	 */
 	public Boolean getOffHeap() {
 		return this.offHeap;
 	}
 
 	/**
-	 * Returns a boolean value indicating whether off-heap has been enabled for this {@link Region}.
+	 * Returns a boolean value indicating whether {@literal off-heap memory} has been enabled for this {@link Region}.
 	 *
-	 * @return a {@literal boolean} value indicating whether off-heap has been enabled for this {@link Region}.
+	 * @return a {@literal boolean} value indicating whether {@literal off-heap memory} has been enabled
+	 * for this {@link Region}.
 	 * @see #getOffHeap()
 	 */
 	public boolean isOffHeap() {
 		return Boolean.TRUE.equals(getOffHeap());
 	}
 
+	/**
+	 * Configures the {@link Class key constraint} used to enforce key {@link Class types} for this {@link Region}.
+	 *
+	 * @param keyConstraint {@link Class} specifying the key type constraint for this {@link Region}.
+	 * @see org.apache.geode.cache.RegionFactory#setKeyConstraint(Class)
+	 * @see org.apache.geode.cache.RegionAttributes#getKeyConstraint()
+	 * @see java.lang.Class
+	 */
 	public void setKeyConstraint(Class<K> keyConstraint) {
 		this.keyConstraint = keyConstraint;
 	}
 
+	/**
+	 * Configures whether to enable {@literal persistence} for this {@link Region}.
+	 *
+	 * When {@literal persistence} is enable, then data in the {@link Region} is persisted to disk
+	 * using the configured, specified {@link DiskStore}, or the {@literal DEFAULT} {@link DiskStore}
+	 * if a {@link DiskStore} was not explicitly configured.
+	 *
+	 * @param persistent {@link Boolean} value indicating whether to enaable {@literal persistence}
+	 * for this {@link Region}.
+	 */
 	public void setPersistent(Boolean persistent) {
 		this.persistent = persistent;
 	}
@@ -907,43 +1003,95 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		this.regionConfigurers = Optional.ofNullable(regionConfigurers).orElseGet(Collections::emptyList);
 	}
 
-	public Scope getScope() {
-		return this.scope;
+	public void setRegionIdleTimeout(ExpirationAttributes regionIdleTimeout) {
+		this.regionIdleTimeout = regionIdleTimeout;
+	}
+
+	public void setRegionTimeToLive(ExpirationAttributes regionTimeToLive) {
+		this.regionTimeToLive = regionTimeToLive;
 	}
 
 	/**
-	 * Sets the region scope. Used only when a new region is created. Overrides
-	 * the settings specified through {@link #setAttributes(RegionAttributes)}.
+	 * Configures the {@link Region Region's} {@link Scope}, which affects data distribution
+	 * and acknowledgement strategy (useful in consistency) for the {@link Region}.
 	 *
-	 * @see Scope
-	 * @param scope the region scope
+	 * @param scope {@link Scope} used to configure the {@link Region Region's} data distribution
+	 * and acknowledgement strategy.
+	 * @see org.apache.geode.cache.Scope
 	 */
 	public void setScope(Scope scope) {
 		this.scope = scope;
 	}
 
 	/**
-	 * Configures the Region with a RegionShortcut.
+	 * Returns the configured {@link Scope} of the {@link Region} affecting data distribution
+	 * and acknowledgement strategy (useful in consistency) for the {@link Region}.
 	 *
-	 * @param shortcut the RegionShortcut used to configure pre-defined default for the Region created
-	 * by this FactoryBean.
+	 * @return the configured {@link Scope} of the {@link Region}.
+	 * @see org.apache.geode.cache.Scope
+	 */
+	public Scope getScope() {
+		return this.scope;
+	}
+
+	/**
+	 * Configures the {@link Region} with the given {@link RegionShortcut}.
+	 *
+	 * @param shortcut {@link RegionShortcut} used to configure pre-defined defaults for the {@link Region}.
 	 * @see org.apache.geode.cache.RegionShortcut
 	 */
 	public void setShortcut(RegionShortcut shortcut) {
 		this.shortcut = shortcut;
 	}
 
-	protected final RegionShortcut getShortcut() {
-		return shortcut;
+	/**
+	 * Returns the configured {@link RegionShortcut}.
+	 *
+	 * @return the configured {@link RegionShortcut}.
+	 * @see org.apache.geode.cache.RegionShortcut
+	 */
+	public RegionShortcut getShortcut() {
+		return this.shortcut;
 	}
 
+	public void setStatisticsEnabled(Boolean statisticsEnabled) {
+		this.statisticsEnabled = statisticsEnabled;
+	}
+
+	public Boolean getStatisticsEnabled() {
+		return this.statisticsEnabled;
+	}
+
+	public boolean isStatisticsEnabled() {
+		return Boolean.TRUE.equals(getStatisticsEnabled());
+	}
+
+	protected boolean resolveStatisticsEnabled() {
+
+		return isStatisticsEnabled()
+			|| this.customEntryIdleTimeout != null
+			|| this.customEntryTimeToLive != null
+			|| this.entryIdleTimeout != null
+			|| this.entryTimeToLive != null
+			|| this.regionIdleTimeout != null
+			|| this.regionTimeToLive != null
+			|| Optional.ofNullable(getAttributes())
+				.map(RegionAttributes::getStatisticsEnabled)
+				.orElse(false);
+	}
+
+	/**
+	 * Configures the {@link Class value constraint} used to enforce value {@link Class types} for this {@link Region}.
+	 *
+	 * @param valueConstraint {@link Class} specifying the value type constraint for this {@link Region}.
+	 * @see org.apache.geode.cache.RegionFactory#setValueConstraint(Class)
+	 * @see org.apache.geode.cache.RegionAttributes#getValueConstraint()
+	 * @see java.lang.Class
+	 */
 	public void setValueConstraint(Class<V> valueConstraint) {
 		this.valueConstraint = valueConstraint;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	@SuppressWarnings("all")
 	public void start() {
@@ -961,18 +1109,12 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		this.running = true;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	public void stop(Runnable callback) {
 		stop();
 		callback.run();
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	public void stop() {
 
@@ -987,25 +1129,16 @@ public abstract class RegionFactoryBean<K, V> extends RegionLookupFactoryBean<K,
 		this.running = false;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	public boolean isRunning() {
 		return this.running;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	public int getPhase() {
 		return Integer.MAX_VALUE;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	public boolean isAutoStartup() {
 		return true;

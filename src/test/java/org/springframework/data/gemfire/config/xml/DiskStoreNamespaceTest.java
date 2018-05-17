@@ -29,7 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * The DiskStoreNamespaceTest class is a test suite of test cases testing the contract and functionality of using
@@ -42,7 +42,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @since 2.0.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(locations = "diskstore-ns.xml", initializers = GemfireTestApplicationContextInitializer.class)
 @SuppressWarnings("unused")
 public class DiskStoreNamespaceTest {
@@ -57,6 +57,7 @@ public class DiskStoreNamespaceTest {
 
 	@Test
 	public void testDiskStoreConfiguration() {
+
 		assertNotNull("The 'fullyConfiguredDiskStore' was not properly configured and initialized", diskStore);
 		assertEquals("fullyConfiguredDiskStore", diskStore.getName());
 		assertEquals(Boolean.valueOf(props.getProperty("allowForceCompaction")), diskStore.getAllowForceCompaction());
@@ -76,5 +77,4 @@ public class DiskStoreNamespaceTest {
 		assertEquals(new File(props.getProperty("location")), diskStore.getDiskDirs()[0]);
 		assertEquals(Long.valueOf(props.getProperty("maxSize")), Long.valueOf(diskStore.getDiskDirSizes()[0]));
 	}
-
 }

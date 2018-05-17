@@ -32,7 +32,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.Assert;
 
 /**
@@ -50,7 +50,7 @@ import org.springframework.util.Assert;
  * @see org.apache.geode.cache.EvictionAttributes
  * @since 1.5.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(initializers = GemfireTestApplicationContextInitializer.class)
 @SuppressWarnings("unused")
 public class RegionExpirationAttributesNamespaceTest {
@@ -67,12 +67,13 @@ public class RegionExpirationAttributesNamespaceTest {
 	@Resource(name = "LocalExample")
 	private Region<?, ?> localExample;
 
-	protected void assertRegionMetaData(final Region<?, ?> region, final String regionName, final DataPolicy dataPolicy) {
+	private void assertRegionMetaData(final Region<?, ?> region, final String regionName, final DataPolicy dataPolicy) {
 		assertRegionMetaData(region, regionName, Region.SEPARATOR + regionName, dataPolicy);
 	}
 
-	protected void assertRegionMetaData(final Region<?, ?> region, final String regionName, final String regionFullPath,
-			final DataPolicy dataPolicy) {
+	private void assertRegionMetaData(Region<?, ?> region, String regionName, String regionFullPath,
+			DataPolicy dataPolicy) {
+
 		assertNotNull(String.format("The '%1$s' Region was not properly configured and initialized!", regionName), region);
 		assertEquals(regionName, region.getName());
 		assertEquals(regionFullPath, region.getFullPath());
@@ -80,14 +81,15 @@ public class RegionExpirationAttributesNamespaceTest {
 		assertEquals(dataPolicy, region.getAttributes().getDataPolicy());
 	}
 
-	protected void assertNoExpiration(final ExpirationAttributes expirationAttributes) {
+	private void assertNoExpiration(final ExpirationAttributes expirationAttributes) {
+
 		if (expirationAttributes != null) {
 			//assertEquals(ExpirationAction.INVALIDATE, expirationAttributes.getAction());
 			assertEquals(0, expirationAttributes.getTimeout());
 		}
 	}
 
-	protected void assertExpirationAttributes(final ExpirationAttributes expirationAttributes,
+	private void assertExpirationAttributes(ExpirationAttributes expirationAttributes,
 			final int timeout, final ExpirationAction action) {
 		assertNotNull(expirationAttributes);
 		assertEquals(timeout, expirationAttributes.getTimeout());
@@ -95,8 +97,9 @@ public class RegionExpirationAttributesNamespaceTest {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected void assertCustomExpiry(final CustomExpiry<?, ?> customExpiry, final String name,
-			final int timeout, final ExpirationAction action) {
+	private void assertCustomExpiry(CustomExpiry<?, ?> customExpiry, String name, int timeout,
+			ExpirationAction action) {
+
 		assertNotNull(customExpiry);
 		assertEquals(name, customExpiry.toString());
 		assertExpirationAttributes(customExpiry.getExpiry(mock(Region.Entry.class)), timeout, action);
@@ -104,6 +107,7 @@ public class RegionExpirationAttributesNamespaceTest {
 
 	@Test
 	public void testReplicateExampleExpirationAttributes() {
+
 		assertRegionMetaData(replicateExample, "ReplicateExample", DataPolicy.REPLICATE);
 		assertExpirationAttributes(replicateExample.getAttributes().getEntryTimeToLive(),
 			600, ExpirationAction.DESTROY);
@@ -115,6 +119,7 @@ public class RegionExpirationAttributesNamespaceTest {
 
 	@Test
 	public void testPreloadedExampleExpirationAttributes() {
+
 		assertRegionMetaData(preloadedExample, "PreloadedExample", DataPolicy.PRELOADED);
 		assertExpirationAttributes(preloadedExample.getAttributes().getEntryTimeToLive(),
 			120, ExpirationAction.LOCAL_DESTROY);
@@ -125,6 +130,7 @@ public class RegionExpirationAttributesNamespaceTest {
 
 	@Test
 	public void testPartitionExampleExpirationAttributes() {
+
 		assertRegionMetaData(partitionExample, "PartitionExample", DataPolicy.PARTITION);
 		assertExpirationAttributes(partitionExample.getAttributes().getEntryTimeToLive(),
 			300, ExpirationAction.DESTROY);
@@ -136,6 +142,7 @@ public class RegionExpirationAttributesNamespaceTest {
 
 	@Test
 	public void testLocalExampleExpirationAttributes() {
+
 		assertRegionMetaData(localExample, "LocalExample", DataPolicy.NORMAL);
 		assertNoExpiration(localExample.getAttributes().getEntryTimeToLive());
 		assertNoExpiration(localExample.getAttributes().getEntryIdleTimeout());
@@ -181,5 +188,4 @@ public class RegionExpirationAttributesNamespaceTest {
 			return this.name;
 		}
 	}
-
 }

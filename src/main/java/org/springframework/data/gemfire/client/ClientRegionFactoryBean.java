@@ -31,8 +31,10 @@ import java.util.stream.StreamSupport;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CustomExpiry;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
@@ -50,6 +52,8 @@ import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.RegionLookupFactoryBean;
 import org.springframework.data.gemfire.config.annotation.RegionConfigurer;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
+import org.springframework.data.gemfire.eviction.EvictingRegionFactoryBean;
+import org.springframework.data.gemfire.expiration.ExpiringRegionFactoryBean;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -75,7 +79,8 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
  */
 @SuppressWarnings("unused")
-public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V> implements DisposableBean {
+public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
+		implements EvictingRegionFactoryBean, ExpiringRegionFactoryBean<K, V>, DisposableBean {
 
 	public static final String DEFAULT_POOL_NAME = "DEFAULT";
 	public static final String GEMFIRE_POOL_NAME = GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME;
@@ -84,6 +89,7 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	private boolean destroy = false;
 
 	private Boolean persistent;
+	private Boolean statisticsEnabled;
 
 	private CacheListener<K, V>[] cacheListeners;
 
@@ -98,9 +104,17 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 
 	private Compressor compressor;
 
+	private CustomExpiry<K, V> customEntryIdleTimeout;
+	private CustomExpiry<K, V> customEntryTimeToLive;
+
 	private DataPolicy dataPolicy;
 
 	private EvictionAttributes evictionAttributes;
+
+	private ExpirationAttributes entryIdleTimeout;
+	private ExpirationAttributes entryTimeToLive;
+	private ExpirationAttributes regionIdleTimeout;
+	private ExpirationAttributes regionTimeToLive;
 
 	private Interest<K>[] interests;
 
@@ -394,10 +408,20 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 
 		stream(nullSafeArray(this.cacheListeners, CacheListener.class)).forEach(clientRegionFactory::addCacheListener);
 
+		clientRegionFactory.setStatisticsEnabled(resolveStatisticsEnabled());
+
 		Optional.ofNullable(this.compressor).ifPresent(clientRegionFactory::setCompressor);
+
+		Optional.ofNullable(this.customEntryIdleTimeout).ifPresent(clientRegionFactory::setCustomEntryIdleTimeout);
+
+		Optional.ofNullable(this.customEntryTimeToLive).ifPresent(clientRegionFactory::setCustomEntryTimeToLive);
 
 		Optional.ofNullable(this.diskStoreName).filter(StringUtils::hasText)
 			.ifPresent(clientRegionFactory::setDiskStoreName);
+
+		Optional.ofNullable(this.entryIdleTimeout).ifPresent(clientRegionFactory::setEntryIdleTimeout);
+
+		Optional.ofNullable(this.entryTimeToLive).ifPresent(clientRegionFactory::setEntryTimeToLive);
 
 		Optional.ofNullable(this.evictionAttributes).ifPresent(clientRegionFactory::setEvictionAttributes);
 
@@ -406,6 +430,10 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		Optional.ofNullable(resolvePoolName())
 			.map(this::eagerlyInitializePool)
 			.ifPresent(clientRegionFactory::setPoolName);
+
+		Optional.ofNullable(this.regionIdleTimeout).ifPresent(clientRegionFactory::setRegionIdleTimeout);
+
+		Optional.ofNullable(this.regionTimeToLive).ifPresent(clientRegionFactory::setRegionTimeToLive);
 
 		Optional.ofNullable(this.valueConstraint).ifPresent(clientRegionFactory::setValueConstraint);
 
@@ -575,6 +603,14 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		this.compressor = compressor;
 	}
 
+	public void setCustomEntryIdleTimeout(CustomExpiry<K, V> customEntryIdleTimeout) {
+		this.customEntryIdleTimeout = customEntryIdleTimeout;
+	}
+
+	public void setCustomEntryTimeToLive(CustomExpiry<K, V> customEntryTimeToLive) {
+		this.customEntryTimeToLive = customEntryTimeToLive;
+	}
+
 	/**
 	 * Sets the Data Policy. Used only when a new Region is created.
 	 *
@@ -625,6 +661,14 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	 */
 	public void setDiskStoreName(String diskStoreName) {
 		this.diskStoreName = diskStoreName;
+	}
+
+	public void setEntryIdleTimeout(ExpirationAttributes entryIdleTimeout) {
+		this.entryIdleTimeout = entryIdleTimeout;
+	}
+
+	public void setEntryTimeToLive(ExpirationAttributes entryTimeToLive) {
+		this.entryTimeToLive = entryTimeToLive;
 	}
 
 	public void setEvictionAttributes(EvictionAttributes evictionAttributes) {
@@ -724,6 +768,14 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		this.regionConfigurers = Optional.ofNullable(regionConfigurers).orElseGet(Collections::emptyList);
 	}
 
+	public void setRegionIdleTimeout(ExpirationAttributes regionIdleTimeout) {
+		this.regionIdleTimeout = regionIdleTimeout;
+	}
+
+	public void setRegionTimeToLive(ExpirationAttributes regionTimeToLive) {
+		this.regionTimeToLive = regionTimeToLive;
+	}
+
 	/**
 	 * Initializes the client {@link Region} using the given {@link ClientRegionShortcut}.
 	 *
@@ -732,6 +784,32 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 	 */
 	public void setShortcut(ClientRegionShortcut shortcut) {
 		this.shortcut = shortcut;
+	}
+
+	public void setStatisticsEnabled(Boolean statisticsEnabled) {
+		this.statisticsEnabled = statisticsEnabled;
+	}
+
+	public Boolean getStatisticsEnabled() {
+		return this.statisticsEnabled;
+	}
+
+	public boolean isStatisticsEnabled() {
+		return Boolean.TRUE.equals(getStatisticsEnabled());
+	}
+
+	protected boolean resolveStatisticsEnabled() {
+
+		return isStatisticsEnabled()
+			|| this.customEntryIdleTimeout != null
+			|| this.customEntryTimeToLive != null
+			|| this.entryIdleTimeout != null
+			|| this.entryTimeToLive != null
+			|| this.regionIdleTimeout != null
+			|| this.regionTimeToLive != null
+			|| Optional.ofNullable(this.attributes)
+				.map(RegionAttributes::getStatisticsEnabled)
+				.orElse(false);
 	}
 
 	/**

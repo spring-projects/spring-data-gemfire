@@ -128,10 +128,15 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	 * @see #AnnotationBasedExpiration(ExpirationAttributes)
 	 */
 	public static <K, V> AnnotationBasedExpiration<K, V> forIdleTimeout(ExpirationAttributes defaultExpirationAttributes) {
+
 		return new AnnotationBasedExpiration<K, V>(defaultExpirationAttributes) {
-			@Override protected ExpirationMetaData getExpirationMetaData(Region.Entry<K, V> entry) {
-				return (isIdleTimeoutConfigured(entry) ? ExpirationMetaData.from(getIdleTimeout(entry))
-					: super.getExpirationMetaData(entry));
+
+			@Override
+			protected ExpirationMetaData getExpirationMetaData(Region.Entry<K, V> entry) {
+
+				return isIdleTimeoutConfigured(entry)
+					? ExpirationMetaData.from(getIdleTimeout(entry))
+					: super.getExpirationMetaData(entry);
 			}
 		};
 	}
@@ -169,10 +174,15 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	 * @see #AnnotationBasedExpiration(ExpirationAttributes)
 	 */
 	public static <K, V> AnnotationBasedExpiration<K, V> forTimeToLive(ExpirationAttributes defaultExpirationAttributes) {
+
 		return new AnnotationBasedExpiration<K, V>(defaultExpirationAttributes) {
-			@Override protected ExpirationMetaData getExpirationMetaData(Region.Entry<K, V> entry) {
-				return (isTimeToLiveConfigured(entry) ? ExpirationMetaData.from(getTimeToLive(entry))
-					: super.getExpirationMetaData(entry));
+
+			@Override
+			protected ExpirationMetaData getExpirationMetaData(Region.Entry<K, V> entry) {
+
+				return isTimeToLiveConfigured(entry)
+					? ExpirationMetaData.from(getTimeToLive(entry))
+					: super.getExpirationMetaData(entry);
 			}
 		};
 	}
@@ -182,9 +192,11 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	 * and SpEL expressions in the Expiration annotation attribute values.
 	 */
 	protected void initEvaluationContext() {
+
 		BeanFactory beanFactory = getBeanFactory();
 
 		if (EVALUATION_CONTEXT_REFERENCE.compareAndSet(null, newEvaluationContext())) {
+
 			StandardEvaluationContext evaluationContext = EVALUATION_CONTEXT_REFERENCE.get();
 
 			evaluationContext.addPropertyAccessor(new BeanFactoryAccessor());
@@ -192,7 +204,9 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 			evaluationContext.addPropertyAccessor(new MapAccessor());
 
 			if (beanFactory instanceof ConfigurableBeanFactory) {
+
 				ConfigurableBeanFactory configurableBeanFactory = (ConfigurableBeanFactory) beanFactory;
+
 				ConversionService conversionService = configurableBeanFactory.getConversionService();
 
 				if (conversionService != null) {
@@ -206,7 +220,6 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 		EVALUATION_CONTEXT_REFERENCE.get().setBeanResolver(new BeanFactoryResolver(beanFactory));
 	}
 
-	/* (non-Javadoc) */
 	StandardEvaluationContext newEvaluationContext() {
 		return new StandardEvaluationContext();
 	}
@@ -261,7 +274,7 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	 */
 	protected ExpirationAttributes getDefaultExpirationAttributes() {
 		//return (defaultExpirationAttributes != null ? defaultExpirationAttributes : ExpirationAttributes.DEFAULT);
-		return defaultExpirationAttributes;
+		return this.defaultExpirationAttributes;
 	}
 
 	/**
@@ -290,7 +303,7 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	 * @see org.springframework.data.gemfire.expiration.AnnotationBasedExpiration.ExpirationMetaData
 	 */
 	protected ExpirationMetaData getExpirationMetaData(Region.Entry<K, V> entry) {
-		return (isExpirationConfigured(entry) ? ExpirationMetaData.from(getExpiration(entry)) : null);
+		return isExpirationConfigured(entry) ? ExpirationMetaData.from(getExpiration(entry)) : null;
 	}
 
 	/**
@@ -308,8 +321,10 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	 * @see #getDefaultExpirationAttributes()
 	 */
 	protected ExpirationAttributes newExpirationAttributes(ExpirationMetaData expirationMetaData) {
-		return (expirationMetaData != null ? expirationMetaData.toExpirationAttributes()
-			: getDefaultExpirationAttributes());
+
+		return expirationMetaData != null
+			? expirationMetaData.toExpirationAttributes()
+			: getDefaultExpirationAttributes();
 	}
 
 	/**
@@ -321,10 +336,9 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	 * @see #isAnnotationPresent(Object, Class)
 	 */
 	protected boolean isExpirationConfigured(Region.Entry<K, V> entry) {
-		return (entry != null && isExpirationConfigured(entry.getValue()));
+		return entry != null && isExpirationConfigured(entry.getValue());
 	}
 
-	/* (non-Javadoc) */
 	private boolean isExpirationConfigured(Object obj) {
 		return isAnnotationPresent(obj, Expiration.class);
 	}
@@ -342,7 +356,6 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 		return getExpiration(entry.getValue());
 	}
 
-	/* (non-Javadoc) */
 	private Expiration getExpiration(Object obj) {
 		return getAnnotation(obj, Expiration.class);
 	}
@@ -356,10 +369,9 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	 * @see #isAnnotationPresent(Object, Class)
 	 */
 	protected boolean isIdleTimeoutConfigured(Region.Entry<K, V> entry) {
-		return (entry != null && isIdleTimeoutConfigured(entry.getValue()));
+		return entry != null && isIdleTimeoutConfigured(entry.getValue());
 	}
 
-	/* (non-Javadoc) */
 	private boolean isIdleTimeoutConfigured(Object obj) {
 		return isAnnotationPresent(obj, IdleTimeoutExpiration.class);
 	}
@@ -377,7 +389,6 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 		return getIdleTimeout(entry.getValue());
 	}
 
-	/* (non-Javadoc) */
 	private IdleTimeoutExpiration getIdleTimeout(Object obj) {
 		return getAnnotation(obj, IdleTimeoutExpiration.class);
 	}
@@ -391,10 +402,9 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	 * @see #isAnnotationPresent(Object, Class)
 	 */
 	protected boolean isTimeToLiveConfigured(Region.Entry<K, V> entry) {
-		return (entry != null && isTimeToLiveConfigured(entry.getValue()));
+		return entry != null && isTimeToLiveConfigured(entry.getValue());
 	}
 
-	/* (non-Javadoc) */
 	private boolean isTimeToLiveConfigured(Object value) {
 		return isAnnotationPresent(value, TimeToLiveExpiration.class);
 	}
@@ -412,17 +422,14 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 		return getTimeToLive(entry.getValue());
 	}
 
-	/* (non-Javadoc) */
 	private TimeToLiveExpiration getTimeToLive(Object obj) {
 		return getAnnotation(obj, TimeToLiveExpiration.class);
 	}
 
-	/* (non-Javadoc) */
 	private <T extends Annotation> boolean isAnnotationPresent(Object obj, Class<T> annotationType) {
 		return (obj != null && obj.getClass().isAnnotationPresent(annotationType));
 	}
 
-	/* (non-Javadoc) */
 	private <T extends Annotation> T getAnnotation(Object obj, Class<T> annotationType) {
 		return AnnotationUtils.getAnnotation(obj.getClass(), annotationType);
 	}
@@ -432,8 +439,7 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 	 * or when a callback is removed from a Region using an AttributesMutator.
 	 */
 	@Override
-	public void close() {
-	}
+	public void close() { }
 
 	/**
 	 * The ExpirationMetaData class encapsulates the settings constituting the expiration policy including
@@ -449,50 +455,48 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 
 		private final ExpirationActionType action;
 
-		/* (non-Javadoc) */
 		protected ExpirationMetaData(int timeout, ExpirationActionType action) {
 			this.timeout = timeout;
 			this.action = action;
 		}
 
-		/* (non-Javadoc) */
 		protected static ExpirationMetaData from(ExpirationAttributes expirationAttributes) {
 			return new ExpirationMetaData(expirationAttributes.getTimeout(), ExpirationActionType.valueOf(
 				expirationAttributes.getAction()));
 		}
 
-		/* (non-Javadoc) */
 		protected static ExpirationMetaData from(Expiration expiration) {
 			return new ExpirationMetaData(parseTimeout(expiration.timeout()), parseAction(expiration.action()));
 		}
 
-		/* (non-Javadoc) */
 		protected static ExpirationMetaData from(IdleTimeoutExpiration expiration) {
 			return new ExpirationMetaData(parseTimeout(expiration.timeout()), parseAction(expiration.action()));
 		}
 
-		/* (non-Javadoc) */
 		protected static ExpirationMetaData from(TimeToLiveExpiration expiration) {
 			return new ExpirationMetaData(parseTimeout(expiration.timeout()), parseAction(expiration.action()));
 		}
 
-		/* (non-Javadoc) */
 		public ExpirationAttributes toExpirationAttributes() {
 			return new ExpirationAttributes(timeout(), expirationAction());
 		}
 
-		/* (non-Javadoc) */
+		@SuppressWarnings("all")
 		protected static int parseTimeout(String timeout) {
+
 			try {
 				return Integer.parseInt(timeout);
 			}
 			catch (NumberFormatException cause) {
+
 				try {
 					// Next, try to parse the 'timeout' as a Spring Expression using SpEL.
-					return new SpelExpressionParser().parseExpression(timeout).getValue(
-						EVALUATION_CONTEXT_REFERENCE.get(), Integer.TYPE);
+					return new SpelExpressionParser()
+						.parseExpression(timeout)
+						.getValue(EVALUATION_CONTEXT_REFERENCE.get(), Integer.TYPE);
 				}
 				catch (ParseException e) {
+
 					// Finally, try to process the 'timeout' as a Spring Property Placeholder.
 					if (BEAN_FACTORY_REFERENCE.get() instanceof ConfigurableBeanFactory) {
 						return Integer.parseInt(((ConfigurableBeanFactory) BEAN_FACTORY_REFERENCE.get())
@@ -504,12 +508,13 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 			}
 		}
 
-		/* (non-Javadoc) */
 		protected static ExpirationActionType parseAction(String action) {
+
 			try {
 				return ExpirationActionType.valueOf(EXPIRATION_ACTION_CONVERTER.convert(action));
 			}
 			catch (IllegalArgumentException cause) {
+
 				// Next, try to parse the 'action' as a Spring Expression using SpEL.
 				EvaluationException evaluationException = new EvaluationException(String.format(
 					"[%s] is not resolvable as an ExpirationAction(Type)", action), cause);
@@ -517,12 +522,14 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 				EvaluationContext evaluationContext = EVALUATION_CONTEXT_REFERENCE.get();
 
 				try {
+
 					Expression expression = new SpelExpressionParser().parseExpression(action);
+
 					Class<?> valueType = expression.getValueType(evaluationContext);
 
 					if (String.class.equals(valueType)) {
-						return ExpirationActionType.valueOf(EXPIRATION_ACTION_CONVERTER.convert(expression.getValue(
-							evaluationContext, String.class)));
+						return ExpirationActionType.valueOf(EXPIRATION_ACTION_CONVERTER
+							.convert(expression.getValue(evaluationContext, String.class)));
 					}
 					else if (ExpirationAction.class.equals(valueType)) {
 						return ExpirationActionType.valueOf(expression.getValue(evaluationContext, ExpirationAction.class));
@@ -534,11 +541,13 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 					throw evaluationException;
 				}
 				catch (ParseException e) {
+
 					// Finally, try to process the 'action' as a Spring Property Placeholder.
 					if (BEAN_FACTORY_REFERENCE.get() instanceof ConfigurableBeanFactory) {
 						try {
-							String resolvedValue = ((ConfigurableBeanFactory) BEAN_FACTORY_REFERENCE.get())
-								.resolveEmbeddedValue(action);
+
+							String resolvedValue =
+								((ConfigurableBeanFactory) BEAN_FACTORY_REFERENCE.get()).resolveEmbeddedValue(action);
 
 							return ExpirationActionType.valueOf(EXPIRATION_ACTION_CONVERTER.convert(resolvedValue));
 						}
@@ -551,17 +560,14 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 			}
 		}
 
-		/* (non-Javadoc) */
 		public ExpirationActionType action() {
 			return action;
 		}
 
-		/* (non-Javadoc) */
 		public ExpirationAction expirationAction() {
 			return action().getExpirationAction();
 		}
 
-		/* (non-Javadoc) */
 		public int timeout() {
 			return timeout;
 		}
@@ -571,7 +577,8 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 		 */
 		@Override
 		public boolean equals(final Object obj) {
-			if (obj == this) {
+
+			if (this == obj) {
 				return true;
 			}
 
@@ -590,9 +597,12 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 		 */
 		@Override
 		public int hashCode() {
+
 			int hashValue = 17;
+
 			hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(timeout());
 			hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(action());
+
 			return hashValue;
 		}
 
@@ -601,8 +611,8 @@ public class AnnotationBasedExpiration<K, V> implements BeanFactoryAware, Custom
 		 */
 		@Override
 		public String toString() {
-			return String.format("{ @type = %1$s, timeout = %2$d, action = %3$s }", getClass().getName(),
-				timeout(), action());
+			return String.format("{ @type = %1$s, timeout = %2$d, action = %3$s }",
+				getClass().getName(), timeout(), action());
 		}
 	}
 }

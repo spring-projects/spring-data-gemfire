@@ -27,6 +27,7 @@ import org.apache.geode.cache.ExpirationAction;
  */
 @SuppressWarnings("unused")
 public enum ExpirationActionType {
+
 	DESTROY(ExpirationAction.DESTROY),
 	INVALIDATE(ExpirationAction.INVALIDATE),
 	LOCAL_DESTROY(ExpirationAction.LOCAL_DESTROY),
@@ -55,7 +56,7 @@ public enum ExpirationActionType {
 	 * @see org.apache.geode.cache.ExpirationAction
 	 */
 	public static ExpirationAction getExpirationAction(final ExpirationActionType expirationActionType) {
-		return (expirationActionType != null ? expirationActionType.getExpirationAction() : null);
+		return expirationActionType != null ? expirationActionType.getExpirationAction() : null;
 	}
 
 	/**
@@ -68,6 +69,7 @@ public enum ExpirationActionType {
 	 * @see #getExpirationAction()
 	 */
 	public static ExpirationActionType valueOf(final ExpirationAction expirationAction) {
+
 		for (ExpirationActionType expirationActionType : values()) {
 			if (expirationActionType.getExpirationAction().equals(expirationAction)) {
 				return expirationActionType;
@@ -87,6 +89,7 @@ public enum ExpirationActionType {
 	 * @see #name()
 	 */
 	public static ExpirationActionType valueOfIgnoreCase(final String name) {
+
 		for (ExpirationActionType expirationActionType : values()) {
 			if (expirationActionType.name().equalsIgnoreCase(name)) {
 				return expirationActionType;
@@ -103,7 +106,6 @@ public enum ExpirationActionType {
 	 * @see org.apache.geode.cache.ExpirationAction
 	 */
 	public ExpirationAction getExpirationAction() {
-		return expirationAction;
+		return this.expirationAction;
 	}
-
 }

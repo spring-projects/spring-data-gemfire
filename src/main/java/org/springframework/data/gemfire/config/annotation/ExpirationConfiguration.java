@@ -26,11 +26,10 @@ import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newI
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
-import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
@@ -41,8 +40,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportAware;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.data.gemfire.RegionFactoryBean;
+import org.springframework.data.gemfire.RegionLookupFactoryBean;
+import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
+import org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport;
 import org.springframework.data.gemfire.expiration.AnnotationBasedExpiration;
 import org.springframework.data.gemfire.expiration.ExpirationActionType;
+import org.springframework.data.gemfire.expiration.ExpiringRegionFactoryBean;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
 
@@ -59,13 +63,16 @@ import org.springframework.util.Assert;
  * @since 1.9.0
  */
 @Configuration
-public class ExpirationConfiguration implements ImportAware {
+public class ExpirationConfiguration extends AbstractAnnotationConfigSupport implements ImportAware {
 
 	protected static final int DEFAULT_TIMEOUT = 0;
 
 	protected static final ExpirationActionType DEFAULT_ACTION = ExpirationActionType.DEFAULT;
 
-	protected static final ExpirationType[] DEFAULT_EXPIRATION_TYPES = { ExpirationType.IDLE_TIMEOUT };
+	protected static final ExpirationType[] DEFAULT_EXPIRATION_TYPES = {
+		ExpirationType.IDLE_TIMEOUT,
+		ExpirationType.TIME_TO_LIVE,
+	};
 
 	private ExpirationPolicyConfigurer expirationPolicyConfigurer;
 
@@ -81,45 +88,22 @@ public class ExpirationConfiguration implements ImportAware {
 	}
 
 	/**
-	 * Returns the name of the {@link Annotation} type that enables and configures Expiration.
-	 *
-	 * @return the name of the {@link Annotation} type that enables and configures Expiration.
-	 * @see java.lang.Class#getName()
-	 * @see #getAnnotationType()
-	 */
-	protected String getAnnotationTypeName() {
-		return getAnnotationType().getName();
-	}
-
-	/**
-	 * Returns the simple name of the {@link Annotation} type that enables and configures Expiration.
-	 *
-	 * @return the simple name of the {@link Annotation} type that enables and configures Expiration.
-	 * @see java.lang.Class#getSimpleName()
-	 * @see #getAnnotationType()
-	 */
-	@SuppressWarnings("unused")
-	protected String getAnnotationTypeSimpleName() {
-		return getAnnotationType().getSimpleName();
-	}
-
-	/**
 	 * @inheritDoc
 	 */
 	@Override
 	public void setImportMetadata(AnnotationMetadata importMetadata) {
 
-		if (importMetadata.hasAnnotation(getAnnotationTypeName())) {
-			Map<String, Object> enableExpirationAttributes =
-				importMetadata.getAnnotationAttributes(getAnnotationTypeName());
+		if (isAnnotationPresent(importMetadata)) {
 
-			AnnotationAttributes[] policies = (AnnotationAttributes[]) enableExpirationAttributes.get("policies");
+			AnnotationAttributes enableExpirationAttributes = getAnnotationAttributes(importMetadata);
+
+			AnnotationAttributes[] policies = enableExpirationAttributes.getAnnotationArray("policies");
 
 			for (AnnotationAttributes expirationPolicyAttributes :
 					nullSafeArray(policies, AnnotationAttributes.class)) {
 
-				this.expirationPolicyConfigurer = ComposableExpirationPolicyConfigurer.compose(
-					this.expirationPolicyConfigurer, ExpirationPolicyMetaData.from(expirationPolicyAttributes));
+				this.expirationPolicyConfigurer = ComposableExpirationPolicyConfigurer
+					.compose(this.expirationPolicyConfigurer, ExpirationPolicyMetaData.from(expirationPolicyAttributes));
 			}
 
 			this.expirationPolicyConfigurer = Optional.ofNullable(this.expirationPolicyConfigurer)
@@ -128,19 +112,23 @@ public class ExpirationConfiguration implements ImportAware {
 	}
 
 	/**
-	 * Determines whether the given bean is a {@link Region}.
+	 * Determines whether the Spring bean is an instance of {@link ExpiringRegionFactoryBean}
 	 *
-	 * @param bean {@link Object} to evaluate.
-	 * @return a boolean value indicating whether the given bean is a {@link Region}.
-	 * @see org.apache.geode.cache.Region
+	 * @param bean Spring bean to evaluate.
+	 * @return a boolean value indicating whether the Spring bean is an instance of {@link ExpiringRegionFactoryBean}.
+	 * @see org.springframework.data.gemfire.expiration.ExpiringRegionFactoryBean
+	 * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
+	 * @see org.springframework.data.gemfire.RegionFactoryBean
 	 */
-	protected boolean isRegion(Object bean) {
-		return (bean instanceof Region);
+	protected static boolean isRegionFactoryBean(Object bean) {
+		return bean instanceof ExpiringRegionFactoryBean;
 	}
 
 	protected ExpirationPolicyConfigurer getExpirationPolicyConfigurer() {
-		return Optional.ofNullable(this.expirationPolicyConfigurer).orElseThrow(() ->
-			newIllegalStateException("ExpirationPolicyConfigurer was not properly configured and initialized"));
+
+		return Optional.ofNullable(this.expirationPolicyConfigurer)
+			.orElseThrow(() ->
+				newIllegalStateException("ExpirationPolicyConfigurer was not properly configured and initialized"));
 	}
 
 	@Bean
@@ -150,15 +138,9 @@ public class ExpirationConfiguration implements ImportAware {
 		return new BeanPostProcessor() {
 
 			@Override
-			public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-				return bean;
-			}
-
-			@Override
 			@SuppressWarnings("unchecked")
-			public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-				return (isRegion(bean) ? getExpirationPolicyConfigurer().configure((Region<Object, Object>) bean)
-					: bean);
+			public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+				return isRegionFactoryBean(bean) ? getExpirationPolicyConfigurer().configure(bean) : bean;
 			}
 		};
 	}
@@ -171,11 +153,11 @@ public class ExpirationConfiguration implements ImportAware {
 		/**
 		 * Configures the expiration policy for the given {@link Region}.
 		 *
-		 * @param region {@link Region} object who's expiration policy will be configured.
+		 * @param regionFactoryBean {@link Region} object who's expiration policy will be configured.
 		 * @return the given {@link Region} object.
 		 * @see org.apache.geode.cache.Region
 		 */
-		Object configure(Object region);
+		Object configure(Object regionFactoryBean);
 
 	}
 
@@ -235,7 +217,7 @@ public class ExpirationConfiguration implements ImportAware {
 		protected static ExpirationPolicyConfigurer compose(ExpirationPolicyConfigurer one,
 				ExpirationPolicyConfigurer two) {
 
-			return (one == null ? two : (two == null ? one : new ComposableExpirationPolicyConfigurer(one, two)));
+			return one == null ? two : (two == null ? one : new ComposableExpirationPolicyConfigurer(one, two));
 		}
 
 		/**
@@ -255,8 +237,8 @@ public class ExpirationConfiguration implements ImportAware {
 		 * @inheritDoc
 		 */
 		@Override
-		public Object configure(Object region) {
-			return this.two.configure(this.one.configure(region));
+		public Object configure(Object regionFactoryBean) {
+			return this.two.configure(this.one.configure(regionFactoryBean));
 		}
 	}
 
@@ -452,15 +434,16 @@ public class ExpirationConfiguration implements ImportAware {
 		}
 
 		/**
-		 * Determines whether to apply this expiration policy to the given {@link Region}.
+		 * Determines whether the given {@link Object} (e.g. Spring bean) is accepted for Eviction policy configuration.
 		 *
-		 * @param region {@link Region} to evaluate.
-		 * @return a boolean value indicating whether the expiration policy applies to the given {@link Region}.
-		 * @see org.apache.geode.cache.Region
-		 * @see #accepts(String)
+		 * @param regionFactoryBean {@link Object} being evaluated as an Eviction policy configuration candidate.
+		 * @return a boolean value indicating whether the {@link Object} is accepted for Eviction policy configuration.
+		 * @see #isRegionFactoryBean(Object)
+		 * @see #resolveRegionName(Object)
+		 * @see #accepts(Supplier)
 		 */
-		protected boolean accepts(Object region) {
-			return (region instanceof Region && accepts(((Region) region).getName()));
+		protected boolean accepts(Object regionFactoryBean) {
+			return isRegionFactoryBean(regionFactoryBean) && accepts(() -> resolveRegionName(regionFactoryBean));
 		}
 
 		/**
@@ -470,8 +453,8 @@ public class ExpirationConfiguration implements ImportAware {
 		 * @return a boolean value indicating whether the expiration policy applies to the given {@link Region}
 		 * identified by name.
 		 */
-		protected boolean accepts(String regionName) {
-			return (this.regionNames.isEmpty() || this.regionNames.contains(regionName));
+		protected boolean accepts(Supplier<String> regionName) {
+			return this.regionNames.isEmpty() || this.regionNames.contains(regionName.get());
 		}
 
 		/**
@@ -495,30 +478,55 @@ public class ExpirationConfiguration implements ImportAware {
 		}
 
 		/**
+		 * Resolves the name of a given {@link Region} from the corresponding {@link RegionLookupFactoryBean} object.
+		 *
+		 * @param regionFactoryBean {@link RegionLookupFactoryBean} from which to resolve the {@link Region} name.
+		 * @return the resolved name of the {@link Region} created from the given {@link RegionLookupFactoryBean}.
+		 * @see org.springframework.data.gemfire.RegionLookupFactoryBean#resolveRegionName()
+		 */
+		protected String resolveRegionName(Object regionFactoryBean) {
+			return regionFactoryBean instanceof RegionLookupFactoryBean
+				? ((RegionLookupFactoryBean) regionFactoryBean).resolveRegionName() : null;
+		}
+
+		/**
+		 * Configures the Expiration policies on the targeted {@link ExpiringRegionFactoryBean}, which may be
+		 * either a {@link RegionFactoryBean} or {@link ClientRegionFactoryBean}.
+		 *
+		 * @param regionFactoryBean {@link ExpiringRegionFactoryBean} to configure.
+		 * @return the given {@link ExpiringRegionFactoryBean}.
+		 * @see org.springframework.data.gemfire.expiration.AnnotationBasedExpiration#forIdleTimeout(ExpirationAttributes)
+		 * @see org.springframework.data.gemfire.expiration.AnnotationBasedExpiration#forTimeToLive(ExpirationAttributes)
+		 * @see org.springframework.data.gemfire.expiration.ExpiringRegionFactoryBean
+		 * @see #defaultExpirationAttributes()
+		 */
+		protected ExpiringRegionFactoryBean<?, ?> setExpirationAttributes(
+				ExpiringRegionFactoryBean<?, ?> regionFactoryBean) {
+
+			ExpirationAttributes defaultExpirationAttributes = defaultExpirationAttributes();
+
+			if (isIdleTimeout()) {
+				regionFactoryBean.setCustomEntryIdleTimeout(
+					AnnotationBasedExpiration.forIdleTimeout(defaultExpirationAttributes));
+			}
+
+			if (isTimeToLive()) {
+				regionFactoryBean.setCustomEntryTimeToLive(
+					AnnotationBasedExpiration.forTimeToLive(defaultExpirationAttributes));
+			}
+
+			return regionFactoryBean;
+		}
+
+		/**
 		 * @inheritDoc
 		 */
 		@Override
-		public Object configure(Object regionObject) {
+		public Object configure(Object regionFactoryBean) {
 
-			if (accepts(regionObject)) {
-				Region<?, ?> region = (Region<?, ?>) regionObject;
-
-				AttributesMutator<?, ?> regionAttributesMutator = region.getAttributesMutator();
-
-				ExpirationAttributes defaultExpirationAttributes = defaultExpirationAttributes();
-
-				if (isIdleTimeout()) {
-					regionAttributesMutator.setCustomEntryIdleTimeout(
-						AnnotationBasedExpiration.forIdleTimeout(defaultExpirationAttributes));
-				}
-
-				if (isTimeToLive()) {
-					regionAttributesMutator.setCustomEntryTimeToLive(
-						AnnotationBasedExpiration.forTimeToLive(defaultExpirationAttributes));
-				}
-			}
-
-			return regionObject;
+			return accepts(regionFactoryBean)
+				? setExpirationAttributes((ExpiringRegionFactoryBean) regionFactoryBean)
+				: regionFactoryBean;
 		}
 
 		/**
