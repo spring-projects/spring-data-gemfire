@@ -1,5 +1,5 @@
 [[requirements]]
 = Requirements
 
-_Spring Data for Pivotal GemFire_ requires JDK 8.0, http://projects.spring.io/spring-framework[Spring Framework] 5
+Spring Data for Pivotal GemFire requires JDK 8.0, http://projects.spring.io/spring-framework[Spring Framework] 5
 and http://geode.apache.org/[Pivotal GemFire] 9.0.x.

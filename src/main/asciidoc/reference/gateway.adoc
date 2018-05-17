@@ -2,15 +2,15 @@
 = Configuring WAN Gateways
 
 WAN Gateways provide a way to synchronize Pivotal GemFire Distributed Systems across geographic areas.
-_Spring Data for Pivotal GemFire_ provides namespace support for configuring WAN Gateways as illustrated in the following examples.
+Spring Data for Pivotal GemFire provides namespace support for configuring WAN Gateways as illustrated in the following examples.
 
 == WAN Configuration in Pivotal GemFire 7.0
 
-In the example below, `GatewaySenders` are configured for a PARTITION Region by adding child elements to the Region
-(`gateway-sender` and `gateway-sender-ref`).
+In the following example, `GatewaySenders` are configured for a `PARTITION` region by adding child elements
+(`gateway-sender` and `gateway-sender-ref`) to the region.
 
-A `GatewaySender` may register `EventFilters` and `TransportFilters`.  Also shown below is an example configuration
-of an `AsyncEventQueue` which must also be wired into a Region (not shown).
+A `GatewaySender` may register `EventFilters` and `TransportFilters`. The following example also shows a sample configuration
+of an `AsyncEventQueue`, which must also be wired into a region (not shown):
 
 [source,xml]
 ----
@@ -48,8 +48,8 @@ of an `AsyncEventQueue` which must also be wired into a Region (not shown).
 <bean id="transport-filter" class="org.springframework.data.gemfire.example.AnotherTransportFilter"/>
 ----
 
-On the other end of a `GatewaySender` is a corresponding `GatewayReceiver` to receive Gateway events.
-The `GatewayReceiver` may also be configured with `EventFilters` and `TransportFilters`.
+On the other end of a `GatewaySender` is a corresponding `GatewayReceiver` to receive gateway events.
+The `GatewayReceiver` may also be configured with `EventFilters` and `TransportFilters`, as follows:
 
 [source,xml]
 ----
@@ -60,6 +60,6 @@ The `GatewayReceiver` may also be configured with `EventFilters` and `TransportF
 </gfe:gateway-receiver>
 ----
 
-Please refer to the Pivotal GemFire
+See the Pivotal GemFire
 http://geode.apache.org/docs/guide/11/topologies_and_comm/multi_site_configuration/chapter_overview.html[documentation]
 for a detailed explanation of all the configuration options.
