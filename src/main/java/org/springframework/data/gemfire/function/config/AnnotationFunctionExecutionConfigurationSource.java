@@ -12,6 +12,8 @@
  */
 package org.springframework.data.gemfire.function.config;
 
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,6 +29,7 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.core.type.filter.TypeFilter;
+import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -36,10 +39,11 @@ import org.springframework.util.ClassUtils;
  * @author David Turanski
  *
  */
-class AnnotationFunctionExecutionConfigurationSource extends AbstractFunctionExecutionConfigurationSource {
+public class AnnotationFunctionExecutionConfigurationSource extends AbstractFunctionExecutionConfigurationSource {
 
 	private static final String BASE_PACKAGES = "basePackages";
 	private static final String BASE_PACKAGE_CLASSES = "basePackageClasses";
+	private static final String VALUE = "value";
 
 	private final AnnotationMetadata metadata;
 	private final AnnotationAttributes attributes;
@@ -51,13 +55,14 @@ class AnnotationFunctionExecutionConfigurationSource extends AbstractFunctionExe
 	 *
 	 * @param metadata must not be {@literal null}.
 	 */
-	 AnnotationFunctionExecutionConfigurationSource(AnnotationMetadata metadata) {
+	 public AnnotationFunctionExecutionConfigurationSource(AnnotationMetadata metadata) {
 
-		Assert.notNull(metadata);
+		Assert.notNull(metadata, "AnnotationMetadata must not be null");
 
-		this.attributes = new AnnotationAttributes(metadata.getAnnotationAttributes(EnableGemfireFunctionExecutions.class.getName()));
+		this.attributes = AnnotationAttributes.fromMap(
+			metadata.getAnnotationAttributes(EnableGemfireFunctionExecutions.class.getName()));
+
 		this.metadata = metadata;
-
 	}
 
 
@@ -67,7 +72,6 @@ class AnnotationFunctionExecutionConfigurationSource extends AbstractFunctionExe
 	 */
 	@Override
 	public Object getSource() {
-		// TODO Auto-generated method stub
 		return this.metadata;
 	}
 
@@ -76,27 +80,42 @@ class AnnotationFunctionExecutionConfigurationSource extends AbstractFunctionExe
 	 */
 	@Override
 	public Iterable<String> getBasePackages() {
-		String[] value = attributes.getStringArray("value");
-		String[] basePackages = attributes.getStringArray(BASE_PACKAGES);
-		Class<?>[] basePackageClasses = attributes.getClassArray(BASE_PACKAGE_CLASSES);
+
+		String[] value = this.attributes.getStringArray(VALUE);
+		String[] basePackages = this.attributes.getStringArray(BASE_PACKAGES);
+
+		Class<?>[] basePackageClasses = this.attributes.getClassArray(BASE_PACKAGE_CLASSES);
 
 		// Default configuration - return package of annotated class
-		if (value.length == 0 && basePackages.length == 0 && basePackageClasses.length == 0) {
-			String className = metadata.getClassName();
+		if (areAllEmpty(value, basePackages, basePackageClasses)) {
+
+			String className = this.metadata.getClassName();
+
 			return Collections.singleton(className.substring(0, className.lastIndexOf('.')));
 		}
 
-		Set<String> packages = new HashSet<String>();
+		Set<String> packages = new HashSet<>();
+
 		packages.addAll(Arrays.asList(value));
 		packages.addAll(Arrays.asList(basePackages));
 
-		for (Class<?> typeName : basePackageClasses) {
-			packages.add(ClassUtils.getPackageName(typeName));
-		}
+		Arrays.stream(nullSafeArray(basePackageClasses, Class.class))
+			.map(ClassUtils::getPackageName)
+			.forEach(packages::add);
 
 		return packages;
 	}
 
+	private boolean areAllEmpty(Object[]... arrays) {
+
+		for (Object[] array : arrays) {
+			if (!ArrayUtils.isEmpty(array)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
 
 	@Override
 	public Iterable<TypeFilter> getIncludeFilters() {

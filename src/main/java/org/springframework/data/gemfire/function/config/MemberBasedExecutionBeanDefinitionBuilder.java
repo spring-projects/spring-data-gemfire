@@ -14,25 +14,27 @@ package org.springframework.data.gemfire.function.config;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.data.gemfire.function.annotation.OnMember;
+import org.springframework.data.gemfire.function.annotation.OnMembers;
 import org.springframework.data.gemfire.function.execution.GemfireFunctionProxyFactoryBean;
 import org.springframework.util.StringUtils;
 
 /**
- * A base class for OnMember and OnMembers function execution bean definition builders.
+ * Base class for {@link OnMember} and {@link OnMembers} Function execution
+ * {@link BeanDefinitionBuilder BeanDefinitionBuilders}.
  *
  * @author David Turanski
- *
+ * @author John Blum
+ * @see org.springframework.data.gemfire.function.config.AbstractFunctionExecutionBeanDefinitionBuilder
  */
- abstract class MemberBasedExecutionBeanDefinitionBuilder extends AbstractFunctionExecutionBeanDefinitionBuilder {
+abstract class MemberBasedExecutionBeanDefinitionBuilder extends AbstractFunctionExecutionBeanDefinitionBuilder {
 
 	/**
 	 * @param configuration
 	 */
-	public MemberBasedExecutionBeanDefinitionBuilder(FunctionExecutionConfiguration configuration) {
+	MemberBasedExecutionBeanDefinitionBuilder(FunctionExecutionConfiguration configuration) {
 		super(configuration);
 	}
-
-
 
 	/* (non-Javadoc)
 	 * @see org.springframework.data.gemfire.function.config.AbstractFunctionExecutionBeanDefinitionBuilder#getGemfireFunctionOperationsBeanDefinitionBuilder(org.springframework.beans.factory.support.BeanDefinitionRegistry)
@@ -40,10 +42,10 @@ import org.springframework.util.StringUtils;
 	@Override
 	protected BeanDefinitionBuilder getGemfireFunctionOperationsBeanDefinitionBuilder(BeanDefinitionRegistry registry) {
 
-		BeanDefinitionBuilder functionTemplateBuilder = BeanDefinitionBuilder.genericBeanDefinition(getGemfireOperationsClass());
+		BeanDefinitionBuilder functionTemplateBuilder =
+			BeanDefinitionBuilder.genericBeanDefinition(getGemfireOperationsClass());
 
 		String groups = (String)configuration.getAttribute("groups");
-
 
 		if (StringUtils.hasText(groups)) {
 			functionTemplateBuilder.addConstructorArgValue(StringUtils.commaDelimitedListToStringArray(groups));
@@ -62,4 +64,5 @@ import org.springframework.util.StringUtils;
 	}
 
 	protected abstract Class<?> getGemfireOperationsClass();
+
 }

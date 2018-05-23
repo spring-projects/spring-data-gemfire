@@ -30,18 +30,26 @@ import org.springframework.context.annotation.ScannedGenericBeanDefinition;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.data.gemfire.function.annotation.OnMember;
+import org.springframework.data.gemfire.function.annotation.OnMembers;
+import org.springframework.data.gemfire.function.annotation.OnRegion;
+import org.springframework.data.gemfire.function.annotation.OnServer;
+import org.springframework.data.gemfire.function.annotation.OnServers;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
 /**
- * {@link ImportBeanDefinitionRegistrar} for {code} @EnableGemfireFunctionExecutions {code}
- * Scans for interfaces annotated with one of {code} @OnRegion, @OnServer, @OnServers, @OnMember, @OnMembers {code}
+ * {@link ImportBeanDefinitionRegistrar} for {@link EnableGemfireFunctionExecutions}, which scans for interfaces
+ * annotated with one of {@link OnRegion}, {@link OnServer}, {@link OnServers}, {@link OnMember}, {@link OnMembers}.
  *
  * @author David Turanski
  * @author John Blum
+ * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
+ * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar
+ * @see org.springframework.context.annotation.ScannedGenericBeanDefinition
  */
-class FunctionExecutionBeanDefinitionRegistrar implements ImportBeanDefinitionRegistrar {
+public class FunctionExecutionBeanDefinitionRegistrar implements ImportBeanDefinitionRegistrar {
 
 	/*
 	 * (non-Javadoc)
@@ -52,18 +60,30 @@ class FunctionExecutionBeanDefinitionRegistrar implements ImportBeanDefinitionRe
 	public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry registry) {
 
 		AbstractFunctionExecutionConfigurationSource configurationSource =
-			new AnnotationFunctionExecutionConfigurationSource(annotationMetadata);
+			newAnnotationBasedFunctionExecutionConfigurationSource(annotationMetadata);
 
 		registerBeanDefinitions(configurationSource, registry);
 
 	}
 
-	void registerBeanDefinitions(Element element, ParserContext parserContext) {
+	protected AbstractFunctionExecutionConfigurationSource newAnnotationBasedFunctionExecutionConfigurationSource(
+			AnnotationMetadata annotationMetadata) {
+
+		return new AnnotationFunctionExecutionConfigurationSource(annotationMetadata);
+	}
+
+	protected void registerBeanDefinitions(Element element, ParserContext parserContext) {
 
 		AbstractFunctionExecutionConfigurationSource configurationSource =
-			new XmlFunctionExecutionConfigurationSource(element, parserContext);
+			newXmlBasedFunctionExecutionConfigurationSource(element, parserContext);
 
 		registerBeanDefinitions(configurationSource, parserContext.getRegistry());
+	}
+
+	protected AbstractFunctionExecutionConfigurationSource newXmlBasedFunctionExecutionConfigurationSource(
+			Element element, ParserContext parserContext) {
+
+		return new XmlFunctionExecutionConfigurationSource(element, parserContext);
 	}
 
 	/**

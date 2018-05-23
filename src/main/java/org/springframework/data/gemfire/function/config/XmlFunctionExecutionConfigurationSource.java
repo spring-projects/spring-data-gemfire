@@ -29,7 +29,7 @@ import org.w3c.dom.Element;
  * @author David Turanski
  *
  */
-class XmlFunctionExecutionConfigurationSource extends AbstractFunctionExecutionConfigurationSource {
+public class XmlFunctionExecutionConfigurationSource extends AbstractFunctionExecutionConfigurationSource {
 
 	private static final String BASE_PACKAGE = "base-package";
 
@@ -40,7 +40,7 @@ class XmlFunctionExecutionConfigurationSource extends AbstractFunctionExecutionC
 
 	private final ParserContext parserContext;
 
-	XmlFunctionExecutionConfigurationSource(Element element, ParserContext parserContext) {
+	public XmlFunctionExecutionConfigurationSource(Element element, ParserContext parserContext) {
 
 		Assert.notNull(element, "Element must not be null");
 		Assert.notNull(parserContext, "ParserContext must not be null");

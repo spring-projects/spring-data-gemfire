@@ -26,8 +26,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.annotation.ScannedGenericBeanDefinition;
 import org.springframework.core.io.ResourceLoader;
@@ -50,7 +50,7 @@ import org.springframework.data.gemfire.function.annotation.OnServers;
  * @author John Blum
  * @see org.springframework.data.gemfire.function.config.FunctionExecutionConfiguration
  */
-abstract class AbstractFunctionExecutionConfigurationSource implements FunctionExecutionConfigurationSource {
+public abstract class AbstractFunctionExecutionConfigurationSource implements FunctionExecutionConfigurationSource {
 
 	private static Set<Class<? extends Annotation>> functionExecutionAnnotationTypes;
 
@@ -67,15 +67,15 @@ abstract class AbstractFunctionExecutionConfigurationSource implements FunctionE
 		functionExecutionAnnotationTypes = Collections.unmodifiableSet(annotationTypes);
 	}
 
-	static Set<Class<? extends Annotation>> getFunctionExecutionAnnotationTypes() {
+	public static Set<Class<? extends Annotation>> getFunctionExecutionAnnotationTypes() {
 		return functionExecutionAnnotationTypes;
 	}
 
-	static Set<String> getFunctionExecutionAnnotationTypeNames() {
+	public static Set<String> getFunctionExecutionAnnotationTypeNames() {
 		return getFunctionExecutionAnnotationTypes().stream().map(Class::getName).collect(Collectors.toSet());
 	}
 
-	protected Log logger = LogFactory.getLog(getClass());
+	protected Logger logger = LoggerFactory.getLogger(getClass());
 
 	public Collection<ScannedGenericBeanDefinition> getCandidates(ResourceLoader loader) {
 

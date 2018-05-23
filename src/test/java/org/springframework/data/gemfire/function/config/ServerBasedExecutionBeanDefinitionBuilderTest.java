@@ -31,8 +31,6 @@ import static org.mockito.Mockito.when;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -56,22 +54,22 @@ public class ServerBasedExecutionBeanDefinitionBuilderTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void getGemfireFunctionOperationsBeanDefinitionBuilder() {
+
 		FunctionExecutionConfiguration mockFunctionExecutionConfiguration =
 			mock(FunctionExecutionConfiguration.class, "MockFunctionExecutionConfiguration");
 
 		when(mockFunctionExecutionConfiguration.getAttribute(eq("cache"))).thenReturn(null);
 		when(mockFunctionExecutionConfiguration.getAttribute(eq("pool"))).thenReturn(" ");
-		when(mockFunctionExecutionConfiguration.getFunctionExecutionInterface()).thenAnswer(new Answer<Class<?>>() {
-			@Override public Class<?> answer(final InvocationOnMock invocation) throws Throwable {
-				return Object.class;
-			}
-		});
+		when(mockFunctionExecutionConfiguration.getFunctionExecutionInterface()).thenAnswer(invocation -> Object.class);
 
-		ServerBasedExecutionBeanDefinitionBuilder builder = new ServerBasedExecutionBeanDefinitionBuilder(mockFunctionExecutionConfiguration) {
-			@Override protected Class<?> getGemfireFunctionOperationsClass() {
-				return Object.class;
-			}
-		};
+		ServerBasedExecutionBeanDefinitionBuilder builder =
+			new ServerBasedExecutionBeanDefinitionBuilder(mockFunctionExecutionConfiguration) {
+
+				@Override
+				protected Class<?> getGemfireFunctionOperationsClass() {
+					return Object.class;
+				}
+			};
 
 		BeanDefinitionBuilder beanDefinitionBuilder = builder.getGemfireFunctionOperationsBeanDefinitionBuilder(null);
 
@@ -80,7 +78,7 @@ public class ServerBasedExecutionBeanDefinitionBuilderTest {
 		AbstractBeanDefinition beanDefinition = beanDefinitionBuilder.getRawBeanDefinition();
 
 		assertThat(beanDefinition, is(notNullValue()));
-		assertThat((Class<Object>) beanDefinition.getBeanClass(), is(equalTo(Object.class)));
+		assertThat(beanDefinition.getBeanClass(), is(equalTo(Object.class)));
 		assertThat(String.valueOf(beanDefinition.getConstructorArgumentValues()
 			.getArgumentValue(0, RuntimeBeanReference.class).getValue()),
 				containsString(GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME));
@@ -93,22 +91,22 @@ public class ServerBasedExecutionBeanDefinitionBuilderTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void getGemfireFunctionOperationsBeanDefinitionBuilderWithCache() {
+
 		FunctionExecutionConfiguration mockFunctionExecutionConfiguration =
 			mock(FunctionExecutionConfiguration.class, "MockFunctionExecutionConfiguration");
 
 		when(mockFunctionExecutionConfiguration.getAttribute(eq("cache"))).thenReturn("TestCache");
 		when(mockFunctionExecutionConfiguration.getAttribute(eq("pool"))).thenReturn(" ");
-		when(mockFunctionExecutionConfiguration.getFunctionExecutionInterface()).thenAnswer(new Answer<Class<?>>() {
-			@Override public Class<?> answer(final InvocationOnMock invocation) throws Throwable {
-				return Object.class;
-			}
-		});
+		when(mockFunctionExecutionConfiguration.getFunctionExecutionInterface()).thenAnswer(invocation -> Object.class);
 
-		ServerBasedExecutionBeanDefinitionBuilder builder = new ServerBasedExecutionBeanDefinitionBuilder(mockFunctionExecutionConfiguration) {
-			@Override protected Class<?> getGemfireFunctionOperationsClass() {
-				return Object.class;
-			}
-		};
+		ServerBasedExecutionBeanDefinitionBuilder builder =
+			new ServerBasedExecutionBeanDefinitionBuilder(mockFunctionExecutionConfiguration) {
+
+				@Override
+				protected Class<?> getGemfireFunctionOperationsClass() {
+					return Object.class;
+				}
+			};
 
 		BeanDefinitionBuilder beanDefinitionBuilder = builder.getGemfireFunctionOperationsBeanDefinitionBuilder(null);
 
@@ -117,7 +115,7 @@ public class ServerBasedExecutionBeanDefinitionBuilderTest {
 		AbstractBeanDefinition beanDefinition = beanDefinitionBuilder.getRawBeanDefinition();
 
 		assertThat(beanDefinition, is(notNullValue()));
-		assertThat((Class<Object>) beanDefinition.getBeanClass(), is(equalTo(Object.class)));
+		assertThat(beanDefinition.getBeanClass(), is(equalTo(Object.class)));
 		assertThat(String.valueOf(beanDefinition.getConstructorArgumentValues()
 			.getArgumentValue(0, RuntimeBeanReference.class).getValue()), containsString("TestCache"));
 
@@ -129,22 +127,22 @@ public class ServerBasedExecutionBeanDefinitionBuilderTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void getGemfireFunctionOperationsBeanDefinitionBuilderWithPool() {
+
 		FunctionExecutionConfiguration mockFunctionExecutionConfiguration =
 			mock(FunctionExecutionConfiguration.class, "MockFunctionExecutionConfiguration");
 
 		when(mockFunctionExecutionConfiguration.getAttribute(eq("cache"))).thenReturn(null);
 		when(mockFunctionExecutionConfiguration.getAttribute(eq("pool"))).thenReturn("TestPool");
-		when(mockFunctionExecutionConfiguration.getFunctionExecutionInterface()).thenAnswer(new Answer<Class<?>>() {
-			@Override public Class<?> answer(final InvocationOnMock invocation) throws Throwable {
-				return Object.class;
-			}
-		});
+		when(mockFunctionExecutionConfiguration.getFunctionExecutionInterface()).thenAnswer(invocation -> Object.class);
 
-		ServerBasedExecutionBeanDefinitionBuilder builder = new ServerBasedExecutionBeanDefinitionBuilder(mockFunctionExecutionConfiguration) {
-			@Override protected Class<?> getGemfireFunctionOperationsClass() {
-				return Object.class;
-			}
-		};
+		ServerBasedExecutionBeanDefinitionBuilder builder =
+			new ServerBasedExecutionBeanDefinitionBuilder(mockFunctionExecutionConfiguration) {
+
+				@Override
+				protected Class<?> getGemfireFunctionOperationsClass() {
+					return Object.class;
+				}
+			};
 
 		BeanDefinitionBuilder beanDefinitionBuilder = builder.getGemfireFunctionOperationsBeanDefinitionBuilder(null);
 
@@ -153,7 +151,7 @@ public class ServerBasedExecutionBeanDefinitionBuilderTest {
 		AbstractBeanDefinition beanDefinition = beanDefinitionBuilder.getRawBeanDefinition();
 
 		assertThat(beanDefinition, is(notNullValue()));
-		assertThat((Class<Object>) beanDefinition.getBeanClass(), is(equalTo(Object.class)));
+		assertThat(beanDefinition.getBeanClass(), is(equalTo(Object.class)));
 		assertThat(String.valueOf(beanDefinition.getConstructorArgumentValues()
 			.getArgumentValue(0, RuntimeBeanReference.class).getValue()), containsString("TestPool"));
 
@@ -165,32 +163,32 @@ public class ServerBasedExecutionBeanDefinitionBuilderTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void getGemfireFunctionOperationsBeanDefinitionBuilderWithCacheAndPool() {
+
 		FunctionExecutionConfiguration mockFunctionExecutionConfiguration =
 			mock(FunctionExecutionConfiguration.class, "MockFunctionExecutionConfiguration");
 
 		when(mockFunctionExecutionConfiguration.getAttribute(eq("cache"))).thenReturn("TestCache");
 		when(mockFunctionExecutionConfiguration.getAttribute(eq("pool"))).thenReturn("TestPool");
-		when(mockFunctionExecutionConfiguration.getFunctionExecutionInterface()).thenAnswer(new Answer<Class<?>>() {
-			@Override public Class<?> answer(final InvocationOnMock invocation) throws Throwable {
-				return Object.class;
-			}
-		});
+		when(mockFunctionExecutionConfiguration.getFunctionExecutionInterface()).thenAnswer(invocation -> Object.class);
 
-		ServerBasedExecutionBeanDefinitionBuilder builder = new ServerBasedExecutionBeanDefinitionBuilder(mockFunctionExecutionConfiguration) {
-			@Override protected Class<?> getGemfireFunctionOperationsClass() {
-				return Object.class;
-			}
-		};
+		ServerBasedExecutionBeanDefinitionBuilder builder =
+			new ServerBasedExecutionBeanDefinitionBuilder(mockFunctionExecutionConfiguration) {
+
+				@Override
+				protected Class<?> getGemfireFunctionOperationsClass() {
+					return Object.class;
+				}
+			};
 
 		expectedException.expect(IllegalStateException.class);
 		expectedException.expectCause(is(nullValue(Throwable.class)));
-		expectedException.expectMessage(is(equalTo("invalid configuration for interface java.lang.Object;"
+		expectedException.expectMessage(is(equalTo("Invalid configuration for interface [java.lang.Object];"
 			+ " cannot specify both 'pool' and 'cache'")));
+
 		builder.getGemfireFunctionOperationsBeanDefinitionBuilder(null);
 
 		verify(mockFunctionExecutionConfiguration, times(1)).getAttribute(eq("cache"));
 		verify(mockFunctionExecutionConfiguration, times(1)).getAttribute(eq("pool"));
 		verify(mockFunctionExecutionConfiguration, times(1)).getFunctionExecutionInterface();
 	}
-
 }

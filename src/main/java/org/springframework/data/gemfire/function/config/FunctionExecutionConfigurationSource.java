@@ -21,20 +21,13 @@ import java.lang.annotation.Annotation;
 import org.springframework.core.type.filter.TypeFilter;
 
 /**
-<<<<<<< Updated upstream
- * Interface for function execution configuration sources (e.g., annotation or XML configuration) to configure
- * classpath scanning of annotated interfaces to implement proxies that invoke Gemfire functions
- *
- * @author David Turanski
-=======
  * Interface for Function Execution configuration sources (e.g. {@link Annotation} or XML configuration)
  * to configure classpath scanning of annotated interfaces to implement proxies that invoke Functions.
->>>>>>> Stashed changes
  *
  * @author David Turanski
  * @author John Blum
  */
-interface FunctionExecutionConfigurationSource {
+public interface FunctionExecutionConfigurationSource {
 
 	/**
 	 * Returns the base packages the repository interfaces shall be found under.

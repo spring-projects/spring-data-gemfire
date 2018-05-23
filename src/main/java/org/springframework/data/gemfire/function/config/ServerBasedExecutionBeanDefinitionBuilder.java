@@ -15,19 +15,22 @@ package org.springframework.data.gemfire.function.config;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
+import org.springframework.data.gemfire.function.annotation.OnServer;
+import org.springframework.data.gemfire.function.annotation.OnServers;
 import org.springframework.data.gemfire.function.execution.GemfireFunctionProxyFactoryBean;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * @author David Turanski
+ * Base class for {@link OnServer} and {@link OnServers} Function execution
+ * {@link BeanDefinitionBuilder BeanDefinitionBuilders}.
  *
+ * @author David Turanski
+ * @author John Blum
+ * @see org.springframework.data.gemfire.function.config.AbstractFunctionExecutionBeanDefinitionBuilder
  */
 abstract class ServerBasedExecutionBeanDefinitionBuilder extends AbstractFunctionExecutionBeanDefinitionBuilder {
 
-	/**
-	 * @param configuration
-	 */
 	ServerBasedExecutionBeanDefinitionBuilder(FunctionExecutionConfiguration configuration) {
 		super(configuration);
 	}
@@ -38,18 +41,19 @@ abstract class ServerBasedExecutionBeanDefinitionBuilder extends AbstractFunctio
 	 */
 	@Override
 	protected BeanDefinitionBuilder getGemfireFunctionOperationsBeanDefinitionBuilder(BeanDefinitionRegistry registry) {
-		BeanDefinitionBuilder functionTemplateBuilder = BeanDefinitionBuilder.genericBeanDefinition(
-			getGemfireFunctionOperationsClass());
 
-		String cache = (String) configuration.getAttribute("cache");
-		String pool = (String) configuration.getAttribute("pool");
+		BeanDefinitionBuilder functionTemplateBuilder =
+			BeanDefinitionBuilder.genericBeanDefinition(getGemfireFunctionOperationsClass());
 
-		Assert.state(!(StringUtils.hasText(cache) && StringUtils.hasText(pool)), String.format(
-			"invalid configuration for interface %s; cannot specify both 'pool' and 'cache'",
-				configuration.getFunctionExecutionInterface().getName()));
+		String cache = (String) this.configuration.getAttribute("cache");
+		String pool = (String) this.configuration.getAttribute("pool");
 
-		functionTemplateBuilder.addConstructorArgReference(StringUtils.hasText(pool) ? pool
-			: (StringUtils.hasText(cache) ? cache : GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME));
+		Assert.state(!(StringUtils.hasText(cache) && StringUtils.hasText(pool)),
+			String.format("Invalid configuration for interface [%s]; cannot specify both 'pool' and 'cache'",
+				this.configuration.getFunctionExecutionInterface().getName()));
+
+		functionTemplateBuilder.addConstructorArgReference(StringUtils.hasText(pool)
+			? pool : (StringUtils.hasText(cache) ? cache : GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME));
 
 		return functionTemplateBuilder;
 	}
