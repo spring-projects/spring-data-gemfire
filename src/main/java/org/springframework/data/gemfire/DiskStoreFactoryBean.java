@@ -94,7 +94,6 @@ public class DiskStoreFactoryBean extends AbstractFactoryBeanSupport<DiskStore> 
 		this.diskStore = postProcess(newDiskStore(diskStoreFactory, diskStoreName));
 	}
 
-	/* (non-Javadoc) */
 	private void applyDiskStoreConfigurers(String diskStoreName) {
 		applyDiskStoreConfigurers(diskStoreName, getCompositeDiskStoreConfigurer());
 	}
@@ -128,13 +127,11 @@ public class DiskStoreFactoryBean extends AbstractFactoryBeanSupport<DiskStore> 
 			.forEach(diskStoreConfigurer -> diskStoreConfigurer.configure(diskStoreName, this));
 	}
 
-	/* (non-Javadoc) */
 	private GemFireCache resolveCache(String diskStoreName) {
 		return Optional.ofNullable(this.cache)
 			.orElseThrow(() -> newIllegalStateException("Cache is required to create DiskStore [%s]", diskStoreName));
 	}
 
-	/* (non-Javadoc) */
 	final String resolveDiskStoreName() {
 		return Optional.ofNullable(getBeanName()).filter(StringUtils::hasText)
 			.orElse(DiskStoreFactory.DEFAULT_DISK_STORE_NAME);

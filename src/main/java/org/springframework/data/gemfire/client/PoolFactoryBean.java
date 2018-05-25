@@ -128,7 +128,6 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 		init(Optional.ofNullable(PoolManager.find(validatePoolName())));
 	}
 
-	/* (non-Javadoc) */
 	@SuppressWarnings("all")
 	private void init(Optional<Pool> existingPool) {
 
@@ -148,7 +147,6 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 		}
 	}
 
-	/* (non-Javadoc) */
 	private void applyPoolConfigurers() {
 		applyPoolConfigurers(getCompositePoolConfigurer());
 	}
@@ -178,7 +176,6 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 			.forEach(poolConfigurer -> poolConfigurer.configure(getName(), this));
 	}
 
-	/* (non-Javadoc) */
 	private String validatePoolName() {
 
 		if (!StringUtils.hasText(getName())) {
@@ -360,42 +357,34 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 		return Optional.ofNullable(this.pool).map(Pool::getClass).orElse((Class) Pool.class);
 	}
 
-	/* (non-Javadoc) */
 	public void addLocators(ConnectionEndpoint... locators) {
 		this.locators.add(locators);
 	}
 
-	/* (non-Javadoc) */
 	public void addLocators(Iterable<ConnectionEndpoint> locators) {
 		this.locators.add(locators);
 	}
 
-	/* (non-Javadoc) */
 	public void addServers(ConnectionEndpoint... servers) {
 		this.servers.add(servers);
 	}
 
-	/* (non-Javadoc) */
 	public void addServers(Iterable<ConnectionEndpoint> servers) {
 		this.servers.add(servers);
 	}
 
-	/* (non-Javadoc) */
 	public void setName(String name) {
 		this.name = name;
 	}
 
-	/* (non-Javadoc) */
 	protected String getName() {
 		return this.name;
 	}
 
-	/* (non-Javadoc) */
 	public void setPool(Pool pool) {
 		this.pool = pool;
 	}
 
-	/* (non-Javadoc) */
 	public Pool getPool() {
 
 		return Optional.ofNullable(this.pool).orElseGet(() -> new PoolAdapter() {
@@ -559,58 +548,47 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 		});
 	}
 
-	/* (non-Javadoc) */
 	public void setFreeConnectionTimeout(int freeConnectionTimeout) {
 		this.freeConnectionTimeout = freeConnectionTimeout;
 	}
 
-	/* (non-Javadoc) */
 	public void setIdleTimeout(long idleTimeout) {
 		this.idleTimeout = idleTimeout;
 	}
 
-	/* (non-Javadoc) */
 	public void setKeepAlive(boolean keepAlive) {
 		this.keepAlive = keepAlive;
 	}
 
-	/* (non-Javadoc) */
 	public void setLoadConditioningInterval(int loadConditioningInterval) {
 		this.loadConditioningInterval = loadConditioningInterval;
 	}
 
-	/* (non-Javadoc) */
 	public void setLocators(ConnectionEndpoint[] connectionEndpoints) {
 		setLocators(ConnectionEndpointList.from(connectionEndpoints));
 	}
 
-	/* (non-Javadoc) */
 	public void setLocators(Iterable<ConnectionEndpoint> connectionEndpoints) {
 		getLocators().clear();
 		getLocators().add(connectionEndpoints);
 	}
 
-	/* (non-Javadoc) */
 	ConnectionEndpointList getLocators() {
 		return locators;
 	}
 
-	/* (non-Javadoc) */
 	public void setMaxConnections(int maxConnections) {
 		this.maxConnections = maxConnections;
 	}
 
-	/* (non-Javadoc) */
 	public void setMinConnections(int minConnections) {
 		this.minConnections = minConnections;
 	}
 
-	/* (non-Javadoc) */
 	public void setMultiUserAuthentication(boolean multiUserAuthentication) {
 		this.multiUserAuthentication = multiUserAuthentication;
 	}
 
-	/* (non-Javadoc) */
 	public void setPingInterval(long pingInterval) {
 		this.pingInterval = pingInterval;
 	}
@@ -652,73 +630,59 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 		this.poolFactoryInitializer = poolFactoryInitializer;
 	}
 
-	/* (non-Javadoc) */
 	public void setPrSingleHopEnabled(boolean prSingleHopEnabled) {
 		this.prSingleHopEnabled = prSingleHopEnabled;
 	}
 
-	/* (non-Javadoc) */
 	public void setReadTimeout(int readTimeout) {
 		this.readTimeout = readTimeout;
 	}
 
-	/* (non-Javadoc) */
 	public void setRetryAttempts(int retryAttempts) {
 		this.retryAttempts = retryAttempts;
 	}
 
-	/* (non-Javadoc) */
 	public void setServerGroup(String serverGroup) {
 		this.serverGroup = serverGroup;
 	}
 
-	/* (non-Javadoc) */
 	public void setServers(ConnectionEndpoint[] connectionEndpoints) {
 		setServers(ConnectionEndpointList.from(connectionEndpoints));
 	}
 
-	/* (non-Javadoc) */
 	public void setServers(Iterable<ConnectionEndpoint> connectionEndpoints) {
 		getServers().clear();
 		getServers().add(connectionEndpoints);
 	}
 
-	/* (non-Javadoc) */
 	ConnectionEndpointList getServers() {
 		return servers;
 	}
 
-	/* (non-Javadoc) */
 	public void setSocketBufferSize(int socketBufferSize) {
 		this.socketBufferSize = socketBufferSize;
 	}
 
-	/* (non-Javadoc) */
 	public void setStatisticInterval(int statisticInterval) {
 		this.statisticInterval = statisticInterval;
 	}
 
-	/* (non-Javadoc) */
 	public void setSubscriptionAckInterval(int subscriptionAckInterval) {
 		this.subscriptionAckInterval = subscriptionAckInterval;
 	}
 
-	/* (non-Javadoc) */
 	public void setSubscriptionEnabled(boolean subscriptionEnabled) {
 		this.subscriptionEnabled = subscriptionEnabled;
 	}
 
-	/* (non-Javadoc) */
 	public void setSubscriptionMessageTrackingTimeout(int subscriptionMessageTrackingTimeout) {
 		this.subscriptionMessageTrackingTimeout = subscriptionMessageTrackingTimeout;
 	}
 
-	/* (non-Javadoc) */
 	public void setSubscriptionRedundancy(int subscriptionRedundancy) {
 		this.subscriptionRedundancy = subscriptionRedundancy;
 	}
 
-	/* (non-Javadoc) */
 	public void setThreadLocalConnections(boolean threadLocalConnections) {
 		this.threadLocalConnections = threadLocalConnections;
 	}
@@ -727,15 +691,13 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 	 * (non-Javadoc)
 	 * internal framework use only
 	 */
-	public final void setLocatorsConfiguration(Object locatorsConfiguration) {
-	}
+	public final void setLocatorsConfiguration(Object locatorsConfiguration) { }
 
 	/*
 	 * (non-Javadoc)
 	 * internal framework use only
 	 */
-	public final void setServersConfiguration(Object serversConfiguration) {
-	}
+	public final void setServersConfiguration(Object serversConfiguration) { }
 
 	/**
 	 * Callback interface to initialize the {@link PoolFactory} used by this {@link PoolFactoryBean}

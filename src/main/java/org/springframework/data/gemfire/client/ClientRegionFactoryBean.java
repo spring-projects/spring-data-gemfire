@@ -159,7 +159,6 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		return region;
 	}
 
-	/* (non-Javadoc) */
 	private void applyRegionConfigurers(String regionName) {
 		applyRegionConfigurers(regionName, getCompositeRegionConfigurer());
 	}
@@ -237,7 +236,6 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		}
 	}
 
-	/* (non-Javadoc) */
 	private Region<K, V> newRegion(ClientRegionFactory<K, V> clientRegionFactory,
 			Region<?, ?> parentRegion, String regionName) {
 
@@ -255,7 +253,6 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 			});
 	}
 
-	/* (non-Javadoc) */
 	private ClientCache resolveCache(GemFireCache gemfireCache) {
 
 		return Optional.ofNullable(gemfireCache)
@@ -310,7 +307,6 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		return resolvedShortcut;
 	}
 
-	/* (non-Javadoc) */
 	private String resolvePoolName() {
 
 		return getPoolName()
@@ -320,17 +316,14 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 			.orElse(null);
 	}
 
-	/* (non-Javadoc) */
 	boolean isPoolResolvable(String poolName) {
 		return getBeanFactory().containsBean(poolName) || (PoolManager.find(poolName) != null);
 	}
 
-	/* (non-Javadoc) */
 	boolean isNotDefaultPool(String poolName) {
 		return !DEFAULT_POOL_NAME.equals(poolName);
 	}
 
-	/* (non-Javadoc) */
 	private String eagerlyInitializePool(String poolName) {
 
 		try {
@@ -473,7 +466,6 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		return region;
 	}
 
-	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
 	private Region<K, V> registerInterests(Region<K, V> region) {
 
@@ -575,7 +567,6 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		this.cacheWriter = cacheWriter;
 	}
 
-	/* (non-Javadoc) */
 	final boolean isClose() {
 		return this.close;
 	}
@@ -636,7 +627,6 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		setDataPolicy(resolvedDataPolicy);
 	}
 
-	/* (non-Javadoc) */
 	final boolean isDestroy() {
 		return this.destroy;
 	}
@@ -685,7 +675,6 @@ public class ClientRegionFactoryBean<K, V> extends RegionLookupFactoryBean<K, V>
 		this.interests = interests;
 	}
 
-	/* (non-Javadoc) */
 	Interest<K>[] getInterests() {
 		return this.interests;
 	}

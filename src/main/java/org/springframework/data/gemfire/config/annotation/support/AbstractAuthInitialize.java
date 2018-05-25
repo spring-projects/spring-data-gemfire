@@ -67,17 +67,14 @@ public abstract class AbstractAuthInitialize extends WiringDeclarableSupport
 		return Optional.ofNullable(this.environment);
 	}
 
-	/* (non-Javadoc */
 	@Override
 	@SuppressWarnings("deprecation")
 	public final void init(LogWriter logWriter, LogWriter logWriter1) throws AuthenticationFailedException {
 		doInit();
 	}
 
-	protected void doInit() {
-	}
+	protected void doInit() { }
 
-	/* (non-Javadoc */
 	@Override
 	public final Properties getCredentials(Properties properties, DistributedMember distributedMember, boolean isPeer)
 			throws AuthenticationFailedException {
@@ -87,8 +84,7 @@ public abstract class AbstractAuthInitialize extends WiringDeclarableSupport
 
 	protected abstract Properties doGetCredentials(Properties properties);
 
-	/* (non-Javadoc */
 	@Override
-	public void close() {
-	}
+	public void close() { }
+
 }

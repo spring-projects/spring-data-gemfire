@@ -210,7 +210,6 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 		applyPeerCacheConfigurers();
 	}
 
-	/* (non-Javadoc) */
 	private void applyPeerCacheConfigurers() {
 		applyPeerCacheConfigurers(getCompositePeerCacheConfigurer());
 	}
@@ -479,12 +478,10 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 		return cache;
 	}
 
-	/* (non-Javadoc) */
 	private boolean isHeapPercentageValid(Float heapPercentage) {
 		return (heapPercentage >= 0.0f && heapPercentage <= 100.0f);
 	}
 
-	/* (non-Javadoc) */
 	private void configureHeapPercentages(GemFireCache cache) {
 
 		Optional.ofNullable(getCriticalHeapPercentage()).ifPresent(criticalHeapPercentage -> {
@@ -504,7 +501,6 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 		});
 	}
 
-	/* (non-Javadoc) */
 	private void configureOffHeapPercentages(GemFireCache cache) {
 
 		Optional.ofNullable(getCriticalOffHeapPercentage()).ifPresent(criticalOffHeapPercentage -> {
@@ -524,7 +520,6 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 		});
 	}
 
-	/* (non-Javadoc) */
 	private void registerJndiDataSources() {
 
 		nullSafeCollection(getJndiDataSources()).forEach(jndiDataSource -> {
@@ -542,13 +537,11 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 		});
 	}
 
-	/* (non-Javadoc) */
 	private void registerTransactionListeners(GemFireCache cache) {
 		nullSafeCollection(getTransactionListeners())
 			.forEach(transactionListener -> cache.getCacheTransactionManager().addListener(transactionListener));
 	}
 
-	/* (non-Javadoc) */
 	private void registerTransactionWriter(GemFireCache cache) {
 		Optional.ofNullable(getTransactionWriter()).ifPresent(it -> cache.getCacheTransactionManager().setWriter(it));
 	}
@@ -1280,7 +1273,6 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 		T initialize(T cacheFactory);
 	}
 
-	/* (non-Javadoc) */
 	public static class DynamicRegionSupport {
 
 		private Boolean persistent = Boolean.TRUE;
@@ -1331,7 +1323,6 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 		}
 	}
 
-	/* (non-Javadoc) */
 	public static class JndiDataSource {
 
 		private List<ConfigProperty> props;

@@ -113,7 +113,6 @@ public class CacheServerFactoryBean extends AbstractFactoryBeanSupport<CacheServ
 		this.cacheServer = postProcess(configure(addCacheServer(cache)));
 	}
 
-	/* (non-Javadoc) */
 	private void applyCacheServerConfigurers() {
 		applyCacheServerConfigurers(getCompositeCacheServerConfigurer());
 	}
@@ -144,8 +143,8 @@ public class CacheServerFactoryBean extends AbstractFactoryBeanSupport<CacheServ
 			.forEach(cacheServerConfigurer -> cacheServerConfigurer.configure(getBeanName(), this));
 	}
 
-	/* (non-Javadoc) */
 	private Cache resolveCache() {
+
 		return Optional.ofNullable(this.cache)
 			.orElseThrow(() -> newIllegalArgumentException("Cache is required"));
 	}
@@ -238,12 +237,10 @@ public class CacheServerFactoryBean extends AbstractFactoryBeanSupport<CacheServ
 		return Optional.ofNullable(this.cacheServer).map(CacheServer::getClass).orElse((Class) CacheServer.class);
 	}
 
-	/* (non-Javadoc) */
 	public boolean isRunning() {
 		return Optional.ofNullable(this.cacheServer).map(CacheServer::isRunning).orElse(false);
 	}
 
-	/* (non-Javadoc) */
 	public boolean isAutoStartup() {
 		return this.autoStartup;
 	}
@@ -255,13 +252,11 @@ public class CacheServerFactoryBean extends AbstractFactoryBeanSupport<CacheServ
 		return Integer.MAX_VALUE;
 	}
 
-	/* (non-Javadoc) */
 	public void destroy() {
 		stop();
 		this.cacheServer = null;
 	}
 
-	/* (non-Javadoc) */
 	@Override
 	public void start() {
 		try {
@@ -272,29 +267,24 @@ public class CacheServerFactoryBean extends AbstractFactoryBeanSupport<CacheServ
 		}
 	}
 
-	/* (non-Javadoc) */
 	@Override
 	public void stop(Runnable callback) {
 		stop();
 		callback.run();
 	}
 
-	/* (non-Javadoc) */
 	public void stop() {
 		Optional.ofNullable(this.cacheServer).ifPresent(CacheServer::stop);
 	}
 
-	/* (non-Javadoc) */
 	public void setAutoStartup(boolean autoStartup) {
 		this.autoStartup = autoStartup;
 	}
 
-	/* (non-Javadoc) */
 	public void setBindAddress(String bindAddress) {
 		this.bindAddress = bindAddress;
 	}
 
-	/* (non-Javadoc) */
 	public void setCache(Cache cache) {
 		this.cache = cache;
 	}
@@ -333,92 +323,74 @@ public class CacheServerFactoryBean extends AbstractFactoryBeanSupport<CacheServ
 		this.cacheServerConfigurers = Optional.ofNullable(cacheServerConfigurers).orElseGet(Collections::emptyList);
 	}
 
-	/* (non-Javadoc) */
 	public void setHostNameForClients(String hostNameForClients) {
 		this.hostNameForClients = hostNameForClients;
 	}
 
-	/* (non-Javadoc) */
 	public void setListeners(Set<InterestRegistrationListener> listeners) {
 		this.listeners = listeners;
 	}
 
-	/* (non-Javadoc) */
 	public void setLoadPollInterval(long loadPollInterval) {
 		this.loadPollInterval = loadPollInterval;
 	}
 
-	/* (non-Javadoc) */
 	public void setMaxConnections(int maxConnections) {
 		this.maxConnections = maxConnections;
 	}
 
-	/* (non-Javadoc) */
 	public void setMaxMessageCount(int maxMessageCount) {
 		this.maxMessageCount = maxMessageCount;
 	}
 
-	/* (non-Javadoc) */
 	public void setMaxThreads(int maxThreads) {
 		this.maxThreads = maxThreads;
 	}
 
-	/* (non-Javadoc) */
 	public void setMaxTimeBetweenPings(int maxTimeBetweenPings) {
 		this.maxTimeBetweenPings = maxTimeBetweenPings;
 	}
 
-	/* (non-Javadoc) */
 	public void setMessageTimeToLive(int messageTimeToLive) {
 		this.messageTimeToLive = messageTimeToLive;
 	}
 
-	/* (non-Javadoc) */
 	public void setNotifyBySubscription(boolean notifyBySubscription) {
 		this.notifyBySubscription = notifyBySubscription;
 	}
 
-	/* (non-Javadoc) */
 	public void setPort(int port) {
 		this.port = port;
 	}
 
-	/* (non-Javadoc) */
 	public void setServerGroups(String[] serverGroups) {
 		this.serverGroups = serverGroups;
 	}
 
-	/* (non-Javadoc) */
 	public void setServerLoadProbe(ServerLoadProbe serverLoadProbe) {
 		this.serverLoadProbe = serverLoadProbe;
 	}
 
-	/* (non-Javadoc) */
 	public void setSocketBufferSize(int socketBufferSize) {
 		this.socketBufferSize = socketBufferSize;
 	}
 
-	/* (non-Javadoc) */
 	public void setSubscriptionCapacity(int subscriptionCapacity) {
 		this.subscriptionCapacity = subscriptionCapacity;
 	}
 
-	/* (non-Javadoc) */
 	public void setSubscriptionDiskStore(String diskStoreName) {
 		this.subscriptionDiskStore = diskStoreName;
 	}
 
-	/* (non-Javadoc) */
 	SubscriptionEvictionPolicy getSubscriptionEvictionPolicy() {
 		return Optional.ofNullable(this.subscriptionEvictionPolicy).orElse(SubscriptionEvictionPolicy.DEFAULT);
 	}
 
-	/* (non-Javadoc) */
 	public void setSubscriptionEvictionPolicy(SubscriptionEvictionPolicy evictionPolicy) {
 		this.subscriptionEvictionPolicy = evictionPolicy;
 	}
 
-	/* (non-Javadoc) */
 	public void setTcpNoDelay(boolean tcpNoDelay) {
 		this.tcpNoDelay = tcpNoDelay;
 	}

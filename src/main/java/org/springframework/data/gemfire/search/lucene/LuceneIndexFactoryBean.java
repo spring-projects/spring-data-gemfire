@@ -70,7 +70,7 @@ import org.springframework.util.StringUtils;
  */
 @SuppressWarnings("unused")
 public class LuceneIndexFactoryBean extends AbstractFactoryBeanSupport<LuceneIndex>
-	implements DisposableBean, InitializingBean {
+		implements DisposableBean, InitializingBean {
 
 	protected static final boolean DEFAULT_DESTROY = false;
 
@@ -101,9 +101,6 @@ public class LuceneIndexFactoryBean extends AbstractFactoryBeanSupport<LuceneInd
 	private String indexName;
 	private String regionPath;
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
 
