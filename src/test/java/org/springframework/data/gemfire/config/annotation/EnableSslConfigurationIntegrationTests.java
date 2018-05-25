@@ -62,7 +62,6 @@ public class EnableSslConfigurationIntegrationTests extends ClientServerIntegrat
 	@Resource(name = "Echo")
 	private Region<String, String> echo;
 
-
 	@BeforeClass
 	public static void setupGemFireServer() throws Exception {
 

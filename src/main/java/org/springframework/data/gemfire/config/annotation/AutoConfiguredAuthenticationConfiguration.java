@@ -73,7 +73,6 @@ public class AutoConfiguredAuthenticationConfiguration {
 		return (beanName, beanFactory) -> setAuthenticationCredentials(beanFactory.getProperties(), environment);
 	}
 
-	/* (non-Javadoc) */
 	private void setAuthenticationCredentials(Properties gemfireProperties, Environment environment) {
 
 		Optional.ofNullable(gemfireProperties)
@@ -84,7 +83,6 @@ public class AutoConfiguredAuthenticationConfiguration {
 			});
 	}
 
-	/* (non-Javadoc) */
 	private static boolean isMatch(Environment environment) {
 
 		return Optional.ofNullable(environment)
@@ -96,7 +94,6 @@ public class AutoConfiguredAuthenticationConfiguration {
 	public static class AutoConfiguredAuthenticationCondition implements Condition {
 
 		@Override
-		@SuppressWarnings("all")
 		public boolean matches(ConditionContext conditionContext, AnnotatedTypeMetadata annotatedTypeMetadata) {
 			return isMatch(conditionContext.getEnvironment());
 		}

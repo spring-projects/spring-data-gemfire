@@ -18,13 +18,16 @@ package org.springframework.data.gemfire.config.annotation.support;
 
 import java.util.Properties;
 
+import org.apache.geode.security.AuthInitialize;
 import org.apache.shiro.util.StringUtils;
 
 /**
- * The AutoConfiguredAuthenticationInitializer class...
+ * The {@link AutoConfiguredAuthenticationInitializer} class is an {@link AuthInitialize} implementation,
+ * which auto-configures security, and specifically authentication, for Apache Geode/Pivotal GemFire.
  *
  * @author John Blum
- * @since 1.0.0
+ * @see org.apache.geode.security.AuthInitialize
+ * @since 2.0.0
  */
 @SuppressWarnings("unused")
 public class AutoConfiguredAuthenticationInitializer extends AbstractAuthInitialize {
@@ -53,7 +56,6 @@ public class AutoConfiguredAuthenticationInitializer extends AbstractAuthInitial
 		return authenticationInitializer;
 	}
 
-	/* (non-Javadoc) */
 	@Override
 	protected Properties doGetCredentials(Properties properties) {
 
