@@ -142,7 +142,6 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 		this.initialized = true;
 	}
 
-	/* (non-Javadoc) */
 	private void applyContinuousQueryListenerContainerConfigurers() {
 		applyContinuousQueryListenerContainerConfigurers(getCompositeContinuousQueryListenerContainerConfigurer());
 	}
@@ -252,7 +251,14 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 		return getQueryService();
 	}
 
-	/* (non-Javadoc) */
+	/**
+	 * Verifies the given {@link QueryService} is valid.
+	 *
+	 * @param queryService {@link QueryService} to validate.
+	 * @throws IllegalStateException if the {@link QueryService} is {@literal null}.
+	 * @return the given {@link QueryService}
+	 * @see org.apache.geode.cache.query.QueryService
+	 */
 	private QueryService validateQueryService(QueryService queryService) {
 
 		Assert.state(queryService != null, "QueryService is required");
@@ -304,7 +310,6 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 		initContinuousQueries(getContinuousQueryDefinitions());
 	}
 
-	/* (non-Javadoc) */
 	private void initContinuousQueries(Set<ContinuousQueryDefinition> continuousQueryDefinitions) {
 
 		// Stop the ContinuousQueryListenerContainer if currently running...
@@ -609,13 +614,16 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	}
 
 	public boolean addContinuousQueryDefinition(ContinuousQueryDefinition definition) {
-		return Optional.ofNullable(definition).map(it -> getContinuousQueryDefinitions().add(it)).orElse(false);
+
+		return Optional.ofNullable(definition)
+			.map(getContinuousQueryDefinitions()::add)
+			.orElse(false);
 	}
 
-	/* (non-Javadoc) */
 	CqQuery addContinuousQuery(ContinuousQueryDefinition definition) {
 
 		try {
+
 			CqAttributes attributes = definition.toCqAttributes(this::newCqListener);
 
 			CqQuery query = (definition.isNamed() ? newNamedContinuousQuery(definition, attributes)
@@ -628,26 +636,22 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 		}
 	}
 
-	/* (non-Javadoc) */
 	protected CqListener newCqListener(ContinuousQueryListener listener) {
 		return new EventDispatcherAdapter(listener);
 	}
 
-	/* (non-Javadoc) */
 	private CqQuery newNamedContinuousQuery(ContinuousQueryDefinition definition, CqAttributes attributes)
 			throws QueryException {
 
 		return getQueryService().newCq(definition.getName(), definition.getQuery(), attributes, definition.isDurable());
 	}
 
-	/* (non-Javadoc) */
 	private CqQuery newUnnamedContinuousQuery(ContinuousQueryDefinition definition, CqAttributes attributes)
 			throws CqException {
 
 		return getQueryService().newCq(definition.getQuery(), attributes, definition.isDurable());
 	}
 
-	/* (non-Javadoc) */
 	private CqQuery manage(CqQuery query) {
 		getContinuousQueries().add(query);
 		return query;
@@ -667,12 +671,10 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 		}
 	}
 
-	/* (non-Javadoc) */
 	void doStart() {
 		getContinuousQueries().forEach(this::execute);
 	}
 
-	/* (non-Javadoc) */
 	private void execute(CqQuery query) {
 
 		try {
@@ -765,10 +767,10 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 		}
 	}
 
-	/* (non-Javadoc) */
 	void doStop() {
 
 		getContinuousQueries().forEach(query -> {
+
 			try {
 				query.stop();
 			}
@@ -789,7 +791,6 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 		this.initialized = false;
 	}
 
-	/* (non-Javadoc) */
 	private void closeQueries() {
 
 		getContinuousQueries().stream().filter(query -> !query.isClosed()).forEach(query -> {
@@ -807,7 +808,6 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 		getContinuousQueries().clear();
 	}
 
-	/* (non-Javadoc) */
 	private void destroyExecutor() {
 
 		Optional.ofNullable(getTaskExecutor())

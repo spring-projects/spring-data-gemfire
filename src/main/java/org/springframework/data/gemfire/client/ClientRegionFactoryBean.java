@@ -51,6 +51,7 @@ import org.springframework.data.gemfire.config.annotation.RegionConfigurer;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.gemfire.eviction.EvictingRegionFactoryBean;
 import org.springframework.data.gemfire.expiration.ExpiringRegionFactoryBean;
+import org.springframework.data.gemfire.support.SmartLifecycleSupport;
 import org.springframework.data.gemfire.util.RegionUtils;
 import org.springframework.data.gemfire.util.SpringUtils;
 import org.springframework.util.Assert;
@@ -76,10 +77,11 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.data.gemfire.DataPolicyConverter
  * @see org.springframework.data.gemfire.ResolvableRegionFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
+ * @see org.springframework.data.gemfire.support.SmartLifecycleSupport
  */
 @SuppressWarnings("unused")
 public class ClientRegionFactoryBean<K, V> extends ConfigurableRegionFactoryBean<K, V>
-		implements EvictingRegionFactoryBean, ExpiringRegionFactoryBean<K, V>, DisposableBean {
+		implements SmartLifecycleSupport, EvictingRegionFactoryBean, ExpiringRegionFactoryBean<K, V>, DisposableBean {
 
 	public static final String DEFAULT_POOL_NAME = "DEFAULT";
 	public static final String GEMFIRE_POOL_NAME = GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME;
@@ -391,8 +393,6 @@ public class ClientRegionFactoryBean<K, V> extends ConfigurableRegionFactoryBean
 
 		super.postProcess(region);
 
-		registerInterests(region);
-
 		Optional.ofNullable(this.cacheLoader)
 			.ifPresent(cacheLoader -> region.getAttributesMutator().setCacheLoader(cacheLoader));
 
@@ -402,10 +402,21 @@ public class ClientRegionFactoryBean<K, V> extends ConfigurableRegionFactoryBean
 		return region;
 	}
 
+	/**
+	 * Registers interests in the startup lifecycle phase of the Spring container.
+	 *
+	 * @see #getRegion()
+	 * @see #registerInterests(Region)
+	 */
+	@Override
+	public void start() {
+		registerInterests(getRegion());
+	}
+
 	@SuppressWarnings("unchecked")
 	private Region<K, V> registerInterests(Region<K, V> region) {
 
-		stream(nullSafeArray(this.interests, Interest.class)).forEach(interest -> {
+		stream(nullSafeArray(getInterests(), Interest.class)).forEach(interest -> {
 
 			if (interest.isRegexType()) {
 				region.registerInterestRegex((String) interest.getKey(), interest.getPolicy(),
@@ -445,7 +456,6 @@ public class ClientRegionFactoryBean<K, V> extends ConfigurableRegionFactoryBean
 			if (isDestroy()) {
 				region.destroyRegion();
 			}
-
 		});
 	}
 
@@ -523,7 +533,7 @@ public class ClientRegionFactoryBean<K, V> extends ConfigurableRegionFactoryBean
 	 */
 	public void setClose(boolean close) {
 		this.close = close;
-		this.destroy = (this.destroy && !close); // retain previous value iff close is false.
+		this.destroy = this.destroy && !close; // retain previous value iff close is false.
 	}
 
 	/**
