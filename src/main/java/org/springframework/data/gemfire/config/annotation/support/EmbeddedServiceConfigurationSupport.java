@@ -97,13 +97,11 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 		}
 	}
 
-	/* (non-Javadoc) */
 	@SuppressWarnings("unused")
 	protected void registerBeanDefinitions(AnnotationMetadata importingClassMetaData,
 			Map<String, Object> annotationAttributes, BeanDefinitionRegistry registry) {
 	}
 
-	/* (non-Javadoc) */
 	protected void setGemFireProperties(AnnotationMetadata importingClassMetadata,
 			Map<String, Object> annotationAttributes, BeanDefinitionRegistry registry) {
 
@@ -119,20 +117,16 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 		}
 	}
 
-	/* (non-Javadoc) */
 	protected abstract Properties toGemFireProperties(Map<String, Object> annotationAttributes);
 
-	/* (non-Javadoc) */
 	protected boolean isAnnotationPresent(AnnotationMetadata importingClassMetadata) {
 		return importingClassMetadata.hasAnnotation(getAnnotationTypeName());
 	}
 
-	/* (non-Javadoc) */
 	protected boolean hasProperties(Properties properties) {
 		return !CollectionUtils.isEmpty(properties);
 	}
 
-	/* (non-Javadoc) */
 	protected void registerGemFirePropertiesBeanPostProcessor(BeanDefinitionRegistry registry,
 			Properties customGemFireProperties) {
 
@@ -144,22 +138,18 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 		BeanDefinitionReaderUtils.registerBeanDefinition(newBeanDefinitionHolder(builder), registry);
 	}
 
-	/* (non-Javadoc) */
 	protected BeanDefinitionHolder newBeanDefinitionHolder(BeanDefinitionBuilder builder) {
 		return new BeanDefinitionHolder(builder.getBeanDefinition(), generateBeanName());
 	}
 
-	/* (non-Javadoc) */
 	protected String generateBeanName() {
 		return generateBeanName(getAnnotationType());
 	}
 
-	/* (non-Javadoc) */
 	protected String generateBeanName(Class<?> typeQualifier) {
 		return generateBeanName(typeQualifier.getSimpleName());
 	}
 
-	/* (non-Javadoc) */
 	protected String generateBeanName(String nameQualifier) {
 		return String.format("%1$s.%2$s", getClass().getName(), nameQualifier);
 	}
@@ -199,22 +189,18 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 		}
 	}
 
-	/* (non-Javadoc) */
 	protected String resolveHost(String hostname) {
 		return resolveHost(hostname, DEFAULT_HOST);
 	}
 
-	/* (non-Javadoc) */
 	protected String resolveHost(String hostname, String defaultHostname) {
 		return Optional.ofNullable(hostname).filter(StringUtils::hasText).orElse(defaultHostname);
 	}
 
-	/* (non-Javadoc) */
 	protected Integer resolvePort(Integer port) {
 		return resolvePort(port, DEFAULT_PORT);
 	}
 
-	/* (non-Javadoc) */
 	protected Integer resolvePort(Integer port, Integer defaultPort) {
 		return Optional.ofNullable(port).orElse(defaultPort);
 	}
@@ -240,7 +226,9 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 		 * @see java.util.Properties
 		 */
 		protected GemFirePropertiesBeanPostProcessor(Properties gemfireProperties) {
+
 			Assert.notEmpty(gemfireProperties, "Pivotal GemFire Properties are required");
+
 			this.gemfireProperties = gemfireProperties;
 		}
 
@@ -251,7 +239,9 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 		public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 
 			if (bean instanceof Properties && GEMFIRE_PROPERTIES_BEAN_NAME.equals(beanName)) {
+
 				Properties gemfirePropertiesBean = (Properties) bean;
+
 				gemfirePropertiesBean.putAll(gemfireProperties);
 			}
 

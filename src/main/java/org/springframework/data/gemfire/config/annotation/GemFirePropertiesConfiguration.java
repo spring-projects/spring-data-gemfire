@@ -17,6 +17,7 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
+import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Properties;
 
@@ -44,6 +45,7 @@ public class GemFirePropertiesConfiguration extends EmbeddedServiceConfiguration
 	public static final boolean DEFAULT_LOAD_CLUSTER_CONFIGURATION_FROM_DIRECTORY = false;
 	public static final boolean DEFAULT_LOCK_MEMORY = false;
 	public static final boolean DEFAULT_REMOVE_UNRESPONSIVE_CLIENT = false;
+	public static final boolean DEFAULT_VALIDATE_SERIALIZABLE_OBJECTS = false;
 
 	public static final int DEFAULT_ACK_SEVERE_ALERT_THRESHOLD = 0;
 	public static final int DEFAULT_ACK_WAIT_THRESHOLD = 15;
@@ -63,15 +65,26 @@ public class GemFirePropertiesConfiguration extends EmbeddedServiceConfiguration
 	public static final long DEFAULT_MEMBER_TIMEOUT = 5000L;
 	public static final long DEFAULT_SOCKET_LEASE_TIME = 60000L;
 
+	public static final String DEFAULT_BIND_ADDRESS = "";
+	public static final String DEFAULT_CACHE_XML_FILE = "";
+	public static final String DEFAULT_CLUSTER_CONFIGURATION_DIRECTORY = "";
 	public static final String DEFAULT_CONFLATE_EVENTS = "server";
 	public static final String DEFAULT_DEPLOY_WORKING_DIRECTORY = ".";
 	public static final String DEFAULT_MEMBERSHIP_PORT_RANGE = "1024-65535";
+	public static final String DEFAULT_NAME = "";
+	public static final String DEFAULT_REDUNDANCY_ZONE = "";
+	public static final String DEFAULT_REMOTE_LOCATORS = "";
+	public static final String DEFAULT_SERIALIZABLE_OBJECT_FILTER = "";
+	public static final String DEFAULT_USER_COMMAND_PACKAGES = "";
+
+	@SuppressWarnings("unused")
+	public static final String[] DEFAULT_GROUPS = {};
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	protected Class getAnnotationType() {
+	protected Class<? extends Annotation> getAnnotationType() {
 		return EnableGemFireProperties.class;
 	}
 
@@ -80,6 +93,7 @@ public class GemFirePropertiesConfiguration extends EmbeddedServiceConfiguration
 	 */
 	@Override
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
+
 		PropertiesBuilder gemfireProperties = new PropertiesBuilder();
 
 		gemfireProperties.setPropertyIfNotDefault("ack-severe-alert-threshold",
@@ -149,6 +163,8 @@ public class GemFirePropertiesConfiguration extends EmbeddedServiceConfiguration
 		gemfireProperties.setPropertyIfNotDefault("membership-port-range",
 			annotationAttributes.get("membershipPortRange"), DEFAULT_MEMBERSHIP_PORT_RANGE);
 
+		gemfireProperties.setProperty("name", annotationAttributes.get("name"));
+
 		gemfireProperties.setProperty("redundancy-zone", annotationAttributes.get("redundancyZone"));
 
 		gemfireProperties.setProperty("remote-locators", annotationAttributes.get("remoteLocators"));
@@ -156,13 +172,17 @@ public class GemFirePropertiesConfiguration extends EmbeddedServiceConfiguration
 		gemfireProperties.setPropertyIfNotDefault("remove-unresponsive-client",
 			annotationAttributes.get("removeUnresponsiveClient"), DEFAULT_REMOVE_UNRESPONSIVE_CLIENT);
 
+		gemfireProperties.setProperty("serializable-object-filter",
+			annotationAttributes.get("serializableObjectFilter"));
+
 		gemfireProperties.setPropertyIfNotDefault("socket-buffer-size",
 			annotationAttributes.get("socketBufferSize"), DEFAULT_SOCKET_BUFFER_SIZE);
 
 		gemfireProperties.setPropertyIfNotDefault("socket-lease-time",
 			annotationAttributes.get("socketLeaseTime"), DEFAULT_SOCKET_LEASE_TIME);
 
-		gemfireProperties.setPropertyIfNotDefault("tcp-port", annotationAttributes.get("tcpPort"), DEFAULT_TCP_PORT);
+		gemfireProperties.setPropertyIfNotDefault("tcp-port",
+			annotationAttributes.get("tcpPort"), DEFAULT_TCP_PORT);
 
 		gemfireProperties.setPropertyIfNotDefault("tombstone-gc-threshold",
 			annotationAttributes.get("tombstoneGcThreshold"), DEFAULT_TOMBSTONE_THRESHOLD);
@@ -177,6 +197,9 @@ public class GemFirePropertiesConfiguration extends EmbeddedServiceConfiguration
 			annotationAttributes.get("udpSendBufferSize"), DEFAULT_UDP_SEND_BUFFER_SIZE);
 
 		gemfireProperties.setProperty("user-command-packages", annotationAttributes.get("userCommandPackages"));
+
+		gemfireProperties.setPropertyIfNotDefault("validate-serializable-objects",
+			annotationAttributes.get("validateSerializableObjects"), DEFAULT_VALIDATE_SERIALIZABLE_OBJECTS);
 
 		return gemfireProperties.build();
 	}
