@@ -376,6 +376,25 @@ public class EnableGemFirePropertiesIntegrationTests {
 	}
 
 	@Test
+	public void serializableObjectFilterAndValidateSerializableObjectsGemFirePropertiesConfiguration() {
+
+		this.applicationContext =
+			newApplicationContext(TestSerializableObjectFilterAndValidateSerializableObjectsGemFirePropertiesConfiguration.class);
+
+		assertThat(this.applicationContext).isNotNull();
+		assertThat(this.applicationContext.containsBean("gemfireProperties")).isTrue();
+
+		Properties gemfireProperties = this.applicationContext.getBean("gemfireProperties", Properties.class);
+
+		assertThat(gemfireProperties).isNotNull();
+		assertThat(gemfireProperties.containsKey("serializable-object-filter")).isTrue();
+		assertThat(gemfireProperties.getProperty("serializable-object-filter"))
+			.isEqualTo("example.app.model.TypeOne,example.app.model.TypeTwo");
+		assertThat(gemfireProperties.containsKey("validate-serializable-objects")).isTrue();
+		assertThat(gemfireProperties.getProperty("validate-serializable-objects")).isEqualTo("true");
+	}
+
+	@Test
 	public void sslGemFirePropertiesConfiguration() {
 
 		PropertySource testPropertySource = new MockPropertySource("TestPropertySource")
@@ -515,6 +534,12 @@ public class EnableGemFirePropertiesIntegrationTests {
 	@EnableGemFireProperties
 	@EnableSecurity
 	static class TestSecurityGemFirePropertiesConfiguration { }
+
+	@EnableGemFireMockObjects
+	@PeerCacheApplication
+	@EnableGemFireProperties(serializableObjectFilter = { "example.app.model.TypeOne", "example.app.model.TypeTwo" },
+		validateSerializableObjects = true)
+	static class TestSerializableObjectFilterAndValidateSerializableObjectsGemFirePropertiesConfiguration { }
 
 	@EnableGemFireMockObjects
 	@PeerCacheApplication

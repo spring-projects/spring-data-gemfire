@@ -362,15 +362,15 @@ public @interface EnableGemFireProperties {
 	boolean removeUnresponsiveClient() default GemFirePropertiesConfiguration.DEFAULT_REMOVE_UNRESPONSIVE_CLIENT;
 
 	/**
-	 * A semicolon-separated list of items that become full class names of objects that the system will serialize
-	 * when the property {@link #validateSerializableObjects()} is set to {@literal true}.
+	 * A List of items that become full class names of objects that the system will serialize when the property
+	 * {@link #validateSerializableObjects()} is set to {@literal true}.
 	 *
 	 * The list is expanded using the patterns specified in the createFilter method at
 	 * <a href="https://docs.oracle.com/javase/9/docs/api/java/io/ObjectInputFilter.Config.html">Class ObjectInputFilter.Config</a>.
 	 *
 	 * Defaults to unset.
 	 */
-	String serializableObjectFilter() default GemFirePropertiesConfiguration.DEFAULT_SERIALIZABLE_OBJECT_FILTER;
+	String[] serializableObjectFilter() default {};
 
 	/**
 	 * Receive buffer sizes in bytes of the TCP/IP connections used for data transmission. To minimize the buffer size

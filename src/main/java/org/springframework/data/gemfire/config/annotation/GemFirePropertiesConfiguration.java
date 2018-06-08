@@ -74,11 +74,13 @@ public class GemFirePropertiesConfiguration extends EmbeddedServiceConfiguration
 	public static final String DEFAULT_NAME = "";
 	public static final String DEFAULT_REDUNDANCY_ZONE = "";
 	public static final String DEFAULT_REMOTE_LOCATORS = "";
-	public static final String DEFAULT_SERIALIZABLE_OBJECT_FILTER = "";
 	public static final String DEFAULT_USER_COMMAND_PACKAGES = "";
 
 	@SuppressWarnings("unused")
 	public static final String[] DEFAULT_GROUPS = {};
+
+	@SuppressWarnings("unused")
+	public static final String[] DEFAULT_SERIALIZABLE_OBJECT_FILTER = {};
 
 	/**
 	 * {@inheritDoc}
@@ -173,7 +175,7 @@ public class GemFirePropertiesConfiguration extends EmbeddedServiceConfiguration
 			annotationAttributes.get("removeUnresponsiveClient"), DEFAULT_REMOVE_UNRESPONSIVE_CLIENT);
 
 		gemfireProperties.setProperty("serializable-object-filter",
-			annotationAttributes.get("serializableObjectFilter"));
+			(String[]) annotationAttributes.get("serializableObjectFilter"));
 
 		gemfireProperties.setPropertyIfNotDefault("socket-buffer-size",
 			annotationAttributes.get("socketBufferSize"), DEFAULT_SOCKET_BUFFER_SIZE);
