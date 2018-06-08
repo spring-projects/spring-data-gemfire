@@ -33,6 +33,8 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.same;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -67,7 +69,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.data.gemfire.support.GemfireBeanFactoryLocator;
-import org.springframework.data.util.ReflectionUtils;
 
 /**
  * Unit tests for {@link CacheFactoryBean}.
@@ -688,15 +689,14 @@ public class CacheFactoryBeanTest {
 
 		when(mockCache.isClosed()).thenReturn(false);
 
-		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean() {
-			@Override protected GemFireCache fetchCache() {
-				fetchCacheCalled.set(true);
-				return mockCache;
-			}
-		};
+		CacheFactoryBean cacheFactoryBean = spy(new CacheFactoryBean());
 
-		ReflectionUtils.setField(CacheFactoryBean.class.getDeclaredField("beanFactoryLocator"), cacheFactoryBean,
-			mockGemfireBeanFactoryLocator);
+		doAnswer(invocation -> {
+			fetchCacheCalled.set(true);
+			return mockCache;
+		}).when(cacheFactoryBean).fetchCache();
+
+		doReturn(mockGemfireBeanFactoryLocator).when(cacheFactoryBean).getBeanFactoryLocator();
 
 		cacheFactoryBean.setClose(true);
 		cacheFactoryBean.setUseBeanFactoryLocator(true);
@@ -715,12 +715,12 @@ public class CacheFactoryBeanTest {
 
 		AtomicBoolean fetchCacheCalled = new AtomicBoolean(false);
 
-		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean() {
-			@Override protected <T extends GemFireCache> T fetchCache() {
-				fetchCacheCalled.set(true);
-				return null;
-			}
-		};
+		CacheFactoryBean cacheFactoryBean = spy(new CacheFactoryBean());
+
+		doAnswer(invocation -> {
+			fetchCacheCalled.set(true);
+			return null;
+		}).when(cacheFactoryBean).fetchCache();
 
 		cacheFactoryBean.setClose(true);
 		cacheFactoryBean.setUseBeanFactoryLocator(true);
@@ -731,27 +731,13 @@ public class CacheFactoryBeanTest {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void destroyWhenCacheClosedIsTrue() throws Exception {
+	public void destroyWhenCloseIsFalse() throws Exception {
 
-		AtomicBoolean fetchCacheCalled = new AtomicBoolean(false);
-
-		Cache mockCache = mock(Cache.class, "GemFireCache");
-
-		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean() {
-			@Override @SuppressWarnings("unchecked") protected <T extends GemFireCache> T fetchCache() {
-				fetchCacheCalled.set(true);
-				return (T) mockCache;
-			}
-		};
+		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
 
 		cacheFactoryBean.setClose(false);
 		cacheFactoryBean.setUseBeanFactoryLocator(false);
 		cacheFactoryBean.destroy();
-
-		verify(mockCache, never()).isClosed();
-		verify(mockCache, never()).close();
-
-		assertFalse(fetchCacheCalled.get());
 	}
 
 	@Test
