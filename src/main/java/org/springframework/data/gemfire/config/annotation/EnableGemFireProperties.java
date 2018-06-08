@@ -115,14 +115,14 @@ public @interface EnableGemFireProperties {
 	 *
 	 * Defaults to unset.
 	 */
-	String bindAddress() default "";
+	String bindAddress() default GemFirePropertiesConfiguration.DEFAULT_BIND_ADDRESS;
 
 	/**
 	 * Declarative initialization file for the member’s cache.
 	 *
 	 * Defaults to unset.
 	 */
-	String cacheXmlFile() default "";
+	String cacheXmlFile() default GemFirePropertiesConfiguration.DEFAULT_CACHE_XML_FILE;
 
 	/**
 	 * This property specifies the directory in which the cluster configuration related disk-store and artifacts
@@ -131,7 +131,8 @@ public @interface EnableGemFireProperties {
 	 *
 	 * Defaults to unset.
 	 */
-	String clusterConfigurationDirectory() default "";
+	String clusterConfigurationDirectory()
+		default GemFirePropertiesConfiguration.DEFAULT_CLUSTER_CONFIGURATION_DIRECTORY;
 
 	/**
 	 * Used only by clients in a client/server installation. This is a client-side property
@@ -204,7 +205,8 @@ public @interface EnableGemFireProperties {
 	 *
 	 * Defaults to {@literal false}.
 	 */
-	boolean enableNetworkPartitionDetection() default GemFirePropertiesConfiguration.DEFAULT_ENABLE_NETWORK_PARTITION_DETECTION;
+	boolean enableNetworkPartitionDetection()
+		default GemFirePropertiesConfiguration.DEFAULT_ENABLE_NETWORK_PARTITION_DETECTION;
 
 	/**
 	 * Whether partitioned regions will put redundant copies of the same data in different members
@@ -232,7 +234,8 @@ public @interface EnableGemFireProperties {
 	 *
 	 * Defaults to {@literal false}.
 	 */
-	boolean loadClusterConfigurationFromDirectory() default GemFirePropertiesConfiguration.DEFAULT_LOAD_CLUSTER_CONFIGURATION_FROM_DIRECTORY;
+	boolean loadClusterConfigurationFromDirectory()
+		default GemFirePropertiesConfiguration.DEFAULT_LOAD_CLUSTER_CONFIGURATION_FROM_DIRECTORY;
 
 	/**
 	 * The number of seconds that a member should wait for a Locator to start if a Locator is not available
@@ -303,6 +306,14 @@ public @interface EnableGemFireProperties {
 	String membershipPortRange() default GemFirePropertiesConfiguration.DEFAULT_MEMBERSHIP_PORT_RANGE;
 
 	/**
+	 * Configures the {@link String name} of this member in the Apache Geode/Pivotal GemFire distributed system
+	 * whether the member is a client in the client/server topology or a peer in the cluster.
+	 *
+	 * Defaults to unset.
+	 */
+	String name() default GemFirePropertiesConfiguration.DEFAULT_NAME;
+
+	/**
 	 * Defines this member’s redundancy zone. Used to separate member’s into different groups for satisfying
 	 * Partitioned Region redundancy. If this property is set, Pivotal GemFire will not put redundant copies of data
 	 * in members with the same redundancy zone setting.
@@ -311,7 +322,7 @@ public @interface EnableGemFireProperties {
 	 *
 	 * @see <a href="http://geode.docs.pivotal.io/docs/developing/partitioned_regions/configuring_ha_for_pr.html">Configure High Availability for a Partitioned Region</a>
 	 */
-	String redundancyZone() default "";
+	String redundancyZone() default GemFirePropertiesConfiguration.DEFAULT_REDUNDANCY_ZONE;
 
 	/**
 	 * Used to configure the Locators that a cluster will use in order to connect to a remote site in a multi-site
@@ -338,7 +349,7 @@ public @interface EnableGemFireProperties {
 	 *
 	 * Defaults to unset.
 	 */
-	String remoteLocators() default "";
+	String remoteLocators() default GemFirePropertiesConfiguration.DEFAULT_REMOTE_LOCATORS;
 
 	/**
 	 * When this property is set to {@literal true}, the primary server drops unresponsive clients
@@ -349,6 +360,17 @@ public @interface EnableGemFireProperties {
 	 * Defaults to {@literal false}.
 	 */
 	boolean removeUnresponsiveClient() default GemFirePropertiesConfiguration.DEFAULT_REMOVE_UNRESPONSIVE_CLIENT;
+
+	/**
+	 * A semicolon-separated list of items that become full class names of objects that the system will serialize
+	 * when the property {@link #validateSerializableObjects()} is set to {@literal true}.
+	 *
+	 * The list is expanded using the patterns specified in the createFilter method at
+	 * <a href="https://docs.oracle.com/javase/9/docs/api/java/io/ObjectInputFilter.Config.html">Class ObjectInputFilter.Config</a>.
+	 *
+	 * Defaults to unset.
+	 */
+	String serializableObjectFilter() default GemFirePropertiesConfiguration.DEFAULT_SERIALIZABLE_OBJECT_FILTER;
 
 	/**
 	 * Receive buffer sizes in bytes of the TCP/IP connections used for data transmission. To minimize the buffer size
@@ -433,6 +455,19 @@ public @interface EnableGemFireProperties {
 	 *
 	 * Defaults to unset.
 	 */
-	String userCommandPackages() default "";
+	String userCommandPackages() default GemFirePropertiesConfiguration.DEFAULT_USER_COMMAND_PACKAGES;
+
+	/**
+	 * A boolean that defaults to {@literal false}. When {@literal true}, instances of classes that are not internal
+	 * to Apache Geode/Pivotal GemFire and whose class name is not allowed by the list defined in
+	 * the {@link #serializableObjectFilter()} property will not be permitted to be deserialized.
+	 *
+	 * An {@literal IncompatibleClassException} is thrown for objects not listed. JDK 8 build 121 or a later build
+	 * must be installed to use this property. Servers and clients that do not meet this requirement
+	 * will throw an exception upon startup.
+	 *
+	 * Defaults to {@literal false}.
+	 */
+	boolean validateSerializableObjects() default GemFirePropertiesConfiguration.DEFAULT_VALIDATE_SERIALIZABLE_OBJECTS;
 
 }

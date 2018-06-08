@@ -57,14 +57,21 @@ public class EnableGemFirePropertiesIntegrationTests {
 		Optional.ofNullable(this.applicationContext).ifPresent(ConfigurableApplicationContext::close);
 	}
 
+	private ConfigurableApplicationContext newApplicationContext(Class<?>... annotatedClasses) {
+		return newApplicationContext(null, annotatedClasses);
+	}
+
 	private ConfigurableApplicationContext newApplicationContext(PropertySource<?> testPropertySource,
 			Class<?>... annotatedClasses) {
 
 		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
 
-		MutablePropertySources propertySources = applicationContext.getEnvironment().getPropertySources();
+		Optional.ofNullable(testPropertySource).ifPresent(it -> {
 
-		propertySources.addFirst(testPropertySource);
+			MutablePropertySources propertySources = applicationContext.getEnvironment().getPropertySources();
+
+			propertySources.addFirst(testPropertySource);
+		});
 
 		applicationContext.registerShutdownHook();
 		applicationContext.register(annotatedClasses);
@@ -260,6 +267,36 @@ public class EnableGemFirePropertiesIntegrationTests {
 	}
 
 	@Test
+	public void nameAndGroupGemFirePropertiesAnnotationConfiguration() {
+
+		this.applicationContext = newApplicationContext(TestNameAndGroupGemFirePropertiesAnnotationConfiguration.class);
+
+		assertThat(this.applicationContext).isNotNull();
+		assertThat(this.applicationContext.containsBean("gemfireCache")).isTrue();
+		assertThat(this.applicationContext.containsBean("gemfireProperties")).isTrue();
+
+		Properties gemfireProperties = this.applicationContext.getBean("gemfireProperties", Properties.class);
+
+
+		// TODO: uncomment when Spring Test for Apache Geode/Pivotal GemFire project replaces
+		// the test infrastructure classes in SDG.
+		/*
+		GemFireCache gemfireCache = this.applicationContext.getBean("gemfireCache", GemFireCache.class);
+
+		assertThat(gemfireCache).isNotNull();
+		assertThat(gemfireCache.getDistributedSystem()).isNotNull();
+
+		Properties gemfireProperties = gemfireCache.getDistributedSystem().getProperties();
+		*/
+
+		assertThat(gemfireProperties).isNotNull();
+		assertThat(gemfireProperties.containsKey("name")).isTrue();
+		assertThat(gemfireProperties.getProperty("name")).isEqualTo("TestName");
+		assertThat(gemfireProperties.containsKey("groups")).isTrue();
+		assertThat(gemfireProperties.getProperty("groups")).isEqualTo("TestGroupOne,TestGroupTwo");
+	}
+
+	@Test
 	public void offHeapGemFirePropertiesConfiguration() {
 
 		PropertySource testPropertySource = new MockPropertySource("TestPropertySource")
@@ -424,64 +461,60 @@ public class EnableGemFirePropertiesIntegrationTests {
 	@PeerCacheApplication
 	@EnableAuth
 	@EnableGemFireProperties
-	static class TestAuthGemFirePropertiesConfiguration {
-	}
+	static class TestAuthGemFirePropertiesConfiguration { }
 
 	@EnableGemFireMockObjects
 	@PeerCacheApplication
 	@EnableGemFireProperties
 	@EnableHttpService
-	static class TestHttpGemFirePropertiesConfiguration {
-	}
+	static class TestHttpGemFirePropertiesConfiguration { }
 
 	@EnableGemFireMockObjects
 	@PeerCacheApplication
 	@EnableGemFireProperties
 	@EnableLocator
-	static class TestLocatorGemFirePropertiesConfiguration {
-	}
+	static class TestLocatorGemFirePropertiesConfiguration { }
 
 	@EnableGemFireMockObjects
 	@PeerCacheApplication
 	@EnableGemFireProperties
 	@EnableLogging
-	static class TestLoggingGemFirePropertiesConfiguration {
-	}
+	static class TestLoggingGemFirePropertiesConfiguration { }
 
 	@EnableGemFireMockObjects
 	@PeerCacheApplication
 	@EnableGemFireProperties
 	@EnableManager
-	static class TestManagerGemFirePropertiesConfiguration {
-	}
+	static class TestManagerGemFirePropertiesConfiguration { }
 
 	@EnableGemFireMockObjects
 	@PeerCacheApplication
 	@EnableGemFireProperties
 	@EnableMemcachedServer
-	static class TestMemcachedServerGemFirePropertiesConfiguration {
-	}
+	static class TestMemcachedServerGemFirePropertiesConfiguration { }
+
+	@EnableGemFireMockObjects
+	@PeerCacheApplication
+	@EnableGemFireProperties(name = "TestName", groups = { "TestGroupOne", "TestGroupTwo" })
+	static class TestNameAndGroupGemFirePropertiesAnnotationConfiguration { }
 
 	@EnableGemFireMockObjects
 	@PeerCacheApplication
 	@EnableGemFireProperties
 	@EnableOffHeap(memorySize = "64g")
-	static class TestOffHeapGemFirePropertiesConfiguration {
-	}
+	static class TestOffHeapGemFirePropertiesConfiguration { }
 
 	@EnableGemFireMockObjects
 	@PeerCacheApplication
 	@EnableGemFireProperties
 	@EnableRedisServer
-	static class TestRedisServerGemFirePropertiesConfiguration {
-	}
+	static class TestRedisServerGemFirePropertiesConfiguration { }
 
 	@EnableGemFireMockObjects
 	@PeerCacheApplication
 	@EnableGemFireProperties
 	@EnableSecurity
-	static class TestSecurityGemFirePropertiesConfiguration {
-	}
+	static class TestSecurityGemFirePropertiesConfiguration { }
 
 	@EnableGemFireMockObjects
 	@PeerCacheApplication
@@ -493,13 +526,12 @@ public class EnableGemFirePropertiesIntegrationTests {
 		@EnableSsl.ComponentAlias(component = EnableSsl.Component.GATEWAY, alias = "WanCert"),
 		@EnableSsl.ComponentAlias(component = EnableSsl.Component.WEB, alias = "HttpCert")
 	}, defaultCertificateAlias = "MockCert", protocols = "HTTP")
-	static class TestSslGemFirePropertiesConfiguration {
-	}
+	static class TestSslGemFirePropertiesConfiguration { }
 
 	@EnableGemFireMockObjects
 	@PeerCacheApplication
 	@EnableGemFireProperties
 	@EnableStatistics
-	static class TestStatisticsGemFirePropertiesConfiguration {
-	}
+	static class TestStatisticsGemFirePropertiesConfiguration { }
+
 }
