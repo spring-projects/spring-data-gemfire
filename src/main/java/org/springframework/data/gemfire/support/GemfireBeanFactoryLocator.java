@@ -57,7 +57,7 @@ import org.springframework.util.StringUtils;
 @SuppressWarnings("all")
 public class GemfireBeanFactoryLocator implements BeanFactoryAware, BeanNameAware, DisposableBean, InitializingBean {
 
-	// bean alias/name <-> BeanFactory mapping
+	// Bean alias/name <-> BeanFactory mapping
 	protected static final ConcurrentMap<String, BeanFactory> BEAN_FACTORIES = new ConcurrentHashMap<>();
 
 	private BeanFactory beanFactory;
@@ -67,6 +67,13 @@ public class GemfireBeanFactoryLocator implements BeanFactoryAware, BeanNameAwar
 	private Set<String> associatedBeanNameWithAliases = Collections.emptySet();
 
 	private String associatedBeanName;
+
+	/**
+	 * Cleans up all {@link BeanFactory} references tracked by this locator.
+	 */
+	public static void clear() {
+		BEAN_FACTORIES.clear();
+	}
 
 	/**
 	 * Factory method to construct a new, initialized instance of {@link GemfireBeanFactoryLocator}.
@@ -164,8 +171,8 @@ public class GemfireBeanFactoryLocator implements BeanFactoryAware, BeanNameAwar
 				}
 			}
 
-			Assert.state(allTheSameBeanFactory, String.format(
-				"BeanFactory key must be specified when more than one BeanFactory %s is registered",
+			Assert.state(allTheSameBeanFactory,
+				String.format("BeanFactory key must be specified when more than one BeanFactory %s is registered",
 					new TreeSet(BEAN_FACTORIES.keySet()).toString()));
 
 			return BEAN_FACTORIES.values().iterator().next();
@@ -187,10 +194,12 @@ public class GemfireBeanFactoryLocator implements BeanFactoryAware, BeanNameAwar
 	 */
 	protected static synchronized void registerAliases(Set<String> names, BeanFactory beanFactory) {
 
-		Assert.isTrue(nullSafeSet(names).isEmpty() || beanFactory != null,
+		Set<String> safeNames = nullSafeSet(names);
+
+		Assert.isTrue(safeNames.isEmpty() || beanFactory != null,
 			"BeanFactory must not be null when aliases are specified");
 
-		for (String name : nullSafeSet(names)) {
+		for (String name : safeNames) {
 
 			BeanFactory existingBeanFactory = BEAN_FACTORIES.putIfAbsent(name, beanFactory);
 
