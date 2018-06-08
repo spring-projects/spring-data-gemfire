@@ -53,6 +53,7 @@ import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxSerializer;
+import org.apache.geode.security.SecurityManager;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
@@ -157,6 +158,8 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 
 	private String cacheResolutionMessagePrefix;
 	private String pdxDiskStoreName;
+
+	private org.apache.geode.security.SecurityManager securityManager;
 
 	private TransactionWriter transactionWriter;
 
@@ -296,11 +299,12 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 	 * @see #fetchCache()
 	 * @see #resolveProperties()
 	 * @see #createFactory(java.util.Properties)
-	 * @see #prepareFactory(Object)
+	 * @see #configureFactory(Object)
 	 * @see #createCache(Object)
 	 */
 	@SuppressWarnings("unchecked")
 	protected <T extends GemFireCache> T resolveCache() {
+
 		try {
 			this.cacheResolutionMessagePrefix = "Found existing";
 			return (T) fetchCache();
@@ -308,7 +312,7 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 		catch (CacheClosedException ex) {
 			this.cacheResolutionMessagePrefix = "Created new";
 			initDynamicRegionFactory();
-			return (T) createCache(prepareFactory(initializeFactory(createFactory(resolveProperties()))));
+			return (T) createCache(configureFactory(initializeFactory(createFactory(resolveProperties()))));
 		}
 	}
 
@@ -387,20 +391,20 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 	 *
 	 * @param factory {@link CacheFactory} used to create the {@link Cache}.
 	 * @return the prepared and initialized {@link CacheFactory}.
-	 * @see #initializePdx(CacheFactory)
+	 * @see #configurePdx(CacheFactory)
 	 */
-	protected Object prepareFactory(Object factory) {
-		return initializePdx((CacheFactory) factory);
+	protected Object configureFactory(Object factory) {
+		return configureSecurity(configurePdx((CacheFactory) factory));
 	}
 
 	/**
-	 * Configure PDX for the given {@link CacheFactory}.
+	 * Configures PDX for this peer {@link Cache} instance.
 	 *
-	 * @param cacheFactory {@link CacheFactory} used to configure PDX.
+	 * @param cacheFactory {@link CacheFactory} used to configure the peer {@link Cache} with PDX.
 	 * @return the given {@link CacheFactory}.
 	 * @see org.apache.geode.cache.CacheFactory
 	 */
-	private CacheFactory initializePdx(CacheFactory cacheFactory) {
+	private CacheFactory configurePdx(CacheFactory cacheFactory) {
 
 		Optional.ofNullable(getPdxSerializer()).ifPresent(cacheFactory::setPdxSerializer);
 
@@ -417,7 +421,32 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 	}
 
 	/**
-	 * Creates a new {@link Cache} instance using the provided factory.
+	 * Configures security for this peer {@link Cache} instance.
+	 *
+	 * @param cacheFactory {@link CacheFactory} used to configure the peer {@link Cache} with security.
+	 * @return the given {@link CacheFactory}.
+	 * @see org.apache.geode.cache.CacheFactory
+	 */
+	private CacheFactory configureSecurity(CacheFactory cacheFactory) {
+
+		Optional.ofNullable(getSecurityManager()).ifPresent(cacheFactory::setSecurityManager);
+
+		return cacheFactory;
+	}
+
+	/**
+	 * Post processes the {@link CacheFactory} used to create the {@link Cache}.
+	 *
+	 * @param factory {@link CacheFactory} used to create the {@link Cache}.
+	 * @return the post processed {@link CacheFactory}.
+	 * @see org.apache.geode.cache.CacheFactory
+	 */
+	protected Object postProcess(Object factory) {
+		return factory;
+	}
+
+	/**
+	 * Creates a new {@link Cache} instance using the provided {@link Object factory}.
 	 *
 	 * @param <T> parameterized {@link Class} type extension of {@link GemFireCache}.
 	 * @param factory instance of {@link CacheFactory}.
@@ -1173,6 +1202,26 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 	 */
 	public Integer getSearchTimeout() {
 		return searchTimeout;
+	}
+
+	/**
+	 * Configures the {@link org.apache.geode.security.SecurityManager} used to secure this cache.
+	 *
+	 * @param securityManager {@link org.apache.geode.security.SecurityManager} used to secure this cache.
+	 * @see org.apache.geode.security.SecurityManager
+	 */
+	public void setSecurityManager(SecurityManager securityManager) {
+		this.securityManager = securityManager;
+	}
+
+	/**
+	 * Returns the {@link org.apache.geode.security.SecurityManager} used to secure this cache.
+	 *
+	 * @return the {@link org.apache.geode.security.SecurityManager} used to secure this cache.
+	 * @see org.apache.geode.security.SecurityManager
+	 */
+	public SecurityManager getSecurityManager() {
+		return securityManager;
 	}
 
 	/**

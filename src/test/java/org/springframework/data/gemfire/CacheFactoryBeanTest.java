@@ -20,6 +20,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -437,11 +438,45 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test
-	public void prepareFactoryWithUnspecifiedPdxOptions() {
+	@SuppressWarnings("unchecked")
+	public void initializesFactoryWitCacheFactoryInitializer() {
 
 		CacheFactory mockCacheFactory = mock(CacheFactory.class);
 
-		assertThat(new CacheFactoryBean().prepareFactory(mockCacheFactory), is(sameInstance(mockCacheFactory)));
+		CacheFactoryBean.CacheFactoryInitializer<Object> mockCacheFactoryInitializer =
+			mock(CacheFactoryBean.CacheFactoryInitializer.class);
+
+		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
+
+		cacheFactoryBean.setCacheFactoryInitializer(mockCacheFactoryInitializer);
+
+		assertThat(cacheFactoryBean.getCacheFactoryInitializer(), is(equalTo(mockCacheFactoryInitializer)));
+		assertThat(cacheFactoryBean.initializeFactory(mockCacheFactory), is(sameInstance(mockCacheFactory)));
+
+		verify(mockCacheFactoryInitializer, times(1)).initialize(eq(mockCacheFactory));
+		verifyZeroInteractions(mockCacheFactory);
+	}
+
+	@Test
+	public void initializeFactoryWhenNoCacheFactoryInitializerIsPresentIsNullSafe() {
+
+		CacheFactory mockCacheFactory = mock(CacheFactory.class);
+
+		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
+
+		assertThat(cacheFactoryBean.getCacheFactoryInitializer(),
+			is(nullValue(CacheFactoryBean.CacheFactoryInitializer.class)));
+		assertThat(cacheFactoryBean.initializeFactory(mockCacheFactory), is(sameInstance(mockCacheFactory)));
+
+		verifyZeroInteractions(mockCacheFactory);
+	}
+
+	@Test
+	public void configureFactoryWithUnspecifiedPdxOptions() {
+
+		CacheFactory mockCacheFactory = mock(CacheFactory.class);
+
+		assertThat(new CacheFactoryBean().configureFactory(mockCacheFactory), is(sameInstance(mockCacheFactory)));
 
 		verify(mockCacheFactory, never()).setPdxDiskStore(any(String.class));
 		verify(mockCacheFactory, never()).setPdxIgnoreUnreadFields(any(Boolean.class));
@@ -451,7 +486,7 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test
-	public void prepareFactoryWithSpecificPdxOptions() {
+	public void configureFactoryWithSpecificPdxOptions() {
 
 		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
 
@@ -461,7 +496,7 @@ public class CacheFactoryBeanTest {
 
 		CacheFactory mockCacheFactory = mock(CacheFactory.class);
 
-		assertThat(cacheFactoryBean.prepareFactory(mockCacheFactory), is(sameInstance(mockCacheFactory)));
+		assertThat(cacheFactoryBean.configureFactory(mockCacheFactory), is(sameInstance(mockCacheFactory)));
 
 		verify(mockCacheFactory, never()).setPdxDiskStore(any(String.class));
 		verify(mockCacheFactory, times(1)).setPdxIgnoreUnreadFields(eq(false));
@@ -471,7 +506,7 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test
-	public void prepareFactoryWithAllPdxOptions() {
+	public void configureFactoryWithAllPdxOptions() {
 
 		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
 
@@ -483,7 +518,7 @@ public class CacheFactoryBeanTest {
 
 		CacheFactory mockCacheFactory = mock(CacheFactory.class);
 
-		assertThat(cacheFactoryBean.prepareFactory(mockCacheFactory), is(sameInstance(mockCacheFactory)));
+		assertThat(cacheFactoryBean.configureFactory(mockCacheFactory), is(sameInstance(mockCacheFactory)));
 
 		verify(mockCacheFactory, times(1)).setPdxDiskStore(eq("testPdxDiskStoreName"));
 		verify(mockCacheFactory, times(1)).setPdxIgnoreUnreadFields(eq(false));
@@ -493,26 +528,26 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test
-	public void createCacheWithExistingCache() throws Exception {
+	public void configureFactoryWithSecurityManager() {
 
 		CacheFactory mockCacheFactory = mock(CacheFactory.class);
 
+		org.apache.geode.security.SecurityManager mockSecurityManager =
+			mock(org.apache.geode.security.SecurityManager.class);
+
 		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
 
-		cacheFactoryBean.setCache(mockCache);
+		cacheFactoryBean.setSecurityManager(mockSecurityManager);
 
-		assertThat(cacheFactoryBean.getCache(), is(sameInstance(mockCache)));
+		assertThat(cacheFactoryBean.getSecurityManager(), is(sameInstance(mockSecurityManager)));
+		assertThat(cacheFactoryBean.configureFactory(mockCacheFactory), is(sameInstance(mockCacheFactory)));
 
-		Cache actualCache = cacheFactoryBean.createCache(mockCacheFactory);
-
-		assertThat(actualCache, is(sameInstance(mockCache)));
-
-		verify(mockCacheFactory, never()).create();
-		verifyZeroInteractions(mockCache);
+		verify(mockCacheFactory, times(1)).setSecurityManager(eq(mockSecurityManager));
+		verifyZeroInteractions(mockSecurityManager);
 	}
 
 	@Test
-	public void createCacheWithNoExistingCache() {
+	public void createCacheWithCacheFactory() {
 
 		CacheFactory mockCacheFactory = mock(CacheFactory.class);
 

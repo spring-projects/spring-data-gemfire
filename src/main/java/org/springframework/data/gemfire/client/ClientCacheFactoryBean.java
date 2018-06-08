@@ -243,7 +243,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	 * @see #initializePdx(ClientCacheFactory)
 	 */
 	@Override
-	protected Object prepareFactory(Object factory) {
+	protected Object configureFactory(Object factory) {
 		return initializePool(initializePdx((ClientCacheFactory) factory));
 	}
 

@@ -273,7 +273,7 @@ public class ClientCacheFactoryBeanTest {
 			}
 		};
 
-		assertThat(clientCacheFactoryBean.prepareFactory(mockClientCacheFactory),
+		assertThat(clientCacheFactoryBean.configureFactory(mockClientCacheFactory),
 			is(sameInstance(mockClientCacheFactory)));
 		assertThat(initializePdxCalled.get(), is(true));
 		assertThat(initializePoolCalled.get(), is(true));
