@@ -53,6 +53,7 @@ import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxSerializer;
+import org.apache.geode.security.SecurityManager;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
@@ -158,6 +159,8 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 
 	private String cacheResolutionMessagePrefix;
 	private String pdxDiskStoreName;
+
+	private org.apache.geode.security.SecurityManager securityManager;
 
 	private TransactionWriter transactionWriter;
 
@@ -401,13 +404,13 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 	 * @see #configurePdx(CacheFactory)
 	 */
 	protected Object configureFactory(Object factory) {
-		return configurePdx((CacheFactory) factory);
+		return configureSecurity(configurePdx((CacheFactory) factory));
 	}
 
 	/**
-	 * Configure PDX for the given {@link CacheFactory}.
+	 * Configures PDX for this peer {@link Cache} instance.
 	 *
-	 * @param cacheFactory {@link CacheFactory} used to configure PDX.
+	 * @param cacheFactory {@link CacheFactory} used to configure the peer {@link Cache} with PDX.
 	 * @return the given {@link CacheFactory}.
 	 * @see org.apache.geode.cache.CacheFactory
 	 */
@@ -423,6 +426,20 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 		Optional.ofNullable(getPdxPersistent()).ifPresent(cacheFactory::setPdxPersistent);
 
 		Optional.ofNullable(getPdxReadSerialized()).ifPresent(cacheFactory::setPdxReadSerialized);
+
+		return cacheFactory;
+	}
+
+	/**
+	 * Configures security for this peer {@link Cache} instance.
+	 *
+	 * @param cacheFactory {@link CacheFactory} used to configure the peer {@link Cache} with security.
+	 * @return the given {@link CacheFactory}.
+	 * @see org.apache.geode.cache.CacheFactory
+	 */
+	private CacheFactory configureSecurity(CacheFactory cacheFactory) {
+
+		Optional.ofNullable(getSecurityManager()).ifPresent(cacheFactory::setSecurityManager);
 
 		return cacheFactory;
 	}
@@ -1220,6 +1237,26 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 	 */
 	public Integer getSearchTimeout() {
 		return searchTimeout;
+	}
+
+	/**
+	 * Configures the {@link org.apache.geode.security.SecurityManager} used to secure this cache.
+	 *
+	 * @param securityManager {@link org.apache.geode.security.SecurityManager} used to secure this cache.
+	 * @see org.apache.geode.security.SecurityManager
+	 */
+	public void setSecurityManager(SecurityManager securityManager) {
+		this.securityManager = securityManager;
+	}
+
+	/**
+	 * Returns the {@link org.apache.geode.security.SecurityManager} used to secure this cache.
+	 *
+	 * @return the {@link org.apache.geode.security.SecurityManager} used to secure this cache.
+	 * @see org.apache.geode.security.SecurityManager
+	 */
+	public SecurityManager getSecurityManager() {
+		return securityManager;
 	}
 
 	/**

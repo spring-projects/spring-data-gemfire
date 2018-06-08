@@ -20,6 +20,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -447,7 +448,41 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test
-	public void prepareFactoryWithUnspecifiedPdxOptions() {
+	@SuppressWarnings("unchecked")
+	public void initializesFactoryWitCacheFactoryInitializer() {
+
+		CacheFactory mockCacheFactory = mock(CacheFactory.class);
+
+		CacheFactoryBean.CacheFactoryInitializer<Object> mockCacheFactoryInitializer =
+			mock(CacheFactoryBean.CacheFactoryInitializer.class);
+
+		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
+
+		cacheFactoryBean.setCacheFactoryInitializer(mockCacheFactoryInitializer);
+
+		assertThat(cacheFactoryBean.getCacheFactoryInitializer(), is(equalTo(mockCacheFactoryInitializer)));
+		assertThat(cacheFactoryBean.initializeFactory(mockCacheFactory), is(sameInstance(mockCacheFactory)));
+
+		verify(mockCacheFactoryInitializer, times(1)).initialize(eq(mockCacheFactory));
+		verifyZeroInteractions(mockCacheFactory);
+	}
+
+	@Test
+	public void initializeFactoryWhenNoCacheFactoryInitializerIsPresentIsNullSafe() {
+
+		CacheFactory mockCacheFactory = mock(CacheFactory.class);
+
+		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
+
+		assertThat(cacheFactoryBean.getCacheFactoryInitializer(),
+			is(nullValue(CacheFactoryBean.CacheFactoryInitializer.class)));
+		assertThat(cacheFactoryBean.initializeFactory(mockCacheFactory), is(sameInstance(mockCacheFactory)));
+
+		verifyZeroInteractions(mockCacheFactory);
+	}
+
+	@Test
+	public void configureFactoryWithUnspecifiedPdxOptions() {
 
 		CacheFactory mockCacheFactory = mock(CacheFactory.class);
 
@@ -461,7 +496,7 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test
-	public void prepareFactoryWithSpecificPdxOptions() {
+	public void configureFactoryWithSpecificPdxOptions() {
 
 		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
 
@@ -481,7 +516,7 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test
-	public void prepareFactoryWithAllPdxOptions() {
+	public void configureFactoryWithAllPdxOptions() {
 
 		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
 
@@ -500,6 +535,25 @@ public class CacheFactoryBeanTest {
 		verify(mockCacheFactory, times(1)).setPdxPersistent(eq(true));
 		verify(mockCacheFactory, times(1)).setPdxReadSerialized(eq(true));
 		verify(mockCacheFactory, times(1)).setPdxSerializer(any(PdxSerializer.class));
+	}
+
+	@Test
+	public void configureFactoryWithSecurityManager() {
+
+		CacheFactory mockCacheFactory = mock(CacheFactory.class);
+
+		org.apache.geode.security.SecurityManager mockSecurityManager =
+			mock(org.apache.geode.security.SecurityManager.class);
+
+		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
+
+		cacheFactoryBean.setSecurityManager(mockSecurityManager);
+
+		assertThat(cacheFactoryBean.getSecurityManager(), is(sameInstance(mockSecurityManager)));
+		assertThat(cacheFactoryBean.configureFactory(mockCacheFactory), is(sameInstance(mockCacheFactory)));
+
+		verify(mockCacheFactory, times(1)).setSecurityManager(eq(mockSecurityManager));
+		verifyZeroInteractions(mockSecurityManager);
 	}
 
 	@Test
