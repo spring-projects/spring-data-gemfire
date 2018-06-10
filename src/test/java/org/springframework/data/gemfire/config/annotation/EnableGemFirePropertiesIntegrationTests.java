@@ -17,17 +17,21 @@
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.util.Optional;
 import java.util.Properties;
 
 import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.pdx.PdxSerializer;
 import org.junit.After;
 import org.junit.Test;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
+import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockObjects;
 import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.mock.env.MockPropertySource;
@@ -267,9 +271,10 @@ public class EnableGemFirePropertiesIntegrationTests {
 	}
 
 	@Test
-	public void nameAndGroupGemFirePropertiesAnnotationConfiguration() {
+	public void nameAndGroupsAnnotationBasedGemFirePropertiesConfiguration() {
 
-		this.applicationContext = newApplicationContext(TestNameAndGroupGemFirePropertiesAnnotationConfiguration.class);
+		this.applicationContext =
+			newApplicationContext(TestNameAndGroupsAnnotationBasedGemFirePropertiesConfiguration.class);
 
 		assertThat(this.applicationContext).isNotNull();
 		assertThat(this.applicationContext.containsBean("gemfireCache")).isTrue();
@@ -317,6 +322,37 @@ public class EnableGemFirePropertiesIntegrationTests {
 
 		assertThat(gemfireProperties).isNotNull();
 		assertThat(gemfireProperties.getProperty("off-heap-memory-size")).isEqualTo("1024g");
+	}
+
+	@Test
+	public void pdxGemFirePropertiesConfiguration() {
+
+		PropertySource testPropertySource = new MockPropertySource("TestPropertySource")
+			.withProperty("spring.data.gemfire.pdx.disk-store-name", "TestDiskStore")
+			.withProperty("spring.data.gemfire.pdx.ignore-unread-fields", "true")
+			.withProperty("spring.data.gemfire.pdx.persistent", "true")
+			.withProperty("spring.data.gemfire.pdx.read-serialized", "true")
+			.withProperty("spring.data.gemfire.pdx.serializer-bean-name", "mockPdxSerializer");
+
+		this.applicationContext =
+			newApplicationContext(testPropertySource, TestPdxGemFirePropertiesConfiguration.class);
+
+		assertThat(this.applicationContext).isNotNull();
+		assertThat(this.applicationContext.containsBean("gemfireCache")).isTrue();
+		assertThat(this.applicationContext.containsBean("mockPdxSerializer")).isTrue();
+
+		CacheFactoryBean gemfireCache = this.applicationContext.getBean("&gemfireCache", CacheFactoryBean.class);
+
+		assertThat(gemfireCache).isNotNull();
+		assertThat(gemfireCache.getPdxDiskStoreName()).isEqualTo("TestDiskStore");
+		assertThat(gemfireCache.getPdxIgnoreUnreadFields()).isTrue();
+		assertThat(gemfireCache.getPdxPersistent()).isTrue();
+		assertThat(gemfireCache.getPdxReadSerialized()).isTrue();
+
+		PdxSerializer mockPdxSerializer = this.applicationContext.getBean("mockPdxSerializer", PdxSerializer.class);
+
+		assertThat(mockPdxSerializer).isNotNull();
+		assertThat(gemfireCache.getPdxSerializer()).isEqualTo(mockPdxSerializer);
 	}
 
 	@Test
@@ -515,13 +551,25 @@ public class EnableGemFirePropertiesIntegrationTests {
 	@EnableGemFireMockObjects
 	@PeerCacheApplication
 	@EnableGemFireProperties(name = "TestName", groups = { "TestGroupOne", "TestGroupTwo" })
-	static class TestNameAndGroupGemFirePropertiesAnnotationConfiguration { }
+	static class TestNameAndGroupsAnnotationBasedGemFirePropertiesConfiguration { }
 
 	@EnableGemFireMockObjects
 	@PeerCacheApplication
 	@EnableGemFireProperties
 	@EnableOffHeap(memorySize = "64g")
 	static class TestOffHeapGemFirePropertiesConfiguration { }
+
+	@EnableGemFireMockObjects
+	@PeerCacheApplication
+	@EnablePdx
+	@SuppressWarnings("unused")
+	static class TestPdxGemFirePropertiesConfiguration {
+
+		@Bean
+		PdxSerializer mockPdxSerializer() {
+			return mock(PdxSerializer.class);
+		}
+	}
 
 	@EnableGemFireMockObjects
 	@PeerCacheApplication

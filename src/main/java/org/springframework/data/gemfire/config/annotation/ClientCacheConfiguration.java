@@ -154,7 +154,6 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 		return gemfireCache;
 	}
 
-	/* (non-Javadoc) */
 	@SuppressWarnings("all")
 	private List<ClientCacheConfigurer> resolveClientCacheConfigurers() {
 

@@ -33,17 +33,12 @@ import org.apache.geode.cache.TransactionWriter;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.GatewayConflictResolver;
-import org.apache.geode.pdx.PdxSerializer;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportAware;
 import org.springframework.core.annotation.AnnotationAttributes;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.CacheFactoryBean;
@@ -51,9 +46,6 @@ import org.springframework.data.gemfire.config.annotation.support.AbstractAnnota
 import org.springframework.data.gemfire.config.support.CustomEditorBeanFactoryPostProcessor;
 import org.springframework.data.gemfire.config.support.DefinedIndexesApplicationListener;
 import org.springframework.data.gemfire.config.support.DiskStoreDirectoryBeanPostProcessor;
-import org.springframework.data.gemfire.config.support.PdxDiskStoreAwareBeanFactoryPostProcessor;
-import org.springframework.data.gemfire.mapping.GemfireMappingContext;
-import org.springframework.data.gemfire.mapping.MappingPdxSerializer;
 import org.springframework.data.gemfire.util.PropertiesBuilder;
 import org.springframework.util.StringUtils;
 
@@ -72,7 +64,6 @@ import org.springframework.util.StringUtils;
  * @see org.apache.geode.cache.GemFireCache
  * @see org.apache.geode.cache.client.ClientCache
  * @see org.apache.geode.cache.server.CacheServer
- * @see org.apache.geode.pdx.PdxSerializer
  * @see org.springframework.beans.factory.BeanFactory
  * @see org.springframework.beans.factory.config.BeanDefinition
  * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
@@ -80,7 +71,7 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.context.annotation.ImportAware
- * @see org.springframework.core.convert.ConversionService
+ * @see org.springframework.core.annotation.AnnotationAttributes
  * @see org.springframework.core.io.Resource
  * @see org.springframework.core.type.AnnotationMetadata
  * @see org.springframework.data.gemfire.CacheFactoryBean
@@ -89,19 +80,20 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.data.gemfire.config.support.CustomEditorBeanFactoryPostProcessor
  * @see org.springframework.data.gemfire.config.support.DefinedIndexesApplicationListener
  * @see org.springframework.data.gemfire.config.support.DiskStoreDirectoryBeanPostProcessor
- * @see org.springframework.data.gemfire.config.support.PdxDiskStoreAwareBeanFactoryPostProcessor
- * @see org.springframework.data.gemfire.mapping.GemfireMappingContext
- * @see org.springframework.data.gemfire.mapping.MappingPdxSerializer
  * @since 1.9.0
  */
 @Configuration
 @SuppressWarnings("unused")
 public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfigSupport implements ImportAware {
 
-	private static final AtomicBoolean CUSTOM_EDITORS_REGISTERED = new AtomicBoolean(false);
-	private static final AtomicBoolean DEFINED_INDEXES_APPLICATION_LISTENER_REGISTERED = new AtomicBoolean(false);
-	private static final AtomicBoolean DISK_STORE_DIRECTORY_BEAN_POST_PROCESSOR_REGISTERED = new AtomicBoolean(false);
-	private static final AtomicBoolean PDX_DISK_STORE_AWARE_BEAN_FACTORY_POST_PROCESSOR_REGISTERED = new AtomicBoolean(false);
+	private static final AtomicBoolean CUSTOM_EDITORS_BEAN_FACTORY_POST_PROCESSOR_REGISTERED =
+		new AtomicBoolean(false);
+
+	private static final AtomicBoolean DEFINED_INDEXES_APPLICATION_LISTENER_REGISTERED =
+		new AtomicBoolean(false);
+
+	private static final AtomicBoolean DISK_STORE_DIRECTORY_BEAN_POST_PROCESSOR_REGISTERED =
+		new AtomicBoolean(false);
 
 	protected static final boolean DEFAULT_CLOSE = true;
 	protected static final boolean DEFAULT_COPY_ON_READ = false;
@@ -117,13 +109,9 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 	private boolean copyOnRead = DEFAULT_COPY_ON_READ;
 	private boolean useBeanFactoryLocator = DEFAULT_USE_BEAN_FACTORY_LOCATOR;
 
-	private Boolean pdxIgnoreUnreadFields;
-	private Boolean pdxPersistent;
-	private Boolean pdxReadSerialized;
-
 	private DynamicRegionSupport dynamicRegionSupport;
 
-	private Integer mcastPort = 0;
+	private Integer mcastPort = DEFAULT_MCAST_PORT;
 
 	private Float criticalHeapPercentage;
 	private Float criticalOffHeapPercentage;
@@ -132,13 +120,8 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 
 	private GatewayConflictResolver gatewayConflictResolver;
 
-	@Autowired(required = false)
-	private GemfireMappingContext mappingContext;
-
 	private List<JndiDataSource> jndiDataSources;
 	private List<TransactionListener> transactionListeners;
-
-	private PdxSerializer pdxSerializer;
 
 	private PropertiesBuilder customGemFireProperties = PropertiesBuilder.create();
 
@@ -147,7 +130,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 	private String locators = DEFAULT_LOCATORS;
 	private String logLevel = DEFAULT_LOG_LEVEL;
 	private String name;
-	private String pdxDiskStoreName;
 	private String startLocator;
 
 	private TransactionWriter transactionWriter;
@@ -197,8 +179,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 
 		configureInfrastructure(importMetadata);
 		configureCache(importMetadata);
-		configurePdx(importMetadata);
-		configureTheRest(importMetadata);
+		configureOptional(importMetadata);
 	}
 
 	/**
@@ -216,16 +197,14 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		registerDiskStoreDirectoryBeanPostProcessor(importMetadata);
 	}
 
-	/* (non-Javadoc) */
 	private void registerCustomEditorBeanFactoryPostProcessor(AnnotationMetadata importMetadata) {
 
-		if (CUSTOM_EDITORS_REGISTERED.compareAndSet(false, true)) {
+		if (CUSTOM_EDITORS_BEAN_FACTORY_POST_PROCESSOR_REGISTERED.compareAndSet(false, true)) {
 			register(BeanDefinitionBuilder.rootBeanDefinition(CustomEditorBeanFactoryPostProcessor.class)
 				.setRole(BeanDefinition.ROLE_INFRASTRUCTURE).getBeanDefinition());
 		}
 	}
 
-	/* (non-Javadoc) */
 	private void registerDefinedIndexesApplicationListener(AnnotationMetadata importMetadata) {
 
 		if (DEFINED_INDEXES_APPLICATION_LISTENER_REGISTERED.compareAndSet(false, true)) {
@@ -234,7 +213,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		}
 	}
 
-	/* (non-Javadoc) */
 	private void registerDiskStoreDirectoryBeanPostProcessor(AnnotationMetadata importMetadata) {
 
 		if (DISK_STORE_DIRECTORY_BEAN_POST_PROCESSOR_REGISTERED.compareAndSet(false, true)) {
@@ -303,117 +281,14 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 	}
 
 	/**
-	 * Configures Pivotal GemFire/Apache Geode cache PDX Serialization.
-	 *
-	 * @param importMetadata {@link AnnotationMetadata} containing PDX meta-data used to configure the cache
-	 * with PDX de/serialization capabilities.
-	 * @see org.springframework.core.type.AnnotationMetadata
-	 * @see <a href="http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/data_serialization/gemfire_pdx_serialization.html">Pivotal GemFire PDX Serialization</a>
-	 */
-	protected void configurePdx(AnnotationMetadata importMetadata) {
-
-		String enablePdxTypeName = EnablePdx.class.getName();
-
-		if (importMetadata.hasAnnotation(enablePdxTypeName)) {
-
-			AnnotationAttributes enablePdxAttributes = getAnnotationAttributes(importMetadata, enablePdxTypeName);
-
-			setPdxDiskStoreName(resolveProperty(pdxProperty("disk-store-name"),
-				(String) enablePdxAttributes.get("diskStoreName")));
-
-			setPdxIgnoreUnreadFields(resolveProperty(pdxProperty("ignore-unread-fields"),
-				Boolean.TRUE.equals(enablePdxAttributes.get("ignoreUnreadFields"))));
-
-			setPdxPersistent(resolveProperty(pdxProperty("persistent"),
-				Boolean.TRUE.equals(enablePdxAttributes.get("persistent"))));
-
-			setPdxReadSerialized(resolveProperty(pdxProperty("read-serialized"),
-				Boolean.TRUE.equals(enablePdxAttributes.get("readSerialized"))));
-
-			setPdxSerializer(resolvePdxSerializer((String) enablePdxAttributes.get("serializerBeanName")));
-
-			registerPdxDiskStoreAwareBeanFactoryPostProcessor(importMetadata);
-		}
-	}
-
-	/**
-	 * Resolves the {@link PdxSerializer} used to configure the cache for PDX De/Serialization.
-	 *
-	 * @param pdxSerializerBeanName {@link String} containing the name of a Spring bean
-	 * implementing the {@link PdxSerializer} interface.
-	 * @return the resolved {@link PdxSerializer} from configuration.
-	 * @see org.apache.geode.pdx.PdxSerializer
-	 * @see #newPdxSerializer(BeanFactory)
-	 * @see #getBeanFactory()
-	 */
-	protected PdxSerializer resolvePdxSerializer(String pdxSerializerBeanName) {
-
-		BeanFactory beanFactory = getBeanFactory();
-
-		return Optional.ofNullable(pdxSerializerBeanName)
-			.filter(beanFactory::containsBean)
-			.map(beanName -> beanFactory.getBean(beanName, PdxSerializer.class))
-			.orElseGet(() -> Optional.ofNullable(getPdxSerializer()).orElseGet(() -> newPdxSerializer(beanFactory)));
-	}
-
-	/**
-	 * Constructs a new instance of {@link PdxSerializer}.
-	 *
-	 * @param <T> {@link Class} type of the {@link PdxSerializer}.
-	 * @return a new instance of {@link PdxSerializer}.
-	 * @see org.apache.geode.pdx.PdxSerializer
-	 * @see #newPdxSerializer(BeanFactory)
-	 */
-	@SuppressWarnings("unchecked")
-	protected <T extends PdxSerializer> T newPdxSerializer() {
-		return newPdxSerializer(getBeanFactory());
-	}
-
-	/**
-	 * Constructs a new instance of {@link MappingPdxSerializer}.
-	 *
-	 * @param <T> {@link Class} type of the {@link PdxSerializer}; this method returns a {@link MappingPdxSerializer}.
-	 * @param beanFactory {@link BeanFactory} used to get an instance of {@link ConversionService}
-	 * used by the {@link MappingPdxSerializer}.
-	 * @return a new instance of {@link MappingPdxSerializer}.
-	 * @see org.springframework.data.gemfire.mapping.MappingPdxSerializer
-	 * @see org.springframework.beans.factory.BeanFactory
-	 * @see org.apache.geode.pdx.PdxSerializer
-	 */
-	@SuppressWarnings("unchecked")
-	protected <T extends PdxSerializer> T newPdxSerializer(BeanFactory beanFactory) {
-
-		Optional<ConversionService> conversionService = Optional.ofNullable(beanFactory)
-			.filter(it -> it instanceof ConfigurableBeanFactory)
-			.map(it -> ((ConfigurableBeanFactory) it).getConversionService());
-
-		return (T) MappingPdxSerializer.create(this.mappingContext, conversionService.orElse(null));
-	}
-
-	/* (non-Javadoc) */
-	private void registerPdxDiskStoreAwareBeanFactoryPostProcessor(AnnotationMetadata importMetadata) {
-
-		Optional.ofNullable(getPdxDiskStoreName())
-			.filter(StringUtils::hasText)
-			.ifPresent(pdxDiskStoreName -> {
-
-				if (PDX_DISK_STORE_AWARE_BEAN_FACTORY_POST_PROCESSOR_REGISTERED.compareAndSet(false, true)) {
-					register(BeanDefinitionBuilder.rootBeanDefinition(PdxDiskStoreAwareBeanFactoryPostProcessor.class)
-						.setRole(BeanDefinition.ROLE_INFRASTRUCTURE)
-						.addConstructorArgValue(pdxDiskStoreName)
-						.getBeanDefinition());
-				}
-			});
-	}
-
-	/**
+=======
+>>>>>>> 09d8cc7... DATAGEODE-117 - Move configuration of PDX to a PdxConfiguration class imported by the EnablePdx annotation.
 	 * Callback method allowing developers to configure other cache or application specific configuration settings.
 	 *
 	 * @param importMetadata {@link AnnotationMetadata} containing meta-data used to configure the cache or application.
 	 * @see org.springframework.core.type.AnnotationMetadata
 	 */
-	protected void configureTheRest(AnnotationMetadata importMetadata) {
-	}
+	protected void configureOptional(AnnotationMetadata importMetadata) { }
 
 	/**
 	 * Constructs a new, initialized instance of {@link CacheFactoryBean} based on the Spring application's
@@ -477,11 +352,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		gemfireCache.setGatewayConflictResolver(getGatewayConflictResolver());
 		gemfireCache.setJndiDataSources(getJndiDataSources());
 		gemfireCache.setProperties(gemfireProperties());
-		gemfireCache.setPdxDiskStoreName(getPdxDiskStoreName());
-		gemfireCache.setPdxIgnoreUnreadFields(getPdxIgnoreUnreadFields());
-		gemfireCache.setPdxPersistent(getPdxPersistent());
-		gemfireCache.setPdxReadSerialized(getPdxReadSerialized());
-		gemfireCache.setPdxSerializer(getPdxSerializer());
 		gemfireCache.setTransactionListeners(getTransactionListeners());
 		gemfireCache.setTransactionWriter(getTransactionWriter());
 
@@ -551,7 +421,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 	protected boolean isTypedCacheApplication(Class<? extends Annotation> annotationType,
 			AnnotationMetadata importMetadata) {
 
-		return (annotationType.equals(getAnnotationType()) && importMetadata.hasAnnotation(getAnnotationTypeName()));
+		return annotationType.equals(getAnnotationType()) && importMetadata.hasAnnotation(getAnnotationTypeName());
 	}
 
 	/**
@@ -687,14 +557,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		return Optional.ofNullable(this.logLevel).orElse(DEFAULT_LOG_LEVEL);
 	}
 
-	void setMappingContext(GemfireMappingContext mappingContext) {
-		this.mappingContext = mappingContext;
-	}
-
-	protected GemfireMappingContext mappingContext() {
-		return this.mappingContext;
-	}
-
 	void setMcastPort(Integer mcastPort) {
 		this.mcastPort = mcastPort;
 		this.locators = DEFAULT_LOCATORS;
@@ -710,46 +572,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 
 	protected String name() {
 		return Optional.ofNullable(this.name).filter(StringUtils::hasText).orElseGet(this::toString);
-	}
-
-	void setPdxDiskStoreName(String pdxDiskStoreName) {
-		this.pdxDiskStoreName = pdxDiskStoreName;
-	}
-
-	protected String getPdxDiskStoreName() {
-		return this.pdxDiskStoreName;
-	}
-
-	void setPdxIgnoreUnreadFields(Boolean pdxIgnoreUnreadFields) {
-		this.pdxIgnoreUnreadFields = pdxIgnoreUnreadFields;
-	}
-
-	protected Boolean getPdxIgnoreUnreadFields() {
-		return this.pdxIgnoreUnreadFields;
-	}
-
-	void setPdxPersistent(Boolean pdxPersistent) {
-		this.pdxPersistent = pdxPersistent;
-	}
-
-	protected Boolean getPdxPersistent() {
-		return this.pdxPersistent;
-	}
-
-	void setPdxReadSerialized(Boolean pdxReadSerialized) {
-		this.pdxReadSerialized = pdxReadSerialized;
-	}
-
-	protected Boolean getPdxReadSerialized() {
-		return this.pdxReadSerialized;
-	}
-
-	void setPdxSerializer(PdxSerializer pdxSerializer) {
-		this.pdxSerializer = pdxSerializer;
-	}
-
-	protected PdxSerializer getPdxSerializer() {
-		return this.pdxSerializer;
 	}
 
 	void setStartLocator(String startLocator) {
