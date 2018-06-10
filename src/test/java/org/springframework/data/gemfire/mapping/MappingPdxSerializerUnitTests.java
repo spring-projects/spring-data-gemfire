@@ -322,26 +322,6 @@ public class MappingPdxSerializerUnitTests {
 	}
 
 	@Test
-	// TODO remove!
-	@SuppressWarnings("deprecation")
-	public void getCustomSerializerForMappedTypeReturnsPdxSerializer() {
-
-		PdxSerializer mockPdxSerializer = mock(PdxSerializer.class);
-
-		this.pdxSerializer.setCustomPdxSerializers(Collections.singletonMap(Person.class, mockPdxSerializer));
-
-		assertThat(this.pdxSerializer.getCustomSerializer(Person.class)).isEqualTo(mockPdxSerializer);
-	}
-
-	@Test
-	// TODO remove!
-	@SuppressWarnings("deprecation")
-	public void getCustomSerializerForUnmappedTypeReturnsNull() {
-		assertThat(this.pdxSerializer.getCustomPdxSerializers()).isEmpty();
-		assertThat(this.pdxSerializer.getCustomSerializer(Address.class)).isNull();
-	}
-
-	@Test
 	public void toFullyQualifiedPropertyName() {
 
 		PersistentEntity mockEntity = mock(PersistentEntity.class);

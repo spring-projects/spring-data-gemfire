@@ -466,34 +466,6 @@ public class ClientRegionFactoryBeanTest {
 	}
 
 	@Test
-	@SuppressWarnings("deprecation")
-	public void setDataPolicyName() throws Exception {
-
-		factoryBean.setDataPolicyName("NORMAL");
-
-		assertEquals(DataPolicy.NORMAL, TestUtils.readField("dataPolicy", factoryBean));
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	@SuppressWarnings("deprecation")
-	public void setDataPolicyNameWithInvalidName() throws Exception {
-
-		try {
-			factoryBean.setDataPolicyName("INVALID");
-		}
-		catch (IllegalArgumentException expected) {
-
-			assertThat(expected).hasMessage("Data Policy [INVALID] is not valid");
-			assertThat(expected).hasNoCause();
-
-			throw expected;
-		}
-		finally {
-			assertNull(TestUtils.readField("dataPolicy", factoryBean));
-		}
-	}
-
-	@Test
 	public void isPersistentIsCorrect() {
 
 		assertFalse(factoryBean.isPersistent());

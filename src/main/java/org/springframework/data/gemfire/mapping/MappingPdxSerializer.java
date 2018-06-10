@@ -295,14 +295,6 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	}
 
 	/**
-	 * @deprecated please use ({@link #setCustomPdxSerializers(Map)} instead.
-	 */
-	@Deprecated
-	public void setCustomSerializers(Map<Class<?>, PdxSerializer> customSerializers) {
-		setCustomPdxSerializers(customSerializers);
-	}
-
-	/**
 	 * Returns a {@link Map mapping} of application {@link Class domain types} to custom
 	 * {@link PdxSerializer PDX serializers} used to customize the serialization
 	 * for specific application {@link Class domain types}.
@@ -315,15 +307,6 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	@NonNull
 	protected Map<?, PdxSerializer> getCustomPdxSerializers() {
 		return Collections.unmodifiableMap(this.customPdxSerializers);
-	}
-
-	/**
-	 * @deprecated please use {@link #getCustomPdxSerializers()} instead.
-	 */
-	@Deprecated
-	@SuppressWarnings("unchecked")
-	protected Map<Class<?>, PdxSerializer> getCustomSerializers() {
-		return (Map<Class<?>, PdxSerializer>) getCustomPdxSerializers();
 	}
 
 	/**
@@ -344,15 +327,6 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 			.filter(Objects::nonNull)
 			.findFirst()
 			.orElse(null);
-	}
-
-	/**
-	 * @deprecated please use {@link #getCustomPdxSerializer(PersistentProperty)} instead.
-	 */
-	@Nullable
-	@Deprecated
-	protected PdxSerializer getCustomSerializer(Class<?> type) {
-		return getCustomPdxSerializers().get(type);
 	}
 
 	/**

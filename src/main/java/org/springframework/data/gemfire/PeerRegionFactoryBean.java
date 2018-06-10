@@ -753,19 +753,6 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 	}
 
 	/**
-	 * Configures the {@link DataPolicy} for this {@link Region} as a {@link String}.
-	 *
-	 * @param dataPolicyName {@link String} containing the name of the {@link DataPolicy},
-	 * (e.g. {@literal PARTITION} or {@literal REPLICATE}, etc).
-	 * @see #setDataPolicy(org.apache.geode.cache.DataPolicy)
-	 * @deprecated as of 1.4.0; use setDataPolicy(:DataPolicy) instead.
-	 */
-	@Deprecated
-	public void setDataPolicy(String dataPolicyName) {
-		setDataPolicy(new DataPolicyConverter().convert(dataPolicyName));
-	}
-
-	/**
 	 * Returns resolved {@link DataPolicy} as configured with the {@link RegionFactory}
 	 * when creating this {@link Region}.
 	 *

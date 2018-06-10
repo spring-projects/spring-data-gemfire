@@ -45,7 +45,7 @@ public class SubscriptionAttributesFactoryBean implements FactoryBean<Subscripti
 	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		subscriptionAttributes = new SubscriptionAttributes(getInterestPolicy());
+		this.subscriptionAttributes = new SubscriptionAttributes(getInterestPolicy());
 	}
 
 	/*
@@ -54,7 +54,7 @@ public class SubscriptionAttributesFactoryBean implements FactoryBean<Subscripti
 	 */
 	@Override
 	public SubscriptionAttributes getObject() throws Exception {
-		return subscriptionAttributes;
+		return this.subscriptionAttributes;
 	}
 
 	/*
@@ -63,7 +63,10 @@ public class SubscriptionAttributesFactoryBean implements FactoryBean<Subscripti
 	 */
 	@Override
 	public Class<?> getObjectType() {
-		return (subscriptionAttributes != null ? subscriptionAttributes.getClass() : SubscriptionAttributes.class);
+
+		return this.subscriptionAttributes != null
+			? this.subscriptionAttributes.getClass()
+			: SubscriptionAttributes.class;
 	}
 
 	/*
@@ -83,7 +86,7 @@ public class SubscriptionAttributesFactoryBean implements FactoryBean<Subscripti
 	 * @see org.apache.geode.cache.InterestPolicy
 	 * @see org.apache.geode.cache.SubscriptionAttributes#SubscriptionAttributes(org.apache.geode.cache.InterestPolicy)
 	 */
-	public void setInterestPolicy(final InterestPolicy interestPolicy) {
+	public void setInterestPolicy(InterestPolicy interestPolicy) {
 		this.interestPolicy = interestPolicy;
 	}
 
@@ -96,16 +99,6 @@ public class SubscriptionAttributesFactoryBean implements FactoryBean<Subscripti
 	 * @see org.apache.geode.cache.SubscriptionAttributes#getInterestPolicy()
 	 */
 	public InterestPolicy getInterestPolicy() {
-		return (interestPolicy != null ? interestPolicy : InterestPolicy.DEFAULT);
-	}
-
-	@Deprecated
-	public void setPolicy(InterestPolicy policy) {
-		setInterestPolicy(policy);
-	}
-
-	@Deprecated
-	public InterestPolicy getPolicy() {
-		return getInterestPolicy();
+		return this.interestPolicy != null ? this.interestPolicy : InterestPolicy.DEFAULT;
 	}
 }

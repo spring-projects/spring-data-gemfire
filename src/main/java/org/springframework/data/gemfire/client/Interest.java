@@ -130,33 +130,6 @@ public class Interest<K> implements InitializingBean {
 	}
 
 	/**
-	 * @deprecated
-	 * @see #Interest(Object, InterestResultPolicy)
-	 */
-	@Deprecated
-	public Interest(K key, String policy) {
-		this(key, policy, DEFAULT_DURABLE, DEFAULT_RECEIVE_VALUES);
-	}
-
-	/**
-	 * @deprecated
-	 * @see #Interest(Object, InterestResultPolicy, boolean)
-	 */
-	@Deprecated
-	public Interest(K key, String policy, boolean durable) {
-		this(key, policy, durable, DEFAULT_RECEIVE_VALUES);
-	}
-
-	/**
-	 * @deprecated
-	 * @see #Interest(Object, InterestResultPolicy, boolean, boolean)
-	 */
-	@Deprecated
-	public Interest(K key, String policy, boolean durable, boolean receiveValues) {
-		this(key, (InterestResultPolicy) constants.asObject(policy), durable, receiveValues);
-	}
-
-	/**
 	 * @inheritDoc
 	 */
 	public void afterPropertiesSet() {

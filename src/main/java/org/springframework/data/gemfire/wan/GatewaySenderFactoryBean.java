@@ -88,8 +88,9 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 	@Override
 	protected void doInit() {
 
-		GatewaySenderFactory gatewaySenderFactory =
-			this.factory != null ? (GatewaySenderFactory) this.factory : this.cache.createGatewaySenderFactory();
+		GatewaySenderFactory gatewaySenderFactory = this.factory != null
+			? (GatewaySenderFactory) this.factory
+			: this.cache.createGatewaySenderFactory();
 
 		if (alertThreshold != null) {
 			gatewaySenderFactory.setAlertThreshold(alertThreshold);
@@ -226,10 +227,6 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 
 	public void setMaximumQueueMemory(Integer maximumQueueMemory) {
 		this.maximumQueueMemory = maximumQueueMemory;
-	}
-
-	public void setOrderPolicy(String orderPolicy) {
-		setOrderPolicy(GatewaySender.OrderPolicy.valueOf(String.valueOf(orderPolicy).toUpperCase()));
 	}
 
 	public void setOrderPolicy(GatewaySender.OrderPolicy orderPolicy) {

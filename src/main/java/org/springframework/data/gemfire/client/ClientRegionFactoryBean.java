@@ -45,7 +45,6 @@ import org.apache.geode.compression.Compressor;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.data.gemfire.ConfigurableRegionFactoryBean;
-import org.springframework.data.gemfire.DataPolicyConverter;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.config.annotation.RegionConfigurer;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
@@ -570,21 +569,6 @@ public class ClientRegionFactoryBean<K, V> extends ConfigurableRegionFactoryBean
 	 */
 	public void setDataPolicy(DataPolicy dataPolicy) {
 		this.dataPolicy = dataPolicy;
-	}
-
-	/**
-	 * An alternate way to set the Data Policy, using the String name of the enumerated value.
-	 *
-	 * @param dataPolicyName the enumerated value String name of the Data Policy.
-	 * @see org.apache.geode.cache.DataPolicy
-	 * @see #setDataPolicy(org.apache.geode.cache.DataPolicy)
-	 * @deprecated use setDataPolicy(:DataPolicy) instead.
-	 */
-	@Deprecated
-	public void setDataPolicyName(String dataPolicyName) {
-		DataPolicy resolvedDataPolicy = new DataPolicyConverter().convert(dataPolicyName);
-		Assert.notNull(resolvedDataPolicy, String.format("Data Policy [%1$s] is not valid", dataPolicyName));
-		setDataPolicy(resolvedDataPolicy);
 	}
 
 	final boolean isDestroy() {

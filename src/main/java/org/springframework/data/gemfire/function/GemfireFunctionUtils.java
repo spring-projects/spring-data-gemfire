@@ -22,7 +22,6 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -193,23 +192,6 @@ public abstract class GemfireFunctionUtils {
 
 		registerFunctionForPojoMethod(target, method, getAnnotationAttributes(method, GemfireFunction.class), overwrite);
 
-	}
-
-	/**
-	 * Wrap the {@link Object target object} and {@link Method method} in a Pivotal GemFire/Apache Geode {@link Function}
-	 * and register the {@link Function} with the {@link FunctionService}.
-	 *
-	 * @param target {@link Object target object}.
-	 * @param method {@link Method} bound to a {@link Function}.
-	 * @param gemfireFunctionAttributes {@link GemfireFunction} annotation {@link Map attributes}.
-	 * @param overwrite if {@literal true}, will replace any existing {@link Function} having the same ID.
-	 * @deprecated use {@link #registerFunctionForPojoMethod(Object, Method, AnnotationAttributes, boolean)} instead.
-	 */
-	@Deprecated
-	public static void registerFunctionForPojoMethod(Object target, Method method,
-			Map<String, Object> gemfireFunctionAttributes, boolean overwrite) {
-
-		registerFunctionForPojoMethod(target, method, AnnotationAttributes.fromMap(gemfireFunctionAttributes), overwrite);
 	}
 
 	/**

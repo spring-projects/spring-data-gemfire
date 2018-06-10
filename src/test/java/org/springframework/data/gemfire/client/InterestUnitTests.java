@@ -130,22 +130,6 @@ public class InterestUnitTests {
 	}
 
 	@Test
-	@SuppressWarnings("deprecation")
-	public void constructInterestWithStringPolicy() {
-		Interest<String> interest = new Interest<>("mockKey", "nOnE");
-
-		assertThat(interest.getKey()).isEqualTo("mockKey");
-		assertThat(interest.getPolicy()).isEqualTo(InterestResultPolicy.NONE);
-		assertThat(interest.getType()).isEqualTo(KEY);
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	@SuppressWarnings("deprecation")
-	public void constructInterestWithInvalidStringPolicy() {
-		new Interest<>("testKey", "INVALID");
-	}
-
-	@Test
 	public void isAlphanumericWhitespace() {
 		Interest<?> interest = newInterest("key");
 
