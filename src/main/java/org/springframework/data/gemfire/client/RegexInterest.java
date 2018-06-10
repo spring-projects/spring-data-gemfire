@@ -78,7 +78,7 @@ public class RegexInterest extends Interest<String> {
 	 */
 	@Override
 	public void setType(Type type) {
-		logger.warn(String.format("Setting the Type [%1$s] of interest on [%2$s] is ignored",
+		logger.warn(String.format("Setting the Type [%1$s] of Interest on [%2$s] is ignored",
 			type, getClass().getName()));
 	}
 }
