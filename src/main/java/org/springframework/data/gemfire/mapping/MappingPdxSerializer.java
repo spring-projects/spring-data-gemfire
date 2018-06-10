@@ -310,26 +310,6 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	}
 
 	/**
-	 * Returns a custom PDX serializer for the given {@link PersistentProperty entity persistent property}.
-	 *
-	 * @param property {@link PersistentProperty} of the entity used to lookup the custom PDX serializer.
-	 * @return a custom {@link PdxSerializer} for the given entity {@link PersistentProperty},
-	 * or {@literal null} if no custom {@link PdxSerializer} could be found.
-	 * @see org.apache.geode.pdx.PdxSerializer
-	 */
-	@Nullable
-	protected PdxSerializer getCustomPdxSerializer(@NonNull PersistentProperty<?> property) {
-
-		Map<?, PdxSerializer> customPdxSerializers = getCustomPdxSerializers();
-
-		return this.pdxSerializerResolvers.stream()
-			.map(it -> it.resolve(customPdxSerializers, property))
-			.filter(Objects::nonNull)
-			.findFirst()
-			.orElse(null);
-	}
-
-	/**
 	 * Configures the {@link EntityInstantiator EntityInstantiators} used to create the instances
 	 * read by this {@link PdxSerializer}.
 	 *
@@ -337,7 +317,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 * read by this {@link PdxSerializer}; must not be {@literal null}.
 	 * @see org.springframework.data.convert.EntityInstantiator
 	 */
-	public void setGemfireInstantiators(@NonNull EntityInstantiators entityInstantiators) {
+	public void setEntityInstantiators(@NonNull EntityInstantiators entityInstantiators) {
 
 		Assert.notNull(entityInstantiators, "EntityInstantiators must not be null");
 
@@ -353,8 +333,8 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 * @see org.springframework.data.convert.EntityInstantiator
 	 * @see java.util.Map
 	 */
-	public void setGemfireInstantiators(@NonNull Map<Class<?>, EntityInstantiator> gemfireInstantiators) {
-		setGemfireInstantiators(new EntityInstantiators(gemfireInstantiators));
+	public void setEntityInstantiators(@NonNull Map<Class<?>, EntityInstantiator> gemfireInstantiators) {
+		setEntityInstantiators(new EntityInstantiators(gemfireInstantiators));
 	}
 
 	/**
@@ -363,21 +343,8 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 * @return the configured {@link EntityInstantiators} handling instantiation for Pivotal GemFire persistent entities.
 	 * @see org.springframework.data.convert.EntityInstantiators
 	 */
-	protected EntityInstantiators getGemfireInstantiators() {
+	protected EntityInstantiators getEntityInstantiators() {
 		return this.entityInstantiators;
-	}
-
-	/**
-	 * Looks up and returns an EntityInstantiator to construct and initialize an instance of the object defined
-	 * by the given PersistentEntity (meta-data).
-	 *
-	 * @param entity the PersistentEntity object used to lookup the custom EntityInstantiator.
-	 * @return an EntityInstantiator for the given PersistentEntity.
-	 * @see org.springframework.data.convert.EntityInstantiator
-	 * @see org.springframework.data.mapping.PersistentEntity
-	 */
-	protected EntityInstantiator getInstantiatorFor(PersistentEntity entity) {
-		return getGemfireInstantiators().getInstantiatorFor(entity);
 	}
 
 	/**
@@ -510,7 +477,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 
 		GemfirePersistentEntity<?> entity = getPersistentEntity(type);
 
-		Object instance = getInstantiatorFor(entity)
+		Object instance = resolveEntityInstantiator(entity)
 			.createInstance(entity, new PersistentEntityParameterValueProvider<>(entity,
 				new GemfirePropertyValueProvider(reader), null));
 
@@ -521,7 +488,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 
 			if (isWritable(entity, persistentProperty)) {
 
-				PdxSerializer customPdxSerializer = getCustomPdxSerializer(persistentProperty);
+				PdxSerializer customPdxSerializer = resolveCustomPdxSerializer(persistentProperty);
 
 				Object value = null;
 
@@ -606,7 +573,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 
 				if (isReadable(persistentProperty)) {
 
-					PdxSerializer customPdxSerializer = getCustomPdxSerializer(persistentProperty);
+					PdxSerializer customPdxSerializer = resolveCustomPdxSerializer(persistentProperty);
 
 					Object propertyValue = null;
 
@@ -664,6 +631,39 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 */
 	boolean isReadable(GemfirePersistentProperty persistentProperty) {
 		return !persistentProperty.isTransient();
+	}
+
+	/**
+	 * Returns a custom PDX serializer for the given {@link PersistentProperty entity persistent property}.
+	 *
+	 * @param property {@link PersistentProperty} of the entity used to lookup the custom PDX serializer.
+	 * @return a custom {@link PdxSerializer} for the given entity {@link PersistentProperty},
+	 * or {@literal null} if no custom {@link PdxSerializer} could be found.
+	 * @see org.apache.geode.pdx.PdxSerializer
+	 */
+	@Nullable
+	protected PdxSerializer resolveCustomPdxSerializer(@NonNull PersistentProperty<?> property) {
+
+		Map<?, PdxSerializer> customPdxSerializers = getCustomPdxSerializers();
+
+		return this.pdxSerializerResolvers.stream()
+			.map(it -> it.resolve(customPdxSerializers, property))
+			.filter(Objects::nonNull)
+			.findFirst()
+			.orElse(null);
+	}
+
+	/**
+	 * Looks up and returns an EntityInstantiator to construct and initialize an instance of the object defined
+	 * by the given PersistentEntity (meta-data).
+	 *
+	 * @param entity the PersistentEntity object used to lookup the custom EntityInstantiator.
+	 * @return an EntityInstantiator for the given PersistentEntity.
+	 * @see org.springframework.data.convert.EntityInstantiator
+	 * @see org.springframework.data.mapping.PersistentEntity
+	 */
+	protected EntityInstantiator resolveEntityInstantiator(PersistentEntity entity) {
+		return getEntityInstantiators().getInstantiatorFor(entity);
 	}
 
 	/**
