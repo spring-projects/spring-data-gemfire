@@ -27,9 +27,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Arrays;
 
-import org.apache.shiro.util.Assert;
+import org.apache.geode.security.SecurableCommunicationChannels;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.util.Assert;
 
 /**
  * The {@link EnableSsl} annotation marks a Spring {@link Configuration @Configuration} annotated {@link Class}
@@ -37,6 +38,7 @@ import org.springframework.context.annotation.Import;
  *
  * @author John Blum
  * @see java.lang.annotation.Annotation
+ * @see org.apache.geode.security.SecurableCommunicationChannels
  * @see org.springframework.context.annotation.Import
  * @see org.springframework.data.gemfire.config.annotation.SslConfiguration
  * @since 1.9.0
@@ -200,13 +202,13 @@ public @interface EnableSsl {
 
 	enum Component {
 
-		ALL("all"),
-		CLUSTER("cluster"),
-		GATEWAY("gateway"),
-		JMX("jmx"),
-		LOCATOR("locator"),
-		SERVER("server"),
-		WEB("web");
+		ALL(SecurableCommunicationChannels.ALL),
+		CLUSTER(SecurableCommunicationChannels.CLUSTER),
+		GATEWAY(SecurableCommunicationChannels.GATEWAY),
+		JMX(SecurableCommunicationChannels.JMX),
+		LOCATOR(SecurableCommunicationChannels.LOCATOR),
+		SERVER(SecurableCommunicationChannels.SERVER),
+		WEB(SecurableCommunicationChannels.WEB);
 
 		public static Component valueOfName(String name) {
 
