@@ -41,8 +41,8 @@ public class KeyInterest<K> extends Interest<K> {
 		super(key, policy, durable);
 	}
 
-	public KeyInterest(K key, InterestResultPolicy policy, boolean durable, boolean recieveValues) {
-		super(key, policy, durable, recieveValues);
+	public KeyInterest(K key, InterestResultPolicy policy, boolean durable, boolean receiveValues) {
+		super(key, policy, durable, receiveValues);
 	}
 
 	/**
@@ -58,7 +58,7 @@ public class KeyInterest<K> extends Interest<K> {
 	 */
 	@Override
 	public void setType(Type type) {
-		logger.warn(String.format("Setting the Type [%1$s] of interest on [%2$s] is ignored",
+		logger.warn(String.format("Setting the Type [%1$s] of Interest on [%2$s] is ignored",
 			type, getClass().getName()));
 	}
 }
