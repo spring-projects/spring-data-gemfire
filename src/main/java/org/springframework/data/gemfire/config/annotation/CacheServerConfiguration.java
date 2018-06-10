@@ -172,7 +172,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 	 * @see org.apache.geode.cache.server.CacheServer
 	 */
 	@Override
-	protected void configureTheRest(AnnotationMetadata importMetadata) {
+	protected void configureOptional(AnnotationMetadata importMetadata) {
 
 		super.configureCache(importMetadata);
 

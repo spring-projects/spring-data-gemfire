@@ -25,6 +25,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.type.AnnotationMetadata;
 
 /**
@@ -34,13 +35,16 @@ import org.springframework.core.type.AnnotationMetadata;
  *
  * @author John Blum
  * @see java.lang.annotation.Annotation
+ * @see org.springframework.context.annotation.Import
  * @see org.springframework.data.gemfire.config.annotation.AbstractCacheConfiguration#configurePdx(AnnotationMetadata)
+ * @see org.springframework.data.gemfire.config.annotation.PdxConfiguration
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
+@Import(PdxConfiguration.class)
 @SuppressWarnings("unused")
 public @interface EnablePdx {
 
@@ -49,7 +53,7 @@ public @interface EnablePdx {
 	 *
 	 * Use the {@literal spring.data.gemfire.pdx.disk-store-name} property in {@literal application.properties}.
 	 */
-	String diskStoreName() default "";
+	String diskStoreName() default PdxConfiguration.DEFAULT_PDX_DISK_STORE_NAME;
 
 	/**
 	 * Configures whether pdx ignores fields that were unread during deserialization.
@@ -58,7 +62,7 @@ public @interface EnablePdx {
 	 *
 	 * Use the {@literal spring.data.gemfire.pdx.ignore-unread-fields} property in {@literal application.properties}.
 	 */
-	boolean ignoreUnreadFields() default false;
+	boolean ignoreUnreadFields() default PdxConfiguration.DEFAULT_IGNORE_UNREAD_FIELDS;
 
 	/**
 	 * Configures whether the type metadata for PDX objects is persisted to disk.
@@ -67,7 +71,7 @@ public @interface EnablePdx {
 	 *
 	 * Use the {@literal spring.data.gemfire.pdx.persistent} property in {@literal application.properties}.
 	 */
-	boolean persistent() default false;
+	boolean persistent() default PdxConfiguration.DEFAULT_PERSISTENT;
 
 	/**
 	 * Configures the object preference to {@link org.apache.geode.pdx.PdxInstance} type or {@link Object}.
@@ -76,11 +80,13 @@ public @interface EnablePdx {
 	 *
 	 * Use the {@literal spring.data.gemfire.pdx.read-serialized} property in {@literal application.properties}.
 	 */
-	boolean readSerialized() default false;
+	boolean readSerialized() default PdxConfiguration.DEFAULT_READ_SERIALIZED;
 
 	/**
 	 * Configures the PDX serializer to be used by the cache to serialize object data.
+	 *
+	 * Use the {@literal spring.data.gemfire.pdx.serializer-bean-name} property in {@literal application.properties}.
 	 */
-	String serializerBeanName() default "";
+	String serializerBeanName() default PdxConfiguration.DEFAULT_PDX_SERIALIZER_BEAN_NAME;
 
 }

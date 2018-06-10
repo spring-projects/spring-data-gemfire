@@ -61,7 +61,9 @@ public class PdxDiskStoreAwareBeanFactoryPostProcessor implements BeanFactoryPos
 	 * @throws IllegalArgumentException if the Pivotal GemFire PDX {@link DiskStore} name is unspecified.
 	 */
 	public PdxDiskStoreAwareBeanFactoryPostProcessor(String pdxDiskStoreName) {
+
 		Assert.hasText(pdxDiskStoreName, "PDX DiskStore name is required");
+
 		this.pdxDiskStoreName = pdxDiskStoreName;
 	}
 
@@ -104,7 +106,7 @@ public class PdxDiskStoreAwareBeanFactoryPostProcessor implements BeanFactoryPos
 					BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
 
 					// NOTE for simplicity sake, we add a bean dependency to any bean definition for a bean
-					// (Async Event Queue, Region, Disk Store or otherwise) that may potentially require
+					// (Async Event Queue, Disk Store, Region, or otherwise) that may potentially require
 					// the PDX Disk Store to exist.
 					// NOTE this logic could be optimized to include Disk Store, persistent Async Event Queues
 					// and persistent Regions (either by way of 'persistent' attribute, Data Policy
@@ -124,7 +126,10 @@ public class PdxDiskStoreAwareBeanFactoryPostProcessor implements BeanFactoryPos
 	 * @see org.springframework.beans.factory.config.BeanDefinition#setDependsOn(String[])
 	 */
 	private void addPdxDiskStoreDependency(BeanDefinition beanDefinition) {
-		String[] newDependsOn = (String[]) ArrayUtils.insert(getDependsOn(beanDefinition), 0, getPdxDiskStoreName());
+
+		String[] newDependsOn =
+			(String[]) ArrayUtils.insert(getDependsOn(beanDefinition), 0, getPdxDiskStoreName());
+
 		beanDefinition.setDependsOn(newDependsOn);
 	}
 
