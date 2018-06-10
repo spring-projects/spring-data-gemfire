@@ -79,6 +79,9 @@ public class MappingPdxSerializerIntegrationTests {
 
 		MappingPdxSerializer serializer = MappingPdxSerializer.newMappingPdxSerializer();
 
+		serializer.setIncludeTypeFilters(type ->
+			type.getPackage().getName().startsWith("org.springframework.data.gemfire"));
+
 		cache = new CacheFactory()
 			.set("name", MappingPdxSerializerIntegrationTests.class.getSimpleName())
 			.set("log-level", "error")
