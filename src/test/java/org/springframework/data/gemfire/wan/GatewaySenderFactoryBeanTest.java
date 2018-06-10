@@ -46,15 +46,19 @@ import org.springframework.data.gemfire.TestUtils;
  */
 public class GatewaySenderFactoryBeanTest {
 
-	private Cache mockCacheWithGatewayInfrastructure(final GatewaySenderFactory gatewaySenderFactory) {
+	private Cache mockCacheWithGatewayInfrastructure(GatewaySenderFactory gatewaySenderFactory) {
+
 		Cache mockCache = mock(Cache.class);
+
 		when(mockCache.createGatewaySenderFactory()).thenReturn(gatewaySenderFactory);
+
 		return mockCache;
 	}
 
-	private GatewaySenderFactory mockGatewaySenderFactory(final String gatewaySenderName,
-			final int remoteDistributedSystemId) {
+	private GatewaySenderFactory mockGatewaySenderFactory(String gatewaySenderName, int remoteDistributedSystemId) {
+
 		GatewaySenderFactory mockGatewaySenderFactory = mock(GatewaySenderFactory.class);
+
 		GatewaySender mockGatewaySender = mock(GatewaySender.class);
 
 		when(mockGatewaySender.getId()).thenReturn(gatewaySenderName);
@@ -206,11 +210,11 @@ public class GatewaySenderFactoryBeanTest {
 		GatewaySenderFactory mockGatewaySenderFactory =
 			mockGatewaySenderFactory("g7", 51);
 
-		GatewaySenderFactoryBean factoryBean = new GatewaySenderFactoryBean(
-			mockCacheWithGatewayInfrastructure(mockGatewaySenderFactory));
+		GatewaySenderFactoryBean factoryBean =
+			new GatewaySenderFactoryBean(mockCacheWithGatewayInfrastructure(mockGatewaySenderFactory));
 
-		factoryBean.setName("g4");
-		factoryBean.setRemoteDistributedSystemId(21);
+		factoryBean.setName("g7");
+		factoryBean.setRemoteDistributedSystemId(51);
 		factoryBean.setParallel(false);
 		factoryBean.setDispatcherThreads(1);
 		factoryBean.doInit();
@@ -220,8 +224,8 @@ public class GatewaySenderFactoryBeanTest {
 		GatewaySender gatewaySender = factoryBean.getObject();
 
 		assertNotNull(gatewaySender);
-		assertEquals("g4", gatewaySender.getId());
-		assertEquals(21, gatewaySender.getRemoteDSId());
+		assertEquals("g7", gatewaySender.getId());
+		assertEquals(51, gatewaySender.getRemoteDSId());
 	}
 
 	@Test
@@ -257,8 +261,8 @@ public class GatewaySenderFactoryBeanTest {
 		GatewaySenderFactoryBean factoryBean = new GatewaySenderFactoryBean(
 			mockCacheWithGatewayInfrastructure(mockGatewaySenderFactory));
 
-		factoryBean.setName("g7");
-		factoryBean.setRemoteDistributedSystemId(51);
+		factoryBean.setName("g5");
+		factoryBean.setRemoteDistributedSystemId(42);
 		factoryBean.setDiskSynchronous(true);
 		factoryBean.doInit();
 

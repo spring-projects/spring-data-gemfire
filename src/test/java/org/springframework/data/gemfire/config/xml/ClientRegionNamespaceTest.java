@@ -72,7 +72,7 @@ import org.springframework.util.ObjectUtils;
  * @see org.springframework.data.gemfire.config.xml.ClientRegionParser
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="client-ns.xml", initializers = GemFireMockObjectsApplicationContextInitializer.class)
+@ContextConfiguration(locations = "client-ns.xml", initializers = GemFireMockObjectsApplicationContextInitializer.class)
 @SuppressWarnings("unused")
 public class ClientRegionNamespaceTest {
 

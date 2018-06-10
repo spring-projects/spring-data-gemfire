@@ -156,8 +156,8 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 			gatewaySenderFactory.addGatewayTransportFilter(transportFilter);
 		}
 
-		GatewaySenderWrapper wrapper = new GatewaySenderWrapper(gatewaySenderFactory.create(getName(),
-			remoteDistributedSystemId));
+		GatewaySenderWrapper wrapper =
+			new GatewaySenderWrapper(gatewaySenderFactory.create(getName(), remoteDistributedSystemId));
 
         wrapper.setManualStart(manualStart);
         gatewaySender = wrapper;
