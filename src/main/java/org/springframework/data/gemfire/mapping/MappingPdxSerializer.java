@@ -16,7 +16,9 @@
 package org.springframework.data.gemfire.mapping;
 
 import static org.springframework.data.gemfire.mapping.MappingPdxSerializer.ExcludeComGemstoneGemFireTypesFilter.EXCLUDE_COM_GEMSTONE_GEMFIRE_TYPES;
+import static org.springframework.data.gemfire.mapping.MappingPdxSerializer.ExcludeJavaTypesFilter.EXCLUDE_JAVA_TYPES;
 import static org.springframework.data.gemfire.mapping.MappingPdxSerializer.ExcludeNullTypesFilter.EXCLUDE_NULL_TYPES;
+import static org.springframework.data.gemfire.mapping.MappingPdxSerializer.ExcludeOrgSpringFrameworkTypesFilter.EXCLUDE_ORG_SPRING_FRAMEWORK_TYPES;
 
 import java.util.Collections;
 import java.util.Map;
@@ -190,9 +192,12 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 
 	private Map<?, PdxSerializer> customPdxSerializers;
 
-	private Filter typeFilters = EXCLUDE_NULL_TYPES.and(EXCLUDE_COM_GEMSTONE_GEMFIRE_TYPES);
+	private Filter typeFilters = EXCLUDE_NULL_TYPES
+		.and(EXCLUDE_COM_GEMSTONE_GEMFIRE_TYPES)
+		.and(EXCLUDE_JAVA_TYPES)
+		.and(EXCLUDE_ORG_SPRING_FRAMEWORK_TYPES);
 
-	// TODO: decide what to do with this; SpELContext is not used
+	// TODO: remove? SpELContext is not used
 	private SpELContext spelContext;
 
 	/**
@@ -371,7 +376,6 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 		this.entityInstantiators = new EntityInstantiators(gemfireInstantiators);
 	}
 
-	/* (non-Javadoc) */
 	protected EntityInstantiators getGemfireInstantiators() {
 		return this.entityInstantiators;
 	}
@@ -666,6 +670,18 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 		}
 	}
 
+	public static class ExcludeJavaTypesFilter extends org.springframework.data.gemfire.util.AbstractFilter<Class<?>> {
+
+		public static final Filter<Class<?>> EXCLUDE_JAVA_TYPES = new ExcludeJavaTypesFilter();
+
+		protected static final String JAVA_PACKAGE_NAME = "java";
+
+		@Override
+		public boolean accept(Class<?> type) {
+			return type != null && !type.getPackage().getName().startsWith(JAVA_PACKAGE_NAME);
+		}
+	}
+
 	public static class ExcludeNullTypesFilter extends org.springframework.data.gemfire.util.AbstractFilter<Class<?>> {
 
 		public static final Filter<Class<?>> EXCLUDE_NULL_TYPES = new ExcludeNullTypesFilter();
@@ -673,6 +689,20 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 		@Override
 		public boolean accept(Class<?> type) {
 			return type != null;
+		}
+	}
+
+	public static class ExcludeOrgSpringFrameworkTypesFilter
+			extends org.springframework.data.gemfire.util.AbstractFilter<Class<?>> {
+
+		public static final Filter<Class<?>> EXCLUDE_ORG_SPRING_FRAMEWORK_TYPES =
+			new ExcludeOrgSpringFrameworkTypesFilter();
+
+		protected static final String ORG_SPRING_FRAMEWORK_PACKAGE_NAME = "org.springframework";
+
+		@Override
+		public boolean accept(Class<?> type) {
+			return type != null && !type.getPackage().getName().startsWith(ORG_SPRING_FRAMEWORK_PACKAGE_NAME);
 		}
 	}
 }
