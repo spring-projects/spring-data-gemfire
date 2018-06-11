@@ -112,6 +112,19 @@ public class MappingPdxSerializerUnitTests {
 		this.pdxSerializer = spy(new MappingPdxSerializer(this.mappingContext, this.conversionService));
 	}
 
+	private Filter<Class<?>> includePackageTypesFilter(Class<?> type) {
+
+		final Package includeTypesInPackage = type.getPackage();
+
+		return new AbstractFilter<Class<?>>() {
+
+			@Override
+			public boolean accept(Class<?> type) {
+				return includeTypesInPackage.equals(type.getPackage());
+			}
+		};
+	}
+
 	private String toFullyQualifiedPropertyName(PersistentProperty<?> persistentProperty) {
 		return this.pdxSerializer.toFullyQualifiedPropertyName(persistentProperty);
 	}
@@ -557,6 +570,7 @@ public class MappingPdxSerializerUnitTests {
 		this.pdxSerializer.setCustomPdxSerializers(Collections.singletonMap(Address.class, mockAddressSerializer));
 		this.pdxSerializer.setGemfireInstantiators(
 			Collections.<Class<?>, EntityInstantiator>singletonMap(Person.class, this.mockInstantiator));
+		this.pdxSerializer.setIncludeTypeFilters(includePackageTypesFilter(Person.class));
 
 		Object obj = this.pdxSerializer.fromData(Person.class, this.mockReader);
 
@@ -590,6 +604,7 @@ public class MappingPdxSerializerUnitTests {
 		try {
 			this.pdxSerializer.setGemfireInstantiators(
 				Collections.<Class<?>, EntityInstantiator>singletonMap(Person.class, this.mockInstantiator));
+			this.pdxSerializer.setIncludeTypeFilters(includePackageTypesFilter(Person.class));
 			this.pdxSerializer.fromData(Person.class, this.mockReader);
 		}
 		catch (MappingException expected) {
@@ -631,6 +646,7 @@ public class MappingPdxSerializerUnitTests {
 		this.pdxSerializer.setCustomPdxSerializers(Collections.singletonMap(Address.class, mockAddressSerializer));
 		this.pdxSerializer.setGemfireInstantiators(
 			Collections.<Class<?>, EntityInstantiator>singletonMap(Person.class, this.mockInstantiator));
+		this.pdxSerializer.setIncludeTypeFilters(includePackageTypesFilter(Person.class));
 		this.pdxSerializer.fromData(Person.class, this.mockReader);
 
 		GemfirePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(Person.class);
@@ -645,15 +661,7 @@ public class MappingPdxSerializerUnitTests {
 	@Test
 	public void fromDataWithTypeFilterAcceptsApplicationDomainTypes() {
 
-		Filter<Class<?>> packageBasedTypeFilter = new AbstractFilter<Class<?>>() {
-
-			@Override
-			public boolean accept(Class<?> type) {
-				return type != null && User.class.getPackage().equals(type.getPackage());
-			}
-		};
-
-		this.pdxSerializer.setTypeFilters(packageBasedTypeFilter);
+		this.pdxSerializer.setIncludeTypeFilters(includePackageTypesFilter(User.class));
 
 		doReturn("test").when(this.pdxSerializer).doFromData(any(Class.class), any(PdxReader.class));
 
@@ -684,7 +692,7 @@ public class MappingPdxSerializerUnitTests {
 			}
 		};
 
-		this.pdxSerializer.setTypeFilters(applicationDomainTypeFilter);
+		this.pdxSerializer.setExcludeTypeFilters(applicationDomainTypeFilter);
 
 		assertThat(this.pdxSerializer.fromData(ApplicationDomainType.class, this.mockReader)).isNull();
 	}
@@ -715,6 +723,7 @@ public class MappingPdxSerializerUnitTests {
 		jonDoe.address = address;
 
 		this.pdxSerializer.setCustomPdxSerializers(Collections.singletonMap(Address.class, mockAddressSerializer));
+		this.pdxSerializer.setIncludeTypeFilters(includePackageTypesFilter(Person.class));
 
 		assertThat(this.pdxSerializer.toData(jonDoe, this.mockWriter)).isTrue();
 
@@ -750,6 +759,7 @@ public class MappingPdxSerializerUnitTests {
 
 		try {
 			this.pdxSerializer.setCustomPdxSerializers(Collections.<Object, PdxSerializer>emptyMap());
+			this.pdxSerializer.setIncludeTypeFilters(includePackageTypesFilter(Person.class));
 			this.pdxSerializer.toData(jonDoe, this.mockWriter);
 		}
 		catch (MappingException expected) {
@@ -803,7 +813,7 @@ public class MappingPdxSerializerUnitTests {
 			}
 		};
 
-		this.pdxSerializer.setTypeFilters(applicationDomainTypeFilter);
+		this.pdxSerializer.setExcludeTypeFilters(applicationDomainTypeFilter);
 
 		assertThat(this.pdxSerializer.toData(new ApplicationDomainType(), this.mockWriter)).isFalse();
 	}
@@ -815,15 +825,7 @@ public class MappingPdxSerializerUnitTests {
 			new org.springframework.data.gemfire.test.model.Person("Jon", "Doe",
 				null, Gender.MALE);
 
-		Filter<Class<?>> packageBasedTypeFilter = new AbstractFilter<Class<?>>() {
-
-			@Override
-			public boolean accept(Class<?> type) {
-				return type != null && User.class.getPackage().equals(type.getPackage());
-			}
-		};
-
-		this.pdxSerializer.setTypeFilters(packageBasedTypeFilter);
+		this.pdxSerializer.setIncludeTypeFilters(includePackageTypesFilter(User.class));
 
 		doReturn(true).when(this.pdxSerializer).doToData(any(), any(PdxWriter.class));
 

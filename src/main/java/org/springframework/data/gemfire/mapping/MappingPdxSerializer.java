@@ -15,6 +15,7 @@
  */
 package org.springframework.data.gemfire.mapping;
 
+import static org.springframework.data.gemfire.mapping.MappingPdxSerializer.ExcludeAllTypesFilter.EXCLUDE_ALL_TYPES;
 import static org.springframework.data.gemfire.mapping.MappingPdxSerializer.ExcludeComGemstoneGemFireTypesFilter.EXCLUDE_COM_GEMSTONE_GEMFIRE_TYPES;
 import static org.springframework.data.gemfire.mapping.MappingPdxSerializer.ExcludeJavaTypesFilter.EXCLUDE_JAVA_TYPES;
 import static org.springframework.data.gemfire.mapping.MappingPdxSerializer.ExcludeNullTypesFilter.EXCLUDE_NULL_TYPES;
@@ -186,16 +187,18 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 
 	private EntityInstantiators entityInstantiators;
 
+	private Filter<Class<?>> excludeTypeFilters = EXCLUDE_NULL_TYPES
+		.and(EXCLUDE_COM_GEMSTONE_GEMFIRE_TYPES)
+		.and(EXCLUDE_JAVA_TYPES)
+		.and(EXCLUDE_ORG_SPRING_FRAMEWORK_TYPES);
+
+	private Filter<Class<?>> includeTypeFilters = EXCLUDE_ALL_TYPES;
+
 	private final GemfireMappingContext mappingContext;
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private Map<?, PdxSerializer> customPdxSerializers;
-
-	private Filter typeFilters = EXCLUDE_NULL_TYPES
-		.and(EXCLUDE_COM_GEMSTONE_GEMFIRE_TYPES)
-		.and(EXCLUDE_JAVA_TYPES)
-		.and(EXCLUDE_ORG_SPRING_FRAMEWORK_TYPES);
 
 	// TODO: remove? SpELContext is not used
 	private SpELContext spelContext;
@@ -440,19 +443,40 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	}
 
 	/**
-	 * Sets the {@link Filter type filters} used to filter {@link Class types} serializable
+	 * Sets the {@link Filter type filters} used to exclude or filter {@link Class types} serializable
 	 * by this {@link MappingPdxSerializer PDX serializer}.
 	 *
 	 * This operation is null-safe and rather than overriding the existing {@link Filter type filters},
 	 * this set operation combines the given {@link Filter type filters} with
 	 * the exiting {@link Filter type filters} joined by {@literal and}.
 	 *
-	 * @param typeFilters {@link Filter type filters} used to to filter {@link Class type} serializable
+	 * @param typeFilters {@link Filter type filters} used to to exclude {@link Class types} serializable
 	 * by this {@link MappingPdxSerializer PDX serializer}.
 	 * @see org.springframework.data.gemfire.util.Filter
 	 */
-	public void setTypeFilters(Filter<Class<?>> typeFilters) {
-		this.typeFilters = typeFilters != null ? this.typeFilters.and(typeFilters) : this.typeFilters;
+	public void setExcludeTypeFilters(Filter<Class<?>> typeFilters) {
+
+		this.excludeTypeFilters = typeFilters != null
+			? this.excludeTypeFilters.and(typeFilters)
+			: this.excludeTypeFilters;
+	}
+	/**
+	 * Sets the {@link Filter type filters} used to include or filter {@link Class types} serializable
+	 * by this {@link MappingPdxSerializer PDX serializer}.
+	 *
+	 * This operation is null-safe and rather than overriding the existing {@link Filter type filters},
+	 * this set operation combines the given {@link Filter type filters} with
+	 * the exiting {@link Filter type filters} joined by {@literal or}.
+	 *
+	 * @param typeFilters {@link Filter type filters} used to to include {@link Class types} serializable
+	 * by this {@link MappingPdxSerializer PDX serializer}.
+	 * @see org.springframework.data.gemfire.util.Filter
+	 */
+	public void setIncludeTypeFilters(Filter<Class<?>> typeFilters) {
+
+		this.includeTypeFilters = typeFilters != null
+			? this.includeTypeFilters.or(typeFilters)
+			: this.includeTypeFilters;
 	}
 
 	/**
@@ -463,7 +487,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 * @see org.springframework.data.gemfire.util.Filter
 	 */
 	protected Filter<Class<?>> getTypeFilters() {
-		return this.typeFilters;
+		return this.excludeTypeFilters.or(EXCLUDE_NULL_TYPES.and(this.includeTypeFilters));
 	}
 
 	@Override
@@ -655,6 +679,16 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 */
 	Class<?> resolveType(Object obj) {
 		return obj != null ? obj.getClass() : null;
+	}
+
+	public static class ExcludeAllTypesFilter extends org.springframework.data.gemfire.util.AbstractFilter<Class<?>> {
+
+		public static final Filter<Class<?>> EXCLUDE_ALL_TYPES = new ExcludeAllTypesFilter();
+
+		@Override
+		public boolean accept(Class<?> obj) {
+			return false;
+		}
 	}
 
 	public static class ExcludeComGemstoneGemFireTypesFilter extends org.springframework.data.gemfire.util.AbstractFilter<Class<?>> {

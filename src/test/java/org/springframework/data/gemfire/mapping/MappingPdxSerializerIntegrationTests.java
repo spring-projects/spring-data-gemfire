@@ -51,6 +51,7 @@ import org.springframework.data.annotation.ReadOnlyProperty;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.gemfire.repository.sample.Address;
 import org.springframework.data.gemfire.repository.sample.Person;
+import org.springframework.data.gemfire.util.AbstractFilter;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -77,6 +78,14 @@ public class MappingPdxSerializerIntegrationTests {
 	public static void setUp() {
 
 		MappingPdxSerializer serializer = MappingPdxSerializer.newMappingPdxSerializer();
+
+		serializer.setIncludeTypeFilters(new AbstractFilter<Class<?>>() {
+
+			@Override
+			public boolean accept(Class<?> type) {
+				return type.getPackage().getName().startsWith("org.springframework.data.gemfire");
+			}
+		});
 
 		cache = new CacheFactory()
 			.set("name", MappingPdxSerializerIntegrationTests.class.getSimpleName())
