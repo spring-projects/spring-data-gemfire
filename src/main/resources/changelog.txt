@@ -3,6 +3,14 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.9.13.RELEASE (2018-06-13)
+----------------------------------------------
+* SGF-759 - Add support for Include Filters to MappingPdxSerializer.
+* SGF-758 - Exclude Java and Spring Framework Types when using MappingPdxSerializer.
+* SGF-745 - Add ability to filter types de/serialized by the o.s.d.g.mapping.MappingPdxSerializer.
+* SGF-743 - Release 1.9.13 (Ingalls SR13).
+
+
 Changes in version 2.1.0.M3 (2018-05-17)
 ----------------------------------------
 * SGF-747 - Properly enable statistics when Annotation-based Expiration Policies are enabled with EnableExpiration.
