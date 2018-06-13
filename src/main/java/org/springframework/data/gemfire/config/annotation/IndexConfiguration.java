@@ -309,7 +309,7 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 					.filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
 					.map(beanFactory -> {
 						Map<String, IndexConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)
-							.getBeansOfType(IndexConfigurer.class, true, true);
+							.getBeansOfType(IndexConfigurer.class, true, false);
 
 						return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
 					})

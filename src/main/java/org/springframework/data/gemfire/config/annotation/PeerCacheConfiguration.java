@@ -101,7 +101,6 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
         return gemfireCache;
     }
 
-    /* (non-Javadoc) */
     private List<PeerCacheConfigurer> resolvePeerCacheConfigurers() {
 
         return Optional.ofNullable(this.peerCacheConfigurers)
@@ -113,7 +112,7 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
                     .map(beanFactory -> {
 
                         Map<String, PeerCacheConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)
-                            .getBeansOfType(PeerCacheConfigurer.class, true, true);
+                            .getBeansOfType(PeerCacheConfigurer.class, true, false);
 
                         return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
 
