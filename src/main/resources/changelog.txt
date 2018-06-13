@@ -3,6 +3,22 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.0.8.RELEASE (2018-06-13)
+---------------------------------------------
+* SGF-761 - Refactor Function annotation configuration to be smarter in resolving Apache Geode objects on startup.
+* SGF-760 - Do not allow eager init when getting beans by type to resolve Configurers for Annotation configuration.
+* SGF-757 - Move configuration of PDX to a PdxConfiguration class imported by the EnablePdx annotation.
+* SGF-756 - Add ability to declare include filters in addition to exclude filters on o.s.d.g.mapping.MappingPdxSerializer.
+* SGF-754 - Add name attribute to EnableGemFireProperties.
+* SGF-753 - Clean BeanFactoryLocator references on CacheFactoryBean destroy.
+* SGF-752 - Add ability to configure SecurityManager on CacheFactoryBean.
+* SGF-751 - Move client Region interests registration to on SmartLifecycle start.
+* SGF-747 - Properly enable statistics when Annotation-based Expiration Policies are enabled with EnableExpiration.
+* SGF-745 - Add ability to filter types de/serialized by the o.s.d.g.mapping.MappingPdxSerializer.
+* SGF-744 - Release 2.0.8 (Kay SR8).
+* SGF-732 - Change branding from Spring Data GemFire to Spring Data for Pivotal GemFire.
+
+
 Changes in version 1.9.13.RELEASE (2018-06-13)
 ----------------------------------------------
 * SGF-759 - Add support for Include Filters to MappingPdxSerializer.
