@@ -166,7 +166,7 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 					.map(beanFactory -> {
 
 						Map<String, ClientCacheConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)
-							.getBeansOfType(ClientCacheConfigurer.class, true, true);
+							.getBeansOfType(ClientCacheConfigurer.class, true, false);
 
 						return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
 

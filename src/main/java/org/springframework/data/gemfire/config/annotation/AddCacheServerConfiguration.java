@@ -193,7 +193,7 @@ public class AddCacheServerConfiguration extends AbstractAnnotationConfigSupport
 					.filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
 					.map(beanFactory -> {
 						Map<String, CacheServerConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)
-							.getBeansOfType(CacheServerConfigurer.class, true, true);
+							.getBeansOfType(CacheServerConfigurer.class, true, false);
 
 						return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
 					})

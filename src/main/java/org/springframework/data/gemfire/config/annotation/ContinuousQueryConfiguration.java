@@ -224,7 +224,7 @@ public class ContinuousQueryConfiguration extends AbstractAnnotationConfigSuppor
 
 						Map<String, ContinuousQueryListenerContainerConfigurer> beansOfType =
 							((ListableBeanFactory) beanFactory).getBeansOfType(ContinuousQueryListenerContainerConfigurer.class,
-								true, true);
+								true, false);
 
 						return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
 

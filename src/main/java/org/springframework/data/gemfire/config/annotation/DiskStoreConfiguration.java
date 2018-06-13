@@ -216,7 +216,7 @@ public class DiskStoreConfiguration extends AbstractAnnotationConfigSupport
 					.map(beanFactory -> {
 
 						Map<String, DiskStoreConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)
-							.getBeansOfType(DiskStoreConfigurer.class, true, true);
+							.getBeansOfType(DiskStoreConfigurer.class, true, false);
 
 						return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
 

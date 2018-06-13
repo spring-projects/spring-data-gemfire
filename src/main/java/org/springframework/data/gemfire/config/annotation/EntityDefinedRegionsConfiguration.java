@@ -364,7 +364,7 @@ public class EntityDefinedRegionsConfiguration extends AbstractAnnotationConfigS
 					.map(beanFactory -> {
 
 						Map<String, RegionConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)
-							.getBeansOfType(RegionConfigurer.class, true, true);
+							.getBeansOfType(RegionConfigurer.class, true, false);
 
 						return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
 

@@ -198,7 +198,6 @@ public class AddPoolConfiguration extends AbstractAnnotationConfigSupport
 		registry.registerBeanDefinition(poolName, poolFactoryBean.getBeanDefinition());
 	}
 
-	/* (non-Javadoc) */
 	private List<PoolConfigurer> resolvePoolConfigurers() {
 
 		return Optional.ofNullable(this.poolConfigurers)
@@ -208,7 +207,7 @@ public class AddPoolConfiguration extends AbstractAnnotationConfigSupport
 					.filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
 					.map(beanFactory -> {
 						Map<String, PoolConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)
-							.getBeansOfType(PoolConfigurer.class, true, true);
+							.getBeansOfType(PoolConfigurer.class, true, false);
 
 						return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
 					})
@@ -243,7 +242,6 @@ public class AddPoolConfiguration extends AbstractAnnotationConfigSupport
 		return poolFactoryBean;
 	}
 
-	/* (non-Javadoc) */
 	protected BeanDefinitionBuilder configurePoolLocators(String poolName, Map<String, Object> enablePoolAttributes,
 			BeanDefinitionBuilder poolFactoryBean) {
 
@@ -261,7 +259,6 @@ public class AddPoolConfiguration extends AbstractAnnotationConfigSupport
 		return poolFactoryBean;
 	}
 
-	/* (non-Javadoc) */
 	protected BeanDefinitionBuilder configurePoolServers(String poolName, Map<String, Object> enablePoolAttributes,
 			BeanDefinitionBuilder poolFactoryBean) {
 
@@ -279,7 +276,6 @@ public class AddPoolConfiguration extends AbstractAnnotationConfigSupport
 		return poolFactoryBean;
 	}
 
-	/* (non-Javadoc) */
 	protected ConnectionEndpointList parseConnectionEndpoints(Map<String, Object> enablePoolAttributes,
 			String arrayAttributeName, String stringAttributeName, int defaultPort) {
 
@@ -301,12 +297,10 @@ public class AddPoolConfiguration extends AbstractAnnotationConfigSupport
 		return connectionEndpoints;
 	}
 
-	/* (non-Javadoc) */
 	protected ConnectionEndpoint newConnectionEndpoint(String host, Integer port) {
 		return new ConnectionEndpoint(host, port);
 	}
 
-	/* (non-Javadoc) */
 	@Override
 	protected Class getAnnotationType() {
 		return EnablePool.class;
