@@ -27,9 +27,11 @@ public class GemfireOnRegionFunctionTemplate extends AbstractFunctionTemplate im
 	private final Region<?, ?> region;
 
 	/**
-	 * Constructs an instance of the GemFireOnRegionFunctionTemplate with the given Pivotal GemFire Cache Region.
+	 * Constructs a new instance of the {@link GemfireOnRegionFunctionTemplate} initialized with
+	 * the given {@link Region}.
 	 *
-	 * @param region the Pivotal GemFire Cache Region upon which the Function will be executed.
+	 * @param region the {@link Region} upon which the {@link Function} will be executed.
+	 * @throws IllegalArgumentException if {@link Region} is {@literal null}.
 	 * @see org.apache.geode.cache.Region
 	 */
 	public GemfireOnRegionFunctionTemplate(Region<?, ?> region) {
@@ -45,26 +47,17 @@ public class GemfireOnRegionFunctionTemplate extends AbstractFunctionTemplate im
 	}
 
 	@Override
-	public <T> Iterable<T> execute(Function function, Set<?> keys, Object... args) {
-
-		return execute(getFunctionExecution()
-			.setKeys(keys)
-			.setFunction(function)
-			.setTimeout(this.timeout)
-			.setArgs(args));
-	}
-
-	@Override
 	public <T> Iterable<T> execute(String functionId, Set<?> keys, Object... args) {
 
 		return execute(getFunctionExecution()
-			.setKeys(keys).setFunctionId(functionId)
+			.setKeys(keys)
+			.setFunctionId(functionId)
 			.setTimeout(this.timeout)
 			.setArgs(args));
 	}
 
 	@Override
-	public <T> T executeAndextract(String functionId, Set<?> keys, Object... args) {
+	public <T> T executeAndExtract(String functionId, Set<?> keys, Object... args) {
 
 		return executeAndExtract(getFunctionExecution()
 			.setKeys(keys)

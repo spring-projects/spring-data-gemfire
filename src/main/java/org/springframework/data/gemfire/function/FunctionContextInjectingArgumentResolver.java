@@ -45,6 +45,7 @@ class FunctionContextInjectingArgumentResolver extends PdxFunctionArgumentResolv
 	private final Method method;
 
 	public FunctionContextInjectingArgumentResolver(Method method) {
+
 		this.method = method;
 
 		int regionDataAnnotationParameterPosition = GemfireFunctionUtils.getAnnotationParameterPosition(
@@ -76,11 +77,12 @@ class FunctionContextInjectingArgumentResolver extends PdxFunctionArgumentResolv
 
 	@Override
 	public Method getFunctionAnnotatedMethod() {
-		return method;
+		return this.method;
 	}
 
 	@Override
 	public Object[] resolveFunctionArguments(FunctionContext functionContext) {
+
 		Object[] args = super.resolveFunctionArguments(functionContext);
 
 		if (functionContext instanceof RegionFunctionContext) {
@@ -103,9 +105,9 @@ class FunctionContextInjectingArgumentResolver extends PdxFunctionArgumentResolv
 			args = ArrayUtils.insert(args, resultSenderParameterPosition, functionContext.getResultSender());
 		}
 
-		Assert.isTrue(args.length == method.getParameterTypes().length, String.format(
-			"wrong number of arguments for method %s. Expected %d, but was %d", method.getName(),
-				method.getParameterTypes().length, args.length));
+		Assert.isTrue(args.length == this.method.getParameterTypes().length,
+			String.format("Wrong number of arguments for method [%s]; Expected [%d], but was [%d]",
+				this.method.getName(), this.method.getParameterTypes().length, args.length));
 
 		return args;
 	}
@@ -131,9 +133,6 @@ class FunctionContextInjectingArgumentResolver extends PdxFunctionArgumentResolv
 		return region;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 */
 	private static int getArgumentTypePosition(Method method, Class<?> requiredType) {
 		int index = 0;
 		int position = -1;
@@ -152,5 +151,4 @@ class FunctionContextInjectingArgumentResolver extends PdxFunctionArgumentResolv
 
 		return position;
 	}
-
 }

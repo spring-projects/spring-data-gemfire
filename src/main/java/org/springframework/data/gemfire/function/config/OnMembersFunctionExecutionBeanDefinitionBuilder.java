@@ -10,28 +10,27 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
+
 package org.springframework.data.gemfire.function.config;
 
-import org.springframework.data.gemfire.function.execution.GemfireOnServersFunctionTemplate;
+import org.springframework.data.gemfire.function.execution.GemfireOnMembersFunctionTemplate;
 
 /**
  * @author David Turanski
- *
+ * @author John Blum
  */
-class OnServersExecutionBeanDefinitionBuilder extends ServerBasedExecutionBeanDefinitionBuilder {
+class OnMembersFunctionExecutionBeanDefinitionBuilder extends MemberBasedFunctionExecutionBeanDefinitionBuilder {
 
-	/**
-	 * @param configuration
-	 */
-	OnServersExecutionBeanDefinitionBuilder(FunctionExecutionConfiguration configuration) {
+	OnMembersFunctionExecutionBeanDefinitionBuilder(FunctionExecutionConfiguration configuration) {
 		super(configuration);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.gemfire.function.config.ServerBasedExecutionBeanDefinitionBuilder#getGemfireFunctionOperationsClass()
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.gemfire.function.config.MemberBasedFunctionExecutionBeanDefinitionBuilder#getGemfireFunctionOperationsClass()
 	 */
 	@Override
-	protected Class<?> getGemfireFunctionOperationsClass() {
-		return GemfireOnServersFunctionTemplate.class;
+	protected Class<?> getGemfireOperationsClass() {
+		return GemfireOnMembersFunctionTemplate.class;
 	}
 }

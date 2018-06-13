@@ -69,7 +69,6 @@ class PdxFunctionArgumentResolver extends DefaultFunctionArgumentResolver {
 
 	/*
 	 * (non-Javadoc)
-	 *
 	 * @see java.lang.reflect.Method
 	 */
 	@Override
@@ -79,7 +78,6 @@ class PdxFunctionArgumentResolver extends DefaultFunctionArgumentResolver {
 
 	/*
 	 * (non-Javadoc)
-	 *
 	 * @see org.apache.geode.cache.Cache#getPdxSerializer()
 	 * @see org.apache.geode.cache.CacheFactory#getAnyInstance()
 	 */
@@ -95,16 +93,15 @@ class PdxFunctionArgumentResolver extends DefaultFunctionArgumentResolver {
 
 	/*
 	 * (non-Javadac)
-	 *
 	 * @see #isOnClasspath(String)
 	 * @see #functionAnnotatedMethodHasParameterOfType(String)
 	 */
 	boolean isDeserializationNecessary(final String className) {
 		return (isOnClasspath(className) && functionAnnotatedMethodHasParameterOfType(className));
 	}
+
 	/*
 	 * (non-Javadoc)
-	 *
 	 * @see java.lang.Thread#currentThread()
 	 * @see java.lang.Thread#getContextClassLoader()
 	 * @see org.springframework.util.ClassUtils#isPresent(String, ClassLoader)
@@ -115,7 +112,6 @@ class PdxFunctionArgumentResolver extends DefaultFunctionArgumentResolver {
 
 	/*
 	 * (non-Javadoc)
-	 *
 	 * @see #getFunctionAnnotatedMethod()
 	 * @see java.lang.reflect.Method#getParameterTypes()
 	 */

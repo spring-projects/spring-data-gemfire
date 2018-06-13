@@ -10,7 +10,10 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
+
 package org.springframework.data.gemfire.function.config;
+
+import java.util.Optional;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -27,16 +30,15 @@ import org.springframework.util.StringUtils;
  * @author John Blum
  * @see org.springframework.data.gemfire.function.config.AbstractFunctionExecutionBeanDefinitionBuilder
  */
-abstract class MemberBasedExecutionBeanDefinitionBuilder extends AbstractFunctionExecutionBeanDefinitionBuilder {
+abstract class MemberBasedFunctionExecutionBeanDefinitionBuilder
+		extends AbstractFunctionExecutionBeanDefinitionBuilder {
 
-	/**
-	 * @param configuration
-	 */
-	MemberBasedExecutionBeanDefinitionBuilder(FunctionExecutionConfiguration configuration) {
+	MemberBasedFunctionExecutionBeanDefinitionBuilder(FunctionExecutionConfiguration configuration) {
 		super(configuration);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.gemfire.function.config.AbstractFunctionExecutionBeanDefinitionBuilder#getGemfireFunctionOperationsBeanDefinitionBuilder(org.springframework.beans.factory.support.BeanDefinitionRegistry)
 	 */
 	@Override
@@ -45,11 +47,12 @@ abstract class MemberBasedExecutionBeanDefinitionBuilder extends AbstractFunctio
 		BeanDefinitionBuilder functionTemplateBuilder =
 			BeanDefinitionBuilder.genericBeanDefinition(getGemfireOperationsClass());
 
-		String groups = (String)configuration.getAttribute("groups");
-
-		if (StringUtils.hasText(groups)) {
-			functionTemplateBuilder.addConstructorArgValue(StringUtils.commaDelimitedListToStringArray(groups));
-		}
+		Optional.ofNullable(this.configuration.getAttribute("groups"))
+			.map(String::valueOf)
+			.map(StringUtils::trimAllWhitespace)
+			.filter(StringUtils::hasText)
+			.map(StringUtils::commaDelimitedListToStringArray)
+			.ifPresent(functionTemplateBuilder::addConstructorArgValue);
 
 		return functionTemplateBuilder;
 	}

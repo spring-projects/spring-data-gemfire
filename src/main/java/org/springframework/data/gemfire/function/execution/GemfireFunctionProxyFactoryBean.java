@@ -20,8 +20,8 @@ import java.lang.reflect.Method;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -51,7 +51,7 @@ public class GemfireFunctionProxyFactoryBean implements BeanClassLoaderAware, Fa
 
 	private final GemfireFunctionOperations gemfireFunctionOperations;
 
-	protected Log logger = LogFactory.getLog(this.getClass());
+	protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	private FunctionExecutionMethodMetadata<MethodMetadata> methodMetadata;
 
@@ -61,8 +61,11 @@ public class GemfireFunctionProxyFactoryBean implements BeanClassLoaderAware, Fa
 	 */
 	public GemfireFunctionProxyFactoryBean(Class<?> functionExecutionInterface, GemfireFunctionOperations gemfireFunctionOperations) {
 
-		Assert.notNull(functionExecutionInterface, "'functionExecutionInterface' must not be null");
-		Assert.isTrue(functionExecutionInterface.isInterface(), "'functionExecutionInterface' must be an interface");
+		Assert.notNull(functionExecutionInterface, "Function execution interface must not be null");
+
+		Assert.isTrue(functionExecutionInterface.isInterface(),
+			String.format("Function execution type [%s] must be an interface",
+				functionExecutionInterface.getClass().getName()));
 
 		this.functionExecutionInterface = functionExecutionInterface;
 		this.gemfireFunctionOperations = gemfireFunctionOperations;
@@ -82,19 +85,20 @@ public class GemfireFunctionProxyFactoryBean implements BeanClassLoaderAware, Fa
 	public Object invoke(MethodInvocation invocation) throws Throwable {
 
 		if (AopUtils.isToStringMethod(invocation.getMethod())) {
-			return "Pivotal GemFire Function Proxy for service interface [" + this.functionExecutionInterface + "]";
+			return String.format("Function Proxy for interface [%s]", this.functionExecutionInterface.getName());
 		}
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("invoking method " + invocation.getMethod().getName());
+			logger.debug("Invoking method {}", invocation.getMethod().getName());
 		}
 
 		return invokeFunction(invocation.getMethod(), invocation.getArguments());
 	}
 
 	protected Object invokeFunction(Method method, Object[] args) {
-		return this.gemfireFunctionOperations.executeAndExtract(
-			this.methodMetadata.getMethodMetadata(method).getFunctionId(), args);
+
+		return this.gemfireFunctionOperations
+			.executeAndExtract(this.methodMetadata.getMethodMetadata(method).getFunctionId(), args);
 	}
 
 	@Override
@@ -102,7 +106,7 @@ public class GemfireFunctionProxyFactoryBean implements BeanClassLoaderAware, Fa
 
 		if (this.functionExecutionProxy == null) {
 			onInit();
-			Assert.notNull(this.functionExecutionProxy, "failed to initialize proxy");
+			Assert.notNull(this.functionExecutionProxy, "Failed to initialize Function Proxy");
 		}
 
 		return this.functionExecutionProxy;

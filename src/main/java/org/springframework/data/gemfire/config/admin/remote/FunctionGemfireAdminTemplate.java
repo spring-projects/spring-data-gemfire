@@ -139,27 +139,22 @@ public class FunctionGemfireAdminTemplate extends AbstractGemfireAdminOperations
 		execute(CreateIndexFunction.CREATE_INDEX_FUNCTION_ID, indexDefinition);
 	}
 
-	/* (non-Javadoc) */
 	<T> T execute(Function gemfireFunction, Object... arguments) {
 		return newGemfireFunctionOperations().executeAndExtract(gemfireFunction, arguments);
 	}
 
-	/* (non-Javadoc) */
 	<T> T execute(String gemfireFunctionId, Object... arguments) {
 		return newGemfireFunctionOperations().executeAndExtract(gemfireFunctionId, arguments);
 	}
 
-	/* (non-Javadoc) */
 	protected GemfireFunctionOperations newGemfireFunctionOperations() {
 		return newGemfireFunctionOperations(getClientCache());
 	}
 
-	/* (non-Javadoc) */
 	protected GemfireFunctionOperations newGemfireFunctionOperations(ClientCache clientCache) {
 		return new GemfireOnServersFunctionTemplate(clientCache);
 	}
 
-	/* (non-Javadoc) */
 	boolean containsRegionInformation(Object results) {
 
 		return Optional.ofNullable(results)

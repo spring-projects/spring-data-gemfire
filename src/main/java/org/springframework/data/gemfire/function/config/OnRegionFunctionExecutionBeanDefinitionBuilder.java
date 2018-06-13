@@ -14,6 +14,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
+
 package org.springframework.data.gemfire.function.config;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -25,15 +26,16 @@ import org.springframework.data.gemfire.function.execution.OnRegionFunctionProxy
  * @author David Turanski
  * @author John Blum
  */
-class OnRegionExecutionBeanDefinitionBuilder extends AbstractFunctionExecutionBeanDefinitionBuilder {
+class OnRegionFunctionExecutionBeanDefinitionBuilder extends AbstractFunctionExecutionBeanDefinitionBuilder {
 
-    OnRegionExecutionBeanDefinitionBuilder(FunctionExecutionConfiguration configuration) {
+    OnRegionFunctionExecutionBeanDefinitionBuilder(FunctionExecutionConfiguration configuration) {
 		super(configuration);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.gemfire.function.config.AbstractFunctionExecutionBeanDefinitionBuilder#getGemfireFunctionOperationsBeanDefinitionBuilder(org.springframework.beans.factory.support.BeanDefinitionRegistry)
+	 * @see org.springframework.data.gemfire.function.config.AbstractFunctionExecutionBeanDefinitionBuilder
+	 * 	#getGemfireFunctionOperationsBeanDefinitionBuilder(org.springframework.beans.factory.support.BeanDefinitionRegistry)
 	 */
 	@Override
 	protected BeanDefinitionBuilder getGemfireFunctionOperationsBeanDefinitionBuilder(BeanDefinitionRegistry registry) {
@@ -41,7 +43,9 @@ class OnRegionExecutionBeanDefinitionBuilder extends AbstractFunctionExecutionBe
 		BeanDefinitionBuilder functionTemplateBuilder =
 			BeanDefinitionBuilder.genericBeanDefinition(GemfireOnRegionFunctionTemplate.class);
 
-		functionTemplateBuilder.addConstructorArgReference((String) this.configuration.getAttribute("region"));
+		String regionBeanName = String.valueOf(this.configuration.getAttribute("region"));
+
+		functionTemplateBuilder.addConstructorArgReference(regionBeanName);
 
 		return functionTemplateBuilder;
 	}
@@ -49,7 +53,8 @@ class OnRegionExecutionBeanDefinitionBuilder extends AbstractFunctionExecutionBe
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.springframework.data.gemfire.function.config.AbstractFunctionExecutionBeanDefinitionBuilder#getFunctionProxyFactoryBeanClass()
+	 * @see org.springframework.data.gemfire.function.config.AbstractFunctionExecutionBeanDefinitionBuilder
+	 * 	#getFunctionProxyFactoryBeanClass()
 	 */
 	@Override
 	protected Class<?> getFunctionProxyFactoryBeanClass() {

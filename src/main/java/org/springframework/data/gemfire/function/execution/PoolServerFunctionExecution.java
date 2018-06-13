@@ -10,68 +10,41 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
+
 package org.springframework.data.gemfire.function.execution;
 
 import org.apache.geode.cache.client.Pool;
-import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
 /**
- * Creates an {@link Execution} from {@link FunctionService#onServer(Pool)}.
+ * Constructs an {@link Execution} using {@link FunctionService#onServer(Pool)}.
  *
  * @author David Turanski
  * @author John Blum
- * @see org.springframework.beans.factory.InitializingBean
+ * @see org.apache.geode.cache.client.Pool
+ * @see org.apache.geode.cache.execute.Execution
+ * @see org.apache.geode.cache.execute.FunctionService
  * @see org.springframework.data.gemfire.function.execution.AbstractFunctionExecution
  */
-class PoolServerFunctionExecution extends AbstractFunctionExecution implements InitializingBean {
+class PoolServerFunctionExecution extends AbstractFunctionExecution {
 
-	private Pool pool;
+	private final Pool pool;
 
-	private String poolName;
-
-    /**
-	 * Constructs a new instance of {@link PoolServerFunctionExecution} initialized with the given {@link Pool}.
-	 *
-     * @param pool {@link Pool} used to initialize the {@link Execution}.
-	 * @throws IllegalArgumentException if {@link Pool} is {@literal null}.
-	 * @see org.apache.geode.cache.client.Pool
-     */
-	public PoolServerFunctionExecution(Pool pool) {
+	PoolServerFunctionExecution(Pool pool) {
 
 		Assert.notNull(pool, "Pool must not be null");
 
 		this.pool = pool;
 	}
 
-	/**
-	 * Constructs a new instance of {@link PoolServerFunctionExecution} initialized with
-	 * the given {@link String name} of the {@link Pool}.
-	 *
-	 * @param poolName {@link String} containing the name of the {@link Pool}
-	 * used to initialize the {@link Execution}.
-	 * @throws IllegalArgumentException if {@link String poolName} is {@literal null} or empty.
-	 */
-	public PoolServerFunctionExecution(String poolName) {
-
-		Assert.hasText(poolName, "Pool name must not be null or empty");
-
-		this.poolName = poolName;
+	protected Pool getPool() {
+		return this.pool;
 	}
 
 	@Override
 	protected Execution getExecution() {
-		return FunctionService.onServer(this.pool);
-	}
-
-	@Override
-	public void afterPropertiesSet() throws Exception {
-
-		this.pool = PoolManager.find(this.poolName);
-
-		Assert.notNull(this.pool,String.format("Pool [%s] not found", this.poolName));
+		return FunctionService.onServer(getPool());
 	}
 }

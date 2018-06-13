@@ -32,11 +32,11 @@ import org.springframework.data.gemfire.function.annotation.OnServers;
  * @see org.springframework.data.gemfire.function.annotation.OnRegion
  * @see org.springframework.data.gemfire.function.annotation.OnServer
  * @see org.springframework.data.gemfire.function.annotation.OnServers
- * @see org.springframework.data.gemfire.function.config.OnMemberExecutionBeanDefinitionBuilder
- * @see org.springframework.data.gemfire.function.config.OnMembersExecutionBeanDefinitionBuilder
- * @see org.springframework.data.gemfire.function.config.OnRegionExecutionBeanDefinitionBuilder
- * @see org.springframework.data.gemfire.function.config.OnServerExecutionBeanDefinitionBuilder
- * @see org.springframework.data.gemfire.function.config.OnServersExecutionBeanDefinitionBuilder
+ * @see OnMemberFunctionExecutionBeanDefinitionBuilder
+ * @see OnMembersFunctionExecutionBeanDefinitionBuilder
+ * @see OnRegionFunctionExecutionBeanDefinitionBuilder
+ * @see OnServerFunctionExecutionBeanDefinitionBuilder
+ * @see OnServersFunctionExecutionBeanDefinitionBuilder
  */
 abstract class FunctionExecutionBeanDefinitionBuilderFactory {
 
@@ -45,19 +45,19 @@ abstract class FunctionExecutionBeanDefinitionBuilderFactory {
 		String functionExecutionAnnotation = configuration.getAnnotationType();
 
 		if (OnMember.class.getName().equals(functionExecutionAnnotation)) {
-			return new OnMemberExecutionBeanDefinitionBuilder(configuration);
+			return new OnMemberFunctionExecutionBeanDefinitionBuilder(configuration);
 		}
 		else if (OnMembers.class.getName().equals(functionExecutionAnnotation)) {
-			return new OnMembersExecutionBeanDefinitionBuilder(configuration);
+			return new OnMembersFunctionExecutionBeanDefinitionBuilder(configuration);
 		}
 		else if (OnRegion.class.getName().equals(functionExecutionAnnotation)) {
-			return new OnRegionExecutionBeanDefinitionBuilder(configuration);
+			return new OnRegionFunctionExecutionBeanDefinitionBuilder(configuration);
 		}
 		else if (OnServer.class.getName().equals(functionExecutionAnnotation)) {
-			return new OnServerExecutionBeanDefinitionBuilder(configuration);
+			return new OnServerFunctionExecutionBeanDefinitionBuilder(configuration);
 		}
 		else if (OnServers.class.getName().equals(functionExecutionAnnotation)) {
-			return new OnServersExecutionBeanDefinitionBuilder(configuration);
+			return new OnServersFunctionExecutionBeanDefinitionBuilder(configuration);
 		}
 
 		return null;

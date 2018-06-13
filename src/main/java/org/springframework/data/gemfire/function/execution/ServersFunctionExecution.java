@@ -10,6 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
+
 package org.springframework.data.gemfire.function.execution;
 
 import org.apache.geode.cache.RegionService;
@@ -18,29 +19,32 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.springframework.util.Assert;
 
 /**
- * Creates a Pivotal GemFire {@link Execution} using {code}FunctionService.onServers(RegionService regionService){code}
- * @author David Turanski
+ * Constructs an {@link Execution} using {@link FunctionService#onServers(RegionService)}.
  *
+ * @author David Turanski
+ * @author John Blum
+ * @see org.apache.geode.cache.RegionService
+ * @see org.apache.geode.cache.execute.Execution
+ * @see org.apache.geode.cache.execute.FunctionService
+ * @see org.springframework.data.gemfire.function.execution.AbstractFunctionExecution
  */
 class ServersFunctionExecution extends AbstractFunctionExecution {
 
-
 	private final RegionService regionService;
 
-    /**
-     *
-     * @param regionService  e.g., Cache,Client, or GemFireCache
-     * @param function
-     * @param args
-     */
-	public ServersFunctionExecution(RegionService regionService ) {
-		super();
-		Assert.notNull(regionService,"regionService cannot be null");
+	ServersFunctionExecution(RegionService regionService) {
+
+		Assert.notNull(regionService, "RegionService must not be null");
+
 		this.regionService = regionService;
+	}
+
+	protected RegionService getRegionService() {
+		return regionService;
 	}
 
 	@Override
 	protected Execution getExecution() {
-		return FunctionService.onServers(this.regionService);
+		return FunctionService.onServers(getRegionService());
 	}
 }

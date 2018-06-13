@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -82,8 +83,8 @@ public class FunctionGemfireAdminTemplateUnitTests {
 
 		this.template = spy(new FunctionGemfireAdminTemplate(this.mockClientCache));
 
-		when(this.template.newGemfireFunctionOperations(any(ClientCache.class)))
-			.thenReturn(this.mockFunctionOperations);
+		doReturn(this.mockFunctionOperations).when(this.template)
+			.newGemfireFunctionOperations(any(ClientCache.class));
 
 		when(this.mockIndex.getName()).thenReturn("MockIndex");
 		when(this.mockRegion.getName()).thenReturn("MockRegion");

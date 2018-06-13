@@ -16,6 +16,8 @@
  */
 package org.springframework.data.gemfire.function.config;
 
+import java.util.Optional;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -63,11 +65,10 @@ abstract class AbstractFunctionExecutionBeanDefinitionBuilder {
 
 		functionTemplateBuilder.setLazyInit(true);
 
-		String resultCollectorReference = (String) this.configuration.getAttribute("resultCollector");
-
-		if (StringUtils.hasText(resultCollectorReference)){
-			functionTemplateBuilder.addPropertyReference("resultCollector", resultCollectorReference);
-		}
+		Optional.ofNullable(this.configuration.getAttribute("resultCollector"))
+			.map(String::valueOf)
+			.filter(StringUtils::hasText)
+			.ifPresent(reference -> functionTemplateBuilder.addPropertyReference("resultCollector", reference));
 
 		return functionTemplateBuilder.getBeanDefinition();
 	}

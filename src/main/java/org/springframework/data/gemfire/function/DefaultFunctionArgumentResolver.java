@@ -27,7 +27,6 @@ class DefaultFunctionArgumentResolver implements FunctionArgumentResolver {
 
 	/*
 	 * (non-Javadoc)
-	 *
 	 * @see java.lang.reflect.Method
 	 */
 	@Override
@@ -37,28 +36,33 @@ class DefaultFunctionArgumentResolver implements FunctionArgumentResolver {
 
 	/*
 	 * (non-Javadoc)
-	 *
 	 * @see org.springframework.data.gemfire.function.FunctionArgumentResolver#resolveFunctionArguments(org.apache.geode.cache.execute.FunctionContext)
 	 */
 	@Override
 	public Object[] resolveFunctionArguments(final FunctionContext functionContext) {
-		return (isArray(functionContext.getArguments())) ? toObjectArray((Object[]) functionContext.getArguments())
+
+		return isArray(functionContext.getArguments())
+			? toObjectArray((Object[]) functionContext.getArguments())
 			: getArguments(functionContext);
 	}
 
 	private boolean isArray(final Object value) {
-		return (value != null && value.getClass().isArray());
+		return value != null && value.getClass().isArray();
 	}
 
 	private Object[] toObjectArray(final Object[] arguments) {
+
 		Object[] result = new Object[arguments.length];
+
 		System.arraycopy(arguments, 0, result, 0, arguments.length);
+
 		return result;
 	}
 
 	private Object[] getArguments(final FunctionContext context) {
-		Object arguments = context.getArguments();
-		return (arguments != null ? new Object[] { arguments } : EMPTY_ARRAY);
-	}
 
+		Object arguments = context.getArguments();
+
+		return arguments != null ? new Object[] { arguments } : EMPTY_ARRAY;
+	}
 }
