@@ -10,32 +10,45 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
+
 package org.springframework.data.gemfire.function.execution;
 
 import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.springframework.util.Assert;
 
 /**
+ * Constructs an {@link Execution} using {@link FunctionService#onMembers(String...)}.
+ *
  * @author David Turanski
  * @author John Blum
- * @see org.springframework.data.gemfire.function.execution.AbstractFunctionExecution
  * @see org.apache.geode.cache.execute.Execution
+ * @see org.apache.geode.cache.execute.Function
  * @see org.apache.geode.cache.execute.FunctionService
+ * @see org.springframework.data.gemfire.function.execution.AbstractFunctionExecution
  */
 class GroupMembersFunctionExecution extends AbstractFunctionExecution {
 
 	private final String[] groups;
 
 	/**
-	 * Constructs an instance of the GroupMembersFunctionExecution class to execute a data independent Function
-	 * on all members from each of the specified groups.
+	 * Constructs a new instance of {@link GroupMembersFunctionExecution} initialized to execute a data independent
+	 * {@link Function} on all members from each of the specified {@link String groups}.
 	 *
-	 * @param groups the list of Pivotal GemFire Groups indicating the members on which to execute the data independent Function.
+	 * @param groups array of {@link String groups} indicating the members on which to execute
+	 * the data independent {@link Function}.
+	 * @throws IllegalArgumentException if {@link String groups} is {@literal null} or empty.
 	 */
-	public GroupMembersFunctionExecution(final String... groups) {
-		Assert.notEmpty(groups, "'groups' cannot be null or empty.");
+	public GroupMembersFunctionExecution(String... groups) {
+
+		Assert.notEmpty(groups, "Groups must not be null or empty");
+
 		this.groups = groups;
+	}
+
+	protected String[] getGroups() {
+		return this.groups;
 	}
 
 	/**
@@ -46,7 +59,6 @@ class GroupMembersFunctionExecution extends AbstractFunctionExecution {
 	 */
 	@Override
 	protected Execution getExecution() {
-		return FunctionService.onMembers(this.groups);
+		return FunctionService.onMembers(getGroups());
 	}
-
 }

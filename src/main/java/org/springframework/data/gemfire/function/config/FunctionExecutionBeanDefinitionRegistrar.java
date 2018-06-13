@@ -109,17 +109,19 @@ public class FunctionExecutionBeanDefinitionRegistrar implements ImportBeanDefin
 
 		Set<String> annotationTypes = beanDefinition.getMetadata().getAnnotationTypes();
 
-		String functionExecutionAnnotation = null;
+		String existingFunctionExecutionAnnotation = null;
 
 		for (String annotationType : annotationTypes) {
 			if (functionExecutionAnnotationTypeNames.contains(annotationType)) {
-				Assert.isNull(functionExecutionAnnotation, String.format(
-					"interface %1$s contains multiple Function Execution Annotations: %2$s, %3$s",
-						beanDefinition.getBeanClassName(), functionExecutionAnnotation, annotationType));
-				functionExecutionAnnotation = annotationType;
+
+				Assert.isNull(existingFunctionExecutionAnnotation,
+					String.format("Interface [%1$s] contains multiple Function Execution Annotations: %2$s, %3$s",
+						beanDefinition.getBeanClassName(), existingFunctionExecutionAnnotation, annotationType));
+
+				existingFunctionExecutionAnnotation = annotationType;
 			}
 		}
 
-		return functionExecutionAnnotation;
+		return existingFunctionExecutionAnnotation;
 	}
 }

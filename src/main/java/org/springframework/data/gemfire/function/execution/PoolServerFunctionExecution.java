@@ -10,57 +10,41 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
+
 package org.springframework.data.gemfire.function.execution;
 
 import org.apache.geode.cache.client.Pool;
-import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
 /**
- * Creates a GemFire {@link Execution} using {code}FunctionService.onServer(Pool pool){code}
- * @author David Turanski
+ * Constructs an {@link Execution} using {@link FunctionService#onServer(Pool)}.
  *
+ * @author David Turanski
+ * @author John Blum
+ * @see org.apache.geode.cache.client.Pool
+ * @see org.apache.geode.cache.execute.Execution
+ * @see org.apache.geode.cache.execute.FunctionService
+ * @see org.springframework.data.gemfire.function.execution.AbstractFunctionExecution
  */
-class PoolServerFunctionExecution extends AbstractFunctionExecution implements InitializingBean {
+class PoolServerFunctionExecution extends AbstractFunctionExecution {
 
+	private final Pool pool;
 
-	private Pool pool;
-	private String poolname;
+	PoolServerFunctionExecution(Pool pool) {
 
+		Assert.notNull(pool, "Pool must not be null");
 
-    /**
-     * @param pool the {@link Pool}
-     */
-	public PoolServerFunctionExecution(Pool pool) {
-		super();
-		Assert.notNull(pool, "pool cannot be null");
 		this.pool = pool;
 	}
 
-	public PoolServerFunctionExecution(String poolname) {
-		super();
-		Assert.notNull(poolname, "pool name cannot be null");
-		this.poolname = poolname;
-
+	protected Pool getPool() {
+		return this.pool;
 	}
-
 
 	@Override
 	protected Execution getExecution() {
-		return FunctionService.onServer(this.pool);
-	}
-
-
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-	 */
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		this.pool = PoolManager.find(poolname);
-		Assert.notNull(pool," pool " + poolname+ " does not exist");
-
+		return FunctionService.onServer(getPool());
 	}
 }

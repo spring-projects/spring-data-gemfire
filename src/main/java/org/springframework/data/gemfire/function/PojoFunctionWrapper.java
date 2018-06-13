@@ -61,10 +61,11 @@ public class PojoFunctionWrapper implements Function {
 	private final String id;
 
 	public PojoFunctionWrapper(Object target, Method method, String id) {
-		this.functionArgumentResolver = new FunctionContextInjectingArgumentResolver(method);
+
 		this.target = target;
 		this.method = method;
-		this.id = (StringUtils.hasText(id) ? id : method.getName());
+		this.id = StringUtils.hasText(id) ? id : method.getName();
+		this.functionArgumentResolver = new FunctionContextInjectingArgumentResolver(method);
 		this.HA = false;
 		this.hasResult = !method.getReturnType().equals(void.class);
 		this.optimizeForWrite = false;
@@ -108,7 +109,7 @@ public class PojoFunctionWrapper implements Function {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public void execute(final FunctionContext functionContext) {
+	public void execute(FunctionContext functionContext) {
 
 		Object[] args = this.functionArgumentResolver.resolveFunctionArguments(functionContext);
 
@@ -123,8 +124,10 @@ public class PojoFunctionWrapper implements Function {
 
 		if (logger.isDebugEnabled()) {
 
-			logger.debug(String.format("About to invoke method [%s] on class [%s] as Function [%s]",
-				this.method.getName(), this.target.getClass().getName(), getId()));
+			if (logger.isDebugEnabled()) {
+				logger.debug(String.format("About to invoke method [%s] on class [%s] as Function [%s]",
+					this.method.getName(), this.target.getClass().getName(), getId()));
+			}
 
 			for (Object arg : args) {
 				logger.debug(String.format("Argument of type [%s] is [%s]", arg.getClass().getName(), arg.toString()));
@@ -141,10 +144,10 @@ public class PojoFunctionWrapper implements Function {
 		}
 		else {
 			if (ObjectUtils.isArray(result)) {
-				new BatchingResultSender(batchSize, resultSender).sendArrayResults(result);
+				new BatchingResultSender(this.batchSize, resultSender).sendArrayResults(result);
 			}
 			else if (Iterable.class.isAssignableFrom(result.getClass())) {
-				new BatchingResultSender(batchSize, resultSender).sendResults((Iterable<?>) result);
+				new BatchingResultSender(this.batchSize, resultSender).sendResults((Iterable<?>) result);
 			}
 			else {
 				resultSender.lastResult(result);

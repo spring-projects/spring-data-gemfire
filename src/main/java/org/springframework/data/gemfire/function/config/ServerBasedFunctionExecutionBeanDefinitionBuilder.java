@@ -12,13 +12,14 @@
  */
 package org.springframework.data.gemfire.function.config;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.gemfire.function.annotation.OnServer;
 import org.springframework.data.gemfire.function.annotation.OnServers;
 import org.springframework.data.gemfire.function.execution.GemfireFunctionProxyFactoryBean;
-import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
@@ -27,38 +28,51 @@ import org.springframework.util.StringUtils;
  *
  * @author David Turanski
  * @author John Blum
+ * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
+ * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
+ * @see org.springframework.data.gemfire.function.annotation.OnServer
+ * @see org.springframework.data.gemfire.function.annotation.OnServers
  * @see org.springframework.data.gemfire.function.config.AbstractFunctionExecutionBeanDefinitionBuilder
  */
-abstract class ServerBasedExecutionBeanDefinitionBuilder extends AbstractFunctionExecutionBeanDefinitionBuilder {
+abstract class ServerBasedFunctionExecutionBeanDefinitionBuilder
+		extends AbstractFunctionExecutionBeanDefinitionBuilder {
 
-	ServerBasedExecutionBeanDefinitionBuilder(FunctionExecutionConfiguration configuration) {
+	ServerBasedFunctionExecutionBeanDefinitionBuilder(FunctionExecutionConfiguration configuration) {
 		super(configuration);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.gemfire.function.config.AbstractFunctionExecutionBeanDefinitionBuilder
 	 * 	#getGemfireFunctionOperationsBeanDefinitionBuilder(org.springframework.beans.factory.support.BeanDefinitionRegistry)
 	 */
 	@Override
 	protected BeanDefinitionBuilder getGemfireFunctionOperationsBeanDefinitionBuilder(BeanDefinitionRegistry registry) {
 
+		String resolvedCacheBeanName = Optional.ofNullable(this.configuration.getAttribute("cache"))
+			.map(String::valueOf)
+			.filter(StringUtils::hasText)
+			.orElse(GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
+
+		Optional<String> poolBeanName = Optional.ofNullable(this.configuration.getAttribute("pool"))
+			.map(String::valueOf)
+			.filter(StringUtils::hasText);
+
 		BeanDefinitionBuilder functionTemplateBuilder =
 			BeanDefinitionBuilder.genericBeanDefinition(getGemfireFunctionOperationsClass());
 
-		String cache = (String) this.configuration.getAttribute("cache");
-		String pool = (String) this.configuration.getAttribute("pool");
+		functionTemplateBuilder.addConstructorArgReference(resolvedCacheBeanName);
 
-		Assert.state(!(StringUtils.hasText(cache) && StringUtils.hasText(pool)),
-			String.format("Invalid configuration for interface [%s]; cannot specify both 'pool' and 'cache'",
-				this.configuration.getFunctionExecutionInterface().getName()));
-
-		functionTemplateBuilder.addConstructorArgReference(StringUtils.hasText(pool)
-			? pool : (StringUtils.hasText(cache) ? cache : GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME));
+		poolBeanName.ifPresent(it -> {
+			functionTemplateBuilder.addDependsOn(it);
+			functionTemplateBuilder.addPropertyReference("pool", it);
+		});
 
 		return functionTemplateBuilder;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.data.gemfire.function.config.AbstractFunctionExecutionBeanDefinitionBuilder
 	 * 	#getFunctionProxyFactoryBeanClass()
 	 */

@@ -10,28 +10,31 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
+
 package org.springframework.data.gemfire.function.execution;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
- * The base class for Pivotal GemFire FunctionTemplates used to invoke Pivotal GemFire Functions.
+ * The base class for {@link Function} templates used to invoke Apache Geode/Pivotal GemFire {@link Function Functions}.
  *
  * @author David Turanski
  * @author John Blum
  * @see org.apache.geode.cache.execute.Function
  * @see org.apache.geode.cache.execute.ResultCollector
+ * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.data.gemfire.function.execution.GemfireFunctionOperations
  */
-abstract class AbstractFunctionTemplate implements GemfireFunctionOperations {
-
-	protected Log log = LogFactory.getLog(this.getClass());
+abstract class AbstractFunctionTemplate implements GemfireFunctionOperations, InitializingBean {
 
 	protected long timeout;
 
 	protected volatile ResultCollector<?, ?> resultCollector;
+
+	@Override
+	public void afterPropertiesSet() throws Exception { }
 
 	@Override
 	public <T> Iterable<T> execute(Function function, Object... args) {

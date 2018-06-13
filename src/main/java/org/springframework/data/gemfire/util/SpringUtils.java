@@ -105,6 +105,14 @@ public abstract class SpringUtils {
 		return (obj1 != null && obj1.equals(obj2));
 	}
 
+	public static String nullSafeName(Class<?> type) {
+		return type != null ? type.getName() : null;
+	}
+
+	public static String nullSafeSimpleName(Class<?> type) {
+		return type != null ? type.getSimpleName() : null;
+	}
+
 	public static <T> T safeGetValue(Supplier<T> valueSupplier) {
 		return safeGetValue(valueSupplier, (T) null);
 	}
