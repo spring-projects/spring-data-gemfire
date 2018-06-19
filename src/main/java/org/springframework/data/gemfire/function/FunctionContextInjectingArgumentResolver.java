@@ -10,32 +10,47 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
+
 package org.springframework.data.gemfire.function;
 
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.gemfire.function.annotation.Filter;
 import org.springframework.data.gemfire.function.annotation.RegionData;
 import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.util.Assert;
 
 /**
- * @author David Turanski
- * @since 1.3.0
+ * {@link FunctionArgumentResolver} implementation capable of resolving the {@link FunctionContext} passed to
+ * a {@link Function} implementation during invocation.
  *
+ * @author David Turanski
+ * @author John Blum
+ * @see java.lang.reflect.Method
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.execute.Function
+ * @see org.apache.geode.cache.execute.FunctionContext
+ * @see org.apache.geode.cache.execute.RegionFunctionContext
+ * @see org.apache.geode.cache.execute.ResultSender
+ * @see org.apache.geode.cache.partition.PartitionRegionHelper
+ * @see org.springframework.data.gemfire.function.annotation.Filter
+ * @see org.springframework.data.gemfire.function.annotation.RegionData
+ * @see org.springframework.data.gemfire.function.PdxFunctionArgumentResolver
+ * @since 1.3.0
  */
 class FunctionContextInjectingArgumentResolver extends PdxFunctionArgumentResolver {
 
-	private static final Log logger = LogFactory.getLog(FunctionContextInjectingArgumentResolver.class);
+	private final Logger logger = LoggerFactory.getLogger(FunctionContextInjectingArgumentResolver.class);
 
 	private final int filterParameterPosition;
 	private final int functionContextParameterPosition;
@@ -44,7 +59,7 @@ class FunctionContextInjectingArgumentResolver extends PdxFunctionArgumentResolv
 
 	private final Method method;
 
-	public FunctionContextInjectingArgumentResolver(Method method) {
+	FunctionContextInjectingArgumentResolver(Method method) {
 
 		this.method = method;
 
@@ -112,35 +127,36 @@ class FunctionContextInjectingArgumentResolver extends PdxFunctionArgumentResolv
 		return args;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.apache.geode.cache.execute.RegionFunctionContext
-	 */
-	private static Region<?, ?> getRegionForContext(RegionFunctionContext regionFunctionContext) {
+	private Region<?, ?> getRegionForContext(RegionFunctionContext regionFunctionContext) {
+
 		Region<?, ?> region = regionFunctionContext.getDataSet();
 
 		if (PartitionRegionHelper.isPartitionedRegion(region)) {
+
 			if (logger.isDebugEnabled()) {
 				logger.debug("this is a partitioned region - filtering local data for context");
 			}
+
 			region = PartitionRegionHelper.getLocalDataForContext(regionFunctionContext);
 		}
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("region contains " + region.size() + " items");
+			logger.debug("Region contains {} items", region.size());
 		}
 
 		return region;
 	}
 
-	private static int getArgumentTypePosition(Method method, Class<?> requiredType) {
+	int getArgumentTypePosition(Method method, Class<?> requiredType) {
+
 		int index = 0;
 		int position = -1;
 
 		for (Class<?> parameterType : method.getParameterTypes()) {
-			if (requiredType.equals(parameterType)) {
-				Assert.state(position < 0, String.format(
-					"Method %s signature cannot contain more than one parameter of type %s.",
+			if (requiredType.isAssignableFrom(parameterType)) {
+
+				Assert.state(position < 0,
+					String.format("Method [%1$s] signature cannot contain more than one parameter of type [%2$s].",
 						method.getName(), requiredType.getName()));
 
 				position = index;
