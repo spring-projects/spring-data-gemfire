@@ -38,15 +38,17 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.compression.Compressor;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.context.SmartLifecycle;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.GenericRegionFactoryBean;
 import org.springframework.data.gemfire.LocalRegionFactoryBean;
 import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
 import org.springframework.data.gemfire.PeerRegionFactoryBean;
-import org.springframework.data.gemfire.ResolvableRegionFactoryBean;
 import org.springframework.data.gemfire.RegionShortcutWrapper;
 import org.springframework.data.gemfire.ReplicatedRegionFactoryBean;
+import org.springframework.data.gemfire.ResolvableRegionFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
+import org.springframework.data.gemfire.client.Interest;
 import org.springframework.data.gemfire.config.annotation.RegionConfigurer;
 import org.springframework.data.gemfire.eviction.EvictingRegionFactoryBean;
 import org.springframework.data.gemfire.expiration.ExpiringRegionFactoryBean;
@@ -85,7 +87,7 @@ import org.springframework.util.StringUtils;
  */
 @SuppressWarnings("unused")
 public class CacheTypeAwareRegionFactoryBean<K, V> extends ResolvableRegionFactoryBean<K, V>
-		implements EvictingRegionFactoryBean, ExpiringRegionFactoryBean<K, V> {
+		implements EvictingRegionFactoryBean, ExpiringRegionFactoryBean<K, V>, SmartLifecycle {
 
 	private GemFireCache gemfireCache;
 
@@ -112,6 +114,8 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends ResolvableRegionFacto
 	private ExpirationAttributes regionIdleTimeout;
 	private ExpirationAttributes regionTimeToLive;
 
+	private Interest<K>[] interests;
+
 	private List<RegionConfigurer> regionConfigurers = Collections.emptyList();
 
 	private RegionAttributes<K, V> regionAttributes;
@@ -119,6 +123,8 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends ResolvableRegionFacto
 	private RegionShortcut serverRegionShortcut;
 
 	private Scope scope;
+
+	private volatile SmartLifecycle smartLifecycleComponent;
 
 	private String diskStoreName;
 	private String poolName;
@@ -152,12 +158,13 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends ResolvableRegionFacto
 
 		ClientRegionFactoryBean<K, V> clientRegionFactory = newClientRegionFactoryBean();
 
-		clientRegionFactory.setAttributes(getRegionAttributes());
+		clientRegionFactory.setAttributes(getAttributes());
 		clientRegionFactory.setBeanFactory(getBeanFactory());
 		clientRegionFactory.setCache(gemfireCache);
 		clientRegionFactory.setClose(isClose());
 		clientRegionFactory.setCompressor(getCompressor());
 		clientRegionFactory.setDiskStoreName(getDiskStoreName());
+		clientRegionFactory.setInterests(getInterests());
 		clientRegionFactory.setKeyConstraint(getKeyConstraint());
 		clientRegionFactory.setLookupEnabled(getLookupEnabled());
 		clientRegionFactory.setRegionConfigurers(this.regionConfigurers);
@@ -171,6 +178,8 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends ResolvableRegionFacto
 		configureExpiration(clientRegionFactory);
 
 		clientRegionFactory.afterPropertiesSet();
+
+		this.smartLifecycleComponent = clientRegionFactory;
 
 		return clientRegionFactory.getObject();
 	}
@@ -199,13 +208,13 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends ResolvableRegionFacto
 	 * @see org.springframework.data.gemfire.GenericRegionFactoryBean
 	 * @see org.apache.geode.cache.GemFireCache
 	 * @see org.apache.geode.cache.Region
-	 * @see #newRegionFactoryBean()
+	 * @see #newPeerRegionFactoryBean()
 	 */
 	protected Region<K, V> newServerRegion(GemFireCache gemfireCache, String regionName) throws Exception {
 
-		PeerRegionFactoryBean<K, V> serverRegionFactory = newRegionFactoryBean();
+		PeerRegionFactoryBean<K, V> serverRegionFactory = newPeerRegionFactoryBean();
 
-		serverRegionFactory.setAttributes(getRegionAttributes());
+		serverRegionFactory.setAttributes(getAttributes());
 		serverRegionFactory.setBeanFactory(getBeanFactory());
 		serverRegionFactory.setCache(gemfireCache);
 		serverRegionFactory.setClose(isClose());
@@ -225,6 +234,8 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends ResolvableRegionFacto
 
 		serverRegionFactory.afterPropertiesSet();
 
+		this.smartLifecycleComponent = serverRegionFactory;
+
 		return serverRegionFactory.getObject();
 	}
 
@@ -238,7 +249,7 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends ResolvableRegionFacto
 	 * @see org.springframework.data.gemfire.ReplicatedRegionFactoryBean
 	 * @see PeerRegionFactoryBean
 	 */
-	protected PeerRegionFactoryBean<K, V> newRegionFactoryBean() {
+	protected PeerRegionFactoryBean<K, V> newPeerRegionFactoryBean() {
 
 		RegionShortcutWrapper regionShortcutWrapper = RegionShortcutWrapper.valueOf(getServerRegionShortcut());
 
@@ -282,7 +293,7 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends ResolvableRegionFacto
 		this.regionAttributes = regionAttributes;
 	}
 
-	protected RegionAttributes<K, V> getRegionAttributes() {
+	protected RegionAttributes<K, V> getAttributes() {
 		return this.regionAttributes;
 	}
 
@@ -331,7 +342,7 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends ResolvableRegionFacto
 	}
 
 	protected CustomExpiry<K, V> getCustomEntryIdleTimeout() {
-		return customEntryIdleTimeout;
+		return this.customEntryIdleTimeout;
 	}
 
 	public void setCustomEntryTimeToLive(CustomExpiry<K, V> customEntryTimeToLive) {
@@ -339,7 +350,7 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends ResolvableRegionFacto
 	}
 
 	protected CustomExpiry<K, V> getCustomEntryTimeToLive() {
-		return customEntryTimeToLive;
+		return this.customEntryTimeToLive;
 	}
 
 	public void setDataPolicy(DataPolicy dataPolicy) {
@@ -363,7 +374,7 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends ResolvableRegionFacto
 	}
 
 	protected EvictionAttributes getEvictionAttributes() {
-		return evictionAttributes;
+		return this.evictionAttributes;
 	}
 
 	public void setEntryIdleTimeout(ExpirationAttributes entryIdleTimeout) {
@@ -371,7 +382,7 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends ResolvableRegionFacto
 	}
 
 	protected ExpirationAttributes getEntryIdleTimeout() {
-		return entryIdleTimeout;
+		return this.entryIdleTimeout;
 	}
 
 	public void setEntryTimeToLive(ExpirationAttributes entryTimeToLive) {
@@ -379,7 +390,15 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends ResolvableRegionFacto
 	}
 
 	protected ExpirationAttributes getEntryTimeToLive() {
-		return entryTimeToLive;
+		return this.entryTimeToLive;
+	}
+
+	public void setInterests(Interest<K>[] interests) {
+		this.interests = interests;
+	}
+
+	protected Interest<K>[] getInterests() {
+		return this.interests;
 	}
 
 	public void setKeyConstraint(Class<K> keyConstraint) {
@@ -451,7 +470,7 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends ResolvableRegionFacto
 	}
 
 	protected ExpirationAttributes getRegionIdleTimeout() {
-		return regionIdleTimeout;
+		return this.regionIdleTimeout;
 	}
 
 	public void setRegionTimeToLive(ExpirationAttributes regionTimeToLive) {
@@ -459,7 +478,7 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends ResolvableRegionFacto
 	}
 
 	protected ExpirationAttributes getRegionTimeToLive() {
-		return regionTimeToLive;
+		return this.regionTimeToLive;
 	}
 
 	public void setScope(Scope scope) {
@@ -478,11 +497,54 @@ public class CacheTypeAwareRegionFactoryBean<K, V> extends ResolvableRegionFacto
 		return this.serverRegionShortcut;
 	}
 
+	protected Optional<SmartLifecycle> getSmartLifecycleComponent() {
+		return Optional.ofNullable(this.smartLifecycleComponent);
+	}
+
 	public void setValueConstraint(Class<V> valueConstraint) {
 		this.valueConstraint = valueConstraint;
 	}
 
 	protected Class<V> getValueConstraint() {
 		return this.valueConstraint;
+	}
+
+	@Override
+	public boolean isAutoStartup() {
+
+		return getSmartLifecycleComponent()
+			.map(SmartLifecycle::isAutoStartup)
+			.orElse(false);
+	}
+
+	@Override
+	public boolean isRunning() {
+
+		return getSmartLifecycleComponent()
+			.map(SmartLifecycle::isRunning)
+			.orElse(false);
+	}
+
+	@Override
+	public int getPhase() {
+
+		return getSmartLifecycleComponent()
+			.map(SmartLifecycle::getPhase)
+			.orElse(0);
+	}
+
+	@Override
+	public void start() {
+		getSmartLifecycleComponent().ifPresent(SmartLifecycle::start);
+	}
+
+	@Override
+	public void stop() {
+		getSmartLifecycleComponent().ifPresent(SmartLifecycle::stop);
+	}
+
+	@Override
+	public void stop(Runnable callback) {
+		getSmartLifecycleComponent().ifPresent(it -> it.stop(callback));
 	}
 }
