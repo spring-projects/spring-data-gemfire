@@ -1,6 +1,6 @@
 [[introduction]]
 = Introduction
 
-Welcome!  The _Spring Data for Pivotal GemFire_ reference guide explains how to use the _Spring Framework_
+The Spring Data for Pivotal GemFire reference guide explains how to use the Spring Framework
 to configure and develop applications with Pivotal GemFire. It presents the basic concepts and provides
 numerous examples to help you get started.

@@ -1,16 +1,14 @@
 = Preface
 
-_Spring Data for Pivotal GemFire_ focuses on integrating the _Spring Framework's_ powerful, non-invasive programming model
-and concepts with Pivotal GemFire to simplify configuration and development of Java applications using Pivotal GemFire.
+Spring Data for Pivotal GemFire focuses on integrating the Spring Framework's powerful, non-invasive programming model
+and concepts with Pivotal GemFire to simplify configuration and development of Java applications when you use Pivotal GemFire.
 
-This document assumes the reader already has a basic understanding and some familiarity with the core _Spring Framework_
+This document assumes you already have a basic understanding of and some familiarity with the core Spring Framework
 and Pivotal GemFire concepts and APIs.
 
 While every effort has been made to ensure this documentation is comprehensive and complete without errors,
-some topics are beyond the scope of this document and may require more explanation (e.g. data distribution management
-using partitioning with HA while still preserving consistency).  Additionally, some typos might have crept in.
-If you do spot mistakes or even more serious errors and you can spare a few cycles, please do bring these issues
-to the attention of the _Spring Data_ team by raising an appropriate
+some topics are beyond the scope of this document and may require more explanation (for example, data distribution management
+using partitioning with HA while still preserving consistency).  Additionally, some typographical errors might have crept in.
+If you do spot mistakes or even more serious errors, please bring these issues
+to the attention of the Spring Data team by raising an appropriate
 https://jira.spring.io/browse/SGF[issue in JIRA].
-
-Thank you.
