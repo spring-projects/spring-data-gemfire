@@ -1,19 +1,19 @@
 [[apis]]
-= Working with Pivotal GemFire APIs
+= Working with {data-store-name} APIs
 
-Once the Pivotal GemFire Cache and Regions have been configured, they can be injected and used inside application objects.
-This chapter describes the integration with _Spring's_ Transaction Management functionality and DAO exception hierarchy.
-This chapter also covers support for dependency injection of Pivotal GemFire managed objects.
+Once the {data-store-name} Cache and Regions have been configured, they can be injected and used inside application objects.
+This chapter describes the integration with Spring's Transaction Management functionality and DAO exception hierarchy.
+This chapter also covers support for dependency injection of {data-store-name} managed objects.
 
 [[apis:template]]
 == GemfireTemplate
 
-As with many other high-level abstractions provided by _Spring_, _Spring Data for Pivotal GemFire_ provides a *template*
-to simplify Pivotal GemFire data access operations. The class provides several methods containing common Region operations,
-but also provides the capability to *execute* code against native Pivotal GemFire APIs without having to deal with
-Pivotal GemFire checked exceptions by using a `GemfireCallback`.
+As with many other high-level abstractions provided by Spring, Spring Data for {data-store-name} provides a *template*
+to simplify {data-store-name} data access operations. The class provides several methods containing common Region operations,
+but also provides the capability to *execute* code against native {data-store-name} APIs without having to deal with
+{data-store-name} checked exceptions by using a `GemfireCallback`.
 
-The template class requires a Pivotal GemFire `Region`, and once configured, is thread-safe and is reusable
+The template class requires a {data-store-name} `Region`, and once configured, is thread-safe and is reusable
 across multiple application classes:
 
 [source,xml]
@@ -22,14 +22,14 @@ across multiple application classes:
 ----
 
 Once the template is configured, a developer can use it alongside `GemfireCallback` to work directly with
-the Pivotal GemFire `Region` without having to deal with checked exceptions, threading or resource management concerns:
+the {data-store-name} `Region` without having to deal with checked exceptions, threading or resource management concerns:
 
 [source,java]
 ----
 template.execute(new GemfireCallback<Iterable<String>>() {
 
 	public Iterable<String> doInGemfire(Region region)
-	        throws Pivotal GemFireCheckedException, Pivotal GemFireException {
+	        throws GemFireCheckedException, GemFireException {
 
 		Region<String, String> localRegion = (Region<String, String>) region;
 
@@ -41,7 +41,7 @@ template.execute(new GemfireCallback<Iterable<String>>() {
 });
 ----
 
-For accessing the full power of the Pivotal GemFire query language, a developer can use the `find` and `findUnique`
+For accessing the full power of the {data-store-name} query language, a developer can use the `find` and `findUnique`
 methods, which, compared to the `query` method, can execute queries across multiple Regions, execute projections,
 and the like.
 
@@ -63,9 +63,9 @@ As mentioned in _Spring Framework's_ documentation,
 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#orm-exception-translation[Exception translation]
 can be applied transparently to your Data Access Objects (DAO) through the use of the `@Repository` annotation and AOP
 by defining a `PersistenceExceptionTranslationPostProcessor` bean. The same exception translation functionality
-is enabled when using Pivotal GemFire as long as the `CacheFactoryBean` is declared, e.g. using either a `<gfe:cache/>`
+is enabled when using {data-store-name} as long as the `CacheFactoryBean` is declared, e.g. using either a `<gfe:cache/>`
 or `<gfe:client-cache>` declaration, which acts as an exception translator and is automatically detected by
-the _Spring_ infrastructure and used accordingly.
+the Spring infrastructure and used accordingly.
 
 [[apis:transaction-management]]
 == Local, Cache Transaction Management
@@ -73,44 +73,44 @@ the _Spring_ infrastructure and used accordingly.
 One of the most popular features of the _Spring Framework_ is
 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction[Transaction Management].
 
-If you are not familiar with _Spring's_ transaction abstraction then we strongly recommend
+If you are not familiar with Spring's transaction abstraction then we strongly recommend
 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction-motivation[reading]
 about _Spring's Transaction Management_ infrastructure as it offers a consistent _programming model_ that works
 transparently across multiple APIs and can be configured either programmatically or declaratively
 (the most popular choice).
 
-For Pivotal GemFire, _Spring Data for Pivotal GemFire_ provides a dedicated, per-cache, `PlatformTransactionManager` that,
-once declared, allows Region operations to be executed atomically through _Spring_:
+For {data-store-name}, Spring Data for {data-store-name} provides a dedicated, per-cache, `PlatformTransactionManager` that,
+once declared, allows Region operations to be executed atomically through Spring:
 
 [source,xml]
 ----
 <gfe:transaction-manager id="txManager" cache-ref="myCache"/>
 ----
 
-NOTE: The example above can be simplified even further by eliminating the `cache-ref` attribute if the Pivotal GemFire cache
-is defined under the default name, `gemfireCache`. As with the other _Spring Data for Pivotal GemFire_ namespace elements,
+NOTE: The example above can be simplified even further by eliminating the `cache-ref` attribute if the {data-store-name} cache
+is defined under the default name, `gemfireCache`. As with the other Spring Data for {data-store-name} namespace elements,
 if the cache bean name is not configured, the aforementioned naming convention will be used.
 Additionally, the transaction manager name is "`gemfireTransactionManager`" if not explicitly specified.
 
-Currently, Pivotal GemFire supports optimistic transactions with *read committed* isolation. Furthermore, to guarantee
+Currently, {data-store-name} supports optimistic transactions with *read committed* isolation. Furthermore, to guarantee
 this isolation, developers should avoid making *in-place* changes that manually modify values present in the cache.
 To prevent this from happening, the transaction manager configures the cache to use *copy on read* semantics by default,
 meaning a clone of the actual value is created each time a read is performed. This behavior can be disabled if needed
 through the `copyOnRead` property.
 
 For more information on the semantics and behavior of the underlying Geode transaction manager, please refer to the Geode
-http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/CacheTransactionManager.html[CacheTransactionManager Javadoc]
-as well as the http://geode.apache.org/docs/guide/11/developing/transactions/chapter_overview.html[documentation].
+{x-data-store-javadoc}/org/apache/geode/cache/CacheTransactionManager.html[CacheTransactionManager Javadoc]
+as well as the {x-data-store-docs}/developing/transactions/chapter_overview.html[documentation].
 
 [[apis:global-transaction-management]]
 == Global, JTA Transaction Management
 
-It is also possible for Pivotal GemFire to participate in a Global, JTA based transaction, such as a transaction managed
+It is also possible for {data-store-name} to participate in a Global, JTA based transaction, such as a transaction managed
 by an Java EE Application Server (e.g. WebSphere Application Server, a.k.a. WAS) using Container Managed Transactions
 (CMT) along with other JTA resources.
 
-However, unlike many other JTA "compliant" resources (e.g. JMS Message Brokers like ActiveMQ), Pivotal GemFire is *not*
-an XA compliant resource.  Therefore, Pivotal GemFire must be positioned as the "_Last Resource_" in a JTA transaction
+However, unlike many other JTA "compliant" resources (e.g. JMS Message Brokers like ActiveMQ), {data-store-name} is *not*
+an XA compliant resource.  Therefore, {data-store-name} must be positioned as the "_Last Resource_" in a JTA transaction
 (_prepare phase_) since it does not implement the 2-phase commit protocol, or rather does not handle
 distributed transactions.
 
@@ -121,23 +121,23 @@ In fact, Red Hat's JBoss project, http://narayana.io/[Narayana] is one such LGPL
 refers to this as "_Last Resource Commit Optimization_" (LRCO).  More details can be found
 http://narayana.io//docs/project/index.html#d0e1859[here].
 
-However, whether you are using Pivotal GemFire in a standalone environment with an Open Source JTA Transaction Management
+However, whether you are using {data-store-name} in a standalone environment with an Open Source JTA Transaction Management
 implementation that supports "_Last Resource_", or a managed environment (e.g. Java EE AS such as WAS),
 _Spring Data Geode_ has you covered.
 
-There are a series of steps you must complete to properly use Pivotal GemFire as a "_Last Resource_" in a JTA transaction
+There are a series of steps you must complete to properly use {data-store-name} as a "_Last Resource_" in a JTA transaction
 involving more than 1 transactional resource.  Additionally, there can only be 1 non-XA compliant resource
-(e.g. Pivotal GemFire) in such an arrangement.
+(e.g. {data-store-name}) in such an arrangement.
 
-1) First, you must complete Steps 1-4 in Pivotal GemFire's documentation
+1) First, you must complete Steps 1-4 in {data-store-name}'s documentation
 http://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[here].
 
-NOTE: #1 above is independent of your _Spring [Boot] and/or [Data Pivotal GemFire]_ application
+NOTE: #1 above is independent of your Spring [Boot] and/or [Data for {data-store-name}] application
 and must be completed successfully.
 
-2) Referring to Step 5 in Pivotal GemFire's http://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[documentation],
-_Spring Data for Pivotal GemFire's_ Annotation support will attempt to set the `Pivotal GemFireCache`, http://gemfire-90-javadocs.docs.pivotal.io/org/apache/geode/cache/Pivotal GemFireCache.html#setCopyOnRead-boolean-[`copyOnRead`]
-property for you when using the `@EnablePivotal GemFireAsLastResource` annotation.
+2) Referring to Step 5 in {data-store-name}'s http://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[documentation],
+_Spring Data for {data-store-name}'s_ Annotation support will attempt to set the `GemFireCache`, {x-data-store-javadoc}/org/apache/geode/cache/GemFireCache.html#setCopyOnRead-boolean-[`copyOnRead`]
+property for you when using the `@EnableGemFireAsLastResource` annotation.
 
 However, if SDG's auto-configuration is unsuccessful then you must explicitly set the `copy-on-read` attribute on the
 `<gfe:cache>` or `<gfe:client-cache>` element in XML or the `copyOnRead` property of the SDG `CacheFactoryBean` class
@@ -192,18 +192,18 @@ Client Cache JavaConfig:
 NOTE: explicitly setting the `copy-on-read` attribute or optionally the `copyOnRead` property
 really should not be necessary.
 
-3) At this point, you *skip* Steps 6-8 in Pivotal GemFire's http://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[documentation]
-and let _Spring Data Geode_ work its magic.  All you need do is annotate your _Spring_ `@Configuration` class
-with _Spring Data for Pivotal GemFire's_ *new* `@EnablePivotal GemFireAsLastResource` annotation and a combination of _Spring's_
+3) At this point, you *skip* Steps 6-8 in {data-store-name}'s http://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[documentation]
+and let _Spring Data Geode_ work its magic.  All you need do is annotate your Spring `@Configuration` class
+with Spring Data for {data-store-name}'s *new* `@EnableGemFireAsLastResource` annotation and a combination of Spring's
 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction[Transaction Management]
-infrastructure and _Spring Data for Pivotal GemFire's_ `@EnablePivotal GemFireAsLastResource` configuration does the trick.
+infrastructure and _Spring Data for {data-store-name}'s_ `@EnableGemFireAsLastResource` configuration does the trick.
 
 The configuration looks like this...
 
 [source,java]
 ----
 @Configuration
-@EnablePivotal GemFireAsLastResource
+@EnableGemFireAsLastResource
 @EnableTransactionManagement(order = 1)
 class GeodeConfiguration {
 
@@ -213,13 +213,13 @@ class GeodeConfiguration {
 
 The only requirements are...
 
-3.1) The `@EnablePivotal GemFireAsLastResource` annotation must be declared on the same _Spring_ `@Configuration` class
-where _Spring's_ `@EnableTransactionManagement` annotation is also specified.
+3.1) The `@EnableGemFireAsLastResource` annotation must be declared on the same Spring `@Configuration` class
+where Spring's `@EnableTransactionManagement` annotation is also specified.
 
 3.2) The `order` attribute of the `@EnableTransactionManagement` annotation must be explicitly set to an integer value
 that is not `Integer.MAX_VALUE` or `Integer.MIN_VALUE` (defaults to `Integer.MAX_VALUE`).
 
-Of course, hopefully you are aware that you also need to configure _Spring's_ `JtaTransactionManager`
+Of course, hopefully you are aware that you also need to configure Spring's `JtaTransactionManager`
 when using JTA Transactions like so..
 
 [source,java]
@@ -236,15 +236,15 @@ public JtaTransactionManager transactionManager(UserTransaction userTransaction)
 ----
 
 NOTE: The configuration in section <<apis:transaction-management>> does *not* apply here.
-The use of _Spring Data for Pivotal GemFire's_ `GemfireTransactionManager` is applicable only in "Local", Cache Transactions,
+The use of _Spring Data for {data-store-name}'s_ `GemfireTransactionManager` is applicable only in "Local", Cache Transactions,
 *not* "Global", JTA Transactions.  Therefore, you do *not* configure the SDG `GemfireTransactionManager` in this case.
-You configure _Spring's_ `JtaTransactionManager` as shown above.
+You configure Spring's `JtaTransactionManager` as shown above.
 
 For more details on using _Spring's Transaction Management_ with JTA,
 see http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction-application-server-integration[here].
 
-Effectively, _Spring Data for Pivotal GemFire's_ `@EnablePivotal GemFireAsLastResource` annotation imports configuration containing 2 Aspect
-bean definitions that handles the Pivotal GemFire `o.a.g.ra.GFConnectionFactory.getConnection()`
+Effectively, _Spring Data for {data-store-name}'s_ `@EnableGemFireAsLastResource` annotation imports configuration containing 2 Aspect
+bean definitions that handles the {data-store-name} `o.a.g.ra.GFConnectionFactory.getConnection()`
 and `o.a.g.ra.GFConnection.close()` operations at the appropriate points during the transactional operation.
 
 Specifically, the correct sequence of events are...
@@ -260,10 +260,10 @@ Specifically, the correct sequence of events are...
 5. Finally, `GFConnection.close()`
 
 This is consistent with how you, as the application developer, would code this manually if you had to use the JTA API
-+ Pivotal GemFire API yourself, as shown in the
-Pivotal GemFire http://gemfire90.docs.pivotal.io/geode/developing/transactions/jca_adapter_example.html#concept_swv_z2p_wk[example].
++ {data-store-name} API yourself, as shown in the
+{data-store-name} http://gemfire90.docs.pivotal.io/geode/developing/transactions/jca_adapter_example.html#concept_swv_z2p_wk[example].
 
-Thankfully, _Spring_ does the heavy lifting for you and all you need do after applying the appropriate configuration
+Thankfully, Spring does the heavy lifting for you and all you need do after applying the appropriate configuration
 (shown above) is...
 
 [source,java]
@@ -280,11 +280,11 @@ class MyTransactionalService ... {
 }
 ----
 
-#1 & #4 above are appropriately handled for you by _Spring's_ JTA based `PlatformTransactionManager` once the
+#1 & #4 above are appropriately handled for you by Spring's JTA based `PlatformTransactionManager` once the
 `@Transactional` boundary is entered by your application (i.e. when the `MyTransactionSerivce.someTransactionalMethod()`
 is called).
 
-#2 & #3 are handled by _Spring Data for Pivotal GemFire's_ new Aspects enabled with the `@EnablePivotal GemFireAsLastResource` annotation.
+#2 & #3 are handled by Spring Data for {data-store-name}'s new Aspects enabled with the `@EnableGemFireAsLastResource` annotation.
 
 #3 of course is the responsibility of your application.
 
@@ -294,8 +294,8 @@ Indeed, with the appropriate logging configured, you will see the correct sequen
 ----
 2017-Jun-22 11:11:37 TRACE TransactionInterceptor - Getting transaction for [example.app.service.MessageService.send]
 
-2017-Jun-22 11:11:37 TRACE Pivotal GemFireAsLastResourceConnectionAcquiringAspect - Acquiring Pivotal GemFire Connection
-from Pivotal GemFire JCA ResourceAdapter registered at [gfe/jca]
+2017-Jun-22 11:11:37 TRACE GemFireAsLastResourceConnectionAcquiringAspect - Acquiring {data-store-name} Connection
+from {data-store-name} JCA ResourceAdapter registered at [gfe/jca]
 
 2017-Jun-22 11:11:37 TRACE MessageService - PRODUCER [ Message :
 [{ @type = example.app.domain.Message, id= MSG0000000000, message = SENT }],
@@ -303,13 +303,13 @@ JSON : [{"id":"MSG0000000000","message":"SENT"}] ]
 
 2017-Jun-22 11:11:37 TRACE TransactionInterceptor - Completing transaction for [example.app.service.MessageService.send]
 
-2017-Jun-22 11:11:37 TRACE Pivotal GemFireAsLastResourceConnectionClosingAspect - Closed Pivotal GemFire Connection @ [Reference [...]]
+2017-Jun-22 11:11:37 TRACE GemFireAsLastResourceConnectionClosingAspect - Closed {data-store-name} Connection @ [Reference [...]]
 ----
 
-For more details on using Pivotal GemFire in JTA transactions,
+For more details on using {data-store-name} in JTA transactions,
 see http://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html[here].
 
-For more details on configuring Pivotal GemFire as a "_Last Resource_",
+For more details on configuring {data-store-name} as a "_Last Resource_",
 see http://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[here].
 
 :leveloffset: +1
@@ -321,33 +321,33 @@ include::{basedocdir}/reference/cq-container.adoc[]
 [[apis:declarable]]
 == Wiring `Declarable` Components
 
-Pivotal GemFire XML configuration (usually referred to as `cache.xml`) allows *user* objects to be declared
+{data-store-name} XML configuration (usually referred to as `cache.xml`) allows *user* objects to be declared
 as part of the configuration. Usually these objects are `CacheLoaders` or other pluggable callback components
-supported by Pivotal GemFire. Using native Pivotal GemFire configuration, each user type declared through XML must implement
+supported by {data-store-name}. Using native {data-store-name} configuration, each user type declared through XML must implement
 the `Declarable` interface, which allows arbitrary parameters to be passed to the declared class
 through a `Properties` instance.
 
 In this section, we describe how you can configure these pluggable components when defined in `cache.xml`
-using _Spring_ while keeping your Cache/Region configuration defined in `cache.xml`.  This allows your
+using Spring while keeping your Cache/Region configuration defined in `cache.xml`.  This allows your
 pluggable components to focus on the application logic and not the location or creation of `DataSources`
 or other collaborators.
 
 However, if you are starting a green field project, it is recommended that you configure Cache, Region,
-and other pluggable Pivotal GemFire components directly in _Spring_.  This avoids inheriting from the `Declarable` interface
+and other pluggable {data-store-name} components directly in Spring.  This avoids inheriting from the `Declarable` interface
 or the base class presented in this section.
 
 See the following sidebar for more information on this approach.
 
 .Eliminate `Declarable` components
 ****
-A developer can configure custom types entirely through _Spring_ as mentioned in <<bootstrap:region>>.
+A developer can configure custom types entirely through Spring as mentioned in <<bootstrap:region>>.
 That way, a developer does not have to implement the `Declarable` interface, and also benefits from
-all the features of the _Spring_ IoC container (not just dependency injection but also life-cycle
+all the features of the Spring IoC container (not just dependency injection but also life-cycle
 and instance management).
 ****
 
-As an example of configuring a `Declarable` component using _Spring_, consider the following declaration
-(taken from the `Declarable` http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/Declarable.html[Javadoc]):
+As an example of configuring a `Declarable` component using Spring, consider the following declaration
+(taken from the `Declarable` {x-data-store-javadoc}/org/apache/geode/cache/Declarable.html[Javadoc]):
 
 [source,xml]
 ----
@@ -359,16 +359,16 @@ As an example of configuring a `Declarable` component using _Spring_, consider t
 </cache-loader>
 ----
 
-To simplify the task of parsing, converting the parameters and initializing the object, _Spring Data for Pivotal GemFire_ offers
-a base class (`WiringDeclarableSupport`) that allows Pivotal GemFire user objects to be wired through a *template* bean definition
-or, in case that is missing, perform auto-wiring through the _Spring_ IoC container. To take advantage of this feature,
+To simplify the task of parsing, converting the parameters and initializing the object, Spring Data for {data-store-name} offers
+a base class (`WiringDeclarableSupport`) that allows {data-store-name} user objects to be wired through a *template* bean definition
+or, in case that is missing, perform auto-wiring through the Spring IoC container. To take advantage of this feature,
 the user objects need to extend `WiringDeclarableSupport`, which automatically locates the declaring `BeanFactory`
 and performs wiring as part of the initialization process.
 
 .Why is a base class needed?
 ****
-In the current Pivotal GemFire release there is no concept of an *object factory* and the types declared are instantiated
-and used as is. In other words, there is no easy way to manage object creation outside Pivotal GemFire.
+In the current {data-store-name} release there is no concept of an *object factory* and the types declared are instantiated
+and used as is. In other words, there is no easy way to manage object creation outside {data-store-name}.
 ****
 
 [[apis:declarable:template-wiring]]
@@ -419,8 +419,8 @@ class DBLoader extends WiringDeclarableSupport implements CacheLoader {
 ----
 
 In the scenario above, as no parameter was specified, a bean with the id/name `com.company.app.DBLoader` was used
-as a template for wiring the instance created by Pivotal GemFire. For cases where the bean name uses a different convention,
-one can pass in the `bean-name` parameter in the Pivotal GemFire configuration:
+as a template for wiring the instance created by {data-store-name}. For cases where the bean name uses a different convention,
+one can pass in the `bean-name` parameter in the {data-store-name} configuration:
 
 [source,xml]
 ----
@@ -465,7 +465,7 @@ However, a developer can also use JDK 5 annotations to provide additional inform
 
 TIP: We strongly recommend reading the dedicated
 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-annotation-config[chapter]
-in the _Spring_ documentation for more information on the supported annotations and enabling factors.
+in the Spring documentation for more information on the supported annotations and enabling factors.
 
 For example, the hypothetical `DBLoader` declaration above can be injected with a Spring-configured `DataSource`
 in the following way:
@@ -510,17 +510,17 @@ class DBLoader extends WiringDeclarableSupport implements CacheLoader {
 By using the JSR-330 annotations, the `CacheLoader` code has been simplified since the location and creation
 of the `DataSource` has been externalized and the user code is concerned only with the loading process.
 The `DataSource` might be transactional, created lazily, shared between multiple objects or retrieved from JNDI.
-These aspects can easily be configured and changed through the _Spring_ container without touching
+These aspects can easily be configured and changed through the Spring container without touching
 the `DBLoader` code.
 
 [[apis:spring-cache-abstraction]]
 == Support for the Spring Cache Abstraction
 
-_Spring Data for Pivotal GemFire_ provides an implementation of the _Spring_
+Spring Data for {data-store-name} provides an implementation of the Spring
 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#cache[Cache Abstraction]
-to position Pivotal GemFire as a _caching provider_ in Spring's caching infrastructure.
+to position {data-store-name} as a _caching provider_ in Spring's caching infrastructure.
 
-To use Pivotal GemFire as a backing implementation, a "_caching provider_" _in Spring's Cache Abstraction_,
+To use {data-store-name} as a backing implementation, a "_caching provider_" _in Spring's Cache Abstraction_,
 simply add `GemfireCacheManager` to your configuration:
 
 [source,xml]
@@ -550,9 +550,9 @@ NOTE: The `cache-ref` attribute on the `CacheManager` bean definition is not nec
 is used (i.e. "gemfireCache"), i.e. `<gfe:cache>` without an explicit ID.
 
 When the `GemfireCacheManager` (Singleton) bean instance is declared and declarative caching is enabled
-(either in XML with `<cache:annotation-driven/>` or in JavaConfig with _Spring's_ `@EnableCaching` annotation),
-the _Spring_ caching annotations (e.g. `@Cacheable`) identify the "caches" that will cache data in-memory
-using Pivotal GemFire Regions.
+(either in XML with `<cache:annotation-driven/>` or in JavaConfig with Spring's `@EnableCaching` annotation),
+the Spring caching annotations (e.g. `@Cacheable`) identify the "caches" that will cache data in-memory
+using {data-store-name} Regions.
 
 These caches (i.e. Regions) must exist before the caching annotations that use them otherwise an error will occur.
 

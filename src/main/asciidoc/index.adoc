@@ -1,7 +1,7 @@
-= Spring Data for Pivotal GemFire Reference Guide
+= Spring Data for {data-store-name} Reference Guide
 Costin Leau; David Turanski; John Blum; Oliver Gierke; Jay Bryant
-:revnumber: {version}
 :revdate: {localdate}
+:revnumber: {version}
 :linkcss:
 :doctype: book
 :docinfo: shared
@@ -10,8 +10,30 @@ Costin Leau; David Turanski; John Blum; Oliver Gierke; Jay Bryant
 :source-highlighter: prettify
 :icons: font
 :imagesdir: images
+:apache-geode-version: 16
+:apache-geode-docs: http://geode.apache.org/docs/guide/{apache-geode-version}
+:apache-geode-javadoc: http://geode.apache.org/releases/latest/javadoc
+:apache-geode-website: http://geode.apache.org
+:apache-geode-wiki: https://cwiki.apache.org/confluence/display/GEODE
+:data-store-name: Pivotal GemFire
+:data-store-version: 9.5.1
+:pivotal-gemfire-version: 95
+:pivotal-gemfire-docs: http://gemfire.docs.pivotal.io/{pivotal-gemfire-version}
+:pivotal-gemfire-javadoc: http://gemfire-{pivotal-gemfire-version}-javadocs.docs.pivotal.io/
+:pivotal-gemfire-website: https://pivotal.io/pivotal-gemfire
+:sdg-name: Spring Data for {data-store-name}
+:spring-data-commons-docs: https://docs.spring.io/spring-data/commons/docs/current/reference
+:spring-data-commons-docs-html: {spring-data-commons-docs}/html
+:spring-data-commons-javadoc: https://docs.spring.io/spring-data/commons/docs/current/api
+:spring-data-website: https://spring.io/projects/spring-data
+:spring-framework-docs: https://docs.spring.io/spring/docs/current/spring-framework-reference
+:spring-framework-javadoc: https://docs.spring.io/spring/docs/current/javadoc-api
+:spring-framework-website: https://spring.io/projects/spring-framework
+:x-data-store-docs: {apache-geode-docs}
+:x-data-store-javadoc: {pivotal-gemfire-javadoc}
+:x-data-store-website: {pivotal-gemfire-website}
+:x-data-store-wiki: {apache-geode-wiki}
 ifdef::backend-epub3[:front-cover-image: image:epub-cover.png[Front Cover,1050,1600]]
-:spring-data-commons-docs: {basedocdir}/../../../../spring-data-commons/src/main/asciidoc
 
 (C) 2010-2018 The original authors.
 
@@ -45,8 +67,8 @@ include::{basedocdir}/reference/samples.adoc[leveloffset=+1]
 = Resources
 
 In addition to this reference documentation, there are a number of other resources that may help you learn
-how to use Pivotal GemFire with the _Spring Framework_. These additional, third-party resources are enumerated
-in this section.
+how to use {data-store-product-name} with the _Spring Framework_. These additional, third-party resources
+are enumerated in this section.
 
 include::{basedocdir}/links.adoc[leveloffset=+1]
 

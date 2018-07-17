@@ -1,119 +1,119 @@
 [[new-features]]
 = New Features
 
-NOTE: As of the 1.2.0.RELEASE, this project, formerly known as Spring Pivotal GemFire, has been renamed to
-Spring Data for Pivotal GemFire to reflect that it is now a module of the
+NOTE: As of the 1.2.0.RELEASE, this project, formerly known as Spring GemFire, has been renamed to
+Spring Data for {data-store-name} to reflect that it is now a module of the
 http://projects.spring.io/spring-data/[Spring Data] project
-and built on https://pivotal.io/pivotal-gemfire[Pivotal GemFire].
+and built on {x-data-store-website}[{data-store-name}].
 
 [[new-in-1-2-0]]
 == New in the 1.2 Release
 
-* Full support for Pivotal GemFire configuration through the SDG *gfe* namespace. Now Pivotal GemFire components may be configured completely without requiring a native cache.xml file.
-* WAN Gateway support for Pivotal GemFire 6.6.x. See <<bootstrap:gateway>>.
+* Full support for {data-store-name} configuration through the SDG *gfe* namespace. Now {data-store-name} components may be configured completely without requiring a native cache.xml file.
+* WAN Gateway support for {data-store-name} 6.6.x. See <<bootstrap:gateway>>.
 * Spring Data Repository support using a dedicated SDG namespace, *gfe-data*. See <<gemfire-repositories>>
-* Namespace support for registering Pivotal GemFire Functions. See <<bootstrap:function>>
+* Namespace support for registering {data-store-name} Functions. See <<bootstrap:function>>
 * A top-level `<disk-store>` element has been added to the SDG *gfe* namespace to allow sharing of persist stores among regions
 as well as other components that support persistent backup or overflow. See <<bootstrap-diskstore>>
 +
 WARNING: The `<*-region>` elements no longer allow a nested `<disk-store>` element.
 +
-* Pivotal GemFire Sub-Regions are supported by nested `<*-region>` elements.
+* {data-store-name} Sub-Regions are supported by nested `<*-region>` elements.
 * A `<local-region>` element has been added to configure a Local Region.
-* Support for the re-designed WAN Gateway in Pivotal GemFire 7.0.
+* Support for the re-designed WAN Gateway in {data-store-name} 7.0.
 
 [[new-in-1-3-0]]
 == New in the 1.3 Release
 
-* Annotation support for Pivotal GemFire Functions. It is now possible to declare and register Functions written as POJOs by using annotations. In addition, function executions are defined as
+* Annotation support for {data-store-name} Functions. It is now possible to declare and register Functions written as POJOs by using annotations. In addition, function executions are defined as
 annotated interfaces, similar to the way Spring Data Repositories work. See <<function-annotations>>.
-* Added a `<datasource>` element to the SDG `gfe-data` namespace to simplify establishing a basic <<data-access:datasource,client connection>> to a Pivotal GemFire data grid.
+* Added a `<datasource>` element to the SDG `gfe-data` namespace to simplify establishing a basic <<data-access:datasource,client connection>> to a {data-store-name} data grid.
 * Added a `<json-region-autoproxy>` element to the SDG `gfe-data` namespace to <<bootstrap:region:json,support JSON>> features introduced
-in Pivotal GemFire 7.0, enabling Spring AOP to perform the necessary conversions automatically on Region operations.
-* Upgraded to Pivotal GemFire 7.0.1 and added namespace support for new AsyncEventQueue attributes.
+in {data-store-name} 7.0, enabling Spring AOP to perform the necessary conversions automatically on Region operations.
+* Upgraded to {data-store-name} 7.0.1 and added namespace support for new AsyncEventQueue attributes.
 * Added support for setting subscription interest policy on Regions.
 * Support for void returns on Function executions.  See <<function-annotations>> for complete details.
 * Support for persisting Local Regions. See <<bootstrap:region:local>>.
-* Support for entry time-to-live and entry idle-time on a Pivotal GemFire Client Cache. See <<bootstrap:cache:client>>.
-* Support for multiple Spring Data for Pivotal GemFire web-based applications by using a single Pivotal GemFire cluster, operating concurrently inside tc Server.
-* Support for `concurrency-checks-enabled` on all Pivotal GemFire Cache Region definitions by using the SDG `gfe` namespace. See <<bootstrap:region:common:attributes>>.
+* Support for entry time-to-live and entry idle-time on a {data-store-name} Client Cache. See <<bootstrap:cache:client>>.
+* Support for multiple Spring Data for {data-store-name} web-based applications by using a single {data-store-name} cluster, operating concurrently inside tc Server.
+* Support for `concurrency-checks-enabled` on all {data-store-name} Cache Region definitions by using the SDG `gfe` namespace. See <<bootstrap:region:common:attributes>>.
 * Support for Cache Loaders and Cache Writers on the Client for Local Regions.
-* Support for registering CacheListeners, AsyncEventQueues, and Gateway Senders on Pivotal GemFire Cache Sub-Regions.
-* Support for PDX persistent keys in Pivotal GemFire Regions.
+* Support for registering CacheListeners, AsyncEventQueues, and Gateway Senders on {data-store-name} Cache Sub-Regions.
+* Support for PDX persistent keys in {data-store-name} Regions.
 * Support for correct Partition Region bean creation in a Spring context when collocation is specified with the `colocated-with` attribute.
-* Full support for Pivotal GemFire Cache Sub-Regions using proper, nested `<*-region>` element syntax in the SDG `gfe` namespace.
-* Upgraded Spring Data for Pivotal GemFire to Spring Framework 3.2.8.
-* Upgraded Spring Data for Pivotal GemFire to Spring Data Commons 1.7.1.
+* Full support for {data-store-name} Cache Sub-Regions using proper, nested `<*-region>` element syntax in the SDG `gfe` namespace.
+* Upgraded Spring Data for {data-store-name} to Spring Framework 3.2.8.
+* Upgraded Spring Data for {data-store-name} to Spring Data Commons 1.7.1.
 
 [[new-in-1-4-0]]
 == New in the 1.4 Release
 
-* Upgraded to Pivotal GemFire 7.0.2.
+* Upgraded to {data-store-name} 7.0.2.
 * Upgraded to Spring Data Commons 1.8.x.RELEASE.
 * Upgraded to Spring Framework 3.2.x.RELEASE.
-* Integrated Spring Data for Pivotal GemFire with Spring Boot, which includes both a `spring-boot-starter-data-gemfire` POM
-and a Spring Boot sample application that demonstrates Pivotal GemFire Cache Transactions configured with SDG
+* Integrated Spring Data for {data-store-name} with Spring Boot, which includes both a `spring-boot-starter-data-gemfire` POM
+and a Spring Boot sample application that demonstrates {data-store-name} Cache Transactions configured with SDG
 and bootstrapped with Spring Boot.
-* Added support for bootstrapping a Spring `ApplicationContext` in a Pivotal GemFire Server when started from `Gfsh`.
+* Added support for bootstrapping a Spring `ApplicationContext` in a {data-store-name} Server when started from `Gfsh`.
 See <<gemfire-bootstrap>> for more details.
-* Added support for persisting application domain object and entities to multiple Pivotal GemFire Cache Regions.
+* Added support for persisting application domain object and entities to multiple {data-store-name} Cache Regions.
 See <<mapping.entities>> for more details.
-* Added support for persisting application domain object and entities to Pivotal GemFire Cache Sub-Regions, avoiding collisions
+* Added support for persisting application domain object and entities to {data-store-name} Cache Sub-Regions, avoiding collisions
 when Sub-Regions are uniquely identifiable but identically named.
 See <<mapping.entities>> for more details.
 * Added strict XSD type rules to and full support for Data Policies and Region Shortcuts
-on all Pivotal GemFire Cache Region types.
+on all {data-store-name} Cache Region types.
 * Changed the default behavior of SDG `<*-region>` elements from lookup to always create a new Region
 along with an option to restore the old behavior (by using the `ignore-if-exists` attribute).
 See <<bootstrap:region:common:attributes, Common Region Attributes>>
 and <<bootstrap:region:common:regions-subregions-lookups-caution>>
 for more details.
-* Spring Data for Pivotal GemFire can now be fully built and ran on JDK 7 and JDK 8.
+* Spring Data for {data-store-name} can now be fully built and ran on JDK 7 and JDK 8.
 
 [[new-in-1-5-0]]
 == New in the 1.5 Release
 
-* Maintained support for Pivotal GemFire 7.0.2.
+* Maintained support for {data-store-name} 7.0.2.
 * Upgraded to _Spring Data Commons_ 1.9.x.RELEASE.
 * Upgraded to _Spring Framework_ 4.0.x.RELEASE.
 * Migrated the Reference Guide to Asciidoc.
-* Renewed support for deploying Spring Data for Pivotal GemFire in an OSGi container.
-* Removed all default values in the Spring Data for Pivotal GemFire XML namespace Region-type elements to
-rely on Pivotal GemFire defaults instead.
+* Renewed support for deploying Spring Data for {data-store-name} in an OSGi container.
+* Removed all default values in the Spring Data for {data-store-name} XML namespace Region-type elements to
+rely on {data-store-name} defaults instead.
 * Added convenience to automatically create Disk Store directory locations.
 * SDG annotated Function implementations can now be executed from `Gfsh`.
-* Enabled Pivotal GemFire `GatewayReceivers` to be started manually.
+* Enabled {data-store-name} `GatewayReceivers` to be started manually.
 * Added support for Auto Region Lookups. See <<bootstrap:region:auto-lookup>> for further details.
 * Added support for Region Templates. See <<bootstrap:region:common:region-templates>> for further details.
 
 [[new-in-1-6-0]]
 == New in the 1.6 Release
 
-* Upgraded to Pivotal GemFire 8.0.0.
+* Upgraded to {data-store-name} 8.0.0.
 * Upgraded to Spring Data Commons 1.10.x.RELEASE.
 * Maintained support for Spring Framework 4.0.x.RELEASE.
-* Added support for Pivotal GemFire 8's new Cluster-based Configuration.
-* Enabled 'auto-reconnect' functionality to be employed in Spring-configured Pivotal GemFire Servers.
+* Added support for {data-store-name} 8's new Cluster-based Configuration.
+* Enabled 'auto-reconnect' functionality to be employed in Spring-configured {data-store-name} Servers.
 * Allowed the creation of concurrent and parallel Async Event Queues and Gateway Senders.
-* Added support for Pivotal GemFire 8's Region data compression.
+* Added support for {data-store-name} 8's Region data compression.
 * Added attributes to set both critical and warning percentages on Disk Store usage.
 * Supported the capability to add the new EventSubstitutionFilters to GatewaySenders.
 
 [[new-in-1-7-0]]
 == New in the 1.7 Release
 
-* Upgraded to Pivotal GemFire 8.1.0.
+* Upgraded to {data-store-name} 8.1.0.
 * Upgraded to Spring Data Commons 1.11.x.RELEASE.
 * Upgraded to Spring Framework 4.1.x.RELEASE.
-* Added early access support for Pivotal GemFire.
-* Added support for adding Spring-defined Cache Listeners, Loaders, and Writers on "existing" Pivotal GemFire Regions
-configured in Spring XML, `cache.xml`, or even with Pivotal GemFire's Cluster Config.
+* Added early access support for {data-store-name}.
+* Added support for adding Spring-defined Cache Listeners, Loaders, and Writers on "existing" {data-store-name} Regions
+configured in Spring XML, `cache.xml`, or even with {data-store-name}'s Cluster Config.
 * Added Spring JavaConfig support to `SpringContextBootstrappingInitializer`.
 * Added support for custom `ClassLoaders` in `SpringContextBootstrappingInitializer` to load Spring-defined bean classes.
 * Added support for `LazyWiringDeclarableSupport` re-initialization and complete replacement for `WiringDeclarableSupport`.
 * Added `locators` and `servers` attributes to the `<gfe:pool>` element, allowing variable Locator and Server
 endpoint lists configured with Spring's property placeholders.
-* Enables the use of the `<gfe-data:datasource>` element with non-Spring-configured Pivotal GemFire Servers.
+* Enables the use of the `<gfe-data:datasource>` element with non-Spring-configured {data-store-name} Servers.
 * Added multi-index definition and creation support.
 * <<bootstrap:region:expiration:annotation>>
 * <<gemfire-repositories:oql-extensions>>
@@ -122,7 +122,7 @@ endpoint lists configured with Spring's property placeholders.
 [[new-in-1-8-0]]
 == New in the 1.8 Release
 
-* Upgraded to Pivotal GemFire 8.2.0.
+* Upgraded to {data-store-name} 8.2.0.
 * Upgraded to Spring Data Commons 1.12.x.RELEASE.
 * Upgraded to Spring Framework 4.2.x.RELEASE.
 * Added Maven POM to build SDG with Maven.
@@ -132,32 +132,32 @@ endpoint lists configured with Spring's property placeholders.
 * Added `durable-client-id` and `durable-client-timeout` attributes to `<gfe:client-cache>`.
 * Made GemfirePersistentProperty now properly handle other non-entity, scalar-like types (such as `BigDecimal` and `BigInteger`).
 * Prevented SDG-defined `Pools` from being destroyed before `Regions` that use those `Pools`.
-* Handled case-insensitive Pivotal GemFire OQL queries defined as Repository query methods.
-* Changed `Pivotal GemFireCache.evict(key)` to call `Region.remove(key)` in SDG's Spring Cache Abstraction support.
+* Handled case-insensitive {data-store-name} OQL queries defined as Repository query methods.
+* Changed `GemFireCache.evict(key)` to call `Region.remove(key)` in SDG's Spring Cache Abstraction support.
 * Fixed `RegionNotFoundException` with Repository queries on a client `Region` associated with a specific `Pool`
-configured for Pivotal GemFire server groups.
-* Changed `Gateway Senders/Receivers` to no longer be tied to the _Spring_ container.
+configured for {data-store-name} server groups.
+* Changed `Gateway Senders/Receivers` to no longer be tied to the Spring container.
 
 [[new-in-1-9-0]]
 == New in the 1.9 Release
 
-* Upgraded to Pivotal GemFire 8.2.4.
+* Upgraded to {data-store-name} 8.2.4.
 * Upgraded to Spring Data Commons 1.13.x.RELEASE.
 * Upgraded to Spring Framework 4.3.x.RELEASE.
 * Introduced an entirely new Annotation-based configuration model inspired by Spring Boot.
 * Added support for suspend and resume in the `GemfireTransactionManager`.
 * Added support in Repositories to use the bean `id` property as the Region key when the `@Id` annotation
 is not present.
-* Used `MappingPdxSerializer` as the default Pivotal GemFire serialization strategy when `@EnablePdx` is used.
+* Used `MappingPdxSerializer` as the default {data-store-name} serialization strategy when `@EnablePdx` is used.
 * Enabled `GemfireCacheManager` to explicitly list Region names to be used in the Spring's Caching Abstraction.
-* Configured Pivotal GemFire Caches, CacheServers, Locators, Pools, Regions, Indexes, DiskStores, Expiration, Eviction,
+* Configured {data-store-name} Caches, CacheServers, Locators, Pools, Regions, Indexes, DiskStores, Expiration, Eviction,
 Statistics, Mcast, HttpService, Auth, SSL, Logging, System Properties.
 * Added repository support with multiple Spring Data modules on the classpath.
 
 [[new-in-2-0-0]]
 == New in the 2.0 Release
 
-* Upgraded to Pivotal GemFire 9.0.x.
+* Upgraded to {data-store-name} 9.0.x.
 * Upgraded to Spring Data Commons 2.0.x.RELEASE.
 * Upgraded to Spring Framework 5.0.x.RELEASE.
 * Reorganized the SDG codebase by better packaging different classes and components by concern.
@@ -168,4 +168,4 @@ Statistics, Mcast, HttpService, Auth, SSL, Logging, System Properties.
 * Renamed `@EnableIndexes` to `@EnableIndexing`.
 * Introduced a `InterestsBuilder` class to easily and conveniently express Interests in keys and values between client
 and server when using JavaConfig.
-* Added support for Off-Heap, Redis Adapter, and Pivotal GemFire's new Security framework to the Annotation configuration model.
+* Added support for Off-Heap, Redis Adapter, and {data-store-name}'s new Security framework to the Annotation configuration model.

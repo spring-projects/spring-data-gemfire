@@ -1,10 +1,10 @@
 = Preface
 
-Spring Data for Pivotal GemFire focuses on integrating the Spring Framework's powerful, non-invasive programming model
-and concepts with Pivotal GemFire to simplify configuration and development of Java applications when you use Pivotal GemFire.
+Spring Data for {data-store-name} focuses on integrating the Spring Framework's powerful, non-invasive programming model
+and concepts with {data-store-name} to simplify configuration and development of Java applications when you use {data-store-name}.
 
 This document assumes you already have a basic understanding of and some familiarity with the core Spring Framework
-and Pivotal GemFire concepts and APIs.
+and {data-store-name} concepts and APIs.
 
 While every effort has been made to ensure this documentation is comprehensive and complete without errors,
 some topics are beyond the scope of this document and may require more explanation (for example, data distribution management

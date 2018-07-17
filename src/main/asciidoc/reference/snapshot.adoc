@@ -1,21 +1,21 @@
 [[bootstrap:snapshot]]
 = Configuring the Snapshot Service
 
-Spring Data for Pivotal GemFire supports `cache` and `region` snapshots by using
-http://geode.apache.org/docs/guide/11/managing/cache_snapshots/chapter_overview.html[Pivotal GemFire's Snapshot Service].
-The out-of-the-box Snapshot Service support offers several convenient features to simplify the use of Pivotal GemFire's
-http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/snapshot/CacheSnapshotService.html[Cache]
-and http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/snapshot/RegionSnapshotService.html[Region]
+Spring Data for {data-store-name} supports `cache` and `region` snapshots by using
+{x-data-store-docs}/managing/cache_snapshots/chapter_overview.html[{data-store-name}'s Snapshot Service].
+The out-of-the-box Snapshot Service support offers several convenient features to simplify the use of {data-store-name}'s
+{x-data-store-javadoc}/org/apache/geode/cache/snapshot/CacheSnapshotService.html[Cache]
+and {x-data-store-javadoc}/org/apache/geode/cache/snapshot/RegionSnapshotService.html[Region]
 Snapshot Service APIs.
 
-As the http://geode.apache.org/docs/guide/11/managing/cache_snapshots/chapter_overview.html[Pivotal GemFire documentation]
+As the {x-data-store-docs}/managing/cache_snapshots/chapter_overview.html[{data-store-name} documentation]
 describes, snapshots let you save and subsequently reload the cached data later, which can be useful for
 moving data between environments, such as from production to a staging or test environment in order to reproduce
-data-related issues in a controlled context. You can combine Spring Data for Pivotal GemFire's Snapshot Service support
+data-related issues in a controlled context. You can combine Spring Data for {data-store-name}'s Snapshot Service support
 with http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-definition-profiles[Spring's bean definition profiles]
 to load snapshot data specific to the environment as necessary.
 
-Spring Data for Pivotal GemFire's support for Pivotal GemFire's Snapshot Service begins with the `<gfe-data:snapshot-service>` element
+Spring Data for {data-store-name}'s support for {data-store-name}'s Snapshot Service begins with the `<gfe-data:snapshot-service>` element
 from the `<gfe-data>` namespace.
 
 For example, you can define cache-wide snapshots to be loaded as well as saved by using a couple of snapshot imports
@@ -32,10 +32,10 @@ and a data export definition, as follows:
 ----
 
 You can define as many imports and exports as you like. You can define only imports or only exports.
-The file locations and directory paths can be absolute or relative to the Spring Data for Pivotal GemFire application, which is the
+The file locations and directory paths can be absolute or relative to the Spring Data for {data-store-name} application, which is the
 JVM process's working directory.
 
-The preceding example is pretty simple, and the Snapshot Service defined in this case refers to the Pivotal GemFire `cache` with
+The preceding example is pretty simple, and the Snapshot Service defined in this case refers to the {data-store-name} `cache` with
 the default name of `gemfireCache` (as described in <<bootstrap:cache>>). If you name your cache bean definition
 something other than the default, you can use the `cache-ref` attribute to refer to the cache bean by name, as follows:
 
@@ -48,7 +48,7 @@ something other than the default, you can use the `cache-ref` attribute to refer
 </gfe-data:snapshot-service>
 ----
 
-You can also define a Snapshot Service for a particular Pivotal GemFire Region by specifying
+You can also define a Snapshot Service for a particular {data-store-name} Region by specifying
 the `region-ref` attribute, as follows:
 
 [source,xml]
@@ -61,17 +61,17 @@ the `region-ref` attribute, as follows:
 </gfe-data:snapshot-service>
 ----
 
-When the `region-ref` attribute is specified, Spring Data for Pivotal GemFire's `SnapshotServiceFactoryBean` resolves
+When the `region-ref` attribute is specified, Spring Data for {data-store-name}'s `SnapshotServiceFactoryBean` resolves
 the `region-ref` attribute value to a region bean defined in the Spring context and creates a
-http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/snapshot/RegionSnapshotService.html[`RegionSnapshotService`].
+{x-data-store-javadoc}/org/apache/geode/cache/snapshot/RegionSnapshotService.html[`RegionSnapshotService`].
 The snapshot import and export definitions function the same way. However, the `location` must refer to a file
 on export.
 
-NOTE: Pivotal GemFire is strict about imported snapshot files actually existing before they are referenced. For exports,
-Pivotal GemFire creates the snapshot file. If the snapshot file for export already exists,
+NOTE: {data-store-name} is strict about imported snapshot files actually existing before they are referenced. For exports,
+{data-store-name} creates the snapshot file. If the snapshot file for export already exists,
 the data is overwritten.
 
-TIP: Spring Data for Pivotal GemFire includes a `suppress-import-on-init` attribute on the `<gfe-data:snapshot-service>` element
+TIP: Spring Data for {data-store-name} includes a `suppress-import-on-init` attribute on the `<gfe-data:snapshot-service>` element
 to suppress the configured Snapshot Service from trying to import data into the cache or region on initialization.
 Doing so is useful, for example, when data exported from one region is used to feed the import of another region.
 
@@ -79,20 +79,20 @@ Doing so is useful, for example, when data exported from one region is used to f
 == Snapshot Location
 
 For a `Cache`-based Snapshot Service
-(that is, a http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/snapshot/CacheSnapshotService.html[`CacheSnapshotService`])
+(that is, a {x-data-store-javadoc}/org/apache/geode/cache/snapshot/CacheSnapshotService.html[`CacheSnapshotService`])
 you would typically pass it a directory containing all the snapshot files to load rather than
 individual snapshot files, as the overloaded
-http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/snapshot/CacheSnapshotService.html#load-java.io.File-org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat[`load`]
+{x-data-store-javadoc}/org/apache/geode/cache/snapshot/CacheSnapshotService.html#load-java.io.File-org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat[`load`]
 method in the `CacheSnapshotService` API indicates.
 
 NOTE: Of course, you can use the other, overloaded `load(:File[], :SnapshotFormat, :SnapshotOptions)` method
-variant to get specific about which snapshot files to load into the Pivotal GemFire `cache`.
+variant to get specific about which snapshot files to load into the {data-store-name} `cache`.
 
-However, Spring Data for Pivotal GemFire recognizes that a typical developer workflow might be to extract and export data
+However, Spring Data for {data-store-name} recognizes that a typical developer workflow might be to extract and export data
 from one environment into several snapshot files, zip all of them up, and then conveniently move the zip file
 to another environment for import.
 
-Therefore, Spring Data for Pivotal GemFire lets you specify a jar or zip file on import for a `cache`-based
+Therefore, Spring Data for {data-store-name} lets you specify a jar or zip file on import for a `cache`-based
 Snapshot Service, as follows:
 
 [source,xml]
@@ -102,18 +102,18 @@ Snapshot Service, as follows:
   </gfe-data:snapshot-service>
 ----
 
-Spring Data for Pivotal GemFire conveniently extracts the provided zip file and treats it as a directory import (load).
+Spring Data for {data-store-name} conveniently extracts the provided zip file and treats it as a directory import (load).
 
 [[bootstrap:snapshot:filters]]
 == Snapshot Filters
 
 The real power of defining multiple snapshot imports and exports is realized through the use of snapshot filters.
-Snapshot filters implement Pivotal GemFire's
-http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/snapshot/SnapshotFilter.html[`SnapshotFilter`]
+Snapshot filters implement {data-store-name}'s
+{x-data-store-javadoc}/org/apache/geode/cache/snapshot/SnapshotFilter.html[`SnapshotFilter`]
 interface and are used to filter region entries for inclusion into the region on import
 and for inclusion into the snapshot on export.
 
-Spring Data for Pivotal GemFire lets you use snapshot filters on import and export by using the `filter-ref`
+Spring Data for {data-store-name} lets you use snapshot filters on import and export by using the `filter-ref`
 attribute or an anonymous, nested bean definition, as the following example shows:
 
 [source,xml]
@@ -141,8 +141,8 @@ attribute or an anonymous, nested bean definition, as the following example show
 ----
 
 In addition, you can express more complex snapshot filters by using the `ComposableSnapshotFilter` class.
-This class implements Pivotal GemFire's
-http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/snapshot/SnapshotFilter.html[SnapshotFilter]
+This class implements {data-store-name}'s
+{x-data-store-javadoc}/org/apache/geode/cache/snapshot/SnapshotFilter.html[SnapshotFilter]
 interface as well as the https://en.wikipedia.org/wiki/Composite_pattern[Composite] software design pattern.
 
 In a nutshell, the https://en.wikipedia.org/wiki/Composite_pattern[Composite] software design pattern lets you
@@ -187,15 +187,15 @@ You could then go on to combine the `activesUsersSinceFilter` with another filte
 [[bootstrap::snapshot::events]]
 == Snapshot Events
 
-By default, Spring Data for Pivotal GemFire uses Pivotal GemFire's Snapshot Services on startup to import data and on shutdown
+By default, Spring Data for {data-store-name} uses {data-store-name}'s Snapshot Services on startup to import data and on shutdown
 to export data. However, you may want to trigger periodic, event-based snapshots, for either import or export,
 from within your Spring application.
 
-For this purpose, Spring Data for Pivotal GemFire defines two additional Spring application events, extending Spring's
+For this purpose, Spring Data for {data-store-name} defines two additional Spring application events, extending Spring's
 http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/context/ApplicationEvent.html[`ApplicationEvent`]
 class for imports and exports, respectively: `ImportSnapshotApplicationEvent` and `ExportSnapshotApplicationEvent`.
 
-The two application events can be targeted at the entire Pivotal GemFire cache or individual Pivotal GemFire regions. The constructors
+The two application events can be targeted at the entire {data-store-name} cache or individual {data-store-name} regions. The constructors
 in these classes accept an optional region pathname (such as `/Example`) as well as xero or more `SnapshotMetadata` instances.
 
 The array of `SnapshotMetadata` overrides the snapshot metadata defined by `<gfe-data:snapshot-import>`

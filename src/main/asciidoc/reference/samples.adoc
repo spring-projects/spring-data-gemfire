@@ -2,12 +2,12 @@
 = Sample Applications
 
 NOTE: Sample applications are now maintained in the
-https://github.com/spring-projects/spring-gemfire-examples[Spring Pivotal GemFire Examples] repository.
+https://github.com/spring-projects/spring-gemfire-examples[Spring {data-store-name} Examples] repository.
 
-The Spring Data for Pivotal GemFire project also includes one sample application. Named "`Hello World`", the sample application
-demonstrates how to configure and use Pivotal GemFire inside a Spring application. At run time, the sample offers
+The Spring Data for {data-store-name} project also includes one sample application. Named "`Hello World`", the sample application
+demonstrates how to configure and use {data-store-name} inside a Spring application. At run time, the sample offers
 a shell that lets you run various commands against the data grid. It provides an excellent
-starting point for developers who are unfamiliar with the essential components or with Spring and Pivotal GemFire concepts.
+starting point for developers who are unfamiliar with the essential components or with Spring and {data-store-name} concepts.
 
 The sample is bundled with the distribution and is Maven-based. You can import it into any
 Maven-aware IDE (such as the https://spring.io/tools/sts[Spring Tool Suite]) or run them from the command-line.
@@ -15,13 +15,13 @@ Maven-aware IDE (such as the https://spring.io/tools/sts[Spring Tool Suite]) or 
 [[samples:hello-world]]
 == Hello World
 
-The "`Hello World`" sample application demonstrates the core functionality of the Spring Data for Pivotal GemFire project.
-It bootstraps Pivotal GemFire, configures it, executes arbitrary commands against the cache, and shuts it down
+The "`Hello World`" sample application demonstrates the core functionality of the Spring Data for {data-store-name} project.
+It bootstraps {data-store-name}, configures it, executes arbitrary commands against the cache, and shuts it down
 when the application exits. Multiple instances of the application can be started at the same time
 and work together, sharing data without any user intervention.
 
 .Running under Linux
-NOTE: If you experience networking problems when starting Pivotal GemFire or the samples, try adding the following
+NOTE: If you experience networking problems when starting {data-store-name} or the samples, try adding the following
 system property `java.net.preferIPv4Stack=true` to the command line (for example, `-Djava.net.preferIPv4Stack=true`).
 For an alternative (global) fix (especially on Ubuntu), see https://jira.spring.io/browse/SGF-28[SGF-28].
 
@@ -43,7 +43,7 @@ The output should resemble the following:
 
 [source]
 ----
-INFO: Created Pivotal GemFire Cache [Spring Pivotal GemFire World] v. X.Y.Z
+INFO: Created {data-store-name} Cache [Spring {data-store-name} World] v. X.Y.Z
 INFO: Created new cache region [myWorld]
 INFO: Member xxxxxx:50694/51611 connecting to region [myWorld]
 Hello World!
@@ -80,7 +80,7 @@ and its information, as the following example shows:
 
 [source]
 ----
-INFO: Connected to Distributed System ['Spring Pivotal GemFire World'=xxxx:56218/49320@yyyyy]
+INFO: Connected to Distributed System ['Spring {data-store-name} World'=xxxx:56218/49320@yyyyy]
 Hello World!
 ...
 
@@ -106,7 +106,7 @@ http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/
 for Spring
 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-annotation-config[components].
 
-The cache configuration defines the Pivotal GemFire cache, a region, and for illustrative purposes, a `CacheListener`
+The cache configuration defines the {data-store-name} cache, a region, and for illustrative purposes, a `CacheListener`
 that acts as a logger.
 
 The main beans are `HelloWorld` and `CommandProcessor`, which rely on the `GemfireTemplate` to interact with

@@ -1,10 +1,10 @@
 [[bootstrap:gateway]]
 = Configuring WAN Gateways
 
-WAN Gateways provide a way to synchronize Pivotal GemFire Distributed Systems across geographic areas.
-Spring Data for Pivotal GemFire provides namespace support for configuring WAN Gateways as illustrated in the following examples.
+WAN Gateways provide a way to synchronize {data-store-name} Distributed Systems across geographic areas.
+Spring Data for {data-store-name} provides namespace support for configuring WAN Gateways as illustrated in the following examples.
 
-== WAN Configuration in Pivotal GemFire 7.0
+== WAN Configuration in {data-store-name} 7.0
 
 In the following example, `GatewaySenders` are configured for a `PARTITION` region by adding child elements
 (`gateway-sender` and `gateway-sender-ref`) to the region.
@@ -60,6 +60,6 @@ The `GatewayReceiver` may also be configured with `EventFilters` and `TransportF
 </gfe:gateway-receiver>
 ----
 
-See the Pivotal GemFire
-http://geode.apache.org/docs/guide/11/topologies_and_comm/multi_site_configuration/chapter_overview.html[documentation]
+See the {data-store-name}
+{x-data-store-docs}/topologies_and_comm/multi_site_configuration/chapter_overview.html[documentation]
 for a detailed explanation of all the configuration options.

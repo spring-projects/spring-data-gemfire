@@ -6,7 +6,7 @@ extending `java.util.Map` and enables basic data access using familiar key-value
 is wired into application classes that require it so the actual Region type is decoupled from the programming model.
 Typically, each Region is associated with one domain object, similar to a table in a relational database.
 
-Pivotal GemFire implements the following types of Regions:
+{data-store-name} implements the following types of Regions:
 
 * *REPLICATE* - Data is replicated across all cache members that define the Region. This provides very high
 read performance but writes take longer to perform the replication.
@@ -19,13 +19,13 @@ Local updates are synchronized to the cache server. Also, a client Region may su
 stay up-to-date (synchronized) with changes originating from remote processes that access the same server Region.
 
 For more information about the various Region types and their capabilities as well as configuration options,
-please refer to Pivotal GemFire's documentation on
-http://geode.apache.org/docs/guide/11/developing/region_options/region_types.html[Region Types].
+please refer to {data-store-name}'s documentation on
+{x-data-store-docs}/developing/region_options/region_types.html[Region Types].
 
 [[bootstrap:region:lookup]]
 == Using an externally configured Region
 
-To reference Regions already configured in a Pivotal GemFire native `cache.xml` file, use the `lookup-region` element.
+To reference Regions already configured in a {data-store-name} native `cache.xml` file, use the `lookup-region` element.
 Simply declare the target Region name with the `name` attribute.  For example, to declare a bean definition identified
 as `ordersRegion` for an existing Region named `Orders`, you can use the following bean definition:
 
@@ -61,7 +61,7 @@ the region semantics or setup infrastructure.
 [[bootstrap:region:lookup:auto]]
 == Auto Region Lookup
 
-"`auto-lookup`" lets you import all regions defined in a Pivotal GemFire native `cache.xml` file into a Spring
+"`auto-lookup`" lets you import all regions defined in a {data-store-name} native `cache.xml` file into a Spring
 application context when you use the `cache-xml-location` attribute on the `<gfe:cache>` element.
 
 For instance, consider the following `cache.xml` file:
@@ -97,12 +97,12 @@ by using the following:
 <gfe:auto-region-lookup/>
 ----
 
-Spring Data for Pivotal GemFire automatically creates beans for all Pivotal GemFire regions defined in `cache.xml` that have not been
+Spring Data for {data-store-name} automatically creates beans for all {data-store-name} regions defined in `cache.xml` that have not been
 explicitly added to the Spring context with explicit `<gfe:lookup-region>` bean declarations.
 
-It is important to realize that Spring Data for Pivotal GemFire uses a Spring
+It is important to realize that Spring Data for {data-store-name} uses a Spring
 http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/beans/factory/config/BeanPostProcessor.html[BeanPostProcessor]
-to post-process the cache after it is both created and initialized to determine the regions defined in Pivotal GemFire to add
+to post-process the cache after it is both created and initialized to determine the regions defined in {data-store-name} to add
 as beans in the Spring application context.
 
 You may inject these "`auto-looked-up`" regions as you would any other bean defined in the Spring application context, with
@@ -137,21 +137,21 @@ If you declarE your components by using Spring XML config, then you would do the
 <bean class="example.ApplicationDao" depends-on="gemfireCache"/>
 ----
 
-Doing so ensures that the Pivotal GemFire cache and all the regions defined in `cache.xml` get created before any components
+Doing so ensures that the {data-store-name} cache and all the regions defined in `cache.xml` get created before any components
 with auto-wire references when using the new `<gfe:auto-region-lookup>` element.
 
 [[bootstrap:region:overview]]
 == Configuring Regions
 
-Spring Data for Pivotal GemFire provides comprehensive support for configuring any type of Region through the following elements:
+Spring Data for {data-store-name} provides comprehensive support for configuring any type of Region through the following elements:
 
 * LOCAL Region: `<local-region>`
 * PARTITION Region: `<partitioned-region>`
 * REPLICATE Region: `<replicated-region>`
 * Client Region: `<client-region>`
 
-See the Pivotal GemFire documentation for a comprehensive description of
-http://geode.apache.org/docs/guide/11/developing/region_options/region_types.html[region types].
+See the {data-store-name} documentation for a comprehensive description of
+{x-data-store-docs}/developing/region_options/region_types.html[region types].
 
 [[bootstrap:region:attributes]]
 === Common Region Attributes
@@ -166,8 +166,8 @@ The following table lists the attributes available for all region types:
 | Description
 
 | cache-ref
-| Pivotal GemFire Cache bean reference
-| The name of the bean defining the Pivotal GemFire Cache (by default, 'gemfireCache').
+| {data-store-name} Cache bean reference
+| The name of the bean defining the {data-store-name} Cache (by default, 'gemfireCache').
 
 | cloning-enabled
 | boolean (default: `false`)
@@ -182,7 +182,7 @@ The following table lists the attributes available for all region types:
 | Determines whether members perform checks to provide consistent handling for concurrent or out-of-order updates to distributed regions.
 
 | data-policy
-| See Pivotal GemFire's http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/DataPolicy.html[data policy].
+| See {data-store-name}'s {x-data-store-javadoc}/org/apache/geode/cache/DataPolicy.html[data policy].
 | The region's data policy. Note that not all data policies are supported for every Region type.
 
 | destroy
@@ -234,7 +234,7 @@ The following table lists the attributes available for all region types:
 | Determines whether the region persists entries to local disk (disk store).
 
 | shortcut
-| See http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/RegionShortcut.html
+| See {x-data-store-javadoc}/org/apache/geode/cache/RegionShortcut.html
 | The `RegionShortcut` for this region. Allows easy initialization of the region based on pre-defined defaults.
 
 | statistics
@@ -255,7 +255,7 @@ The following table lists the attributes available for all region types:
 
 `CacheListener` instances are registered with a region to handle region events, such as when entries are created, updated,
 destroyed, and so on. A `CacheListener` can be any bean that implements the
-http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/CacheListener.html[`CacheListener`] interface.
+{x-data-store-javadoc}/org/apache/geode/cache/CacheListener.html[`CacheListener`] interface.
 A region may have multiple listeners, declared with the `cache-listener` element nested in the containing
 `*-region` element.
 
@@ -298,7 +298,7 @@ mutually exclusive and using both in the same element results in an exception.
 .Bean Reference Conventions
 [NOTE]
 ====
-The `cache-listener` element is an example of a common pattern used in the namespace anywhere Pivotal GemFire provides
+The `cache-listener` element is an example of a common pattern used in the namespace anywhere {data-store-name} provides
 a callback interface to be implemented in order to invoke custom code in response to Cache or Region events.
 When you use Spring's IoC container, the implementation is a standard Spring bean. In order to simplify the configuration,
 the schema allows a single occurrence of the `cache-listener` element, but, if multiple instances are permitted, it may contain nested bean references
@@ -312,11 +312,11 @@ configuration example.
 === CacheLoaders and CacheWriters
 
 Similar to `cache-listener`, the namespace provides `cache-loader` and `cache-writer` elements to register
-these Pivotal GemFire components for a region.
+these {data-store-name} components for a region.
 
 A `CacheLoader` is invoked on a cache miss to let an entry be loaded from an external data source, such as a
 database.  A `CacheWriter` is invoked before an entry is created or updated, to allow the entry to be synchronized to
-an external data source. The difference is that Pivotal GemFire supports, at most, a single instance `CacheLoader` and `CacheWriter`
+an external data source. The difference is that {data-store-name} supports, at most, a single instance `CacheLoader` and `CacheWriter`
 per region. However, either declaration style may be used.
 
 The following example declares a region with both a `CacheLoader` and a `CacheWriter`:
@@ -339,14 +339,14 @@ The following example declares a region with both a `CacheLoader` and a `CacheWr
 </beans>
 ----
 
-See http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/CacheLoader.html[`CacheLoader`]
-and http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/CacheWriter.html[`CacheWriter`]
-in the Pivotal GemFire documentation for more details.
+See {x-data-store-javadoc}/org/apache/geode/cache/CacheLoader.html[`CacheLoader`]
+and {x-data-store-javadoc}/org/apache/geode/cache/CacheWriter.html[`CacheWriter`]
+in the {data-store-name} documentation for more details.
 
 [[bootstrap:region:compression]]
 == Compression
 
-Pivotal GemFire Regions may also be compressed in order to reduce JVM memory consumption and pressure to possibly avoid
+{data-store-name} Regions may also be compressed in order to reduce JVM memory consumption and pressure to possibly avoid
 stopping the global GCs. When you enable compression for a region, all values stored in memory for the region
 are compressed, while keys and indexes remain uncompressed. New values are compressed when put into the region
 and all values are decompressed automatically when read back from the region. Values are not compressed when
@@ -365,17 +365,17 @@ The following example shows a region with compression enabled:
 </beans>
 ----
 
-See Pivotal GemFire's documentation for more information on
-http://gemfire.docs.pivotal.io/geode/managing/region_compression/region_compression.html[region compression].
+See {data-store-name}'s documentation for more information on
+{x-data-store-docs}/managing/region_compression/region_compression.html[region compression].
 
 [[bootstrap:region:subregions]]
 == Subregions
 
-Spring Data for Pivotal GemFire also supports subregions, allowing regions to be arranged in a hierarchical relationship.
+Spring Data for {data-store-name} also supports subregions, allowing regions to be arranged in a hierarchical relationship.
 
-For example, Pivotal GemFire allows for a (for example) `/Customer/Address` region and a different `/Employee/Address` region. Additionally,
+For example, {data-store-name} allows for a (for example) `/Customer/Address` region and a different `/Employee/Address` region. Additionally,
 a subregion may have its own subregions and its own configuration. A subregion does not inherit attributes from
-the parent region. Regions types may be mixed and matched subject to Pivotal GemFire constraints. A subregion is naturally
+the parent region. Regions types may be mixed and matched subject to {data-store-name} constraints. A subregion is naturally
 declared as a child element of a region. The subregion's name attribute is the simple name. The preceding example
 might be configured as follows:
 
@@ -400,11 +400,11 @@ OQL query strings.
 [[bootstrap:region:templates]]
 == Region Templates
 
-Spring Data for Pivotal GemFire also supports region templates. This feature allows developers to define common region
+Spring Data for {data-store-name} also supports region templates. This feature allows developers to define common region
 configuration settings and attributes once and reuse the configuration among many region bean definitions declared
 in the Spring application context.
 
-Spring Data for Pivotal GemFire includes five Region template tags in its namespace:
+Spring Data for {data-store-name} includes five Region template tags in its namespace:
 
 [cols="1,2", options="header"]
 .Region Template Tags
@@ -482,7 +482,7 @@ Attributes and sub-elements defined in subsequent, inherited region bean definit
 
 === How Templating Works
 
-Spring Data for Pivotal GemFire applies region templates when the Spring application context configuration meta-data is parsed,
+Spring Data for {data-store-name} applies region templates when the Spring application context configuration meta-data is parsed,
 and therefore, the region templates must be declared in the order of inheritance. In other words, parent templates must be defined
 before child templates. Doing so ensures that the proper configuration is applied, especially when element attributes or sub-elements
 are overridden.
@@ -496,14 +496,14 @@ NOTE: Region Templates are single-inheritance.
 === Caution concerning Regions, Subregions and Lookups
 
 Previously, one of the underlying properties of the `replicated-region`, `partitioned-region`, `local-region`,
-and `client-region` elements in the Spring Data for Pivotal GemFire XML namespace was to perform a lookup first before
+and `client-region` elements in the Spring Data for {data-store-name} XML namespace was to perform a lookup first before
 attempting to create a Region. This was done in case the region already existed, which would be the case
-if the region was defined in an imported Pivotal GemFire native `cache.xml` configuration file. Therefore, the lookup
+if the region was defined in an imported {data-store-name} native `cache.xml` configuration file. Therefore, the lookup
 was performed first to avoid any errors. This was by design and subject to change.
 
 This behavior has been altered and the default behavior is now to create the region first. If the region
 already exists, then the creation logic fails-fast and an appropriate exception is thrown. However, much like the
-`CREATE TABLE IF NOT EXISTS ...` DDL syntax, the Spring Data for Pivotal GemFire `<*-region>` namespace elements now include
+`CREATE TABLE IF NOT EXISTS ...` DDL syntax, the Spring Data for {data-store-name} `<*-region>` namespace elements now include
 a `ignore-if-exists` attribute, which reinstates the old behavior by first performing a lookup of an existing region
 identified by name. If an existing region is found by name if and `ignore-if-exists` is set to `true`, then
 the region bean definition defined in the Spring configuration is ignored.
@@ -519,7 +519,7 @@ by the application. Even worse, you might want to define the region as a distrib
 IMPORTANT: Recommended Practice - Use only `replicated-region`, `partitioned-region`, `local-region`, and `client-region`
 namespace elements to define new Regions.
 
-Consider the following native Pivotal GemFire `cache.xml` configuration file:
+Consider the following native {data-store-name} `cache.xml` configuration file:
 
 [source,xml]
 ----
@@ -609,9 +609,9 @@ The Region beans defined in the Spring application context consist of the follow
 shown in the earlier example (that is, `@Resource(name = "Customers/Accounts"))` is now broken, since no bean with name `Customers/Accounts`
 is actually defined. For this reason, you should not configure regions as shown in the two preceding examples.
 
-Pivotal GemFire is flexible in referencing both parent regions and subregions with or without the leading forward slash.
+{data-store-name} is flexible in referencing both parent regions and subregions with or without the leading forward slash.
 For example, the parent can be referenced as `/Customers` or `Customers` and the child as `/Customers/Accounts`
-or `Customers/Accounts`. However, Spring Data Pivotal GemFire is very specific when it comes to naming beans after regions. It
+or `Customers/Accounts`. However, Spring Data {data-store-name} is very specific when it comes to naming beans after regions. It
 always uses the forward slash (/) to represent subregions (for example, `/Customers/Accounts`).
 
 Therefore, you should use the nested `lookup-region` syntax shown earlier
@@ -625,18 +625,18 @@ or define direct references with a leading forward slash (/), as follows:
 
 The earlier example, where the nested `replicated-region` elements were used to reference the subregions, shows
 the problem stated earlier. Are the customers, accounts and orders regions and subregions persistent or not?
-They are not persistent, because the regions were defined in the native Pivotal GemFire `cache.xml` configuration file as `REPLICATES` and exist
+They are not persistent, because the regions were defined in the native {data-store-name} `cache.xml` configuration file as `REPLICATES` and exist
 before the cache is initialized (once the `<gfe:cache>` bean is processed).
 
 [[bootstrap:region:eviction]]
 == Data Eviction (with Overflow)
 
 Based on various constraints, each Region can have an eviction policy in place for evicting data from memory.
-Currently, in Pivotal GemFire, eviction applies to the Least Recently Used entry (also known as
+Currently, in {data-store-name}, eviction applies to the Least Recently Used entry (also known as
 http://en.wikipedia.org/wiki/Cache_algorithms#Least_Recently_Used[LRU]). Evicted entries are either destroyed
 or paged to disk (referred to as "`overflow to disk`").
 
-Spring Data for Pivotal GemFire supports all eviction policies (entry count, memory, and heap usage) for PARTITION regions,
+Spring Data for {data-store-name} supports all eviction policies (entry count, memory, and heap usage) for PARTITION regions,
 REPLICATE regions, and client, local regions by using the nested `eviction` element.
 
 For example, to configure a PARTITION Region to overflow to disk if the memory size exceeds more than 512 MB,
@@ -650,22 +650,22 @@ you can specify the following configuration:
 ----
 
 IMPORTANT: Replicas cannot use `local destroy` eviction since that would invalidate them.
-See the Pivotal GemFire docs for more information.
+See the {data-store-name} docs for more information.
 
 When configuring regions for overflow, you should configure the storage through the `disk-store` element
 for maximum efficiency.
 
-For a detailed description of eviction policies, see the Pivotal GemFire documentation on
-http://geode.apache.org/docs/guide/11/developing/eviction/chapter_overview.html[Eviction].
+For a detailed description of eviction policies, see the {data-store-name} documentation on
+{x-data-store-docs}/developing/eviction/chapter_overview.html[Eviction].
 
 [[bootstrap:region:expiration]]
 == Data Expiration
 
-Pivotal GemFire lets you control how long entries exist in the cache. Expiration is driven by elapsed time,
+{data-store-name} lets you control how long entries exist in the cache. Expiration is driven by elapsed time,
 as opposed to eviction, which is driven by the entry count or heap or memory usage. Once an entry expires,
 it may no longer be accessed from the cache.
 
-Pivotal GemFire supports the following Expiration types:
+{data-store-name} supports the following Expiration types:
 
 * *Time-to-Live (TTL)*: The amount of time in seconds that an object may remain in the cache after the last creation
 or update. For entries, the counter is set to zero for create and put operations. Region counters are reset when
@@ -675,7 +675,7 @@ The Idle Timeout counter for an object is reset any time its TTL counter is rese
 Idle Timeout counter is reset any time the entry is accessed through a get operation or a `netSearch`.
 The Idle Timeout counter for a Region is reset whenever the Idle Timeout is reset for one of its entries.
 
-Each of these may be applied to the region itself or to entries in the region. Spring Data for Pivotal GemFire provides `<region-ttl>`,
+Each of these may be applied to the region itself or to entries in the region. Spring Data for {data-store-name} provides `<region-ttl>`,
 `<region-tti>`, `<entry-ttl>`, and `<entry-tti>` region child elements to specify timeout values and expiration actions.
 
 The following example shows a partition region with expiration values set:
@@ -688,13 +688,13 @@ The following example shows a partition region with expiration values set:
 </gfe:replicated-region>
 ----
 
-For a detailed description of expiration policies, see the Pivotal GemFire documentation on
-http://geode.apache.org/docs/guide/11/developing/expiration/chapter_overview.html[expiration].
+For a detailed description of expiration policies, see the {data-store-name} documentation on
+{x-data-store-docs}/developing/expiration/chapter_overview.html[expiration].
 
 [[bootstrap:region:expiration:annotation]]
 === Annotation-based Data Expiration
 
-With Spring Data for Pivotal GemFire, you can define expiration policies and settings on individual
+With Spring Data for {data-store-name}, you can define expiration policies and settings on individual
 region entry values (or, to put it differently, directly on application domain objects). For instance, you can define Expiration
 settings on a Session-based application domain object as follows:
 
@@ -728,7 +728,7 @@ expiration types, such as TTL and TTI, are configured.
 [NOTE]
 ====
 All `@Expiration`-based annotations apply only to region entry values. Expiration for a region is not covered
-by Spring Data for Pivotal GemFire's expiration annotation support. However, Pivotal GemFire and Spring Data for Pivotal GemFire do let you
+by Spring Data for {data-store-name}'s expiration annotation support. However, {data-store-name} and Spring Data for {data-store-name} do let you
 set region expiration by using the SDG XML namespace, as follows:
 
 [source,xml]
@@ -740,16 +740,16 @@ set region expiration by using the SDG XML namespace, as follows:
 ----
 ====
 
-Spring Data for Pivotal GemFire's `@Expiration` annotation support is implemented with Pivotal GemFire's
-http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/CustomExpiry.html[`CustomExpiry`] interface.
-See Pivotal GemFire's documentation on http://geode.apache.org/docs/guide/11/developing/expiration/configuring_data_expiration.html[configuring data expiration]
+Spring Data for {data-store-name}'s `@Expiration` annotation support is implemented with {data-store-name}'s
+{x-data-store-javadoc}/org/apache/geode/cache/CustomExpiry.html[`CustomExpiry`] interface.
+See {data-store-name}'s documentation on {x-data-store-docs}/developing/expiration/configuring_data_expiration.html[configuring data expiration]
 for more details
 
-The Spring Data for Pivotal GemFire `AnnotationBasedExpiration` class (and `CustomExpiry` implementation) is responsible
+The Spring Data for {data-store-name} `AnnotationBasedExpiration` class (and `CustomExpiry` implementation) is responsible
 for processing the SDG `@Expiration` annotations and applying the expiration policy and settings appropriately
 for region entry expiration on request.
 
-To use Spring Data for Pivotal GemFire to configure specific Pivotal GemFire Regions to appropriately apply the Expiration policy
+To use Spring Data for {data-store-name} to configure specific {data-store-name} Regions to appropriately apply the Expiration policy
 and settings applied to your application domain objects annotated with `@Expiration`-based annotations, you must:
 
 . Define a bean in the Spring `ApplicationContext` of type `AnnotationBasedExpiration` by using the appropriate
@@ -774,11 +774,11 @@ along with the `<gfe:custom-entry-tti ref="ttiExpiration"/>` element to set TTI.
 ====
 
 . (optional) Annotate your application domain objects that are stored in the region with expiration policies
-and custom settings by using one of Spring Data for Pivotal GemFire's `@Expiration` annotations: `@Expiration`,
+and custom settings by using one of Spring Data for {data-store-name}'s `@Expiration` annotations: `@Expiration`,
 `@IdleTimeoutExpiration`, or `@TimeToLiveExpiration`
 
-. (optional) In cases where particular application domain objects have not been annotated with Spring Data for Pivotal GemFire's
-`@Expiration` annotations at all, but the Pivotal GemFire Region is configured to use SDG's custom `AnnotationBasedExpiration`
+. (optional) In cases where particular application domain objects have not been annotated with Spring Data for {data-store-name}'s
+`@Expiration` annotations at all, but the {data-store-name} Region is configured to use SDG's custom `AnnotationBasedExpiration`
 class to determine the Expiration policy and settings for objects stored in the Region, you can set
 "`default`" expiration attributes on the `AnnotationBasedExpiration` bean by doing the following:
 
@@ -799,11 +799,11 @@ class to determine the Expiration policy and settings for objects stored in the 
 </gfe:partitioned-region>
 ----
 
-You may have noticed that Spring Data for Pivotal GemFire's `@Expiration` annotations use a `String` as the attribute type rather
+You may have noticed that Spring Data for {data-store-name}'s `@Expiration` annotations use a `String` as the attribute type rather
 than, and perhaps more appropriately, being strongly typed -- for example, `int` for 'timeout' and SDG'S `ExpirationActionType`
 for 'action'. Why is that?
 
-Well, enter one of Spring Data for Pivotal GemFire's other features, leveraging Spring's core infrastructure
+Well, enter one of Spring Data for {data-store-name}'s other features, leveraging Spring's core infrastructure
 for configuration convenience: property placeholders and the Spring Expression Language (SpEL).
 
 For instance, a developer can specify both the expiration 'timeout' and 'action' by using Property Placeholders
@@ -867,18 +867,18 @@ instance of `java.util.Properties`. In the preceding example, the `properties` e
 the action value on the actual expiration action enumerated type, leading to more quickly identified failures
 if the types ever change.
 
-As an example, all of this has been demonstrated and tested in the Spring Data for Pivotal GemFire test suite. See the
+As an example, all of this has been demonstrated and tested in the Spring Data for {data-store-name} test suite. See the
 https://github.com/spring-projects/spring-data-geode[source] for further details.
 
 [[bootstrap:region:persistence]]
 == Data Persistence
 
-Regions can be persistent. Pivotal GemFire ensures that all the data you put into a region that is configured for persistence
+Regions can be persistent. {data-store-name} ensures that all the data you put into a region that is configured for persistence
 is written to disk in a way that is recoverable the next time you recreate the region. Doing so lets data
 be recovered after machine or process failure or even after an orderly shutdown and subsequent restart of
-the Pivotal GemFire data node.
+the {data-store-name} data node.
 
-To enable persistence with Spring Data for Pivotal GemFire, set the `persistent` attribute to `true` on
+To enable persistence with Spring Data for {data-store-name}, set the `persistent` attribute to `true` on
 any of the `<*-region>` elements, as the following example shows:
 
 [source,xml]
@@ -887,7 +887,7 @@ any of the `<*-region>` elements, as the following example shows:
 ----
 
 Persistence may also be configured by setting the `data-policy` attribute. To do so, set the attribute's value to one of
-http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/DataPolicy.html[Pivotal GemFire's DataPolicy settings], as the folloiwng example shows:
+{x-data-store-javadoc}/org/apache/geode/cache/DataPolicy.html[{data-store-name}'s DataPolicy settings], as the folloiwng example shows:
 
 [source,xml]
 ----
@@ -913,8 +913,8 @@ This is discussed further in <<bootstrap:diskstore>>.
 [[bootstrap:region:subscription]]
 == Subscription Policy
 
-Pivotal GemFire allows configuration of http://geode.apache.org/docs/guide/11/developing/events/configure_p2p_event_messaging.html[peer-to-peer (P2P) event messaging]
-to control the entry events that the region receives. Spring Data for Pivotal GemFire provides the `<gfe:subscription/>`
+{data-store-name} allows configuration of {x-data-store-docs}/developing/events/configure_p2p_event_messaging.html[peer-to-peer (P2P) event messaging]
+to control the entry events that the region receives. Spring Data for {data-store-name} provides the `<gfe:subscription/>`
 sub-element to set the subscription policy on `REPLICATE` and `PARTITION` regions to either `ALL` or `CACHE_CONTENT`. The following example shows a region with its subscription policy set to `CACHE_CONTENT`:
 
 [source,xml]
@@ -927,11 +927,11 @@ sub-element to set the subscription policy on `REPLICATE` and `PARTITION` region
 [[bootstrap:region:local]]
 == Local Region
 
-Spring Data for Pivotal GemFire offers a dedicated `local-region` element for creating local regions. Local regions, as the name
+Spring Data for {data-store-name} offers a dedicated `local-region` element for creating local regions. Local regions, as the name
 implies, are standalone, meaning that they do not share data with any other distributed system member. Other than that,
 all common region configuration options apply.
 
-The following example shows a minimal declaration (again, the example relies on the Spring Data for Pivotal GemFire namespace
+The following example shows a minimal declaration (again, the example relies on the Spring Data for {data-store-name} namespace
 naming conventions to wire the cache):
 
 [source,xml]
@@ -940,7 +940,7 @@ naming conventions to wire the cache):
 ----
 
 In the preceding example, a local region is created (if one does not already exist). The name of the region is the same as the bean ID
-(`exampleLocalRegion`), and the bean assumes the existence of a Pivotal GemFire cache named `gemfireCache`.
+(`exampleLocalRegion`), and the bean assumes the existence of a {data-store-name} cache named `gemfireCache`.
 
 [[bootstrap:region:replicate]]
 == Replicated Region
@@ -952,29 +952,29 @@ an initialization stage, in which it discovers other replicas and automatically 
 While one replica is initializing, you can still continue to use the other replicas.
 
 All common configuration options are available for REPLICATE Regions.
-Spring Data for Pivotal GemFire offers a `replicated-region` element. The following example shows a minimal declaration:
+Spring Data for {data-store-name} offers a `replicated-region` element. The following example shows a minimal declaration:
 
 [source,xml]
 ----
 <gfe:replicated-region id="exampleReplica"/>
 ----
 
-See Pivotal GemFire's documentation on
-http://geode.apache.org/docs/guide/11/developing/distributed_regions/chapter_overview.html[Distributed and Replicated Regions]
+See {data-store-name}'s documentation on
+{x-data-store-docs}/developing/distributed_regions/chapter_overview.html[Distributed and Replicated Regions]
 for more details.
 
 [[bootstrap:region:partition]]
 == Partitioned Region
 
-The Spring Data for Pivotal GemFire namespace also supports `PARTITION` regions.
+The Spring Data for {data-store-name} namespace also supports `PARTITION` regions.
 
-To quote the Pivotal GemFire docs:
+To quote the {data-store-name} docs:
 
 "`A partitioned region is a region where data is divided between peer servers hosting the region so that
 each peer stores a subset of the data. When using a partitioned region, applications are presented with
 a logical view of the region that looks like a single map containing all of the data in the region.
 Reads or writes to this map are transparently routed to the peer that hosts the entry that is the target of
-the operation. Pivotal GemFire divides the domain of hashcodes into buckets. Each bucket is assigned to a specific peer,
+the operation. {data-store-name} divides the domain of hashcodes into buckets. Each bucket is assigned to a specific peer,
 but may be relocated at any time to another peer in order to improve the utilization of resources across the cluster.`"
 
 A partition is created by using the `partitioned-region` element. Its configuration options are similar to that of
@@ -992,8 +992,8 @@ The following example shows how to set up a `PARTITION` region with two redundan
 </gfe:partitioned-region>
 ----
 
-See Pivotal GemFire's documentation on
-http://geode.apache.org/docs/guide/11/developing/partitioned_regions/chapter_overview.html[Partitioned Regions]
+See {data-store-name}'s documentation on
+{x-data-store-docs}/developing/partitioned_regions/chapter_overview.html[Partitioned Regions]
 for more details.
 
 [[bootstrap:region:partition:attributes]]
@@ -1049,12 +1049,12 @@ immediately when a new member is added.
 [[bootstrap:region:client]]
 == Client Region
 
-Pivotal GemFire supports various deployment topologies for managing and distributing data. The topic of Pivotal GemFire topologies is outside
-the scope of this documentation. However, to quickly recap, Pivotal GemFire's supported topologies can be classified as:
+{data-store-name} supports various deployment topologies for managing and distributing data. The topic of {data-store-name} topologies is outside
+the scope of this documentation. However, to quickly recap, {data-store-name}'s supported topologies can be classified as:
 peer-to-peer (p2p), client-server, and wide area network (WAN). In the last two configurations, it is common
 to declare client regions that connect to a cache server.
 
-Spring Data for Pivotal GemFire offers dedicated support for each configuration through its <<bootstrap:cache:client, client-cache>> elements:
+Spring Data for {data-store-name} offers dedicated support for each configuration through its <<bootstrap:cache:client, client-cache>> elements:
 `client-region` and `pool`. As the names imply, `client-region` defines a client region, while `pool` defines
 a pool of connections to be used and shared by the various client regions.
 
@@ -1089,14 +1089,14 @@ cache servers and peer data members in the distributed system and is recommended
 possible to configure the `Pool` to connect directly to one or more cache servers by using the `server` element.
 
 For a full list of options to set on the client and especially on the `Pool`, see
-the Spring Data for Pivotal GemFire schema ("`<<appendix-schema>>`") and Pivotal GemFire's documentation on
-http://geode.apache.org/docs/guide/11/topologies_and_comm/cs_configuration/chapter_overview.html[Client-Server Configuration].
+the Spring Data for {data-store-name} schema ("`<<appendix-schema>>`") and {data-store-name}'s documentation on
+{x-data-store-docs}/topologies_and_comm/cs_configuration/chapter_overview.html[Client-Server Configuration].
 
 [[bootstrap:region:client:interests]]
 === Client Interests
 
-To minimize network traffic, each client can separately define its own 'interests' policies, indicating to Pivotal GemFire
-the data it actually requires. In Spring Data for Pivotal GemFire, 'interests' can be defined for each client region separately.
+To minimize network traffic, each client can separately define its own 'interests' policies, indicating to {data-store-name}
+the data it actually requires. In Spring Data for {data-store-name}, 'interests' can be defined for each client region separately.
 Both key-based and regular expression-based interest types are supported.
 
 The following example shows both key-based and regular expression-based `interest` types:
@@ -1183,20 +1183,20 @@ as follows:
 
 A full, in-depth discussion of how client interests work and capabilities is beyond the scope of this document.
 
-See Pivotal GemFire's documentation on
-http://gemfire.docs.pivotal.io/geode/developing/events/how_client_server_distribution_works.html[Client-to-Server Event Distribution]
+See {data-store-name}'s documentation on
+{x-data-store-docs}/developing/events/how_client_server_distribution_works.html[Client-to-Server Event Distribution]
 for more details.
 
 [[bootstrap:region:json]]
 == JSON Support
 
-Pivotal GemFire has support for caching JSON documents in regions, along with the ability to query stored JSON documents
-using the Pivotal GemFire OQL (Object Query Language). JSON documents are stored internally as
-http://geode.apache.org/releases/latest/javadoc/org/apache/geode/pdx/PdxInstance.html[PdxInstance] types by
-using the http://geode.apache.org/releases/latest/javadoc/org/apache/geode/pdx/JSONFormatter.html[JSONFormatter] class
+{data-store-name} has support for caching JSON documents in regions, along with the ability to query stored JSON documents
+using the {data-store-name} OQL (Object Query Language). JSON documents are stored internally as
+{x-data-store-javadoc}/org/apache/geode/pdx/PdxInstance.html[PdxInstance] types by
+using the {x-data-store-javadoc}/org/apache/geode/pdx/JSONFormatter.html[JSONFormatter] class
 to perform conversion to and from JSON documents (as a `String`).
 
-Spring Data for Pivotal GemFire provides the `<gfe-data:json-region-autoproxy/>` element to enable an
+Spring Data for {data-store-name} provides the `<gfe-data:json-region-autoproxy/>` element to enable an
 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#aop-introduction[AOP]
 component to advise appropriate, proxied region operations, which effectively encapsulates the `JSONFormatter`,
 thereby letting your applications work directly with JSON Strings.
@@ -1213,7 +1213,7 @@ configured regions. This is done by creating a parallel data structure in local 
 significant overhead for large collections, so set the `convert-returned-collections` to `false`
 if you would like to disable automatic conversion for these region operations.
 
-NOTE: Certain Region operations (specifically those that use Pivotal GemFire's proprietary `Region.Entry`, such as:
+NOTE: Certain Region operations (specifically those that use {data-store-name}'s proprietary `Region.Entry`, such as:
 `entries(boolean)`, `entrySet(boolean)` and `getEntry()` type) are not targeted for AOP advice. In addition,
 the `entrySet()` method (which returns a `Set<java.util.Map.Entry<?, ?>>`) is also not affected.
 

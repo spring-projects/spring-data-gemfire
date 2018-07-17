@@ -1,17 +1,17 @@
 [[bootstrap:function]]
 = Configuring the Function Service
 
-Spring Data for Pivotal GemFire provides <<function-annotations,annotation>> support for implementing and registering
-Pivotal GemFire Functions.
+Spring Data for {data-store-name} provides <<function-annotations,annotation>> support for implementing and registering
+{data-store-name} Functions.
 
-Spring Data for Pivotal GemFire also provides namespace support for registering Pivotal GemFire
-http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/execute/Function.html[functions]
+Spring Data for {data-store-name} also provides namespace support for registering {data-store-name}
+{x-data-store-javadoc}/org/apache/geode/cache/execute/Function.html[functions]
 for remote function execution.
 
-See Pivotal GemFire's http://geode.apache.org/docs/guide/11/developing/function_exec/chapter_overview.html[documentation]
+See {data-store-name}'s {x-data-store-docs}/developing/function_exec/chapter_overview.html[documentation]
 for more information on the function execution framework.
 
-Pivotal GemFire Functions are declared as Spring beans and must implement the `org.apache.geode.cache.execute.Function`
+{data-store-name} Functions are declared as Spring beans and must implement the `org.apache.geode.cache.execute.Function`
 interface or extend `org.apache.geode.cache.execute.FunctionAdapter`.
 
 The namespace uses a familiar pattern to declare functions, as the following example shows:
