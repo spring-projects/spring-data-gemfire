@@ -1,7 +1,7 @@
 [[bootstrap:diskstore]]
 = Configuring a DiskStore
 
-Spring Data for Pivotal GemFire supports `DiskStore` configuration and creation through the `disk-store` element, as the following example shows:
+Spring Data for {data-store-name} supports `DiskStore` configuration and creation through the `disk-store` element, as the following example shows:
 
 [source,xml]
 ----
@@ -13,9 +13,9 @@ Spring Data for Pivotal GemFire supports `DiskStore` configuration and creation 
 ----
 
 `DiskStore` instances are used by regions for file system persistent backup and overflow of evicted entries
-as well as persistent backup for WAN Gateways. Multiple Pivotal GemFire components may share the same `DiskStore`.
+as well as persistent backup for WAN Gateways. Multiple {data-store-name} components may share the same `DiskStore`.
 Additionally, multiple file system directories may be defined for a single `DiskStore`, as shown in the preceding example.
 
-See Pivotal GemFire's documentation for a complete explanation of
-http://gemfire.docs.pivotal.io/95/geode/developing/storing_data_on_disk/chapter_overview.html[Persistence and Overflow]
+See {data-store-name}'s documentation for a complete explanation of
+{x-data-store-docs}/developing/storing_data_on_disk/chapter_overview.html[Persistence and Overflow]
 and configuration options on `DiskStore` instances.

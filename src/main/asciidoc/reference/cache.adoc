@@ -1,8 +1,8 @@
 [[bootstrap:cache]]
 = Configuring a Cache
 
-To use Pivotal GemFire, you need to either create a new `Cache` or connect to an existing one.
-With the current version of Pivotal GemFire, you can have only one open Cache per VM (more strictly, per `ClassLoader`).
+To use {data-store-name}, you need to either create a new `Cache` or connect to an existing one.
+With the current version of {data-store-name}, you can have only one open Cache per VM (more strictly, per `ClassLoader`).
 In most cases, the `Cache` should only be created once.
 
 NOTE: This section describes the creation and configuration of a peer cache member, appropriate in
@@ -19,11 +19,11 @@ A peer cache with default configuration can be created with the following simple
 ----
 
 During Spring container initialization, any application context containing this cache definition registers
-a `CacheFactoryBean` that creates a Spring bean named `gemfireCache`, which references a Pivotal GemFire `Cache` instance.
+a `CacheFactoryBean` that creates a Spring bean named `gemfireCache`, which references a {data-store-name} `Cache` instance.
 This bean refers to either an existing cache or, if one does not already exist, a newly created one.  Since no
 additional properties were specified, a newly created cache applies the default cache configuration.
 
-All Spring Data for Pivotal GemFire components that depend on the cache respect this naming convention, so you need not
+All Spring Data for {data-store-name} components that depend on the cache respect this naming convention, so you need not
 explicitly declare the cache dependency. If you prefer, you can make the dependency explicit by using the `cache-ref`
 attribute provided by various SDG XML namespace elements.  Also, you can override the cache's bean name using
 the `id` attribute, as follows:
@@ -33,9 +33,9 @@ the `id` attribute, as follows:
 <gfe:cache id="myCache"/>
 ----
 
-A Pivotal GemFire `Cache` can be fully configured using Spring. However, Pivotal GemFire's native XML configuration file, `cache.xml`,
-is also supported.  For situations where the Pivotal GemFire cache needs to be configured natively, you can provide a reference
-to the Pivotal GemFire XML configuration file by using the `cache-xml-location` attribute, as follows:
+A {data-store-name} `Cache` can be fully configured using Spring. However, {data-store-name}'s native XML configuration file, `cache.xml`,
+is also supported.  For situations where the {data-store-name} cache needs to be configured natively, you can provide a reference
+to the {data-store-name} XML configuration file by using the `cache-xml-location` attribute, as follows:
 
 [source,xml]
 ----
@@ -49,8 +49,8 @@ NOTE: The configuration makes use of Spring's http://docs.spring.io/spring/docs/
 abstraction to locate the file. The `Resource` abstraction lets various search patterns be used, depending on the runtime environment
 or the prefix specified (if any) in the resource location.
 
-In addition to referencing an external XML configuration file, you can also specify Pivotal GemFire System
-http://geode.apache.org/docs/guide/11/reference/topics/gemfire_properties.html[properties]
+In addition to referencing an external XML configuration file, you can also specify {data-store-name} System
+{x-data-store-docs}/reference/topics/gemfire_properties.html[properties]
 that use any of Spring's `Properties` support features.
 
 For example, you can use the `properties` element defined in the `util` namespace to define `Properties`
@@ -127,44 +127,44 @@ or child elements, as the following listing shows:
 ----
 
 <1> Attributes support various cache options. For further information regarding anything shown in this example,
-see the Pivotal GemFire http://docs.pivotal.io/gemfire[product documentation].
+see the {data-store-name} http://docs.pivotal.io/gemfire[product documentation].
 The `close` attribute determines whether the cache should be closed when the Spring application context is closed.
 The default is `true`. However, for use cases in which multiple application contexts use the cache
 (common in web applications), set this value to `false`.
-<2> Setting the `enable-auto-reconnect` attribute to `true` (the default is `false`) lets a disconnected Pivotal GemFire member
-automatically reconnect and rejoin the Pivotal GemFire cluster.
-See the Pivotal GemFire http://geode.apache.org/docs/guide/11/managing/autoreconnect/member-reconnect.html[product documentation]
+<2> Setting the `enable-auto-reconnect` attribute to `true` (the default is `false`) lets a disconnected {data-store-name} member
+automatically reconnect and rejoin the {data-store-name} cluster.
+See the {data-store-name} {x-data-store-docs}/managing/autoreconnect/member-reconnect.html[product documentation]
 for more details.
 <3> Setting the `use-bean-factory-locator` attribute to `true` (it defaults to `false`) applies only when both
-Spring (XML) configuration metadata and Pivotal GemFire `cache.xml` is used to configure the Pivotal GemFire cache node
-(whether client or peer). This option lets Pivotal GemFire components (such as `CacheLoader`) expressed in `cache.xml`
+Spring (XML) configuration metadata and {data-store-name} `cache.xml` is used to configure the {data-store-name} cache node
+(whether client or peer). This option lets {data-store-name} components (such as `CacheLoader`) expressed in `cache.xml`
 be auto-wired with beans (such as `DataSource`) defined in the Spring application context. This option is typically
 used in conjunction with `cache-xml-location`.
-<4> Setting the `use-cluster-configuration` attribute to `true` (the default is `false`) enables a Pivotal GemFire member to
+<4> Setting the `use-cluster-configuration` attribute to `true` (the default is `false`) enables a {data-store-name} member to
 retrieve the common, shared Cluster-based configuration from a Locator.
-See the Pivotal GemFire http://geode.apache.org/docs/guide/11/configuring/cluster_config/gfsh_persist.html[product documentation]
+See the {data-store-name} {x-data-store-docs}/configuring/cluster_config/gfsh_persist.html[product documentation]
 for more details.
 <5> Example of a `TransactionListener` callback declaration that uses a bean reference. The referenced bean must implement
-http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/TransactionListener.html[TransactionListener].
+{x-data-store-javadoc}/org/apache/geode/cache/TransactionListener.html[TransactionListener].
 A `TransactionListener` can be implemented to handle transaction related events (such as afterCommit and afterRollback).
 <6> Example of a `TransactionWriter` callback declaration using an inner bean declaration. The bean must implement
-http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/TransactionWriter.html[TransactionWriter].
+{x-data-store-javadoc}/org/apache/geode/cache/TransactionWriter.html[TransactionWriter].
 The `TransactionWriter` is a callback that can veto a transaction.
 <7> Example of a `GatewayConflictResolver` callback declaration using a bean reference. The referenced bean
-must implement http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/util/GatewayConflictResolver.html
+must implement {x-data-store-javadoc}/org/apache/geode/cache/util/GatewayConflictResolver.html
 [GatewayConflictResolver].
 A `GatewayConflictResolver` is a cache-level plugin that is called upon to decide what to do with events that originate
 in other systems and arrive through the WAN Gateway.
-<8> Enables Pivotal GemFire's http://geode.apache.org/docs/guide/11/developing/region_options/dynamic_region_creation.html[DynamicRegionFactory],
+<8> Enables {data-store-name}'s {x-data-store-docs}/developing/region_options/dynamic_region_creation.html[DynamicRegionFactory],
 which provides a distributed Region creation service.
-<9> Declares a JNDI binding to enlist an external DataSource in a Pivotal GemFire transaction.
+<9> Declares a JNDI binding to enlist an external DataSource in a {data-store-name} transaction.
 
 [[bootstrap:cache:pdx-serialization]]
 === Enabling PDX Serialization
 
-The preceding example includes a number of attributes related to Pivotal GemFire's enhanced serialization framework, PDX.
+The preceding example includes a number of attributes related to {data-store-name}'s enhanced serialization framework, PDX.
 While a complete discussion of PDX is beyond the scope of this reference guide, it is important to note that PDX
-is enabled by registering a `PdxSerializer`, which is specified by setting the `pdx-serializer` attribute. Pivotal GemFire provides
+is enabled by registering a `PdxSerializer`, which is specified by setting the `pdx-serializer` attribute. {data-store-name} provides
 an implementing class (`org.apache.geode.pdx.ReflectionBasedAutoSerializer`) that uses Java Reflection. However, it is
 common for developers to provide their own implementation. The value of the attribute is simply a reference to
 a Spring bean that implements the `PdxSerializer` interface.
@@ -176,17 +176,17 @@ More information on serialization support can be found in <<serialization>>
 
 You should be careful when setting the `<gfe:cache enable-auto-reconnect="[true|false*]>` attribute to `true`.
 
-Generally, 'auto-reconnect' should only be enabled in cases where Spring Data for Pivotal GemFire's XML namespace is used to
-configure and bootstrap a new, non-application Pivotal GemFire Server to add to a cluster.  In other words, 'auto-reconnect'
-should not be enabled when Spring Data for Pivotal GemFire is used to develop and build a Pivotal GemFire application that also happens
-to be a peer cache member of the Pivotal GemFire cluster.
+Generally, 'auto-reconnect' should only be enabled in cases where Spring Data for {data-store-name}'s XML namespace is used to
+configure and bootstrap a new, non-application {data-store-name} Server to add to a cluster.  In other words, 'auto-reconnect'
+should not be enabled when Spring Data for {data-store-name} is used to develop and build a {data-store-name} application that also happens
+to be a peer cache member of the {data-store-name} cluster.
 
-The main reason for this restriction is that most Pivotal GemFire applications use references to the Pivotal GemFire cache or Regions in order to
+The main reason for this restriction is that most {data-store-name} applications use references to the {data-store-name} cache or Regions in order to
 perform data access operations.  These references are "`injected`" by the Spring container into application components
 (such as DAOs or Repositories) for use by the application. When a peer member is forcefully disconnected from the rest
 of the cluster, presumably because the peer member has become unresponsive or a network partition separates one or more
 peer members into a group too small to function as an independent distributed system, the peer member shuts down
-and all Pivotal GemFire component references (caches, regions, and others) become invalid.
+and all {data-store-name} component references (caches, regions, and others) become invalid.
 
 Essentially, the current forced-disconnect processing logic in each peer member dismantles the system from the ground up.
 The JGroups stack shuts down, the distributed system is put in a shutdown state and, finally, the cache is closed.
@@ -195,36 +195,36 @@ Effectively, all memory references become stale and are lost.
 After being disconnected from the distributed system, a peer member enters a "`reconnecting`" state and periodically
 attempts to rejoin the distributed system. If the peer member succeeds in reconnecting, the member rebuilds
 its "`view`" of the distributed system from existing members and receives a new distributed system ID.  Additionally, all
-caches, regions, and other Pivotal GemFire components are reconstructed. Therefore, all old references, which may have been
+caches, regions, and other {data-store-name} components are reconstructed. Therefore, all old references, which may have been
 injected into application by the Spring container, are now stale and no longer valid.
 
-Pivotal GemFire makes no guarantee (even when using the Pivotal GemFire public Java API) that application cache, region, or other
-component references are automatically refreshed by the reconnect operation. As such, Pivotal GemFire applications
+{data-store-name} makes no guarantee (even when using the {data-store-name} public Java API) that application cache, region, or other
+component references are automatically refreshed by the reconnect operation. As such, {data-store-name} applications
 must take care to refresh their own references.
 
 Unfortunately, there is no way to be notified of a disconnect event and, subsequently, a reconnect event.
 If that were the case, you would have a clean way to know when to call
 `ConfigurableApplicationContext.refresh()`, if it were even applicable for an application to do so, which is why
-this "`feature`" of Pivotal GemFire is not recommended for peer cache Pivotal GemFire applications.
+this "`feature`" of {data-store-name} is not recommended for peer cache {data-store-name} applications.
 
-For more information about 'auto-reconnect', see Pivotal GemFire's
-http://geode.apache.org/docs/guide/11/managing/autoreconnect/member-reconnect.html[product documentation].
+For more information about 'auto-reconnect', see {data-store-name}'s
+{x-data-store-docs}/managing/autoreconnect/member-reconnect.html[product documentation].
 
 [[bootstrap:cache:cluster-configuration]]
 === Using Cluster-based Configuration
 
-Pivotal GemFire's Cluster Configuration Service is a convenient way for any peer member joining the cluster to get
+{data-store-name}'s Cluster Configuration Service is a convenient way for any peer member joining the cluster to get
 a "`consistent view`" of the cluster by using the shared, persistent configuration maintained by a locator.
 Using the cluster-based Configuration ensures the peer member's configuration is compatible with
-the Pivotal GemFire Distributed System when the member joins.
+the {data-store-name} Distributed System when the member joins.
 
-This feature of Spring Data for Pivotal GemFire (setting the `use-cluster-configuration` attribute to `true`) works in the same way
-as the `cache-xml-location` attribute, except the source of the Pivotal GemFire configuration meta-data comes from the network
+This feature of Spring Data for {data-store-name} (setting the `use-cluster-configuration` attribute to `true`) works in the same way
+as the `cache-xml-location` attribute, except the source of the {data-store-name} configuration meta-data comes from the network
 through a locator, as opposed to a native `cache.xml` file residing in the local file system.
 
-All Pivotal GemFire native configuration metadata, whether from `cache.xml` or from the Cluster Configuration Service,
+All {data-store-name} native configuration metadata, whether from `cache.xml` or from the Cluster Configuration Service,
 gets applied before any Spring (XML) configuration metadata.  As a result, Spring's config serves to "`augment`" the
-native Pivotal GemFire configuration metadata and would most likely be specific to the application.
+native {data-store-name} configuration metadata and would most likely be specific to the application.
 
 Again, to enable this feature, specify the following in the Spring XML config:
 
@@ -233,18 +233,18 @@ Again, to enable this feature, specify the following in the Spring XML config:
   <gfe:cache use-cluster-configuration="true"/>
 ----
 
-NOTE: While certain Pivotal GemFire tools, such as `Gfsh`, have their actions "`recorded`" when schema-like changes are made
-(for example, `gfsh>create region --name=Example --type=PARTITION`), Spring Data for Pivotal GemFire's configuration metadata
-is not recorded. The same is true when using Pivotal GemFire's public Java API directly. It, too, is not recorded.
+NOTE: While certain {data-store-name} tools, such as `Gfsh`, have their actions "`recorded`" when schema-like changes are made
+(for example, `gfsh>create region --name=Example --type=PARTITION`), Spring Data for {data-store-name}'s configuration metadata
+is not recorded. The same is true when using {data-store-name}'s public Java API directly. It, too, is not recorded.
 
-For more information on Pivotal GemFire's Cluster Configuration Service, see the
-http://geode.apache.org/docs/guide/11/configuring/cluster_config/gfsh_persist.html[product documentation].
+For more information on {data-store-name}'s Cluster Configuration Service, see the
+{x-data-store-docs}/configuring/cluster_config/gfsh_persist.html[product documentation].
 
 [[bootstrap:cache:server]]
-== Configuring a Pivotal GemFire CacheServer
+== Configuring a {data-store-name} CacheServer
 
-Spring Data for Pivotal GemFire includes dedicated support for configuring a
-http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/server/CacheServer.html[CacheServer],
+Spring Data for {data-store-name} includes dedicated support for configuring a
+{x-data-store-javadoc}/org/apache/geode/cache/server/CacheServer.html[CacheServer],
 allowing complete configuration through the Spring container, as the following example shows:
 
 [source,xml]
@@ -262,7 +262,7 @@ allowing complete configuration through the Spring container, as the following e
 
   <gfe:cache/>
 
-  <!-- Example depicting serveral Pivotal GemFire CacheServer configuration options -->
+  <!-- Example depicting serveral {data-store-name} CacheServer configuration options -->
   <gfe:cache-server id="advanced-config" auto-startup="true"
        bind-address="localhost" host-name-for-clients="localhost" port="${gemfire.cache.server.port}"
        load-poll-interval="2000" max-connections="22" max-message-count="1000" max-threads="16"
@@ -290,21 +290,21 @@ and an http://docs.spring.io/spring/docs/current/spring-framework-reference/html
 to support externalization of environment-specific properties from the main codebase, easing deployment
 across multiple machines.
 
-NOTE: To avoid initialization problems, the `CacheServer` started by Spring Data for Pivotal GemFire starts *after*
+NOTE: To avoid initialization problems, the `CacheServer` started by Spring Data for {data-store-name} starts *after*
 the Spring container has been fully initialized. Doing so lets potential regions, listeners, writers or instantiators that are
 defined declaratively be fully initialized and registered before the server starts accepting connections.
 Keep this in mind when programmatically configuring these elements, as the server might start after your components
 and thus not be seen by the clients connecting right away.
 
 [[bootstrap:cache:client]]
-== Configuring a Pivotal GemFire ClientCache
+== Configuring a {data-store-name} ClientCache
 
-In addition to defining a Pivotal GemFire peer http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/Cache.html[cache],
-Spring Data for Pivotal GemFire also supports the definition of a Pivotal GemFire http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/client/ClientCache.html[`ClientCache`]
+In addition to defining a {data-store-name} peer {x-data-store-javadoc}/org/apache/geode/cache/Cache.html[cache],
+Spring Data for {data-store-name} also supports the definition of a {data-store-name} {x-data-store-javadoc}/org/apache/geode/cache/client/ClientCache.html[`ClientCache`]
 in a Spring context.  A `ClientCache` definition is similar in configuration and use to
-the Pivotal GemFire peer <<bootstrap:cache,cache>> and is supported by the `org.springframework.data.gemfire.client.ClientCacheFactoryBean`.
+the {data-store-name} peer <<bootstrap:cache,cache>> and is supported by the `org.springframework.data.gemfire.client.ClientCacheFactoryBean`.
 
-The simplest definition of a Pivotal GemFire cache client using default configuration follows:
+The simplest definition of a {data-store-name} cache client using default configuration follows:
 
 [source,xml]
 ----
@@ -336,14 +336,14 @@ to the cache definition, as the following example shows:
 ----
 
 The `<client-cache>` element also has a `ready-for-events` attribute. If the attribute is set to `true`, the client cache
-initialization includes a call to http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/client/ClientCache.html#readyForEvents[`ClientCache.readyForEvents()`].
+initialization includes a call to {x-data-store-javadoc}/org/apache/geode/cache/client/ClientCache.html#readyForEvents[`ClientCache.readyForEvents()`].
 
 <<bootstrap:region:client>> covers client-side configuration in more detail.
 
 [[bootstrap:cache:client:pool]]
-=== Pivotal GemFire's DEFAULT Pool and Spring Data for Pivotal GemFire Pool Definitions
+=== {data-store-name}'s DEFAULT Pool and Spring Data for {data-store-name} Pool Definitions
 
-If a Pivotal GemFire `ClientCache` is local-only, then no Pool definition is required. For instance, you can define the following:
+If a {data-store-name} `ClientCache` is local-only, then no Pool definition is required. For instance, you can define the following:
 
 [source,xml]
 ----
@@ -353,14 +353,14 @@ If a Pivotal GemFire `ClientCache` is local-only, then no Pool definition is req
 ----
 
 In this case, the `Example` Region is `LOCAL` and no data is distributed between the client and a server. Therefore,
-no pool is necessary. This is true for any client-side, local-only region, as defined by the Pivotal GemFire's
-http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/client/ClientRegionShortcut.html[`ClientRegionShortcut`]
+no pool is necessary. This is true for any client-side, local-only region, as defined by the {data-store-name}'s
+{x-data-store-javadoc}/org/apache/geode/cache/client/ClientRegionShortcut.html[`ClientRegionShortcut`]
 (all `LOCAL_*` shortcuts).
 
 However, if a client Region is a (caching) proxy to a server-side Region, a pool is required. In that case, there are several
 ways to define and use a Pool.
 
-When a client cache, a pool, and a proxy-based region are all defined but not explicitly identified, Spring Data for Pivotal GemFire
+When a client cache, a pool, and a proxy-based region are all defined but not explicitly identified, Spring Data for {data-store-name}
 resolves the references automatically, as the following example shows:
 
 [source,xml]
@@ -375,10 +375,10 @@ resolves the references automatically, as the following example shows:
 ----
 
 In the preceding example, the client cache is identified as `gemfireCache`, the Pool as `gemfirePool`, and the client region
-as `Example`.  However, the client cache initializes Pivotal GemFire's `DEFAULT` pool from `gemfirePool`, and the client Region
+as `Example`.  However, the client cache initializes {data-store-name}'s `DEFAULT` pool from `gemfirePool`, and the client Region
 uses the `gemfirePool` when distributing data between the client and the server.
 
-Basically, Spring Data for Pivotal GemFire resolves the preceding configuration to the following:
+Basically, Spring Data for {data-store-name} resolves the preceding configuration to the following:
 
 [source,xml]
 ----
@@ -391,7 +391,7 @@ Basically, Spring Data for Pivotal GemFire resolves the preceding configuration 
 <gfe:client-region id="Example" cache-ref="gemfireCache" pool-name="gemfirePool" shortcut="PROXY"/>
 ----
 
-Pivotal GemFire still creates a pool called `DEFAULT`. Spring Data for Pivotal GemFire causes the `DEFAULT` pool to be
+{data-store-name} still creates a pool called `DEFAULT`. Spring Data for {data-store-name} causes the `DEFAULT` pool to be
 initialized from the `gemfirePool`. Doing so is useful in situations where multiple pools are defined and client regions
 are using separate Pools.
 
@@ -416,12 +416,12 @@ Consider the following:
 <gfe:client-region id="YetAnotherExample" shortcut="LOCAL"/>
 ----
 
-In this setup, the Pivotal GemFire client cache's `DEFAULT` pool is initialized from `locatorPool`, as specified by the
-`pool-name` attribute. There is no Spring Data for Pivotal GemFire-defined `gemfirePool`, since both pools were explicitly
+In this setup, the {data-store-name} client cache's `DEFAULT` pool is initialized from `locatorPool`, as specified by the
+`pool-name` attribute. There is no Spring Data for {data-store-name}-defined `gemfirePool`, since both pools were explicitly
 identified (named) -- `locatorPool` and `serverPool`, respectively.
 
 The `Example` region explicitly refers to and exclusively uses the `serverPool`. The `AnotherExample` region uses
-Pivotal GemFire's `DEFAULT` pool, which was configured from the `locatorPool` based on the client cache bean definition's
+{data-store-name}'s `DEFAULT` pool, which was configured from the `locatorPool` based on the client cache bean definition's
 `pool-name` attribute.
 
 Finally, the `YetAnotherExample` egion does not use a Pool, because it is `LOCAL`.

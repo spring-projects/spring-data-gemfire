@@ -1,6 +1,6 @@
 [[appendix-schema]]
 [appendix]
-= Spring Data for Pivotal GemFire Schema
+= Spring Data for {data-store-name} Schema
 
-* http://www.springframework.org/schema/gemfire/spring-gemfire.xsd[Spring Data for Pivotal GemFire Core Schema (`gfe` namespace)]
-* http://www.springframework.org/schema/gemfire/spring-data-gemfire.xsd[Spring Data for Pivotal GemFire Data Access Schema (`gfe-data` namespace)]
+* http://www.springframework.org/schema/gemfire/spring-gemfire.xsd[Spring Data for {data-store-name} Core Schema (`gfe` namespace)]
+* http://www.springframework.org/schema/gemfire/spring-data-gemfire.xsd[Spring Data for {data-store-name} Data Access Schema (`gfe-data` namespace)]

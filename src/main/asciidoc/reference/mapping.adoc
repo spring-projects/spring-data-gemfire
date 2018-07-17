@@ -10,10 +10,10 @@ This section covers:
 [[mapping.entities]]
 == Entity Mapping
 
-Spring Data for Pivotal GemFire provides support to map entities that are stored in a region in the Geode In-Memory Data Grid.
+Spring Data for {data-store-name} provides support to map entities that are stored in a region in the Geode In-Memory Data Grid.
 The mapping metadata is defined by using annotations on application domain classes, as the following example shows:
 
-.Mapping a domain class to a Pivotal GemFire Region
+.Mapping a domain class to a {data-store-name} Region
 ====
 [source,java]
 ----
@@ -57,17 +57,17 @@ public class Guest extends User {
 }
 ----
 
-Be sure to use the full path of the Pivotal GemFire region, as defined with the Spring Data for Pivotal GemFire XML namespace by
+Be sure to use the full path of the {data-store-name} region, as defined with the Spring Data for {data-store-name} XML namespace by
 using the `id` or `name` attributes of the `<*-region>` element.
 
 [[mapping.entities.region]]
 === Entity Mapping by Region Type
 
-In addition to the `@Region` annotation, Spring Data for Pivotal GemFire also recognizes the region type-specific
+In addition to the `@Region` annotation, Spring Data for {data-store-name} also recognizes the region type-specific
 mapping annotations: `@ClientRegion`, `@LocalRegion`, `@PartitionRegion`, and `@ReplicateRegion`.
 
 Functionally, these annotations are treated exactly the same as the generic `@Region` annotation in the SDG
-mapping infrastructure. However, these additional mapping annotations are useful in Spring Data for Pivotal GemFire's
+mapping infrastructure. However, these additional mapping annotations are useful in Spring Data for {data-store-name}'s
 annotation configuration model. When combined with the `@EnableEntityDefinedRegions` configuration annotation
 on a Spring `@Configuration` annotated class, it is possible to generate regions in the local cache, whether
 the application is a client or peer.
@@ -86,7 +86,7 @@ As an alternative to specifying the region in which the entity is stored by usin
 on the entity class, you can also specify the `@Region` annotation on the entity's `Repository`.
 See <<gemfire-repositories>> for more details.
 
-However, suppose you want to store a `Person` record in multiple Pivotal GemFire Regions (for example, `People` and `Customers`).
+However, suppose you want to store a `Person` record in multiple {data-store-name} Regions (for example, `People` and `Customers`).
 Then you can define your corresponding `Repository` interface extensions as follows:
 
 [source,java]
@@ -102,7 +102,7 @@ public interface CustomerRepository extends GemfireRepository<Person, String> {
 }
 ----
 
-Then, using each Repository individually, you can store the entity in multiple Pivotal GemFire Regions, as the following example shows:
+Then, using each Repository individually, you can store the entity in multiple {data-store-name} Regions, as the following example shows:
 
 [source,java]
 ----
@@ -126,8 +126,8 @@ either as a local cache transaction or a global transaction.
 [[mapping.pdx-serializer]]
 == Mapping PDX Serializer
 
-Spring Data for Pivotal GemFire provides a custom
-http://gemfire-95-javadocs.docs.pivotal.io/org/apache/geode/pdx/PdxSerializer.html[`PdxSerializer`] implementation
+Spring Data for {data-store-name} provides a custom
+{x-data-store-javadoc}/org/apache/geode/pdx/PdxSerializer.html[`PdxSerializer`] implementation
 that uses the mapping information to customize entity serialization.
 
 It also lets you customize entity instantiation by using the Spring Data `EntityInstantiator` abstraction.
@@ -137,7 +137,7 @@ explicitly annotated with `@PersistenceConstructor`).
 
 To provide arguments for constructor parameters, the serializer reads fields with the named constructor parameter,
 explicitly specified using Spring's `@Value` annotation, from the supplied
-http://gemfire-95-javadocs.docs.pivotal.io/org/apache/geode/pdx/PdxReader.html[`PdxReader`], as shown in the following example:
+{x-data-store-javadoc}/org/apache/geode/pdx/PdxReader.html[`PdxReader`], as shown in the following example:
 
 .Using `@Value` on entity constructor parameters
 ====
@@ -156,10 +156,10 @@ An entity class annotated in this way has the `thing` field read from the `PdxRe
 for the constructor parameter, `firstname`. The value for `lastName` is a Spring bean with the name `bean`.
 
 In addition to the custom instantiation logic and strategy provided by `EntityInstantiators`,
-the `MappingPdxSerializer` also provides capabilities beyond Pivotal GemFire's own
-http://gemfire-95-javadocs.docs.pivotal.io/org/apache/geode/pdx/ReflectionBasedAutoSerializer.html[`ReflectionBasedAutoSerializer`].
+the `MappingPdxSerializer` also provides capabilities beyond {data-store-name}'s own
+{x-data-store-javadoc}/org/apache/geode/pdx/ReflectionBasedAutoSerializer.html[`ReflectionBasedAutoSerializer`].
 
-While Pivotal GemFire's `ReflectionBasedAutoSerializer` conveniently uses Java reflection to populate entities and
+While {data-store-name}'s `ReflectionBasedAutoSerializer` conveniently uses Java reflection to populate entities and
 uses regular expressions to identify types that should be handled (serialized and deserialized) by the `ReflectionBasedAutoSerializer`,
 it cannot, unlike `MappingPdxSerializer`, perform the following:
 
@@ -240,10 +240,10 @@ tried to be as explicit as possible about the semantics of registration.
 [[mapping.pdx-serializer.id-properties]]
 === Mapping ID Properties
 
-Like Pivotal GemFire's `ReflectionBasedAutoSerializer`, SDG's `MappingPdxSerializer` is also able to determine
+Like {data-store-name}'s `ReflectionBasedAutoSerializer`, SDG's `MappingPdxSerializer` is also able to determine
 the identifier of the entity. However, `MappingPdxSerializer` does so by using Spring Data's mapping metadata,
 specifically by finding the entity property designated as the identifier by using Spring Data's
-https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/annotation/Id.html[`@Id`] annotation.
+{spring-data-commons-javadoc}/org/springframework/data/annotation/Id.html[`@Id`] annotation.
 
 For example:
 
@@ -259,7 +259,7 @@ class Customer {
 ----
 
 In this case, the `Customer` `id` field is marked as the identifier field in the PDX type metadata by using
-http://gemfire-95-javadocs.docs.pivotal.io/org/apache/geode/pdx/PdxWriter.html#markIdentityField-java.lang.String-[`PdxWriter.markIdentifierField(:String)`]
+{x-data-store-javadoc}/org/apache/geode/pdx/PdxWriter.html#markIdentityField-java.lang.String-[`PdxWriter.markIdentifierField(:String)`]
 when the `PdxSerializer.toData(..)` method is called during serialization.
 
 [[mapping.pdx-serializer.read-only-properties]]
@@ -304,12 +304,12 @@ If you want the field or property to always be written, you can define a setter.
 Likewise, what happens when your entity defines `transient` properties?
 
 You would expect the `transient` fields or properties of your entity not to be serialized to the stream of PDX bytes
-when serializing entity. That is exactly what happens, unlike Pivotal GemFire's own
+when serializing entity. That is exactly what happens, unlike {data-store-name}'s own
 `ReflectionBasedAutoSerializer`, which serializes everything accessible from the object through Java reflection.
 
 The `MappingPdxSerializer` does not serialize any fields or properties that are qualified as being transient either by using
 Java's `transient` keyword (in the case of fields) or by using the
-https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/annotation/Transient.html[`@Transient`]
+{spring-data-commons-javadoc}/org/springframework/data/annotation/Transient.html[`@Transient`]
 Spring Data annotation on either fields or properties.
 
 For example, you might define an entity with transient fields and properties as follows:
@@ -342,10 +342,10 @@ Neither the `Process` `id` field nor the readable `hostname` property are writte
 [[mapping.pdx-serializer.type-filtering]]
 === Filtering by Class types
 
-Similar to Pivotal GemFire's `ReflectionBasedAutoSerializer`, SDG's `MappingPdxSerializer` lets you filter
+Similar to {data-store-name}'s `ReflectionBasedAutoSerializer`, SDG's `MappingPdxSerializer` lets you filter
 the types of objects that the `MappingPdxSerializer` serializes and deserializes.
 
-However, unlike Pivotal GemFire's `ReflectionBasedAutoSerializer`, which uses complex regular expressions to express
+However, unlike {data-store-name}'s `ReflectionBasedAutoSerializer`, which uses complex regular expressions to express
 which types the serializer handles, SDG's `MappingPdxSerializer` uses the much more robust
 https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html[`java.util.function.Predicate`] interface
 and API to express type-matching criteria.

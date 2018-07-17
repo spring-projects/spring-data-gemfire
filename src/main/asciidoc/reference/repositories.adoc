@@ -1,17 +1,17 @@
 [[gemfire-repositories]]
-= Spring Data for Pivotal GemFire Repositories
+= Spring Data for {data-store-name} Repositories
 
-Spring Data for Pivotal GemFire provides support for using the Spring Data Repository abstraction to easily persist entities
-into Pivotal GemFire along with execute queries. A general introduction to the repository programming model is provided
+Spring Data for {data-store-name} provides support for using the Spring Data Repository abstraction to easily persist entities
+into {data-store-name} along with execute queries. A general introduction to the repository programming model is provided
 http://docs.spring.io/spring-data/data-commons/docs/current/reference/html/#repositories[here].
 
 [[gemfire-repositories.spring-configuration-xml]]
 == Spring XML Configuration
 
-To bootstrap Spring Data Repositories, use the `<repositories/>` element from the Spring Data for Pivotal GemFire
+To bootstrap Spring Data Repositories, use the `<repositories/>` element from the Spring Data for {data-store-name}
 Data namespace, as the following example shows:
 
-.Bootstrap Spring Data for Pivotal GemFire Repositories in XML
+.Bootstrap Spring Data for {data-store-name} Repositories in XML
 ====
 [source,xml]
 ----
@@ -37,12 +37,12 @@ IMPORTANT: The bootstrap process fails unless you have your application domain c
 == Spring Java-based Configuration
 
 Alternatively, many developers prefer to use Spring's
-https://docs.spring.io/spring/docs/current/spring-framework-reference/core.html#beans-java[Java-based container configuration].
+{spring-framework-docs}/core.html#beans-java[Java-based container configuration].
 
 Using this approach, you can bootstrap Spring Data Repositories by using the SDG `@EnableGemfireRepositories`
 annotation, as the following example shows:
 
-.Bootstrap _Spring Data for Pivotal GemFire Repositories_ with `@EnableGemfireRepositories`
+.Bootstrap _Spring Data for {data-store-name} Repositories_ with `@EnableGemfireRepositories`
 ====
 [source, java]
 ----
@@ -61,12 +61,12 @@ or interface in each package that serves no purpose other than to identify the l
 referenced by this attribute.
 
 In addition to the `basePackage[sClasses]` attributes, such as Spring's
-https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/context/annotation/ComponentScan.html[`@ComponentScan`] annotation,
+{spring-framework-javadoc}/org/springframework/context/annotation/ComponentScan.html[`@ComponentScan`] annotation,
 the `@EnableGemfireRepositories` annotation provides include and exclude filters, based on Spring's
-https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/context/annotation/ComponentScan.Filter.html[`ComponentScan.Filter`] type.
+{spring-framework-javadoc}/org/springframework/context/annotation/ComponentScan.Filter.html[`ComponentScan.Filter`] type.
 You can use the `filterType` attribute to filter by different aspects, such as whether an application repository type
 is annotated with a particular annotation or extends a particular class type and so on. See the
-https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/context/annotation/FilterType.html[`FilterType` Javadoc]
+{spring-framework-javadoc}/org/springframework/context/annotation/FilterType.html[`FilterType` Javadoc]
 for more details.
 
 The `@EnableGemfireRepositories` annotation also lets you specify the location of named OQL queries,
@@ -75,16 +75,16 @@ the name of a repository query method and the property value is the OQL query yo
 the repository query method is called.
 
 The `repositoryImplementationPostfix` attribute can be set to an alternate value (defaults to `Impl`) if your
-application requires one or more https://docs.spring.io/spring-data/commons/docs/current/reference/html/#repositories.custom-implementations[custom repository implementations].
+application requires one or more {spring-data-commons-docs-html}/#repositories.custom-implementations[custom repository implementations].
 This feature is commonly used to extend the Spring Data repository infrastructure to implement a feature
 not provided by the data store (for example, SDG).
 
-One example of where custom repository implementations are needed with Pivotal GemFire is when performing joins.
-Joins are not supported by SDG repositories. With a Pivotal GemFire `PARTITION` Region, the join must be
-performed on co-located `PARTITION` regions, since Pivotal GemFire does not support "`distributed`" joins.
-In addition, the Equi-Join OQL Query must be performed inside a Pivotal GemFire function.
+One example of where custom repository implementations are needed with {data-store-name} is when performing joins.
+Joins are not supported by SDG repositories. With a {data-store-name} `PARTITION` Region, the join must be
+performed on co-located `PARTITION` regions, since {data-store-name} does not support "`distributed`" joins.
+In addition, the Equi-Join OQL Query must be performed inside a {data-store-name} function.
 See http://gemfire91.docs.pivotal.io/geode/developing/partitioned_regions/join_query_partitioned_regions.html[here]
-for more details on Pivotal GemFire _Equi-Join Queries_.
+for more details on {data-store-name} _Equi-Join Queries_.
 
 Many other aspects of the SDG's repository infrastructure extension may be customized as well. See the
 https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/repository/config/EnableGemfireRepositories.html[`@EnableGemfireRepositories` Javadoc]
@@ -93,7 +93,7 @@ for more details on all configuration settings.
 [[gemfire-repositories.queries.executing]]
 == Executing OQL Queries
 
-Spring Data for Pivotal GemFire Repositories enable the definition of query methods to easily execute Pivotal GemFire OQL queries
+Spring Data for {data-store-name} Repositories enable the definition of query methods to easily execute {data-store-name} OQL queries
 against the region the managed entity maps to, as the following example shows:
 
 .Sample Repository
@@ -197,7 +197,7 @@ The following table gives brief samples of the supported keywords that you can u
 [[gemfire-repositories.queries.oql-extensions]]
 == OQL Query Extensions Using Annotations
 
-Many query languages, such as Pivotal GemFire's OQL (Object Query Language), have extensions that are not directly
+Many query languages, such as {data-store-name}'s OQL (Object Query Language), have extensions that are not directly
 supported by Spring Data Commons' repository infrastructure.
 
 One of Spring Data Commons' repository infrastructure goals is to function as the lowest common denominator
@@ -206,48 +206,48 @@ for application development today. Technically, this means developers can access
 supported by Spring Data Commons within their applications by reusing their existing application-specific
 repository interfaces -- a convenient and powerful abstraction.
 
-To support Pivotal GemFire's OQL Query language extensions and preserve portability across different data stores,
-Spring Data for Pivotal GemFire adds support for OQL Query extensions by using Java annotations. These Annotations are ignored
+To support {data-store-name}'s OQL Query language extensions and preserve portability across different data stores,
+Spring Data for {data-store-name} adds support for OQL Query extensions by using Java annotations. These Annotations are ignored
 by other Spring Data repository implementations (such as Spring Data JPA or Spring Data Redis) that do not have
 similar query language extensions.
 
-For instance, many data stores most likely do not implement Pivotal GemFire's OQL `IMPORT` keyword. Implementing `IMPORT`
+For instance, many data stores most likely do not implement {data-store-name}'s OQL `IMPORT` keyword. Implementing `IMPORT`
 as an annotation (that is, `@Import`) rather than as part of the query method signature (specifically, the method 'name')
 does not interfere with the parsing infrastructure when evaluating the query method name to construct
 another data store language appropriate query.
 
-Currently, the set of Pivotal GemFire OQL Query language extensions that are supported by Spring Data for Pivotal GemFire include:
+Currently, the set of {data-store-name} OQL Query language extensions that are supported by Spring Data for {data-store-name} include:
 
 [cols="1,2,2,2", options="header"]
-.Supported Pivotal GemFire OQL extensions for Repository query methods
+.Supported {data-store-name} OQL extensions for Repository query methods
 |===
 | Keyword
 | Annotation
 | Description
 | Arguments
 
-| http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/query_index/query_index_hints.html#topic_cfb_mxn_jq[HINT]
+| {x-data-store-docs}/developing/query_index/query_index_hints.html#topic_cfb_mxn_jq[HINT]
 | `@Hint`
 | OQL query index hints
 | `String[]` (e.g. @Hint({ "IdIdx", "TxDateIdx" }))
 
-| http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/query_select/the_import_statement.html#concept_2E9F15B2FE9041238B54736103396BF7[IMPORT]
+| {x-data-store-docs}/developing/query_select/the_import_statement.html#concept_2E9F15B2FE9041238B54736103396BF7[IMPORT]
 | `@Import`
 | Qualify application-specific types.
 | `String` (e.g. @Import("org.example.app.domain.Type"))
 
-| http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/query_select/the_select_statement.html#concept_85AE7D6B1E2941ED8BD2A8310A81753E__section_25D7055B33EC47B19B1B70264B39212F[LIMIT]
+| {x-data-store-docs}/developing/query_select/the_select_statement.html#concept_85AE7D6B1E2941ED8BD2A8310A81753E__section_25D7055B33EC47B19B1B70264B39212F[LIMIT]
 | `@Limit`
 | Limit the returned query result set.
 | `Integer` (e.g. @Limit(10); default is Integer.MAX_VALUE)
 
-| http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/query_additional/query_debugging.html#concept_2D557E24AAB24044A3DB36B3124F6748[TRACE]
+| {x-data-store-docs}/developing/query_additional/query_debugging.html#concept_2D557E24AAB24044A3DB36B3124F6748[TRACE]
 | `@Trace`
 | Enable OQL query-specific debugging.
 | NA
 |===
 
-As an example, suppose you have a `Customers` application domain class and corresponding Pivotal GemFire region along with a
+As an example, suppose you have a `Customers` application domain class and corresponding {data-store-name} region along with a
 `CustomerRepository` and a query method to lookup `Customers` by last name, as follows:
 
 .Sample Customers Repository
@@ -294,7 +294,7 @@ The preceding example results in the following OQL Query:
 
 `<TRACE> <HINT 'LastNameIdx'> IMPORT org.example.app.domain.Customer; SELECT * FROM /Customers x WHERE x.lastName = $1 LIMIT 10`
 
-Spring Data for Pivotal GemFire's repository extension and support is careful not to create conflicting declarations when
+Spring Data for {data-store-name}'s repository extension and support is careful not to create conflicting declarations when
 the OQL Annotation extensions are used in combination with the `@Query` annotation.
 
 As another example, suppose you have a raw `@Query` annotated query method defined in your `CustomerRepository`, as follows:
@@ -340,7 +340,7 @@ Thanks to using the Spring Data repository abstraction, the query method convent
 (e.g. OQL) is easy and convenient. However, it is sometimes desirable to still want to inspect or even possibly
 modify the query generated from the repository query method.
 
-Since 2.0.x, Spring Data for Pivotal GemFire includes the `o.s.d.gemfire.repository.query.QueryPostProcessor`
+Since 2.0.x, Spring Data for {data-store-name} includes the `o.s.d.gemfire.repository.query.QueryPostProcessor`
 functional interface. The interface is loosely defined as follows:
 
 .QueryPostProcessor
@@ -375,8 +375,8 @@ and used to create a pipeline of processing for a group of generated query metho
 
 Finally, the `QueryPostProcessor` accepts type arguments corresponding to the type parameters, `T` and `QUERY`,
 respectively. Type of `T` extends the Spring Data Commons marker interface,
-https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/repository/Repository.html[`org.springframework.data.repository.Repository`].
-We discuss this further later in this section. All `QUERY` type parameter arguments in Spring Data for Pivotal GemFire's case
+{spring-data-commons-javadoc}/org/springframework/data/repository/Repository.html[`org.springframework.data.repository.Repository`].
+We discuss this further later in this section. All `QUERY` type parameter arguments in Spring Data for {data-store-name}'s case
 are of type `java.lang.String`.
 
 NOTE: It is useful to define the query as type `QUERY`, since this `QueryPostProcessor` interface may be ported to
@@ -476,7 +476,7 @@ class OrderedLimitedCustomerByLastNameQueryPostProcessor implements QueryPostPro
 ====
 
 While the preceding example works, you can achieve the same effect by using the Spring Data repository convention and extensions
-provided by Spring Data for Pivotal GemFire.  For instance, the same query could be defined as follows:
+provided by Spring Data for {data-store-name}.  For instance, the same query could be defined as follows:
 
 .CustomerRepository using the convention
 ====

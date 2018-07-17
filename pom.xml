@@ -316,7 +316,6 @@
 								<configuration>
 									<backend>html5</backend>
 									<outputDirectory>${project.root}/target/site/reference/html</outputDirectory>
-									<sectids>false</sectids>
 									<sourceHighlighter>prettify</sourceHighlighter>
 									<attributes>
 										<linkcss>true</linkcss>

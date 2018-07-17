@@ -1,28 +1,29 @@
 [[apis:continuous-query]]
 = Continuous Query (CQ)
 
-A powerful functionality offered by Pivotal GemFire is
-http://geode.apache.org/docs/guide/11/developing/continuous_querying/chapter_overview.html[Continuous Query] (or CQ).
-In short, CQ allows one to create and register an OQL query, and then automatically be notified when new data
-that gets added to Pivotal GemFire matches the query predicate. _Spring Data for Pivotal GemFire_ provides dedicated support for CQs through
-the `org.springframework.data.gemfire.listener` package and its *listener container*; very similar in functionality
-and naming to the JMS integration in the _Spring Framework_; in fact, users familiar with the JMS support in _Spring_,
-should feel right at home.
+A powerful functionality offered by {data-store-name} is
+{x-data-store-docs}/developing/continuous_querying/chapter_overview.html[Continuous Query] (or CQ).
 
-Basically _Spring Data for Pivotal GemFire_ allows methods on POJOs to become end-points for CQ.  Simply define the query
-and indicate the method that should be called to be notified when there is a match.  _Spring Data for Pivotal GemFire_ takes care
+In short, CQ allows a developer to create and register an OQL query, and then automatically be notified when new data
+that gets added to {data-store-name} matches the query predicate. Spring Data for {data-store-name} provides dedicated
+support for CQs through the `org.springframework.data.gemfire.listener` package and its *listener container*;
+very similar in functionality and naming to the JMS integration in the _Spring Framework_; in fact, users familiar with
+the JMS support in Spring, should feel right at home.
+
+Basically Spring Data for {data-store-name} allows methods on POJOs to become end-points for CQ.  Simply define the query
+and indicate the method that should be called to be notified when there is a match.  Spring Data for {data-store-name} takes care
 of the rest.  This is very similar to Java EE's message-driven bean style, but without any requirement for base class
-or interface implementations, based on Pivotal GemFire.
+or interface implementations, based on {data-store-name}.
 
-NOTE: Currently, Continuous Query is only supported in Pivotal GemFire's client/server topology. Additionally, the client Pool
-used is required to have the subscription enabled. Please refer to the Pivotal GemFire
-http://geode.apache.org/docs/guide/11/developing/continuous_querying/implementing_continuous_querying.html[documentation]
+NOTE: Currently, Continuous Query is only supported in {data-store-name}'s client/server topology. Additionally, the client Pool
+used is required to have the subscription enabled. Please refer to the {data-store-name}
+{x-data-store-docs}/developing/continuous_querying/implementing_continuous_querying.html[documentation]
 for more information.
 
 [[apis:continuous-query:container]]
 == Continuous Query Listener Container
 
-_Spring Data for Pivotal GemFire_ simplifies creation, registration, life-cycle and dispatch of CQ events by taking care of
+Spring Data for {data-store-name} simplifies creation, registration, life-cycle and dispatch of CQ events by taking care of
 the infrastructure around CQ with the use of SDG's `ContinuousQueryListenerContainer`, which does all the heavy lifting
 on behalf of the user.  Users familiar with EJB and JMS should find the concepts familiar as it is designed
 as close as possible to the support provided in the _Spring Framework_ with its Message-driven POJOs (MDPs).
@@ -33,11 +34,11 @@ is responsible for all threading of message reception and dispatches into the li
 the intermediary between an EDP (Event-driven POJO) and the event provider and takes care of creation and registration
 of CQs (to receive events), resource acquisition and release, exception conversion and the like.  This allows you,
 as an application developer, to write the (possibly complex) business logic associated with receiving an event
-(and reacting to it), and delegate the boilerplate Pivotal GemFire infrastructure concerns to the framework.
+(and reacting to it), and delegate the boilerplate {data-store-name} infrastructure concerns to the framework.
 
 The listener container is fully customizable.  A developer can chose either to use the CQ thread to perform the dispatch
 (synchronous delivery) or a new thread (from an existing pool) for an asynchronous approach by defining the suitable
-`java.util.concurrent.Executor` (or _Spring's_ `TaskExecutor`). Depending on the load, the number of listeners
+`java.util.concurrent.Executor` (or Spring's `TaskExecutor`). Depending on the load, the number of listeners
 or the runtime environment, the developer should change or tweak the executor to better serve her needs.  In particular,
 in managed environments (such as app servers), it is highly recommended to pick a proper `TaskExecutor`
 to take advantage of its runtime.
@@ -45,10 +46,10 @@ to take advantage of its runtime.
 [[apis:continuous-query:adapter]]
 == The `ContinuousQueryListener` and `ContinuousQueryListenerAdapter`
 
-The `ContinuousQueryListenerAdapter` class is the final component in _Spring Data for Pivotal GemFire_ CQ support.  In a nutshell,
+The `ContinuousQueryListenerAdapter` class is the final component in Spring Data for {data-store-name} CQ support.  In a nutshell,
 class allows you to expose almost *any* implementing class as an EDP with minimal constraints.
 `ContinuousQueryListenerAdapter` implements the `ContinuousQueryListener` interface, a simple listener interface
-similar to Pivotal GemFire's http://geode.apache.org/releases/latest/javadoc/org/apache/geode/cache/query/CqListener.html[CqListener].
+similar to {data-store-name}'s {x-data-store-javadoc}/org/apache/geode/cache/query/CqListener.html[CqListener].
 
 Consider the following interface definition.  Notice the various event handling methods and their parameters:
 
@@ -75,7 +76,7 @@ class DefaultEventDelegate implements EventDelegate {
 }
 ----
 
-In particular, note how the above implementation of the `EventDelegate` interface has *no* Pivotal GemFire dependencies at all.
+In particular, note how the above implementation of the `EventDelegate` interface has *no* {data-store-name} dependencies at all.
 It truly is a POJO that we can and will make into an EDP via the following configuration.
 
 NOTE: the class does not have to implement an interface; an interface is only used to better showcase the decoupling
@@ -115,7 +116,7 @@ reference and the actual query definition are required. It's possible, however, 
 the resulting Continuous Query (useful for monitoring) but also the name of the method (the default is `handleEvent`).
 The specified method can have various argument types, the `EventDelegate` interface lists the allowed types.
 
-The example above uses the _Spring Data for Pivotal GemFire_ namespace to declare the event listener container
+The example above uses the Spring Data for {data-store-name} namespace to declare the event listener container
 and automatically register the listeners. The full blown, *beans* definition is displayed below:
 
 [source,xml]
@@ -142,6 +143,6 @@ and automatically register the listeners. The full blown, *beans* definition is 
 </bean>
 ----
 
-Each time an event is received, the adapter automatically performs type translation between the Pivotal GemFire event
+Each time an event is received, the adapter automatically performs type translation between the {data-store-name} event
 and the required method argument(s) transparently. Any exception caused by the method invocation is caught
 and handled by the container (by default, being logged).
