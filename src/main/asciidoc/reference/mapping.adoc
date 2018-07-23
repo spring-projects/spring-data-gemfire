@@ -363,16 +363,14 @@ The following example shows the `Predicate` API in use:
 
 [source,java]
 ----
+Predicate<Class<?>> customerTypes =
+  type -> Customer.class.getPackage().getName().startsWith(type.getName());
 
-  Predicate<Class<?>> customerTypes =
-    type -> Customer.class.getPackage().getName().startsWith(type.getName());
+Predicate typeFilters = customerTypes
+  .or(type -> User.class.isAssignble(type)) // Include User sub-types (e.g. Admin, Guest, etc)
+  .and(type -> !Reference.class.getPackage(type.getPackage()); // Exclude all Reference types
 
-  Predicate typeFilters = customerTypes
-    .or(type -> User.class.isAssignble(type)) // Include User sub-types (e.g. Admin, Guest, etc)
-    .and(type -> !Reference.class.getPackage(type.getPackage()); // Exclude all Reference types
-
-  mappingPdxSerializer.setTypeFilters(typeFilters);
-
+mappingPdxSerializer.setTypeFilters(typeFilters);
 ----
 
 NOTE: In addition to setting your own type filtering `Predicates`, SDG's `MappingPdxSerializer` now automatically

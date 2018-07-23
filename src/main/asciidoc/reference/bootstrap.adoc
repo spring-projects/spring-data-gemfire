@@ -51,14 +51,16 @@ To use the Spring Data for {data-store-name} XML namespace, declare it in your S
 as the following example shows:
 
 [source,xml]
+[subs="verbatim,attributes"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-  xmlns:gfe="http://www.springframework.org/schema/geode"<!--1--><!--2-->
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="
+       xmlns:gfe="{spring-data-schema-namespace}" <!--1--><!--2-->
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-    http://www.springframework.org/schema/geode http://www.springframework.org/schema/gemfire/spring-geode.xsd"> <!--3-->
+    {spring-data-schema-namespace} {spring-data-schema-location} <!--3-->
+">
 
   <bean id ... >
 
@@ -80,14 +82,16 @@ composed mainly of {data-store-name} components, as it avoids declaring the pref
 prefix declaration shown earlier, as the following example shows:
 
 [source,xml]
+[subs="verbatim,attributes"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/geode" <!--1-->
-  xmlns:beans="http://www.springframework.org/schema/beans" <!--2-->
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="
+<beans xmlns="{spring-data-schema-namespace}" <!--1-->
+       xmlns:beans="http://www.springframework.org/schema/beans" <!--2-->
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-    http://www.springframework.org/schema/geode http://www.springframework.org/schema/gemfire/spring-geode.xsd">
+    {spring-data-schema-namespace} {spring-data-schema-location}
+">
 
   <beans:bean id ... > <!--3-->
 

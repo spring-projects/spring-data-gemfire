@@ -2,5 +2,5 @@
 [appendix]
 = Spring Data for {data-store-name} Schema
 
-* http://www.springframework.org/schema/gemfire/spring-gemfire.xsd[Spring Data for {data-store-name} Core Schema (`gfe` namespace)]
-* http://www.springframework.org/schema/gemfire/spring-data-gemfire.xsd[Spring Data for {data-store-name} Data Access Schema (`gfe-data` namespace)]
+* {spring-data-schema-location}[Spring Data for {data-store-name} Core Schema (`gfe` namespace)]
+* {spring-data-access-schema-location}[Spring Data for {data-store-name} Data Access Schema (`gfe-data` namespace)]

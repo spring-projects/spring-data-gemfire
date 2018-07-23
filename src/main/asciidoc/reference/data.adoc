@@ -136,7 +136,7 @@ NOTE: #1 above is independent of your Spring [Boot] and/or [Data for {data-store
 and must be completed successfully.
 
 2) Referring to Step 5 in {data-store-name}'s http://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[documentation],
-_Spring Data for {data-store-name}'s_ Annotation support will attempt to set the `GemFireCache`, {x-data-store-javadoc}/org/apache/geode/cache/GemFireCache.html#setCopyOnRead-boolean-[`copyOnRead`]
+Spring Data for {data-store-name}'s Annotation support will attempt to set the `GemFireCache`, {x-data-store-javadoc}/org/apache/geode/cache/GemFireCache.html#setCopyOnRead-boolean-[`copyOnRead`]
 property for you when using the `@EnableGemFireAsLastResource` annotation.
 
 However, if SDG's auto-configuration is unsuccessful then you must explicitly set the `copy-on-read` attribute on the
@@ -147,46 +147,46 @@ Peer Cache XML:
 
 [source,xml]
 ----
-  <gfe:cache ... copy-on-read="true"/>
+<gfe:cache ... copy-on-read="true"/>
 ----
 
 Peer Cache JavaConfig:
 
 [source,java]
 ----
-  @Bean
-  CacheFacatoryBean gemfireCache() {
+@Bean
+CacheFacatoryBean gemfireCache() {
 
-    CacheFactoryBean gemfireCache = new CacheFactoryBean();
+  CacheFactoryBean gemfireCache = new CacheFactoryBean();
 
-    gemfireCache.setClose(true);
-    gemfireCache.setCopyOnRead(true);
+  gemfireCache.setClose(true);
+  gemfireCache.setCopyOnRead(true);
 
-    return gemfireCache;
-  }
+  return gemfireCache;
+}
 ----
 
 Client Cache XML:
 
 [source,xml]
 ----
-  <gfe:client-cache ... copy-on-read="true"/>
+<gfe:client-cache ... copy-on-read="true"/>
 ----
 
 Client Cache JavaConfig:
 
 [source,java]
 ----
-  @Bean
-  ClientCacheFacatoryBean gemfireCache() {
+@Bean
+ClientCacheFacatoryBean gemfireCache() {
 
-    ClientCacheFactoryBean gemfireCache = new ClientCacheFactoryBean();
+  ClientCacheFactoryBean gemfireCache = new ClientCacheFactoryBean();
 
-    gemfireCache.setClose(true);
-    gemfireCache.setCopyOnRead(true);
+  gemfireCache.setClose(true);
+  gemfireCache.setCopyOnRead(true);
 
-    return gemfireCache;
-  }
+  return gemfireCache;
+}
 ----
 
 NOTE: explicitly setting the `copy-on-read` attribute or optionally the `copyOnRead` property
@@ -196,7 +196,7 @@ really should not be necessary.
 and let _Spring Data Geode_ work its magic.  All you need do is annotate your Spring `@Configuration` class
 with Spring Data for {data-store-name}'s *new* `@EnableGemFireAsLastResource` annotation and a combination of Spring's
 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction[Transaction Management]
-infrastructure and _Spring Data for {data-store-name}'s_ `@EnableGemFireAsLastResource` configuration does the trick.
+infrastructure and Spring Data for {data-store-name}'s `@EnableGemFireAsLastResource` configuration does the trick.
 
 The configuration looks like this...
 
@@ -236,14 +236,14 @@ public JtaTransactionManager transactionManager(UserTransaction userTransaction)
 ----
 
 NOTE: The configuration in section <<apis:transaction-management>> does *not* apply here.
-The use of _Spring Data for {data-store-name}'s_ `GemfireTransactionManager` is applicable only in "Local", Cache Transactions,
+The use of Spring Data for {data-store-name}'s `GemfireTransactionManager` is applicable only in "Local", Cache Transactions,
 *not* "Global", JTA Transactions.  Therefore, you do *not* configure the SDG `GemfireTransactionManager` in this case.
 You configure Spring's `JtaTransactionManager` as shown above.
 
 For more details on using _Spring's Transaction Management_ with JTA,
 see http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction-application-server-integration[here].
 
-Effectively, _Spring Data for {data-store-name}'s_ `@EnableGemFireAsLastResource` annotation imports configuration containing 2 Aspect
+Effectively, Spring Data for {data-store-name}'s `@EnableGemFireAsLastResource` annotation imports configuration containing 2 Aspect
 bean definitions that handles the {data-store-name} `o.a.g.ra.GFConnectionFactory.getConnection()`
 and `o.a.g.ra.GFConnection.close()` operations at the appropriate points during the transactional operation.
 
@@ -272,7 +272,7 @@ Thankfully, Spring does the heavy lifting for you and all you need do after appl
 class MyTransactionalService ... {
 
   @Transactional
-  public <Return-Type> someTransactionalMethod() {
+  public <Return-Type> someTransactionalServiceMethod() {
     // perform business logic interacting with and accessing multiple JTA resources atomically, here
   }
 
@@ -281,7 +281,7 @@ class MyTransactionalService ... {
 ----
 
 #1 & #4 above are appropriately handled for you by Spring's JTA based `PlatformTransactionManager` once the
-`@Transactional` boundary is entered by your application (i.e. when the `MyTransactionSerivce.someTransactionalMethod()`
+`@Transactional` boundary is entered by your application (i.e. when the `MyTransactionSerivce.someTransactionalServiceMethod()`
 is called).
 
 #2 & #3 are handled by Spring Data for {data-store-name}'s new Aspects enabled with the `@EnableGemFireAsLastResource` annotation.
@@ -408,7 +408,7 @@ class DBLoader extends WiringDeclarableSupport implements CacheLoader {
        xmlns:p="http://www.springframework.org/schema/p"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="
-         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 ">
 
   <bean id="dataSource" ... />
@@ -440,7 +440,7 @@ one can pass in the `bean-name` parameter in the {data-store-name} configuration
        xmlns:p="http://www.springframework.org/schema/p"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="
-         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 ">
 
   <bean id="dataSource" ... />
@@ -497,8 +497,8 @@ class DBLoader extends WiringDeclarableSupport implements CacheLoader {
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="
-         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 ">
 
      <!-- enable annotation processing -->
@@ -524,15 +524,18 @@ To use {data-store-name} as a backing implementation, a "_caching provider_" _in
 simply add `GemfireCacheManager` to your configuration:
 
 [source,xml]
+[subs="verbatim,attributes"]
 ----
 <beans xmlns="http://www.springframework.org/schema/beans"
-  xmlns:cache="http://www.springframework.org/schema/cache"
-  xmlns:gfe="http://www.springframework.org/schema/gemfire"
-  xmlns:p="http://www.springframework.org/schema/p"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-    http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
-    http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd">
+       xmlns:cache="http://www.springframework.org/schema/cache"
+       xmlns:gfe="{spring-data-schema-namespace}"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd
+    {spring-data-schema-namespace} {spring-data-schema-location}
+">
 
   <!-- enable declarative caching -->
   <cache:annotation-driven/>
@@ -575,15 +578,18 @@ Then you will need the following config.
 XML:
 
 [source,xml]
+[subs="verbatim,attributes"]
 ----
 <beans xmlns="http://www.springframework.org/schema/beans"
-  xmlns:cache="http://www.springframework.org/schema/cache"
-  xmlns:gfe="http://www.springframework.org/schema/gemfire"
-  xmlns:p="http://www.springframework.org/schema/p"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-    http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
-    http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd">
+       xmlns:cache="http://www.springframework.org/schema/cache"
+       xmlns:gfe="{spring-data-schema-namespace}"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd
+    {spring-data-schema-namespace} {spring-data-schema-location}
+">
 
   <!-- enable declarative caching -->
   <cache:annotation-driven/>
