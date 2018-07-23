@@ -70,9 +70,9 @@ For instance, consider the following `cache.xml` file:
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <cache xmlns="http://geode.apache.org/schema/cache"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
-    version="1.0">
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       version="1.0">
 
   <region name="Parent" refid="REPLICATE">
     <region name="Child" refid="REPLICATE"/>
@@ -264,6 +264,8 @@ The second is an anonymous inner bean definition.
 
 [source,xml]
 ----
+<bean id="myListener" class="org.example.app.geode.cache.SimpleCacheListener"/>
+
 <gfe:replicated-region id="regionWithListeners">
   <gfe:cache-listener>
     <!-- nested CacheListener bean reference -->
@@ -271,8 +273,6 @@ The second is an anonymous inner bean definition.
     <!-- nested CacheListener bean definition -->
     <bean class="org.example.app.geode.cache.AnotherSimpleCacheListener"/>
   </gfe:cache-listener>
-
-  <bean id="myListener" class="org.example.app.geode.cache.SimpleCacheListener"/>
 </gfe:replicated-region>
 ----
 
@@ -525,9 +525,9 @@ Consider the following native {data-store-name} `cache.xml` configuration file:
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <cache xmlns="http://geode.apache.org/schema/cache"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
-    version="1.0">
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       version="1.0">
 
   <region name="Customers" refid="REPLICATE">
     <region name="Accounts" refid="REPLICATE">
@@ -558,14 +558,15 @@ not uncommon for a developer to define beans for some or all of these Regions in
 meta-data as follows:
 
 [source,xml]
+[subs="verbatim,attributes"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:gfe="http://www.springframework.org/schema/gemfire"
+       xmlns:gfe="{spring-data-schema-namespace}"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="
-         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-         http://www.springframework.org/schema/geode http://www.springframework.org/schema/gemfire/spring-geode.xsd
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    {spring-data-schema-namespace} {spring-data-schema-location}
 ">
 
   <gfe:cache cache-xml-location="classpath:cache.xml"/>

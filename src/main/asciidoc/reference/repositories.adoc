@@ -14,13 +14,15 @@ Data namespace, as the following example shows:
 .Bootstrap Spring Data for {data-store-name} Repositories in XML
 ====
 [source,xml]
+[subs="verbatim,attributes"]
 ----
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:gfe-data="http://www.springframework.org/schema/data/gemfire"
+       xmlns:gfe-data="{spring-data-access-schema-namespace}"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="
-         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-         http://www.springframework.org/schema/data/gemfire http://www.springframework.org/schema/data/gemfire/spring-data-gemfire.xsd>
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    {spring-data-access-schema-namespace} {spring-data-access-schema-location}
+">
 
   <gfe-data:repositories base-package="com.example.acme.repository"/>
 
@@ -311,6 +313,7 @@ public interface CustomerRepository extends GemfireRepository<Customer, Long> {
   @Import("org.example.app.domain.Customer")
   @Query("<TRACE> <HINT 'ReputationIdx'> SELECT DISTINCT * FROM /Customers c WHERE c.reputation > $1 ORDER BY c.reputation DESC LIMIT 5")
   List<Customer> findDistinctCustomersByReputationGreaterThanOrderByReputationDesc(Integer reputation);
+
 }
 ----
 ====

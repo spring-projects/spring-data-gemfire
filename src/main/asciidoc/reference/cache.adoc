@@ -57,16 +57,18 @@ For example, you can use the `properties` element defined in the `util` namespac
 directly or load properties from a properties file, as follows:
 
 [source,xml]
+[subs="verbatim,attributes"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-  xmlns:gfe="http://www.springframework.org/schema/gemfire"
-  xmlns:util="http://www.springframework.org/schema/util"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="
+       xmlns:gfe="{spring-data-schema-namespace}"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-    http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
-    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+    {spring-data-schema-namespace} {spring-data-schema-location}
+    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+">
 
   <util:properties id="gemfireProperties" location="file:/path/to/gemfire.properties"/>
 
@@ -230,7 +232,7 @@ Again, to enable this feature, specify the following in the Spring XML config:
 
 [source,xml]
 ----
-  <gfe:cache use-cluster-configuration="true"/>
+<gfe:cache use-cluster-configuration="true"/>
 ----
 
 NOTE: While certain {data-store-name} tools, such as `Gfsh`, have their actions "`recorded`" when schema-like changes are made
@@ -248,16 +250,17 @@ Spring Data for {data-store-name} includes dedicated support for configuring a
 allowing complete configuration through the Spring container, as the following example shows:
 
 [source,xml]
+[subs="verbatim,attributes"]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-  xmlns:context="http://www.springframework.org/schema/context"
-  xmlns:gfe="http://www.springframework.org/schema/gemfire"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:gfe="{spring-data-schema-namespace}"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
     http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
-    http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+    {spring-data-schema-namespace} {spring-data-schema-location}
 ">
 
   <gfe:cache/>
