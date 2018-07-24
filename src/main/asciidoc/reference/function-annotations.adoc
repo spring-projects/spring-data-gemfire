@@ -1,104 +1,105 @@
 [[function-annotations]]
 = Annotation Support for Function Execution
 
-Spring Data for {data-store-name} includes annotation support to simplify working with {data-store-name}
-{x-data-store-docs}/developing/function_exec/chapter_overview.html[function execution].
-Under the hood, the {data-store-name} API provides classes to implement and register {data-store-name}
-{x-data-store-javadoc}/org/apache/geode/cache/execute/Function.html[functions]
-that are deployed on {data-store-name} servers, which may then be invoked by other peer member applications
-or remotely from cache clients.
+{sdg-name} includes annotation support to simplify working with {data-store-name}
+{x-data-store-docs}/developing/function_exec/chapter_overview.html[Function execution].
 
-Functions can execute in parallel, distributed among multiple {data-store-name} servers in the cluster, aggregating results
-with the map-reduce pattern that are sent back to the caller. Functions can also be targeted to run on a single server
-or region. The {data-store-name} API supports remote execution of functions targeted by using various predefined scopes:
-on region, on members (in groups), on servers, and others. The implementation and execution of remote functions,
+Under the hood, the {data-store-name} API provides classes to implement and register {data-store-name}
+{x-data-store-javadoc}/org/apache/geode/cache/execute/Function.html[Functions] that are deployed on {data-store-name}
+servers, which may then be invoked by other peer member applications or remotely from cache clients.
+
+Functions can execute in parallel, distributed among multiple {data-store-name} servers in the cluster, aggregating the
+results using the map-reduce pattern and sent back to the caller. Functions can also be targeted to run on a single
+server or Region. The {data-store-name} API supports remote execution of Functions targeted by using various predefined
+scopes: on Region, on members (in groups), on servers, and others. The implementation and execution of remote Functions,
 as with any RPC protocol, requires some boilerplate code.
 
-Spring Data for {data-store-name}, true to Spring's core value proposition, aims to hide the mechanics of remote function execution
-and let you focus on core POJO programming and business logic. To this end, Spring Data for {data-store-name} introduces
-annotations to declaratively register the public methods of a POJO class as {data-store-name} functions along with the ability to
-invoke registered functions (including remotely) by using annotated interfaces.
+{sdg-name}, true to Spring's core value proposition, aims to hide the mechanics of remote Function execution and let you
+focus on core POJO programming and business logic. To this end, {sdg-name} introduces annotations to declaratively
+register the public methods of a POJO class as {data-store-name} Functions along with the ability to invoke registered
+Functions (including remotely) by using annotated interfaces.
 
 == Implementation Versus Execution
 
-There are two separate concerns to address implementation and execution.
+There are two separate concerns to address: implementation and execution.
 
-The first is function implementation (server-side), which must interact with the
+The first is Function implementation (server-side), which must interact with the
 {x-data-store-javadoc}/org/apache/geode/cache/execute/FunctionContext.html[`FunctionContext`]
 to access the invocation arguments,
-{x-data-store-javadoc}/org/apache/geode/cache/execute/ResultSender.html[`ResultsSender`],
-and other execution context information. The function implementation typically accesses the cache and regions
+{x-data-store-javadoc}/org/apache/geode/cache/execute/ResultSender.html[`ResultsSender`] to send results,
+and other execution context information. The Function implementation typically accesses the cache and Regions
 and is registered with the
-{x-data-store-javadoc}/org/apache/geode/cache/execute/FunctionService.html[`FunctionService`]
-under a unique ID.
+{x-data-store-javadoc}/org/apache/geode/cache/execute/FunctionService.html[`FunctionService`] under a unique ID.
 
-A cache client application invoking a function does not depend on the implementation. To invoke a function,
+A cache client application invoking a Function does not depend on the implementation. To invoke a Function,
 the application instantiates an
 {x-data-store-javadoc}/org/apache/geode/cache/execute/Execution.html[`Execution`]
-providing the function ID, invocation arguments, and the function target, which defines its scope:
-region, server, servers, member, or members. If the function produces a result, the invoker uses a
+providing the Function ID, invocation arguments, and the Function target, which defines its scope:
+Region, server, servers, member, or members. If the Function produces a result, the invoker uses a
 {x-data-store-javadoc}/org/apache/geode/cache/execute/ResultCollector.html[`ResultCollector`]
 to aggregate and acquire the execution results. In certain cases, a custom `ResultCollector` implementation
 is required and may be registered with the `Execution`.
 
-NOTE: 'Client' and 'Server' are used here in the context of function execution, which may have a different meaning
-than client and server in {data-store-name}'s client-server topology. While it is common for an application using a `ClientCache`
-to invoke a function on one or more {data-store-name} servers in a cluster, it is also possible to execute functions
-in a peer-to-peer (P2P) configuration, where the application is a member of the cluster hosting a peer `Cache`.
-Keep in mind that a peer member cache application is subject to all the constraints of being a peer member
-of the cluster.
+NOTE: 'Client' and 'Server' are used here in the context of Function execution, which may have a different meaning
+than client and server in {data-store-name}'s client-server topology. While it is common for an application using
+a `ClientCache` instance to invoke a Function on one or more {data-store-name} servers in a cluster, it is also
+possible to execute Functions in a peer-to-peer (P2P) configuration, where the application is a member of the cluster
+hosting a peer `Cache` instance. Keep in mind that a peer member cache application is subject to all the constraints
+of being a peer member of the cluster.
 
 [[function-implementation]]
 == Implementing a Function
 
 Using {data-store-name} APIs, the `FunctionContext` provides a runtime invocation context that includes the client's
-calling arguments and a `ResultSender` implementation to send results back to the client. Additionally,
-if the function is executed on a region, the `FunctionContext` is actually an instance of `RegionFunctionContext`,
-which provides additional information, such as the target region on which the function was invoked,
-any filter (a set of specific keys) associated with the `Execution`, and so on. If the region is a `PARTITION` region,
-the function should use the `PartitionRegionHelper` to extract only the local data.
+calling arguments and a `ResultSender` implementation to send results back to the client. Additionally, if the Function
+is executed on a Region, the `FunctionContext` is actually an instance of `RegionFunctionContext`, which provides
+additional information, such as the target Region on which the Function was invoked, any filter (a set of specific keys)
+associated with the `Execution`, and so on. If the Region is a `PARTITION` Region, the Function should use
+the `PartitionRegionHelper` to extract the local data set.
 
 By using Spring, you can write a simple POJO and use the Spring container to bind one or more of your POJO's
-public methods to a function. The signature for a POJO method intended to be used as a function must generally
-conform to the client's execution arguments. However, in the case of a region execution, the region data
-may also be provided (presumably the data is held in the local partition if the region is a `PARTITION` region).
-Additionally, the function may require the filter that was applied, if any. This suggests that the client and server
-share a contract for the calling arguments but that the method signature may include additional parameters
-to pass values provided by the `FunctionContext`. One possibility is for the client and server to share
-a common interface, but this is not strictly required. The only constraint is that the method signature includes
-the same sequence of calling arguments with which the function was invoked after the additional parameters
-are resolved.
+public methods to a Function. The signature for a POJO method intended to be used as a Function must generally conform
+to the client's execution arguments. However, in the case of a Region execution, the Region data may also be provided
+(presumably the data is held in the local partition if the Region is a `PARTITION` Region).
+
+Additionally, the Function may require the filter that was applied, if any. This suggests that the client and server
+share a contract for the calling arguments but that the method signature may include additional parameters to pass values
+provided by the `FunctionContext`. One possibility is for the client and server to share a common interface, but this
+is not strictly required. The only constraint is that the method signature includes the same sequence of calling arguments
+with which the Function was invoked after the additional parameters are resolved.
 
 For example, suppose the client provides a `String` and an `int` as the calling arguments. These are provided
 in the `FunctionContext` as an array, as the following example shows:
 
 `Object[] args = new Object[] { "test", 123 };`
 
-The Spring container should be able to bind to any method signature similar to the following (ignoring the return type for the moment):
+The Spring container should be able to bind to any method signature similar to the following (ignoring the return type
+for the moment):
 
 [source,java]
 ----
-public Object method1(String s1, int i2) {...}
-public Object method2(Map<?, ?> data, String s1, int i2) {...}
-public Object method3(String s1, Map<?, ?> data, int i2) {...}
-public Object method4(String s1, Map<?, ?> data, Set<?> filter, int i2) {...}
-public void method4(String s1, Set<?> filter, int i2, Region<?,?> data) {...}
-public void method5(String s1, ResultSender rs, int i2);
-public void method6(FunctionContest context);
+public Object method1(String s1, int i2) { ... }
+public Object method2(Map<?, ?> data, String s1, int i2) { ... }
+public Object method3(String s1, Map<?, ?> data, int i2) { ... }
+public Object method4(String s1, Map<?, ?> data, Set<?> filter, int i2) { ... }
+public void method4(String s1, Set<?> filter, int i2, Region<?,?> data) { ... }
+public void method5(String s1, ResultSender rs, int i2) { ... }
+public void method6(FunctionContest context) { ... }
 ----
 
-The general rule is that once any additional arguments (that is, region data and filter) are resolved,
-the remaining arguments must correspond exactly, in order and type, to the expected function method parameters.
-The method's return type must be void or a type that may be serialized (as a `java.io.Serializable`,
-`DataSerializable`, or `PdxSerializable`). The latter is also a requirement for the calling arguments.
-The region data should normally be defined as a `Map`, to facilitate unit testing, but may also be of type region,
+The general rule is that once any additional arguments (that is, Region data and filter) are resolved,
+the remaining arguments must correspond exactly, in order and type, to the expected Function method parameters.
+The method's return type must be void or a type that may be serialized (as a `java.io.Serializable`, `DataSerializable`,
+or `PdxSerializable`). The latter is also a requirement for the calling arguments.
+
+The Region data should normally be defined as a `Map`, to facilitate unit testing, but may also be of type Region,
 if necessary. As shown in the preceding example, it is also valid to pass the `FunctionContext` itself
-or the `ResultSender` if you need to control how the results are returned to the client.
+or the `ResultSender` if you need to control over how the results are returned to the client.
 
 === Annotations for Function Implementation
 
-The following example shows how SDG's function annotations are used to expose POJO methods
-as {data-store-name} functions:
+The following example shows how {sdg-acronym}'s Function annotations are used to expose POJO methods
+as {data-store-name} Functions:
 
 [source,java]
 ----
@@ -117,33 +118,35 @@ public class ApplicationFunctions {
 }
 ----
 
-Note that the class itself must be registered as a Spring bean and each {data-store-name} Function is annotated
-with `@GemfireFunction`. In the preceding example, Spring's `@Component` annotation was used, but you can register the bean
-by using any method supported by Spring (such as XML configuration or with a Java configuration class when using Spring Boot).
-This lets the Spring container create an instance of this class and wrap it in a
+Note that the class itself must be registered as a Spring bean and each {data-store-name} Function is annotated with
+`@GemfireFunction`. In the preceding example, Spring's `@Component` annotation was used, but you can register the bean
+by using any method supported by Spring (such as XML configuration or with a Java configuration class when using
+Spring Boot). This lets the Spring container create an instance of this class and wrap it in a
 http://docs.spring.io/spring-data-gemfire/docs/current/api/org/springframework/data/gemfire/function/PojoFunctionWrapper.html[`PojoFunctionWrapper`].
 Spring creates a wrapper instance for each method annotated with `@GemfireFunction`. Each wrapper instance shares
 the same target object instance to invoke the corresponding method.
 
 TIP: The fact that the POJO Function class is a Spring bean may offer other benefits, since it shares
-the `ApplicationContext` with {data-store-name} components, such as the cache and regions. These may be injected into the class
-if necessary.
+the `ApplicationContext` with {data-store-name} components, such as the cache and Regions. These may be injected into
+the class if necessary.
 
-Spring creates the wrapper class and registers the functions with {data-store-name}'s function service. The function ID used
-to register each function must be unique. By using convention, it defaults to the simple (unqualified) method name.
+Spring creates the wrapper class and registers the Functions with {data-store-name}'s `FunctionService`. The Function ID
+used to register each Function must be unique. By using convention, it defaults to the simple (unqualified) method name.
 The name can be explicitly defined by using the `id` attribute of the `@GemfireFunction` annotation.
+
 The `@GemfireFunction` annotation also provides other configuration attributes, `HA` and `optimizedForWrite`,
 which correspond to properties defined by {data-store-name}'s
 {x-data-store-javadoc}/org/apache/geode/cache/execute/Function.html[`Function`] interface.
-If the method's return type is `void`, then the `hasResult` property is automatically set to `false`.
+If the POJO method's return type is `void`, then the `hasResult` attribute is automatically set to `false`.
 Otherwise, if the method returns a value, the `hasResult` attributes is set to `true`.
 
-Even for `void` return types, the annotation's `hasResult` attribute can be set to `true` to override this convention,
-as shown in the `functionWithContext` method show previously. Presumably, the intention is to use the `ResultSender` directly
-to send results to the caller.
+Even for `void` method return types, the annotation's `hasResult` attribute can be set to `true` to override
+this convention, as shown in the `functionWithContext` method shown previously. Presumably, the intention is
+to use the `ResultSender` directly to send results to the caller.
 
-The `PojoFunctionWrapper` implements {data-store-name}'s `Function` interface, binds method parameters, and invokes the target method
-in its `execute()` method. It also sends the method's return value by using the `ResultSender`.
+The `PojoFunctionWrapper` implements {data-store-name}'s `Function` interface, binds method parameters, and invokes
+the target method in its `execute()` method. It also sends the method's return value back to the caller
+by using the `ResultSender`.
 
 === Batching Results
 
@@ -153,8 +156,8 @@ in the array or `Collection` is quite large, it may incur a performance penalty.
 more manageable chunks, you can set the `batchSize` attribute, as illustrated in `function2`, shown earlier.
 
 TIP: If you need more control of the `ResultSender`, especially if the method itself would use too much memory
-to create the `Collection`, you can pass the `ResultSender` or access it through the `FunctionContext` and use it directly
-within the method to sends results back to the caller.
+to create the `Collection`, you can pass in the `ResultSender` or access it through the `FunctionContext`
+and use it directly within the method to sends results back to the caller.
 
 === Enabling Annotation Processing
 
@@ -166,36 +169,38 @@ annotations. The following example activates annotation processing with XML:
 <gfe:annotation-driven/>
 ----
 
-The following example activates annotations by annotating a Java configuration class:
+The following example activates annotation processing by annotating a Java configuration class:
 
 [source,java]
 ----
 @Configuration
 @EnableGemfireFunctions
-class ApplicationConfiguration { .. }
+class ApplicationConfiguration { ... }
 ----
 
 [[function-execution]]
 == Executing a Function
 
-A process that invokes a remote function needs to provide the function's ID, calling arguments, the execution target
-(`onRegion`, `onServers`, `onServer`, `onMember`, or `onMembers`) and (optionally) a filter set. By using Spring Data for {data-store-name},
-all you need do is define an interface supported by annotations. Spring creates a dynamic proxy
-for the interface, which uses the `FunctionService` to create an `Execution`, invoke the `Execution`, and (if necessary) coerce
-the results to the defined return type. This technique is similar to the way
-Spring Data for {data-store-name}'s repository extension works. Thus, some of the configuration and concepts should be familiar.
-Generally, a single interface definition maps to multiple function executions, one corresponding to each method
+A process that invokes a remote Function needs to provide the Function's ID, calling arguments, the execution target
+(`onRegion`, `onServers`, `onServer`, `onMember`, or `onMembers`) and (optionally) a filter set. By using {sdg-name},
+all you need do is define an interface supported by annotations. Spring creates a dynamic proxy for the interface,
+which uses the `FunctionService` to create an `Execution`, invoke the `Execution`, and (if necessary) coerce
+the results to the defined return type. This technique is similar to the way {sdg-name}'s Repository extension works.
+Thus, some of the configuration and concepts should be familiar.
+
+Generally, a single interface definition maps to multiple Function executions, one corresponding to each method
 defined in the interface.
 
 === Annotations for Function Execution
 
-To support client-side Function execution, the following SDG Function annotations are provided: `@OnRegion`,
-`@OnServer`, `@OnServers`, `@OnMember`, and `@OnMembers`. These annotations correspond to the `Execution` implementations
-provided by {data-store-name}'s
-{x-data-store-javadoc}/org/apache/geode/cache/execute/FunctionService.html[`FunctionService`].
-Each annotation exposes the appropriate attributes. These annotations also provide an optional
-`resultCollector` attribute whose value is the name of a Spring bean implementing the
-{x-data-store-javadoc}/org/apache/geode/cache/execute/ResultCollector.html[`ResultCollector`]
+To support client-side Function execution, the following {sdg-acronym} Function annotations are provided: `@OnRegion`,
+`@OnServer`, `@OnServers`, `@OnMember`, and `@OnMembers`.  These annotations correspond to the `Execution`
+implementations provided by {data-store-name}'s
+{x-data-store-javadoc}/org/apache/geode/cache/execute/FunctionService.html[`FunctionService`] class.
+
+Each annotation exposes the appropriate attributes. These annotations also provide an optional `resultCollector` attribute
+whose value is the name of a Spring bean implementing the
+{x-data-store-javadoc}/org/apache/geode/cache/execute/ResultCollector.html[`ResultCollector`] interface
 to use for the execution.
 
 CAUTION: The proxy interface binds all declared methods to the same execution configuration. Although it is expected
@@ -217,21 +222,21 @@ public interface FunctionExecution {
 }
 ----
 
-By default, the function ID is the simple (unqualified) method name. The `@FunctionId` annotation can be used
-to bind this invocation to a different function ID.
+By default, the Function ID is the simple (unqualified) method name. The `@FunctionId` annotation can be used
+to bind this invocation to a different Function ID.
 
 === Enabling Annotation Processing
 
 The client-side uses Spring's classpath component scanning capability to discover annotated interfaces. To enable
-function execution annotation processing in XML, insert the following element in your XML configuration:
+Function execution annotation processing in XML, insert the following element in your XML configuration:
 
 [source,xml]
 ----
 <gfe-data:function-executions base-package="org.example.myapp.gemfire.functions"/>
 ----
 
-The `function-executions` element is provided in the `gfe-data` namespace. The `base-package` attribute is required,
-to avoid scanning the entire classpath. Additional filters are provided as described in the Spring
+The `function-executions` element is provided in the `gfe-data` XML namespace. The `base-package` attribute is required
+to avoid scanning the entire classpath. Additional filters can be provided as described in the Spring
 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-scanning-filters[reference documentation].
 
 Optionally, you can annotate your Java configuration class as follows:
@@ -261,8 +266,8 @@ public class MyApplication {
 }
 ----
 
-Alternately, you can use a function execution template directly. In the following example, the `GemfireOnRegionFunctionTemplate`
-creates an `onRegion` function `Execution`:
+Alternately, you can use a Function execution template directly. In the following example,
+the `GemfireOnRegionFunctionTemplate` creates an `onRegion` Function `Execution`:
 
 .Using the `GemfireOnRegionFunctionTemplate`
 ====
@@ -275,21 +280,21 @@ String result = template.executeAndExtract("someFunction", myFilter, "hello", "w
 ----
 ====
 
-Internally, function `Executions` always return a `List`. `executeAndExtract` assumes a singleton `List`
-containing the result and attempts to coerce that value into the requested type. There is also
-an `execute` method that returns the `List` as is. The first parameter is the function ID.
-The filter argument is optional. The remaining arguments are a variable argument `List`.
+Internally, Function `Executions` always return a `List`. `executeAndExtract` assumes a singleton `List`
+containing the result and attempts to coerce that value into the requested type. There is also an `execute` method
+that returns the `List` as is. The first parameter is the Function ID. The filter argument is optional. The remaining
+arguments are a variable argument `List`.
 
 [[function-execution-pdx]]
 == Function Execution with PDX
 
-When using Spring Data for {data-store-name}'s function annotation support combined with {data-store-name}'s
+When using {sdg-name}'s Function annotation support combined with {data-store-name}'s
 {x-data-store-docs}/developing/data_serialization/gemfire_pdx_serialization.html[PDX Serialization],
 there are a few logistical things to keep in mind.
 
-As explained earlier in this section, and by way of example, you should typically define {data-store-name} functions by using POJO classes
-annotated with Spring Data for {data-store-name}
-http://docs.spring.io/spring-data-gemfire/docs/current/api/org/springframework/data/gemfire/function/annotation/package-summary.html[function annotations],
+As explained earlier in this section, and by way of example, you should typically define {data-store-name} Functions
+by using POJO classes annotated with {sdg-name}
+http://docs.spring.io/spring-data-gemfire/docs/current/api/org/springframework/data/gemfire/function/annotation/package-summary.html[Function annotations],
 as follows:
 
 [source,java]
@@ -302,18 +307,18 @@ public class OrderFunctions {
 }
 ----
 
-NOTE: The `Integer` type `count` parameter is arbitrary, as is the separation of the `Order` class and `OrderSource` enum,
-which might be logical to combine. However, the arguments were setup this way to demonstrate the problem with
-function executions in the context of PDX.
+NOTE: The `Integer` typed `count` parameter is arbitrary, as is the separation of the `Order` class
+and the `OrderSource` enum, which might be logical to combine. However, the arguments were setup this way
+to demonstrate the problem with Function executions in the context of PDX.
 
-Your `Order` and `OrderSource` enum might be as follows:
+Your `Order` class and `OrderSource` enum might be defined as follows:
 
 [source,java]
 ----
 public class Order ... {
 
   private Long orderNumber;
-  private Calendar orderDateTime;
+  private LocalDateTime orderDateTime;
   private Customer customer;
   private List<Item> items
 
@@ -329,7 +334,8 @@ public enum OrderSource {
 }
 ----
 
-Of course, you can define a function `Execution` interface to call the 'process' {data-store-name} server function, as follows:
+Of course, you can define a Function `Execution` interface to call the 'process' {data-store-name} server Function,
+as follows:
 
 [source,java]
 ----
@@ -339,78 +345,78 @@ public interface OrderProcessingFunctions {
 }
 ----
 
-Clearly, this `process(..)` `Order` Function is being called from a client-side with an application based on `ClientCache`
-(that is `<gfe:client-cache/>`). This implies that the function arguments must also be serializable.
-The same is true when invoking peer-to-peer member functions (such as `@OnMember(s)) between peers in the cluster.
-Any form of `distribution` requires the data transmitted between client and server (or peers) to be serialized.
+Clearly, this `process(..)` `Order` Function is being called from the client-side with a `ClientCache` instance
+(that is `<gfe:client-cache/>`). This implies that the Function arguments must also be serializable. The same is true
+when invoking peer-to-peer member Functions (such as `@OnMember(s)`) between peers in the cluster. Any form of
+`distribution` requires the data transmitted between client and server (or peers) to be serialized.
 
 Now, if you have configured {data-store-name} to use PDX for serialization (instead of Java serialization, for instance)
-you can also set the `pdx-read-serialized` attribute to `true` in your configuration
-of the {data-store-name} server(s), as follows:
+you can also set the `pdx-read-serialized` attribute to `true` in your configuration of the {data-store-name} server(s),
+as follows:
 
 [source,xml]
 ----
 <gfe:cache ... pdx-read-serialized="true"/>
 ----
 
-Alternatively, you can set the `pdx-read-serialized` attribute to `true` for a {data-store-name} cache client application, as follows:
+Alternatively, you can set the `pdx-read-serialized` attribute to `true` for a {data-store-name} cache client application,
+as follows:
 
 [source,xml]
 ----
 <gfe:client-cache ... pdx-read-serialized="true"/>
 ----
 
-Doing so causes all values read from the cache (that is, regions) as well as information passed between client and servers
-(or peers) to remain in serialized form, including, but not limited to, function arguments.
+Doing so causes all values read from the cache (that is, Regions) as well as information passed between client and servers
+(or peers) to remain in serialized form, including, but not limited to, Function arguments.
 
 {data-store-name} serializes only application domain object types that you have specifically configured (registered)
 either by using {data-store-name}'s
 {x-data-store-javadoc}/org/apache/geode/pdx/ReflectionBasedAutoSerializer.html[`ReflectionBasedAutoSerializer`],
 or specifically (and recommended) by using a "`custom`" {data-store-name}
-{x-data-store-javadoc}/org/apache/geode/pdx/PdxSerializer.html[`PdxSerializer`]. If you use
-Spring Data for {data-store-name}'s repository extension to Spring Data Common's repository abstraction and infrastructure,
-you might even want to consider using Spring Data for {data-store-name}'s
-http://docs.spring.io/spring-data-gemfire/docs/current/api/org/springframework/data/gemfire/mapping/MappingPdxSerializer.html[`MappingPdxSerializer`],
-which uses an entity's mapping meta-data to determine data from the application domain object that are serialized
+{x-data-store-javadoc}/org/apache/geode/pdx/PdxSerializer.html[`PdxSerializer`].
+If you use {sdg-name}'s Repository extension, you might even want to consider using {sdg-name}'s
+{sdg-javadoc}/org/springframework/data/gemfire/mapping/MappingPdxSerializer.html[`MappingPdxSerializer`],
+which uses an entity's mapping metadata to determine data from the application domain object that is serialized
 to the PDX instance.
 
-What is less than apparent, though, is that {data-store-name} automatically handles Java `Enum` types regardless of whether they are
-explicitly configured (that is, registered with a `ReflectionBasedAutoSerializer` using a regex pattern
-and the `classes` parameter or are handled by a "`custom`" {data-store-name} `PdxSerializer`), despite the fact that Java enumerations
-implement `java.io.Serializable`.
+What is less than apparent, though, is that {data-store-name} automatically handles Java `Enum` types regardless
+of whether they are explicitly configured (that is, registered with a `ReflectionBasedAutoSerializer`,
+using a regex pattern and the `classes` parameter or are handled by a "`custom`" {data-store-name} `PdxSerializer`),
+despite the fact that Java enumerations implement `java.io.Serializable`.
 
-So, when you set `pdx-read-serialized` to `true` on {data-store-name} servers where the {data-store-name} functions
-(including Spring Data for {data-store-name} function-annotated POJO classes) are registered, then you
-may encounter surprising behavior when invoking the function `Execution`.
+So, when you set `pdx-read-serialized` to `true` on {data-store-name} servers where the {data-store-name} Functions
+(including {sdg-name} Function-annotated POJO classes) are registered, then you may encounter surprising behavior
+when invoking the Function `Execution`.
 
-You might pass the following arguments when invoking the function:
+You might pass the following arguments when invoking the Function:
 
 [source,java]
 ----
-orderProcessingFunctions.process(new Order(123, customer, Calendar.getInstance(), items), OrderSource.ONLINE, 400);
+orderProcessingFunctions.process(new Order(123, customer, LocalDateTime.now(), items), OrderSource.ONLINE, 400);
 ----
 
-However, the {data-store-name} function on the server gets the following:
+However, the {data-store-name} Function on the server gets the following:
 
 [source,java]
 ----
 process(regionData, order:PdxInstance, :PdxInstanceEnum, 400);
 ----
 
-The `Order` and `OrderSource` have been passed to the function as
+The `Order` and `OrderSource` have been passed to the Function as
 {x-data-store-javadoc}/org/apache/geode/pdx/PdxInstance.html[PDX instances].
 Again, this all happens because `pdx-read-serialized` is set to `true`, which may be necessary in cases where
-the {data-store-name} servers interact with multiple different clients (for example, a combination of Java clients and native clients, such as C++, C#, and others).
+the {data-store-name} servers interact with multiple different clients (for example, a combination of Java clients
+and native clients, such as C/C++, C#, and others).
 
-This flies in the face of Spring Data for {data-store-name}'s strongly-typed function-annotated POJO class method signatures,
-as you should reasonably expect application domain object types, not PDX serialized instances.
+This flies in the face of {sdg-name}'s strongly-typed Function-annotated POJO class method signatures, where you would
+reasonably expect application domain object types instead, not PDX serialized instances.
 
-Consequently, Spring Data for {data-store-name} includes enhanced function support to automatically convert method arguments
-type PDX to the desired application domain object types defined by the function method's
-parameter types.
+Consequently, {sdg-name} includes enhanced Function support to automatically convert PDX typed method arguments
+to the desired application domain object types defined by the Function method's signature (parameter types).
 
-However, this also requires you to explicitly register a {data-store-name} `PdxSerializer` on the {data-store-name} Servers
-where Spring Data for {data-store-name} function-annotated POJOs are registered and used, as the following example shows:
+However, this also requires you to explicitly register a {data-store-name} `PdxSerializer` on {data-store-name} servers
+where {sdg-name} Function-annotated POJOs are registered and used, as the following example shows:
 
 [source,java]
 ----
@@ -424,8 +430,8 @@ Alternatively, you can use {data-store-name}'s
 for convenience. Of course, we recommend that, where possible, you use a custom `PdxSerializer` to maintain
 finer-grained control over your serialization strategy.
 
-Finally, Spring Data for {data-store-name} is careful not to convert your function arguments if you treat your function arguments
-generically or as one of {data-store-name}'s PDX types, as follows:
+Finally, {sdg-name} is careful not to convert your Function arguments if you treat your Function arguments generically
+or as one of {data-store-name}'s PDX types, as follows:
 
 [source,java]
 ----
@@ -435,9 +441,9 @@ public Object genericFunction(String value, Object domainObject, PdxInstanceEnum
 }
 ----
 
-Spring Data for {data-store-name} converts PDX type data to the corresponding application domain types if and only if
-the corresponding application domain types are on the classpath and the function-annotated POJO method expects it.
+{sdg-name} converts PDX typed data to the corresponding application domain types if and only if the corresponding
+application domain types are on the classpath and the Function-annotated POJO method expects it.
 
 For a good example of custom, composed application-specific {data-store-name} `PdxSerializers` as well as appropriate
-POJO function parameter type handling based on the method signatures, see Spring Data for {data-store-name}'s
-https://github.com/spring-projects/spring-data-gemfire/blob/2.0.0.M2/src/test/java/org/springframework/data/gemfire/function/ClientCacheFunctionExecutionWithPdxIntegrationTest.java[`ClientCacheFunctionExecutionWithPdxIntegrationTest`] class.
+POJO Function parameter type handling based on the method signatures, see {sdg-name}'s
+https://github.com/spring-projects/spring-data-gemfire/blob/{revnumber}/src/test/java/org/springframework/data/gemfire/function/ClientCacheFunctionExecutionWithPdxIntegrationTest.java[`ClientCacheFunctionExecutionWithPdxIntegrationTest`] class.

@@ -1,14 +1,14 @@
 = Preface
 
-Spring Data for {data-store-name} focuses on integrating the Spring Framework's powerful, non-invasive programming model
-and concepts with {data-store-name} to simplify configuration and development of Java applications when you use {data-store-name}.
+{sdg-name} focuses on integrating the Spring Framework's powerful, non-invasive programming model
+and concepts with {data-store-name} to simplify configuration and development of Java applications
+when using {data-store-name} as you data management solution.
 
-This document assumes you already have a basic understanding of and some familiarity with the core Spring Framework
-and {data-store-name} concepts and APIs.
+This document assumes you already have a basic understanding of, and some familiarity with, the core Spring Framework
+and {data-store-name} concepts.
 
 While every effort has been made to ensure this documentation is comprehensive and complete without errors,
 some topics are beyond the scope of this document and may require more explanation (for example, data distribution management
 using partitioning with HA while still preserving consistency).  Additionally, some typographical errors might have crept in.
-If you do spot mistakes or even more serious errors, please bring these issues
-to the attention of the Spring Data team by raising an appropriate
-https://jira.spring.io/browse/SGF[issue in JIRA].
+If you do spot mistakes or even more serious errors, please bring these issues to the attention of the Spring Data team
+by raising an appropriate https://jira.spring.io/browse/SGF[issue in JIRA].

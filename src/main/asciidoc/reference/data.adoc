@@ -8,7 +8,7 @@ This chapter also covers support for dependency injection of {data-store-name} m
 [[apis:template]]
 == GemfireTemplate
 
-As with many other high-level abstractions provided by Spring, Spring Data for {data-store-name} provides a *template*
+As with many other high-level abstractions provided by Spring, {sdg-name} provides a *template*
 to simplify {data-store-name} data access operations. The class provides several methods containing common Region operations,
 but also provides the capability to *execute* code against native {data-store-name} APIs without having to deal with
 {data-store-name} checked exceptions by using a `GemfireCallback`.
@@ -79,7 +79,7 @@ about _Spring's Transaction Management_ infrastructure as it offers a consistent
 transparently across multiple APIs and can be configured either programmatically or declaratively
 (the most popular choice).
 
-For {data-store-name}, Spring Data for {data-store-name} provides a dedicated, per-cache, `PlatformTransactionManager` that,
+For {data-store-name}, {sdg-name} provides a dedicated, per-cache, `PlatformTransactionManager` that,
 once declared, allows Region operations to be executed atomically through Spring:
 
 [source,xml]
@@ -88,7 +88,7 @@ once declared, allows Region operations to be executed atomically through Spring
 ----
 
 NOTE: The example above can be simplified even further by eliminating the `cache-ref` attribute if the {data-store-name} cache
-is defined under the default name, `gemfireCache`. As with the other Spring Data for {data-store-name} namespace elements,
+is defined under the default name, `gemfireCache`. As with the other {sdg-name} namespace elements,
 if the cache bean name is not configured, the aforementioned naming convention will be used.
 Additionally, the transaction manager name is "`gemfireTransactionManager`" if not explicitly specified.
 
@@ -136,7 +136,7 @@ NOTE: #1 above is independent of your Spring [Boot] and/or [Data for {data-store
 and must be completed successfully.
 
 2) Referring to Step 5 in {data-store-name}'s http://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[documentation],
-Spring Data for {data-store-name}'s Annotation support will attempt to set the `GemFireCache`, {x-data-store-javadoc}/org/apache/geode/cache/GemFireCache.html#setCopyOnRead-boolean-[`copyOnRead`]
+{sdg-name}'s Annotation support will attempt to set the `GemFireCache`, {x-data-store-javadoc}/org/apache/geode/cache/GemFireCache.html#setCopyOnRead-boolean-[`copyOnRead`]
 property for you when using the `@EnableGemFireAsLastResource` annotation.
 
 However, if SDG's auto-configuration is unsuccessful then you must explicitly set the `copy-on-read` attribute on the
@@ -194,9 +194,9 @@ really should not be necessary.
 
 3) At this point, you *skip* Steps 6-8 in {data-store-name}'s http://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[documentation]
 and let _Spring Data Geode_ work its magic.  All you need do is annotate your Spring `@Configuration` class
-with Spring Data for {data-store-name}'s *new* `@EnableGemFireAsLastResource` annotation and a combination of Spring's
+with {sdg-name}'s *new* `@EnableGemFireAsLastResource` annotation and a combination of Spring's
 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction[Transaction Management]
-infrastructure and Spring Data for {data-store-name}'s `@EnableGemFireAsLastResource` configuration does the trick.
+infrastructure and {sdg-name}'s `@EnableGemFireAsLastResource` configuration does the trick.
 
 The configuration looks like this...
 
@@ -236,14 +236,14 @@ public JtaTransactionManager transactionManager(UserTransaction userTransaction)
 ----
 
 NOTE: The configuration in section <<apis:transaction-management>> does *not* apply here.
-The use of Spring Data for {data-store-name}'s `GemfireTransactionManager` is applicable only in "Local", Cache Transactions,
+The use of {sdg-name}'s `GemfireTransactionManager` is applicable only in "Local", Cache Transactions,
 *not* "Global", JTA Transactions.  Therefore, you do *not* configure the SDG `GemfireTransactionManager` in this case.
 You configure Spring's `JtaTransactionManager` as shown above.
 
 For more details on using _Spring's Transaction Management_ with JTA,
 see http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction-application-server-integration[here].
 
-Effectively, Spring Data for {data-store-name}'s `@EnableGemFireAsLastResource` annotation imports configuration containing 2 Aspect
+Effectively, {sdg-name}'s `@EnableGemFireAsLastResource` annotation imports configuration containing 2 Aspect
 bean definitions that handles the {data-store-name} `o.a.g.ra.GFConnectionFactory.getConnection()`
 and `o.a.g.ra.GFConnection.close()` operations at the appropriate points during the transactional operation.
 
@@ -284,7 +284,7 @@ class MyTransactionalService ... {
 `@Transactional` boundary is entered by your application (i.e. when the `MyTransactionSerivce.someTransactionalServiceMethod()`
 is called).
 
-#2 & #3 are handled by Spring Data for {data-store-name}'s new Aspects enabled with the `@EnableGemFireAsLastResource` annotation.
+#2 & #3 are handled by {sdg-name}'s new Aspects enabled with the `@EnableGemFireAsLastResource` annotation.
 
 #3 of course is the responsibility of your application.
 
@@ -359,7 +359,7 @@ As an example of configuring a `Declarable` component using Spring, consider the
 </cache-loader>
 ----
 
-To simplify the task of parsing, converting the parameters and initializing the object, Spring Data for {data-store-name} offers
+To simplify the task of parsing, converting the parameters and initializing the object, {sdg-name} offers
 a base class (`WiringDeclarableSupport`) that allows {data-store-name} user objects to be wired through a *template* bean definition
 or, in case that is missing, perform auto-wiring through the Spring IoC container. To take advantage of this feature,
 the user objects need to extend `WiringDeclarableSupport`, which automatically locates the declaring `BeanFactory`
@@ -516,7 +516,7 @@ the `DBLoader` code.
 [[apis:spring-cache-abstraction]]
 == Support for the Spring Cache Abstraction
 
-Spring Data for {data-store-name} provides an implementation of the Spring
+{sdg-name} provides an implementation of the Spring
 http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#cache[Cache Abstraction]
 to position {data-store-name} as a _caching provider_ in Spring's caching infrastructure.
 

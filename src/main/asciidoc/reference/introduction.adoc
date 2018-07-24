@@ -1,7 +1,7 @@
 [[ref-introduction]]
 = Document Structure
 
-The following chapters explain the core functionality offered by Spring Data for {data-store-name}:
+The following chapters explain the core functionality offered by {sdg-name}:
 
 * <<bootstrap>> describes the configuration support provided for configuring, initializing, and accessing
 {data-store-name} Caches, Regions, and related distributed system components.
@@ -27,4 +27,4 @@ OQL (Object Query Language) query.
 using `Gfsh`.
 
 * <<samples>> describes the examples provided with the distribution to illustrate the various features
-available in Spring Data for {data-store-name}.
+available in {sdg-name}.

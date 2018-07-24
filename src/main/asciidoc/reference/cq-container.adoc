@@ -5,13 +5,13 @@ A powerful functionality offered by {data-store-name} is
 {x-data-store-docs}/developing/continuous_querying/chapter_overview.html[Continuous Query] (or CQ).
 
 In short, CQ allows a developer to create and register an OQL query, and then automatically be notified when new data
-that gets added to {data-store-name} matches the query predicate. Spring Data for {data-store-name} provides dedicated
+that gets added to {data-store-name} matches the query predicate. {sdg-name} provides dedicated
 support for CQs through the `org.springframework.data.gemfire.listener` package and its *listener container*;
 very similar in functionality and naming to the JMS integration in the _Spring Framework_; in fact, users familiar with
 the JMS support in Spring, should feel right at home.
 
-Basically Spring Data for {data-store-name} allows methods on POJOs to become end-points for CQ.  Simply define the query
-and indicate the method that should be called to be notified when there is a match.  Spring Data for {data-store-name} takes care
+Basically {sdg-name} allows methods on POJOs to become end-points for CQ.  Simply define the query
+and indicate the method that should be called to be notified when there is a match.  {sdg-name} takes care
 of the rest.  This is very similar to Java EE's message-driven bean style, but without any requirement for base class
 or interface implementations, based on {data-store-name}.
 
@@ -23,7 +23,7 @@ for more information.
 [[apis:continuous-query:container]]
 == Continuous Query Listener Container
 
-Spring Data for {data-store-name} simplifies creation, registration, life-cycle and dispatch of CQ events by taking care of
+{sdg-name} simplifies creation, registration, life-cycle and dispatch of CQ events by taking care of
 the infrastructure around CQ with the use of SDG's `ContinuousQueryListenerContainer`, which does all the heavy lifting
 on behalf of the user.  Users familiar with EJB and JMS should find the concepts familiar as it is designed
 as close as possible to the support provided in the _Spring Framework_ with its Message-driven POJOs (MDPs).
@@ -46,7 +46,7 @@ to take advantage of its runtime.
 [[apis:continuous-query:adapter]]
 == The `ContinuousQueryListener` and `ContinuousQueryListenerAdapter`
 
-The `ContinuousQueryListenerAdapter` class is the final component in Spring Data for {data-store-name} CQ support.  In a nutshell,
+The `ContinuousQueryListenerAdapter` class is the final component in {sdg-name} CQ support.  In a nutshell,
 class allows you to expose almost *any* implementing class as an EDP with minimal constraints.
 `ContinuousQueryListenerAdapter` implements the `ContinuousQueryListener` interface, a simple listener interface
 similar to {data-store-name}'s {x-data-store-javadoc}/org/apache/geode/cache/query/CqListener.html[CqListener].
@@ -117,7 +117,7 @@ reference and the actual query definition are required. It's possible, however, 
 the resulting Continuous Query (useful for monitoring) but also the name of the method (the default is `handleEvent`).
 The specified method can have various argument types, the `EventDelegate` interface lists the allowed types.
 
-The example above uses the Spring Data for {data-store-name} namespace to declare the event listener container
+The example above uses the {sdg-name} namespace to declare the event listener container
 and automatically register the listeners. The full blown, *beans* definition is displayed below:
 
 [source,xml]

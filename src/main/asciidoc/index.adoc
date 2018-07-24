@@ -15,12 +15,17 @@ Costin Leau; David Turanski; John Blum; Oliver Gierke; Jay Bryant
 :apache-geode-javadoc: http://geode.apache.org/releases/latest/javadoc
 :apache-geode-website: http://geode.apache.org
 :apache-geode-wiki: https://cwiki.apache.org/confluence/display/GEODE
-:data-store-name: Pivotal GemFire
+:data-store-name-symbolic: gemfire
+:data-store-name-simple: GemFire
+:data-store-name: Pivotal {data-store-name-simple}
 :data-store-version: 9.5.1
 :pivotal-gemfire-version: 95
 :pivotal-gemfire-docs: http://gemfire.docs.pivotal.io/{pivotal-gemfire-version}
 :pivotal-gemfire-javadoc: http://gemfire-{pivotal-gemfire-version}-javadocs.docs.pivotal.io/
 :pivotal-gemfire-website: https://pivotal.io/pivotal-gemfire
+:pivotal-gemfire-wiki: https://cwiki.apache.org/confluence/display/GEODE
+:sdg-acronym: SDG
+:sdg-javadoc: https://docs.spring.io/spring-data/{data-store-name-symbolic}/docs/current/api
 :sdg-name: Spring Data for {data-store-name}
 :spring-data-access-schema-location: http://www.springframework.org/schema/data/gemfire/spring-data-gemfire.xsd
 :spring-data-access-schema-namespace: http://www.springframework.org/schema/data/gemfire
