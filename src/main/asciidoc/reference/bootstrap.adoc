@@ -1,53 +1,54 @@
 [[bootstrap]]
 = Bootstrapping {data-store-name} with the Spring container
 
-Spring Data for {data-store-name} provides full configuration and initialization of the {data-store-name} In-Memory Data Grid (IMDG)
-using the Spring IoC container. The framework includes several classes to help simplify the configuration of {data-store-name} components,
-including: Caches, Regions, Indexes, DiskStores, Functions, WAN Gateways, persistence backup, and several other Distributed System components
-to support a variety of application use cases with minimal effort.
+{sdg-name} provides full configuration and initialization of the {data-store-name} In-Memory Data Grid (IMDG)
+using the Spring IoC container. The framework includes several classes to help simplify the configuration of
+{data-store-name} components, including: Caches, Regions, Indexes, DiskStores, Functions, WAN Gateways,
+persistence backup, and several other Distributed System components to support a variety of application use cases
+with minimal effort.
 
-NOTE: This section assumes basic familiarity with {data-store-name}. For more information,
-see the {data-store-name} {x-data-store-docs}/gemfire/about_gemfire.html[product documentation].
+NOTE: This section assumes basic familiarity with {data-store-name}. For more information, see the {data-store-name}
+{x-data-store-docs}/gemfire/about_gemfire.html[product documentation].
 
 [[bootstrap:namespace:xml]]
 == Advantages of using Spring over {data-store-name} `cache.xml`
 
-Spring Data for {data-store-name}'s XML namespace supports full configuration of the {data-store-name} In-Memory Data Grid (IMDG).
-The XML namespace is one of two ways to configure {data-store-name} in a Spring context in order to properly
-manage {data-store-name}'s lifecycle inside the Spring container. The other way to configure Pivotal Gemfire
-in a Spring context is by using <<bootstrap-annotation-config,annotation-based configuration>>. While support for
-{data-store-name}'s native `cache.xml` persists for legacy reasons, {data-store-name} application developers
+{sdg-name}'s XML namespace supports full configuration of the {data-store-name} In-Memory Data Grid (IMDG).
+The XML namespace is one of two ways to configure {data-store-name} in a Spring context in order to properly manage
+{data-store-name}'s lifecycle inside the Spring container.  The other way to configure {data-store-name} in a Spring
+context is by using <<bootstrap-annotation-config,annotation-based configuration>>.
+
+While support for {data-store-name}'s native `cache.xml` persists for legacy reasons, {data-store-name} application developers
 who use XML configuration are encouraged to do everything in Spring XML to take advantage of the many wonderful things
 Spring has to offer, such as modular XML configuration, property placeholders and overrides,
 SpEL ({spring-framework-docs}/core.html#expressions[Spring Expression Language]), and environment profiles.
-Behind the XML namespace, Spring Data for {data-store-name} makes extensive use of Spring's `FactoryBean` pattern
-to simplify the creation, configuration, and initialization of {data-store-name} components.
+Behind the XML namespace, {sdg-name} makes extensive use of Spring's `FactoryBean` pattern to simplify the creation,
+configuration, and initialization of {data-store-name} components.
 
 {data-store-name} provides several callback interfaces, such as `CacheListener`, `CacheLoader`, and `CacheWriter`,
 that let developers add custom event handlers. Using Spring's IoC container, you can configure these callbacks
-as normal Spring beans and inject them into {data-store-name} components. This is a significant improvement
-over native `cache.xml`, which provides relatively limited configuration options and requires callbacks to implement
+as normal Spring beans and inject them into {data-store-name} components. This is a significant improvement over
+native `cache.xml`, which provides relatively limited configuration options and requires callbacks to implement
 {data-store-name}'s `Declarable` interface (see <<apis:declarable>> to see how you can still use `Declarables`
-within Spring's IoC/DI container).
+within Spring's container).
 
 In addition, IDEs, such as the Spring Tool Suite (STS), provide excellent support for Spring XML namespaces,
-including code completion, pop-up annotations, and real-time validation.
+including code completion, pop-up annotations, and real time validation.
 
 [[bootstrap:namespace]]
 == Using the Core Namespace
 
-To simplify configuration, Spring Data for {data-store-name} provides a dedicated XML namespace for configuring
-core {data-store-name} components. It is possible to configure beans directly by using Spring's standard
-`<bean>` definition. However, all bean properties are exposed through the XML namespace, so there is little benefit
-to using raw bean definitions.
+To simplify configuration, {sdg-name} provides a dedicated XML namespace for configuring core {data-store-name}
+components. It is possible to configure beans directly by using Spring's standard `<bean>` definition. However,
+all bean properties are exposed through the XML namespace, so there is little benefit to using raw bean definitions.
 
 NOTE: For more information about XML Schema-based configuration in Spring, see the
 {spring-framework-docs}/core.html#appendix[appendix] in the Spring Framework reference documentation.
 
 NOTE: Spring Data Repository support uses a separate XML namespace. See <<gemfire-repositories>> for more information
-on how to configure Spring Data for {data-store-name} Repositories.
+on how to configure {sdg-name} Repositories.
 
-To use the Spring Data for {data-store-name} XML namespace, declare it in your Spring XML configuration meta-data,
+To use the {sdg-name} XML namespace, declare it in your Spring XML configuration meta-data,
 as the following example shows:
 
 [source,xml]
@@ -68,18 +69,17 @@ as the following example shows:
 
 </beans>
 ----
-<1> Spring Data for {data-store-name} XML namespace prefix. Any name works, but, throughout this reference documentation,
-`gfe` is used.
+<1> {sdg-name} XML namespace prefix. Any name works, but, throughout this reference documentation, `gfe` is used.
 <2> The XML namespace prefix is mapped to the URI.
 <3> The XML namespace URI location. Note that, even though the location points to an external address (which does exist
-and is valid), Spring resolves the schema locally, as it is included in the Spring Data for {data-store-name} library.
+and is valid), Spring resolves the schema locally, as it is included in the {sdg-name} library.
 <4> Example declaration using the XML namespace with the `gfe` prefix.
 
 [NOTE]
 ====
-You can change the default namespace from `beans` to `gfe`. This is useful for XML configuration
-composed mainly of {data-store-name} components, as it avoids declaring the prefix. To do so, swap the namespace
-prefix declaration shown earlier, as the following example shows:
+You can change the default namespace from `beans` to `gfe`. This is useful for XML configuration composed mainly of
+{data-store-name} components, as it avoids declaring the prefix. To do so, swap the namespace prefix declaration
+shown earlier, as the following example shows:
 
 [source,xml]
 [subs="verbatim,attributes"]
@@ -99,7 +99,7 @@ prefix declaration shown earlier, as the following example shows:
 
 </beans>
 ----
-<1> The default namespace declaration for this XML document points to the Spring Data for {data-store-name} XML namespace.
+<1> The default namespace declaration for this XML document points to the {sdg-name} XML namespace.
 <2> The `beans` namespace prefix declaration for Spring's raw bean definitions.
 <3> Bean declaration using the `beans` namespace. Notice the prefix.
 <4> Bean declaration using the `gfe` namespace. Notice the lack of prefix since `gfe` is the default namespace.

@@ -1,7 +1,7 @@
 [[bootstrap-annotation-config]]
 = Bootstrapping {data-store-name} using Spring Annotations
 
-Spring Data for {data-store-name} (SDG) 2.0 introduces a new annotation-based configuration model
+{sdg-name} (SDG) 2.0 introduces a new annotation-based configuration model
 to configure and bootstrap {data-store-name} using the Spring container.
 
 The primary motivation for introducing an annotation-based approach to the configuration of {data-store-name}
@@ -12,7 +12,8 @@ and as _easily_ as possible.
 == Introduction
 
 {data-store-name} can be difficult to setup and use correctly, given all the
-{x-data-store-docs}/reference/topics/gemfire_properties.html[configuration properties], configuration options:
+{x-data-store-docs}/reference/topics/gemfire_properties.html[configuration properties]
+and different configuration options:
 
 * {x-data-store-javadoc}[Java API]
 * {x-data-store-docs}/reference/topics/chapter_overview_cache_xml.html[cache.xml]
@@ -27,73 +28,76 @@ Further complexity comes from the different supported topologies:
 * {x-data-store-wiki}/Geode+Internal+Architecture?src=contextnavpagetreemode[distributed system design patterns]
 (such as shared-nothing architecture).
 
-The Annotation-based configuration model aims to simplify all this and more.
+The annotation-based configuration model aims to simplify all this and more.
 
-The Annotation-based configuration model is an alternative to XML-based configuration using Spring Data for {data-store-name}'s
-XML Namespace. With XML, you could use the `spring-gemfire` (`gfe`) schema for configuration
-and the `spring-data-gemfire` (`gfe-data`) schema for data access-related concerns. See "`<<bootstrap>>`" for more details.
+The annotation-based configuration model is an alternative to XML-based configuration using {sdg-name}'s XML namespace.
+With XML, you could use the `gfe` XML schema for configuration and the `gfe-data` XML schema for data access
+related concerns. See "<<bootstrap>>" for more details.
 
-NOTE: As of SDG 2.0, the annotation-based configuration model does not yet have configuration support
-for {data-store-name}'s WAN components and topology.
+NOTE: As of SDG 2.0, the annotation-based configuration model does not yet support the configuration of
+{data-store-name}'s WAN components and topology.
 
-Like Spring Boot, Spring Data for {data-store-name}'s annotation-based configuration model was designed as an opinionated,
+Like Spring Boot, {sdg-name}'s annotation-based configuration model was designed as an opinionated,
 convention-over-configuration approach for using {data-store-name}. Indeed, this annotation-based configuration model
-was inspired by Spring Boot as well as several other Spring and Spring Data projects.
+was inspired by Spring Boot as well as several other Spring and Spring Data projects, collectively.
 
 By following convention, all annotations provide reasonable and sensible defaults for all configuration attributes.
- The default value for a given annotation attribute directly corresponds to the default value
-provided in {data-store-name} for the same configuration property or setting.
+The default value for a given annotation attribute directly corresponds to the default value provided in
+{data-store-name} for the same configuration property.
 
-The intention is to let you enable a {data-store-name} feature or an embedded service by
-declaring the annotation on your Spring `@Configuration` or `@SpringBootApplication` class without needing to
-unnecessarily configure a large number of attributes or properties just to use the feature.
+The intention is to let you enable a {data-store-name} feature or an embedded service by declaring the annotation
+on your Spring `@Configuration` or `@SpringBootApplication` class without needing to unnecessarily configure
+a large number of properties just to use the feature.
 
-Again, getting up and running as quickly and as easily as possible is the primary objective.
+Again, _getting started_, _quickly_ and as _easily_, is the primary objective.
 
-However, the option to customize the configuration metadata and behavior of {data-store-name} is there if you
-need it, and Spring Data for {data-store-name}'s Annotation-based configuration quietlys back away. You need
-only specify the configuration attributes you wish to adjust. Also, as we see later in this document,
-there are several ways to configure a {data-store-name} feature or embedded service by using annotations.
+However, the option to customize the configuration metadata and behavior of {data-store-name} is there if you need it,
+and {sdg-name}'s annotation-based configuration quietly backs away. You need only specify the configuration attributes
+you wish to adjust. Also, as we will see later in this document, there are several ways to configure a {data-store-name}
+feature or embedded service by using the annotations.
 
-You can find all the new SDG Annotations in the `org.springframework.data.gemfire.config.annotation` package.
+You can find all the new SDG Java Annotations in the `org.springframework.data.gemfire.config.annotation` package.
 
 [[bootstrap-annotation-config-geode-applications]]
 == Bootstrapping {data-store-name} Applications with Spring
 
 Like all Spring Boot applications that begin by annotating the application class with `@SpringBootApplication`,
-a Spring Boot application can easily become a {data-store-name} cache application by declaring any one of three main Annotations:
+a Spring Boot application can easily become a {data-store-name} cache application by declaring any one of three
+main annotations:
 
 * `@ClientCacheApplication`
 * `@PeerCacheApplication`
 * `@CacheServerApplication`
 
-These three annotations are the Spring and {data-store-name} application developer's starting point.
+These three annotations are the Spring application developer's starting point when working with {data-store-name}.
 
 To realize the intent behind these annotations, you must understand that there are two types of cache instances
-that can be created with {data-store-name}: a client or a peer.
+that can be created with {data-store-name}: a client cache or a peer cache.
 
-You can configure a Spring Boot application as aa {data-store-name} cache client (that is, with an instance of `ClientCache`),
-which communicates with an existing, standalone cluster of {data-store-name} servers used to manage the application's data.
-The client-server topology is the most typical system architecture employed when using {data-store-name} and you
-can make your Spring Boot application a cache client by annotating it with `@ClientCacheApplication`.
+You can configure a Spring Boot application as a {data-store-name} cache client with an instance of `ClientCache`,
+which can communicate with an existing cluster of {data-store-name} servers used to manage the application's data.
+The client-server topology is the most common system architecture employed when using {data-store-name} and you
+can make your Spring Boot application a cache client, with a `ClientCache` instance, simply by annotating it with
+`@ClientCacheApplication`.
 
-Alternatively, a Spring Boot application may be a peer member of an {data-store-name} cluster. That is, the application
-itself is another server in the cluster of servers that manage data. The Spring Boot application creates
-an "`embedded`" peer `Cache` instance when you annotate your application class with `@PeerCacheApplication`.
+Alternatively, a Spring Boot application may be a peer member of a {data-store-name} cluster. That is, the application
+itself is just another server in a cluster of servers that manages data. The Spring Boot application creates
+an "embedded", peer `Cache` instance when you annotate your application class with `@PeerCacheApplication`.
 
-By extension, the application may also serve as a `CacheServer`, serving cache clients and letting clients connect
+By extension, a peer cache application may also serve as a `CacheServer` too, allowing cache clients to connect
 and perform data access operations on the server. This is accomplished by annotating the application class with
-`@CacheServerApplication` instead of `@PeerCacheApplication`, which creates a peer `Cache` instance along with
+`@CacheServerApplication` in place of `@PeerCacheApplication`, which creates a peer `Cache` instance along with
 the `CacheServer`.
 
-NOTE: A {data-store-name} Server is not necessarily a cache server by default. That is, a server is not necessarily
-set up to serve cache clients just because it is a server.  A {data-store-name} Server can be a peer member (or data node)
-of the cluster that manages data without serving any clients while other peer members in the cluster are indeed set up
-to serve clients in addition to managing data. It also possible to set up certain peer members as non-data nodes,
-{x-data-store-docs}/developing/region_options/data_hosts_and_accessors.html[data accessors]
-that can service clients as `CacheServers` as well, but doing so is beyond the scope of this document.
+NOTE: A {data-store-name} server is not necessarily a cache server by default. That is, a server is not necessarily
+set up to serve cache clients just because it is a server.  A {data-store-name} server can be a peer member (data node)
+of the cluster managing data without serving any clients while other peer members in the cluster are indeed set up
+to serve clients in addition to managing data. It is also possible to set up certain peer members in the cluster as
+non-data nodes, called {x-data-store-docs}/developing/region_options/data_hosts_and_accessors.html[data accessors],
+which do not store data, but act as a proxy to service clients as `CacheServers`.   This is beyond the scope
+of this document.
 
-By way of example, if you want to create a Spring Boot {data-store-name} cache client application, you can start with the following:
+By way of example, if you want to create a Spring Boot cache client application, start with the following:
 
 .Spring-based {data-store-name} `ClientCache` application
 [source, java]
@@ -103,8 +107,9 @@ By way of example, if you want to create a Spring Boot {data-store-name} cache c
 class ClientApplication { .. }
 ----
 
-Also, if you want to create a Spring Boot application with an embedded peer `Cache` instance, where your application
-is a server and a peer member of a cluster or distributed system formed by {data-store-name}, you could start with the following:
+Or, if you want to create a Spring Boot application with an embedded peer `Cache` instance, where your application
+will be a server and peer member of a cluster, or distributed system, formed by {data-store-name},
+start with the following:
 
 .Spring-based {data-store-name} embedded peer `Cache` application
 [source, java]
@@ -114,11 +119,11 @@ is a server and a peer member of a cluster or distributed system formed by {data
 class ServerApplication { .. }
 ----
 
-Alternatively, you can use the `@CacheServerApplication` annotation instead of `@PeerCacheApplication` to create
-both an embedded peer `Cache` instance and a `CacheServer` running on localhost, listening on
-the default cache server port, 40404, as follows:
+Alternatively, you can use the `@CacheServerApplication` annotation in place of `@PeerCacheApplication` to create
+both an embedded peer `Cache` instance and a `CacheServer` running on `localhost`, listening on the default
+cache server port, `40404`, as follows:
 
-.Spring-based {data-store-name} embedded `CacheServer` Application
+.Spring-based {data-store-name} embedded peer `Cache` application with `CacheServer`
 [source, java]
 ----
 @SpringBootApplication
@@ -127,34 +132,35 @@ class ServerApplication { .. }
 ----
 
 [[bootstrap-annotation-config-client-server-applications]]
-== Going in-detail on Client-server Applications
+== Client/Server Applications In-Detail
 
-There are multiple ways that a client can connect to and communicate with servers in an {data-store-name} cluster.
+There are multiple ways that a client can connect to and communicate with servers in a {data-store-name} cluster.
 The most common and recommended approach is to use {data-store-name} Locators.
 
-NOTE: A cache client can connect to one or more locators in the {data-store-name} cluster instead of directly to a
-`CacheServer`.  The advantage of using locators over direct `CacheServer` connections is that locators provide metadata
-about the cluster to which clients are connected. This metadata includes information such as which servers contain
-the data of interest to the client or which servers have the least amount of load. A locator also provides fail-over
-capabilities in case a `CacheServer` goes down. By enabling the PR single-hop capability in the client `Pool`,
-the client is routed directly to the server containing the data the client needs to obtain the data requested.
+NOTE: A cache client can connect to one or more Locators in the {data-store-name} cluster instead of directly to a
+`CacheServer`.  The advantage of using Locators over direct `CacheServer` connections is that Locators provide metadata
+about the cluster to which the client is connected. This metadata includes information such as which servers contain
+the data of interest or which servers have the least amount of load. A Locator also provides fail-over capabilities
+in case a `CacheServer` crashes. By enabling the PR single-hop feature in the client `Pool`, the client is routed
+directly to the server containing the data requested and needed by the client.
 
 NOTE: Locators are also peer members in a cluster. Locators actually constitute what makes up a cluster of {data-store-name}
-nodes. That is, all nodes connected by a locator make up a cluster of peers, and new members use locators to join a cluster
+nodes. That is, all nodes connected by a Locator are peers in the cluster, and new members use Locators to join a cluster
 and find other members.
 
-{data-store-name} sets up a `DEFAULT` `Pool` connected to a `CacheServer` running on localhost, listening on port
-40404 (by default) when a `ClientCache` instance is created. A `CacheServer` listens on port 40404, accepting
-connections on all system NICs. You need do nothing special to use the client-server topology.
-To do so, annotate your server-side Spring Boot application with `@CacheServerApplication` and your client-side
-Spring Boot application with `@ClientCacheApplication`, and you are ready to go.
+By default, {data-store-name} sets up a "DEFAULT" `Pool` connected to a `CacheServer` running on `localhost`,
+listening on port `40404` when a `ClientCache` instance is created. A `CacheServer` listens on port `40404`,
+accepting connections from all system NICs. You do not need to do anything special to use the client-server topology.
+Simply annotate your server-side Spring Boot application with `@CacheServerApplication` and your client-side Spring Boot
+application with `@ClientCacheApplication`, and you are ready to go.
 
-If you prefer, you can even start your servers by using Gfsh's `start server` command. Your Spring Boot
-`@ClientCacheApplication` still connects to the server regardless of how it is started. However, you
-may prefer to configure and start your servers by using the Spring Data for {data-store-name} approach: with annotations.
+If you prefer, you can even start your servers with Gfsh's `start server` command. Your Spring Boot `@ClientCacheApplication`
+can still connect to the server regardless of how it was started. However, you may prefer to configure and start
+your servers by using the {sdg-name} approach since a properly annotated Spring Boot application class is far more
+intuitive and easier to debug.
 
-As an application developer, you will no doubt want to customize the `DEFAULT` `Pool` set up by {data-store-name}
-to possibly connect to one or more locators, as the following example shows:
+As an application developer, you will no doubt want to customize the "DEFAULT" `Pool` set up by {data-store-name}
+to possibly connect to one or more Locators, as the following example demonstrates:
 
 .Spring-based {data-store-name} `ClientCache` application using Locators
 [source, java]
@@ -167,19 +173,19 @@ to possibly connect to one or more locators, as the following example shows:
 class ClientApplication { .. }
 ----
 
-Along with the `locators` attribute, the `@ClientCacheApplication` annotation has a `servers` attribute that can be used
-to specify one or more nested `@Server` annotations that let the cache client connect directly to one or more servers,
-if necessary.
+Along with the `locators` attribute, the `@ClientCacheApplication` annotation has a `servers` attribute as well.
+The `servers` attribute can be used to specify one or more nested `@Server` annotations that let the cache client
+connect directly to one or more servers, if necessary.
 
 NOTE: You can use either the `locators` or `servers` attribute, but not both (this is enforced by {data-store-name}).
 
-You can also configure additional `Pool` instances (other than the `DEFAULT` `Pool` provided by {data-store-name} when
-a `ClientCache` instance is created with the `@ClientCacheApplication` annotation) by using the `@EnablePool`
+You can also configure additional `Pool` instances (other than the "DEFAULT" `Pool` provided by {data-store-name}
+when a `ClientCache` instance is created with the `@ClientCacheApplication` annotation) by using the `@EnablePool`
 and `@EnablePools` annotations.
 
 NOTE: `@EnablePools` is a composite annotation that aggregates several nested `@EnablePool` annotations on
 a single class. Java 8 and earlier does not allow more than one annotation of the same type to be declared
-on a class.
+on a single class.
 
 The following example uses the `@EnablePool` and `@EnablePools` annotations:
 
@@ -203,10 +209,10 @@ The following example uses the `@EnablePool` and `@EnablePools` annotations:
 class ClientApplication { .. }
 ----
 
-The `name` attribute is the only required attribute of the `@EnablePool` annotation.  As we see later, the value
-of `name` corresponds to both the name of the `Pool` bean created in the Spring context and the name used to
-reference the corresponding configuration properties. It is also the name of the `Pool` registered and used
-in {data-store-name}.
+The `name` attribute is the only required attribute of the `@EnablePool` annotation.  As we will see later, the value
+of the `name` attribute corresponds to both the name of the `Pool` bean created in the Spring container as well as
+the name used to reference the corresponding configuration properties. It is also the name of the `Pool` registered
+and used by {data-store-name}.
 
 Similarly, on the server, you can configure multiple `CacheServers` that a client can connect to, as follows:
 
@@ -226,10 +232,10 @@ class ServerApplication { .. }
 
 NOTE: Like `@EnablePools`, `@EnableCacheServers` is a composite annotation for aggregating multiple `@EnableCacheServer`
 annotations on a single class. Again, Java 8 and earlier does not allow more than one annotation of the same type
-to be declared on a class.
+to be declared on a single class.
 
-One thing an observant reader may have noticed is that, in all cases, you specify hard-coded values for hostnames,
-ports, and configuration-oriented annotation attributes. This is not ideal when a user's application gets
+One thing an observant reader may have noticed is that, in all cases, you have specified hard-coded values for all
+hostnames, ports, and configuration-oriented annotation attributes. This is not ideal when the application gets
 promoted and deployed to different environments, such as from DEV to QA to STAGING to PROD.
 
 The next section covers how to handle dynamic configuration determined at runtime.
@@ -237,34 +243,35 @@ The next section covers how to handle dynamic configuration determined at runtim
 [[bootstrap-annotation-config-configurers]]
 == Runtime configuration using `Configurers`
 
-Another goal when designing the Annotation-based configuration model was to preserve type safety in the annotation
+Another goal when designing the annotation-based configuration model was to preserve type safety in the annotation
 attributes. For example, if the configuration attribute could be expressed as an `int` (such as a port number),
-the attribute's type should be an `int`.
+then the attribute's type should be an `int`.
 
 Unfortunately, this is not conducive to dynamic and resolvable configuration at runtime.
 
 One of the finer features of Spring is the ability to use property placeholders and SpEL expressions
-in properties or attributes of the configuration metadata when configuring beans in a Spring context.
-However, this would require all annotation attributes to be `String` objects, thereby giving up type safety, which is not acceptable.
+in properties or attributes of the configuration metadata when configuring beans in the Spring container.
+However, this would require all annotation attributes to be of type `String`, thereby giving up type safety,
+which is not desirable.
 
-So, Spring Data for {data-store-name} borrows from another commonly used pattern in Spring, `Configurers`. Many different
-`Configurer` interfaces are provided in Spring Web MVC, including the
+So, {sdg-name} borrows from another commonly used pattern in Spring, `Configurers`. Many different `Configurer`
+interfaces are provided in Spring Web MVC, including the
 {spring-framework-javadoc}/org/springframework/web/servlet/config/annotation/ContentNegotiationConfigurer.html[`org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer`].
 
-The `Configurers` design pattern is a way to let application developers receive a callback to customize
-the configuration of a component or bean on startup. The framework calls back to user-provided code to adjust
-the configuration at runtime. One of the more common uses of this pattern is to supply conditional configuration
-based on the application's runtime environment.
+The `Configurers` design pattern enables application developers to receive a callback to customize the configuration
+of a component or bean on startup. The framework calls back to user-provided code to adjust the configuration
+at runtime. One of the more common uses of this pattern is to supply conditional configuration based on
+the application's runtime environment.
 
-Spring Data for {data-store-name} provides several `Configurer` callback interfaces to customize different aspects of annotation-based
+{sdg-name} provides several `Configurer` callback interfaces to customize different aspects of the annotation-based
 configuration metadata at runtime, before the Spring managed beans that the annotations create are initialized:
 
-* `ClientCacheConfigurer`
-* `PeerCacheConfigurer`
 * `CacheServerConfigurer`
+* `ClientCacheConfigurer`
 * `ContinuousQueryListenerContainerConfigurer`
 * `DiskStoreConfigurer`
 * `IndexConfigurer`
+* `PeerCacheConfigurer`
 * `PoolConfigurer`
 * `RegionConfigurer`
 
@@ -277,7 +284,7 @@ Consider the following example from a server application:
 [source, java]
 ----
 @SpringBootApplication
-@CacheServerApplication(name = "SpringServerApplication", logLevel = "info")
+@CacheServerApplication(name = "SpringServerApplication")
 class ServerApplication {
 
   @Bean
@@ -300,7 +307,7 @@ Next, consider the following example from a client application:
 [source, java]
 ----
 @SpringBootApplication
-@ClientCacheApplication(logLevel = "info")
+@ClientCacheApplication
 class ClientApplication {
 
   @Bean
@@ -315,39 +322,39 @@ class ClientApplication {
 }
 ----
 
-By using the provided `Configurers`, you can receive a callback in order to further customize
-the configuration that is enabled by the associated annotation at runtime, during startup.
+By using the provided `Configurers`, you can receive a callback to further customize the configuration
+that is enabled by the associated annotation at runtime, during startup.
 
-In addition, when the `Configurer` is declared as a bean in the Spring context, the bean definition can take advantage
-of other Spring container features, such as property placeholders, SpEL expressions that use the `@Value` annotation
+In addition, when the `Configurer` is declared as a bean in the Spring container, the bean definition can take advantage
+of other Spring container features, such as property placeholders, SpEL expressions by using the `@Value` annotation
 on factory method parameters, and so on.
 
-All `Configurers` provided by Spring Data for {data-store-name} take two bits of information in the callback: the name of the bean created
-in the Spring context by the annotation and a reference to the `FactoryBean` used by the annotation to
-create and configure the {data-store-name} component (for example, a `ClientCache` instance is created and configured with
-SDG's `ClientCacheFactoryBean`).
+All `Configurers` provided by {sdg-name} take two bits of information in the callback: the name of the bean created
+in the Spring container by the annotation and a reference to the `FactoryBean` used by the annotation to
+create and configure the {data-store-name} component (for example, a `ClientCache` instance is created
+and configured with `ClientCacheFactoryBean`).
 
-NOTE: SDG `FactoryBeans` are part of the SDG public API and are what you would use in Spring's
-{spring-framework-docs}/core.html#beans-java[Java-based container configuration]
-if this new annotation-based configuration model were not provided. Indeed, the annotations themselves are using
-these same `FactoryBeans` for their configuration. So, in essence, the annotations are a facade
-and provide an extra layer of abstraction for convenience.
+NOTE: {sdg-acronym} `FactoryBeans` are part of the {sdg-acronym} public API and are what you would use in Spring's
+{spring-framework-docs}/core.html#beans-java[Java-based container configuration] if this new annotation-based
+configuration model were not provided. Indeed, the annotations themselves are using these same `FactoryBeans`
+for their configuration. So, in essence, the annotations are a facade providing an extra layer of abstraction
+for convenience.
 
-Given that a `Configurer` can be declared as a regular bean definition like any other POJO, you can combine
-different Spring configuration options, such as the use of Spring Profiles with `Conditions` that
-use both property placeholders and SpEL expressions. These and other nifty features let you create
-even more sophisticated and flexible configurations.
+Given that a `Configurer` can be declared as a regular bean definition like any other POJO, you can combine different
+Spring configuration options, such as the use of Spring Profiles with `Conditions` that use both property placeholders
+and SpEL expressions. These and other nifty features let you create even more sophisticated and flexible configurations.
 
 However, `Configurers` are not the only option.
 
 [[bootstrap-annotation-config-properties]]
-== Runtime Configuration Using `Properties`
+== Runtime configuration using `Properties`
 
 In addition to `Configurers`, each annotation attribute in the annotation-based configuration model is associated
-with a corresponding configuration property (prefixed with `spring.data.gemfire.`) that can be declared in a
+with a corresponding configuration property (prefixed with `spring.data.gemfire.`), which can be declared in a
 Spring Boot `application.properties` file.
 
-Building on the earlier examples, the client's `application.properties` file would define the following set of properties:
+Building on the earlier examples, the client's `application.properties` file would define the following
+set of properties:
 
 .Client `application.properties`
 [source, java]
@@ -366,7 +373,7 @@ spring.data.gemfire.pool.Neptune.servers=saturn[41414],neptune[42424]
 spring.data.gemfire.pool.Neptune.min-connections=25
 ----
 
-Also, the server's `application.properties` file would define the following properties:
+The corresponding server's `application.properties` file would define the following properties:
 
 .Server `application.properties`
 [source, java]
@@ -393,13 +400,13 @@ Then you can simplify the `@ClientCacheApplication` class to the following:
 class ClientApplication { .. }
 ----
 
-Also, the `@CacheServerApplication` class can become the following:
+Also, the `@CacheServerApplication` class becomes the following:
 
 .Spring `@CacheServerApplication` class
 [source, java]
 ----
 @SpringBootApplication
-@CacheServerApplication(name = "SpringApplication")
+@CacheServerApplication(name = "SpringServerApplication")
 @EnableCacheServers(servers = {
     @EnableCacheServer(name = "Venus"),
     @EnableCacheServer(name = "Saturn"),
@@ -408,10 +415,10 @@ Also, the `@CacheServerApplication` class can become the following:
 class ServerApplication { .. }
 ----
 
-The preceding example shows why it is important to "`name`" your annotation-based beans (other than because it is required
+The preceding example shows why it is important to "name" your annotation-based beans (other than because it is required
 in certain cases). Doing so makes it possible to reference the bean in a Spring context from XML, properties,
 and Java. It is even possible to inject annotation-defined beans into an application class,
-for whatever purpose, as the following example shows:
+for whatever purpose, as the following example demonstrates:
 
 [source, java]
 ----
@@ -425,11 +432,11 @@ class MyApplicationComponent {
 }
 ----
 
-Likewise, naming an annotation-defined bean lets you code a `Configurer` to customize a specific, "`named`" bean
+Likewise, naming an annotation-defined bean lets you code a `Configurer` to customize a specific, "named" bean
 since the `beanName` is 1 of 2 arguments passed to the callback.
 
-Oftentimes, an associated annotation attribute property takes two forms: a "`named`" property along with
-an "`unnamed`" property.
+Oftentimes, an associated annotation attribute property takes two forms: a "named" property along with
+an "unnamed" property.
 
 The following example shows such an arrangement:
 
@@ -441,19 +448,19 @@ spring.data.gemfire.cache.server.Saturn...
 spring.data.gemfire.cache.server.Neptune...
 ----
 
-While there are three named `CacheServers` above, there is one unnamed `CacheServer` property that serves as the default
-value for any unspecified value for that property, even for "`named`" `CacheServers`. So, while `Venus` sets
-and overrides its own `bind-address`, `Saturn` and `Neptune` inherit from the "`unnamed`"
+While there are three named `CacheServers` above, there is one unnamed `CacheServer` property providing the default
+value for any unspecified value for that property, even for "named" `CacheServers`. So, while "Venus" sets
+and overrides its own `bind-address`, "Saturn" and "Neptune" inherit from the "unnamed"
 `spring.data.gemfire.cache.server.bind-address` property.
 
 See an annotation's Javadoc for which annotation attributes support property-based configuration and whether
-they support "`named`" properties over default, "`unnamed`" properties.
+they support "named" properties over default, "unnamed" properties.
 
 [[bootstrap-annotation-config-properties-of-properties]]
 === `Properties` of `Properties`
 
 In the usual Spring fashion, you can even express `Properties` in terms of other `Properties`, whether that is
-by using a Spring Boot `application.properties` file or by using the `@Value` annotation in your Java class.
+by using a Spring Boot `application.properties` file or by using the `@Value` annotation in your Java configuration class.
 The following example shows a nested property being set in an `application.properties` file:
 
 .Properties of Properties
@@ -464,6 +471,7 @@ spring.data.gemfire.cache.server.port=${gemfire.cache.server.port:40404}
 
 The following example shows a nested property being set in Java:
 
+.Property placehodler nesting
 [source, java]
 ----
   @Bean
@@ -480,18 +488,19 @@ TIP: Property placeholder nesting can be arbitrarily deep.
 [[bootstrap-annotation-config-embedded-services]]
 == Configuring Embedded Services
 
-{data-store-name} provides the ability to start many different embedded services that are required by an application, depending on
-the use case.
+{data-store-name} provides the ability to start many different embedded services that are required by an application,
+depending on the use case.
 
 [[bootstrap-annotation-config-embedded-services-locator]]
 === Configuring an Embedded Locator
 
-As mentioned previously, {data-store-name} locators are used by clients to connect with and find servers in a cluster
-as well as by new members joining an existing cluster to find other peers.
+As mentioned previously, {data-store-name} Locators are used by clients to connect to and find servers in a cluster.
+In addition, new members joining an existing cluster use Locators to find their peers.
 
-It is often convenient for application developers as they are developing their Spring Boot and Spring Data for {data-store-name}
-applications to startup up a small cluster of two or three {data-store-name} servers. Rather than starting a separate locator
-process, you can annotate your Spring Boot `@CacheServerApplication` class with `@EnableLocator`, as follows:
+It is often convenient for application developers as they are developing their Spring Boot and {sdg-name}
+applications to startup up a small cluster of two or three {data-store-name} servers. Rather than starting
+a separate Locator process, you can annotate your Spring Boot `@CacheServerApplication` class with `@EnableLocator`,
+as follows:
 
 .Spring, {data-store-name} `CacheServer` application running an embedded Locator
 [source, java]
@@ -502,13 +511,12 @@ process, you can annotate your Spring Boot `@CacheServerApplication` class with 
 class ServerApplication { .. }
 ----
 
-The `@EnableLocator` annotation starts an embedded locator in the Spring {data-store-name} `CacheServer` application
-process running on localhost, listening on the default Locator port: 10334. You can customize
-the `host` (that is, the bind address) and `port` that the embedded locator binds to by using the corresponding
-annotation attributes.
+The `@EnableLocator` annotation starts an embedded Locator in the Spring {data-store-name} `CacheServer` application
+running on `localhost`, listening on the default Locator port, `10334`. You can customize the `host` (bind address)
+and `port` that the embedded Locator binds to by using the corresponding annotation attributes.
 
-Additionally, you can set the `@EnableLocator` attributes by setting the `spring.data.gemfire.locator.host`
-and `spring.data.gemfire.locator.port` properties in `application.properties`.
+Alternatively, you can set the `@EnableLocator` attributes by setting the corresponding
+`spring.data.gemfire.locator.host` and `spring.data.gemfire.locator.port` properties in `application.properties`.
 
 Then you can start other Spring Boot `@CacheServerApplication`-enabled applications by connecting to this
 Locator with the following:
@@ -522,8 +530,8 @@ class ServerApplication { .. }
 ----
 
 You can even combine both application classes shown earlier into a single class and use your IDE to create different
-run profile configurations to run different instances of the same class with slightly modified configuration by using
-Java system properties, as follows:
+run profile configurations to launch different instances of the same class with slightly modified configuration
+by using Java system properties, as follows:
 
 .Spring `CacheServer` application running an embedded Locator and connecting to the Locator
 [source, java]
@@ -538,8 +546,8 @@ public class ServerApplication {
 
   @EnableLocator
   @Profile("embedded-locator")
-  static class Configuration {
-  }
+  static class Configuration { }
+
 }
 ----
 
@@ -553,38 +561,37 @@ spring.data.gemfire.cache.server.port=41414
 spring.profiles.active=embedded-locator
 ----
 
-Only 1 of the run profiles for the `ServerApplication` class should be set with the
-`-Dspring.profiles.active=embedded-locator` Java system property. Then you can change the `..name`
-and `..cache.server.port` for each of the other run profiles and have a small cluster or distributed system
-of {data-store-name} Servers running on your local system.
+Only 1 of the run profiles for the `ServerApplication` class should set the `-Dspring.profiles.active=embedded-locator`
+Java system property. Then you can change the `..name` and `..cache.server.port` for each of the other run profiles
+and have a small cluster (distributed system) of {data-store-name} servers running on your local system.
 
 NOTE: The `@EnableLocator` annotation was meant to be a development-time annotation only and not something
-an application developer should use in production. We strongly recommend that locators be standalone,
+an application developer would use in production. We strongly recommend running Locators as standalone,
 independent processes in the cluster.
 
-More details on how {data-store-name} locators work can be found
+More details on how {data-store-name} Locators work can be found
 {x-data-store-docs}/topologies_and_comm/topology_concepts/how_member_discovery_works.html[here].
 
 [[bootstrap-annotation-config-embedded-services-manager]]
 === Configuring an Embedded Manager
 
-A {data-store-name} Manager is another peer member or node in the cluster that is responsible for "`management`" activities.
-Management activities include creating regions, indexes, diskstores, and so on, along with monitoring the runtime
-operations and behavior of these components.
+A {data-store-name} Manager is another peer member or node in the cluster that is responsible for cluster "management".
+Management involves creating `Regions`, `Indexes`, `DiskStores`, among other things, along with monitoring the runtime
+operations and behavior of the cluster components.
 
-The manager lets a JMX-enabled client (such as the Gfsh shell tool) connect to the manager to manage the cluster.
-It is also possible to connect to a manager with JDK-provided tools such as JConsole or JVisualVM, given that these are
+The Manager lets a JMX-enabled client (such as the _Gfsh_ shell tool) connect to the Manager to manage the cluster.
+It is also possible to connect to a Manager with JDK-provided tools such as JConsole or JVisualVM, given that these are
 both JMX-enabled clients as well.
 
-Perhaps you would also like to make the Spring `@CacheServerApplication` shown earlier be a manager as well. To do so, annotate
-your Spring `@Configuration` or `@SpringBootApplication` class with `@EnableManager`.
+Perhaps you would also like to enable the Spring `@CacheServerApplication` shown earlier as a Manager as well. To do so,
+annotate your Spring `@Configuration` or `@SpringBootApplication` class with `@EnableManager`.
 
-By default, the manager binds to localhost, listening on the default {data-store-name} Manager port of 1099.
-Several aspects of the manager can be configured with annotation attributes or the corresponding properties.
+By default, the Manager binds to `localhost`, listening on the default Manager port of `1099`. Several aspects of
+the Manager can be configured with annotation attributes or the corresponding properties.
 
-The following example shows how to create an embedded manager in Java:
+The following example shows how to create an embedded Manager in Java:
 
-.Spring `CacheServer` application running an embedded manager
+.Spring `CacheServer` application running an embedded Manager
 [source, java]
 ----
 @SpringBootApplication
@@ -598,12 +605,12 @@ public class ServerApplication {
   @EnableLocator
   @EnableManager
   @Profile("embedded-locator-manager")
-  static class Configuration {
-  }
+  static class Configuration { }
+
 }
 ----
 
-With the preceding class, you can even use Gfsh to connect to this server and manage it, as follows:
+With the preceding class, you can even use _Gfsh_ to connect to the small cluster and manage it, as follows:
 
 [source, java]
 ----
@@ -629,20 +636,19 @@ SpringCacheServerTwo   | 10.99.199.5(SpringCacheServerTwo:14844)<v1>:1025
 SpringCacheServerThree | 10.99.199.5(SpringCacheServerThree:14846)<v2>:1026
 ----
 
-Because we also have the embedded locator enabled, we can connect indirectly to the manager through
-the locator. A locator lets JMX clients connect and find a manager node in the cluster. If none exists,
-the locator assumes the role of a manager. However, if no locator exists, we would need to
-connect directly to the Manager by using the following:
+Because we also have the embedded Locator enabled, we can connect indirectly to the Manager through the Locator.
+A Locator lets JMX clients connect and find a Manager in the cluster. If none exists, the Locator assumes the role
+of a Manager. However, if no Locator exists, we would need to connect directly to the Manager by using the following:
 
-.Gfsh `connect` command connecting directly to the Manager
+._Gfsh_ `connect` command connecting directly to the Manager
 [source, java]
 ----
 gfsh>connect --jmx-manager=localhost[1099]
 ----
 
 NOTE: Like the `@EnableLocator` annotation, the `@EnableManager` annotation is also meant to be a development-time
-only annotation and not something an application developer should use in production. We strongly recommend
-that managers, like Locators, be standalone, independent, and dedicated processes in the cluster.
+only annotation and not something an application developer would use in production. We strongly recommend
+that Managers, like Locators, be standalone, independent and dedicated processes in the cluster.
 
 More details on {data-store-name} management and monitoring can be found
 {x-data-store-docs}/managing/book_intro.html[here].
@@ -653,17 +659,18 @@ More details on {data-store-name} management and monitoring can be found
 {data-store-name} is also capable of running an embedded HTTP server. The current implementation is backed by
 https://www.eclipse.org/jetty/[Eclipse Jetty].
 
-The embedded HTTP server is used to host {data-store-name}'s management (admin) REST API (not a publicly advertised API),
+The embedded HTTP server is used to host {data-store-name}'s Management (Admin) REST API (not a publicly advertised API),
 the {x-data-store-docs}/rest_apps/book_intro.html[Developer REST API],
 and the {x-data-store-docs}/tools_modules/pulse/pulse-overview.html[Pulse Monitoring Web Application].
 
-However, to use any of these {data-store-name}-provided web applications, you must have a full installation of {data-store-name}
-installed on your system, and you must set the `GEODE_HOME` environment variable to your installation directory.
+However, to use any of these {data-store-name}-provided web applications, you must have a full installation of
+{data-store-name} installed on your system, and you must set the `GEODE_HOME` environment variable to
+your installation directory.
 
 To enable the embedded HTTP server, add the `@EnableHttpService` annotation to any `@PeerCacheApplication`
 or `@CacheServerApplication` annotated class, as follows:
 
-.Spring `CacheServer` application running an embedded HTTP server
+.Spring `CacheServer` application running the embedded HTTP server
 [source, java]
 ----
 @SpringBootApplication
@@ -672,7 +679,7 @@ or `@CacheServerApplication` annotated class, as follows:
 public class ServerApplication { .. }
 ----
 
-By default, the embedded HTTP server listens on port 7070 for HTTP client requests. Of course, you can use
+By default, the embedded HTTP server listens on port `7070` for HTTP client requests. Of course, you can use
 the annotation attributes or corresponding configuration properties to adjust the port as needed.
 
 Follow the earlier links for more details on HTTP support and the services provided.
@@ -680,14 +687,14 @@ Follow the earlier links for more details on HTTP support and the services provi
 [[bootstrap-annotation-config-embedded-services-memcached]]
 === Configuring the embedded Memcached Server (Gemcached)
 
-{data-store-name} also implements the memcached protocol with the ability to service memcached clients. That is, memcached
-clients can connect to an {data-store-name} cluster and perform memcached operations as if the {data-store-name} servers
-in the cluster were actual memcached servers.
+{data-store-name} also implements the Memcached protocol with the ability to service Memcached clients.  That is,
+Memcached clients can connect to a {data-store-name} cluster and perform Memcached operations as if
+the {data-store-name} servers in the cluster were actual Memcached servers.
 
-To enable the embedded memcached service, add the `@EnableMemcachedServer` annotation to any
-`@PeerCacheApplication` or `@CacheServerApplication` annotated class, as follows:
+To enable the embedded Memcached service, add the `@EnableMemcachedServer` annotation to any `@PeerCacheApplication`
+or `@CacheServerApplication` annotated class, as follows:
 
-.Spring `CacheServer` application running an embedded Memcached Server
+.Spring `CacheServer` application running an embedded Memcached server
 [source, java]
 ----
 @SpringBootApplication
@@ -696,20 +703,20 @@ To enable the embedded memcached service, add the `@EnableMemcachedServer` annot
 public class ServerApplication { .. }
 ----
 
-More details on {data-store-name}'s Gemcached service can be found
+More details on {data-store-name}'s Memcached service (called "Gemcached") can be found
 {x-data-store-docs}/tools_modules/gemcached/chapter_overview.html[here].
 
 [[bootstrap-annotation-config-embedded-services-redis]]
 === Configuring the Embedded Redis Server
 
-{data-store-name} also implements the Redis server protocol, which enables Redis clients to connect to and communicate with
-a cluster of {data-store-name} Servers to issue Redis commands. As of this writing, the Redis server protocol support
-in {data-store-name} is still experimental.
+{data-store-name} also implements the Redis server protocol, which enables Redis clients to connect to and communicate
+with a cluster of {data-store-name} servers to issue Redis commands. As of this writing, the Redis server protocol
+support in {data-store-name} is still experimental.
 
 To enable the embedded Redis service, add the `@EnableRedisServer` annotation to any `@PeerCacheApplication`
 or `@CacheServerApplication` annotated class, as follows:
 
-.Spring `CacheServer` application running an embedded Redis Server
+.Spring `CacheServer` application running an embedded Redis server
 [source, java]
 ----
 @SpringBootApplication
@@ -742,17 +749,18 @@ While the `logLevel` attribute can be specified with all the cache-based applica
 (for example, `@ClientCacheApplication(logLevel="info")`), it is easier to customize logging behavior with
 the `@EnableLogging` annotation.
 
-Additionally, you can specify the `log-level` by setting the `spring.data.gemfire.logging.level` property
+Additionally, you can configure the `log-level` by setting the `spring.data.gemfire.logging.level` property
 in `application.properties`.
 
-See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableLogging.html[`@EnableLogging` annotation Javadoc] for more details.
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableLogging.html[`@EnableLogging` annotation Javadoc]
+for more details.
 
 [[bootstrap-annotation-config-statistics]]
 == Configuring Statistics
 
-To gain even deeper insight into {data-store-name} at runtime, you can enable statistics.
-Gathering statistical data facilitates system analysis and troubleshooting when complex problems,
-which are often distributed in nature and where timing is a crucial factor, occur.
+To gain even deeper insight into {data-store-name} at runtime, you can enable statistics. Gathering statistical data
+facilitates system analysis and troubleshooting when complex problems, which are often distributed in nature
+and where timing is a crucial factor, occur.
 
 When statistics are enabled, you can use {data-store-name}'s
 {x-data-store-docs}/tools_modules/vsd/chapter_overview.html[VSD (Visual Statistics Display)] tool
@@ -772,10 +780,11 @@ public class ClientApplication { .. }
 Enabling statistics on a server is particularly valuable when evaluating performance. To do so,
 annotate your `@PeerCacheApplication` or `@CacheServerApplication` class with `@EnableStatistics`.
 
-You can use the `@EnableStatistics` annotation attributes or associated properties to customize the statistics gathering
-and collection process.
+You can use the `@EnableStatistics` annotation attributes or associated properties to customize
+the statistics gathering and collection process.
 
-See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableStatistics.html[`@EnableStatistics` annotation Javadoc] for more details.
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableStatistics.html[`@EnableStatistics` annotation Javadoc]
+for more details.
 
 More details on {data-store-name}'s statistics can be found
 {x-data-store-docs}/managing/statistics/chapter_overview.html[here].
@@ -785,23 +794,24 @@ More details on {data-store-name}'s statistics can be found
 
 One of the more powerful features of {data-store-name} is
 {x-data-store-docs}/developing/data_serialization/gemfire_pdx_serialization.html[PDX serialization].
-While a complete discussion on PDX is beyond the scope of this document, serialization using PDX is a much better
+While a complete discussion of PDX is beyond the scope of this document, serialization using PDX is a much better
 alternative to Java serialization, with the following benefits:
 
 * PDX uses a centralized type registry to keep the serialized bytes of an object more compact.
 * PDX is a neutral serialization format, allowing both Java and Native clients to operate on the same data set.
 * PDX supports versioning and lets object fields be added or removed without affecting existing applications
-using either older or newer versions of the PDX serialized application domain objects that have changed,
-and without data loss.
-* PDX lets object fields be accessed individually or in OQL query projections and predicates without
-the object needing to be de-serialized first.
+using either older or newer versions of the PDX serialized objects that have changed, without data loss.
+* PDX lets object fields be accessed individually in OQL query projections and predicates without the object
+needing to be de-serialized first.
 
-In general, serialization in {data-store-name} is needed any time data is transferred to or from clients and servers or between
-peers in a cluster for normal distribution and replication processes as well as when data is overflowed or persisted
-to disk.
+In general, serialization in {data-store-name} is required any time data is transferred to or from clients and servers
+or between peers in a cluster during normal distribution and replication processes as well as when data is overflowed
+or persisted to disk.
 
-Enabling PDX serialization is much simpler than modifying all of your application domain object types to be
-`java.io.Serializable`, especially when it may be undesirable to impose such restrictions on your application domain model.
+Enabling PDX serialization is much simpler than modifying all of your application domain object types to implement
+`java.io.Serializable`, especially when it may be undesirable to impose such restrictions on your
+application domain model or you do not have any control over the objects your are serializing, which is especially
+true when using a 3rd party library (e.g. think of a geo-spatial API with `Coordinate` types).
 
 To enable PDX, annotate your application class with `@EnablePdx`, as follows:
 
@@ -821,19 +831,21 @@ interface or you can implement and register a non-invasive implementation of the
 interface to handle all the application domain object types that need to be serialized.
 
 Unfortunately, {data-store-name} only lets one `PdxSerializer` be registered, which suggests that all application
-domain object types should be handled by a single `PdxSerializer` instance. However, that is a serious anti-pattern
+domain object types need to be handled by a single `PdxSerializer` instance. However, that is a serious anti-pattern
 and an unmaintainable practice.
 
 Even though only a single `PdxSerializer` instance can be registered with {data-store-name}, it makes sense to create a
 single `PdxSerializer` implementation per application domain object type.
 
-By using the https://en.wikipedia.org/wiki/Composite_pattern[Composite Software Design Pattern], you
-can provide an implementation of the `PdxSerializer` interface that aggregates all of the application
-domain object type-specific `PdxSerializer` instances but acts as a single `PdxSerializer` instance and register it.
+By using the https://en.wikipedia.org/wiki/Composite_pattern[Composite Software Design Pattern], you can provide
+an implementation of the `PdxSerializer` interface that aggregates all of the application domain object type-specific
+`PdxSerializer` instances, but acts as a single `PdxSerializer` instance and register it.
 
-You can declare this composite `PdxSerializer` as a managed bean in the Spring context and refer to this
-composite `PdxSerializer` by its bean name in the `@EnablePdx` annotation by using the `serializerBeanName` attribute.
-Spring Data for {data-store-name} takes care of registering it with {data-store-name} on your behalf. The following example shows how to create a custom composite `PdxSerializer`:
+You can declare this composite `PdxSerializer` as a managed bean in the Spring container and refer to this composite
+`PdxSerializer` by its bean name in the `@EnablePdx` annotation using the `serializerBeanName` attribute. {sdg-name}
+takes care of registering it with {data-store-name} on your behalf.
+
+The following example shows how to create a custom composite `PdxSerializer`:
 
 .Spring `ClientCache` application with PDX enabled, using a custom composite `PdxSerializer`
 [source, java]
@@ -852,15 +864,18 @@ public class ClientApplication {
 
 It is also possible to declare {data-store-name}'s
 {x-data-store-javadoc}/org/apache/geode/pdx/ReflectionBasedAutoSerializer.html[`org.apache.geode.pdx.ReflectionBasedAutoSerializer`]
-as a bean definition in a Spring context. Alternatively, you should use Spring Data for {data-store-name}'s more robust
-https://docs.spring.io/spring-data-gemfire/docs/current/api/org/springframework/data/gemfire/mapping/MappingPdxSerializer.html[`org.springframework.data.gemfire.mapping.MappingPdxSerializer`],
+as a bean definition in a Spring context.
+
+Alternatively, you should use {sdg-name}'s more robust
+{sdg-javadoc}/org/springframework/data/gemfire/mapping/MappingPdxSerializer.html[`org.springframework.data.gemfire.mapping.MappingPdxSerializer`],
 which uses Spring Data mapping metadata and infrastructure applied to the serialization process for more efficient
 handling than reflection alone.
 
 Many other aspects and features of PDX can be adjusted with the `@EnablePdx` annotation attributes
 or associated configuration properties.
 
-See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnablePdx.html[`@EnablePdx` annotation Javadoc] for more details.
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnablePdx.html[`@EnablePdx` annotation Javadoc]
+for more details.
 
 [[bootstrap-annotation-config-ssl]]
 == Configuring SSL
@@ -880,15 +895,16 @@ To enable SSL, annotate your application class with `@EnableSsl`, as follows:
 public class ClientApplication { .. }
 ----
 
-Then you need to set the necessary SSL configuration attributes or properties (keystores, usernames/passwords, and so on).
+Then you need to set the necessary SSL configuration attributes or properties: keystores, usernames/passwords, and so on.
 
 You can individually configure different {data-store-name} components (`GATEWAY`, `HTTP`, `JMX`, `LOCATOR`, and `SERVER`)
 with SSL, or you can collectively configure them to use SSL by using the `CLUSTER` enumerated value.
 
-You can specify which {data-store-name} components the SSL configuration settings should applied to by using
-the nested `@EnableSsl` annotation `Component` enum, as follows:
+You can specify which {data-store-name} components the SSL configuration settings should applied by using
+the nested `@EnableSsl` annotation, `components` attribute  with enumerated values from the `Component` enum,
+as follows:
 
-.Spring `ClientCache` application with SSL enabled by Aache {data-store-name} component
+.Spring `ClientCache` application with SSL enabled by component
 [source, java]
 ----
 @SpringBootApplication
@@ -897,10 +913,11 @@ the nested `@EnableSsl` annotation `Component` enum, as follows:
 public class ClientApplication { .. }
 ----
 
-In addition, you can also specify component-level SSL configuration (`ciphers`, `protocols` and `keystore`/`truststore` information)
-by using the corresponding annotation attribute or associated configuration properties.
+In addition, you can also specify component-level SSL configuration (`ciphers`, `protocols` and `keystore`/`truststore`
+information) by using the corresponding annotation attribute or associated configuration properties.
 
-See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableSsl.html[`@EnableSsl` annotation Javadoc] for more details.
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableSsl.html[`@EnableSsl` annotation Javadoc]
+for more details.
 
 More details on {data-store-name} SSL support can be found
 {x-data-store-docs}/managing/security/ssl_overview.html[here].
@@ -909,24 +926,26 @@ More details on {data-store-name} SSL support can be found
 == Configuring {data-store-name} Properties
 
 While many of the {x-data-store-docs}/reference/topics/gemfire_properties.html[gemfire.properties]
-are conveniently encapsulated in and abstracted with an annotation in the SDG annotation-based configuration model,
-the less commonly used {data-store-name} properties are still accessible from the `@EnableGemFireProperties` annotation.
+are conveniently encapsulated in and abstracted with an annotation in the {sdg-acronym} annotation-based
+configuration model, the less commonly used {data-store-name} properties are still accessible from
+the `@EnableGemFireProperties` annotation.
 
-Using the `@EnableGemFireProperties` annotation on your application class is convenient and a nice alternative to
-creating a `gemfire.properties` file or setting {data-store-name} properties as Java system properties on the command line
+Annotating your application class with `@EnableGemFireProperties` is convenient and a nice alternative to creating
+a `gemfire.properties` file or setting {data-store-name} properties as Java system properties on the command line
 when launching your application.
 
 TIP: We recommend that these {data-store-name} properties be set in a `gemfire.properties` file when deploying
 your application to production. However, at development time, it can be convenient to set these properties individually,
-as needed, for prototyping and testing purposes.
+as needed, for prototyping, debugging and testing purposes.
 
 A few examples of some of the less common {data-store-name} properties that you usually need not worry about include,
 but are not limited to: `ack-wait-threshold`, `disable-tcp`, `socket-buffer-size`, and others.
 
 To individually set any {data-store-name} property, annotate your application class with `@EnableGemFireProperties`
-and set the {data-store-name} properties you want to change from the default value set by {data-store-name}, as follows:
+and set the {data-store-name} properties you want to change from the default value set by {data-store-name}
+with the corresponding attribute, as follows:
 
-.Spring `ClientCache` application with specific _{data-store-name} Properties_ set
+.Spring `ClientCache` application with specific {data-store-name} properties set
 [source, java]
 ----
 @SpringBootApplication
@@ -935,9 +954,9 @@ and set the {data-store-name} properties you want to change from the default val
 public class ClientApplication { .. }
 ----
 
-Keep in mind that some of the {data-store-name} properties are client-specific (for example, `conflateEvents`), while others are
-server-specific (for examplem `distributedSystemId`, `enableNetworkPartitionDetection`, `enforceUniqueHost`, `memberTimeout`,
-`redundancyZone`, and others).
+Keep in mind that some of the {data-store-name} properties are client-specific (for example, `conflateEvents`),
+while others are server-specific (for example `distributedSystemId`, `enableNetworkPartitionDetection`,
+`enforceUniqueHost`, `memberTimeout`, `redundancyZone`, and others).
 
 More details on {data-store-name} properties can be found
 {x-data-store-docs}/reference/topics/gemfire_properties.html[here].
@@ -948,23 +967,22 @@ More details on {data-store-name} properties can be found
 So far, outside of PDX, our discussion has centered around configuring {data-store-name}'s more administrative functions:
 creating a cache instance, starting embedded services, enabling logging, statistics, SSL, and using `gemfire.properties`
 to affect low-level configuration and behavior. While all these configuration options are important, none of them
-relate directly to the application. In other words, we still need some place to store our application data and make it
-generally available and accessible.
+relate directly to your application. In other words, we still need some place to store our application data
+and make it generally available and accessible.
 
-{data-store-name} organizes data in a cache into
-{x-data-store-docs}/basic_config/data_regions/chapter_overview.html[regions]. You can think of a
-region as a table in a relational database. Generally, a region should only store a single type of object, which makes it
-more conducive for building effective `indexes` and writing queries. We cover indexing
+{data-store-name} organizes data in a cache into {x-data-store-docs}/basic_config/data_regions/chapter_overview.html[Regions].
+You can think of a Region as a table in a relational database. Generally, a Region should only store a single type of object,
+which makes it more conducive for building effective indexes and writing queries. We cover indexing
 <<bootstrap-annotation-config-indexes,later>>.
 
-Previously, Spring Data for {data-store-name} users needed to explicitly define and declare the regions used in their applications
-to store data by writing very verbose Spring configuration metadata, whether a user was using SDG's `FactoryBeans`
-from the API in Spring's
-{spring-framework-docs}/core.html#beans-java[Java-based container configuration] or using <<bootstrap:region, XML>>.
+Previously, {sdg-name} users needed to explicitly define and declare the Regions used in their applications to store data
+by writing very verbose Spring configuration metadata, whether using {sdg-acronym}'s `FactoryBeans` from the API
+in Spring's {spring-framework-docs}/core.html#beans-java[Java-based container configuration]
+or using <<bootstrap:region, XML>>.
 
-The following example shows how to configure a region bean in Java:
+The following example demonstrates how to configure a Region bean in Java:
 
-.Example region bean definition using Spring Java-based container configuration
+.Example Region bean definition using Spring's Java-based container configuration
 [source, java]
 ----
 @Configuration
@@ -987,9 +1005,9 @@ class GemFireConfiguration {
 }
 ----
 
-The following example shows how to configure a region bean in XML:
+The following example shows how to configure the same Region bean in XML:
 
-.Example Region bean definition using the SDG XML Namespace
+.Example Region bean definition using {sdg-acronym}'s XML Namespace
 [source, xml]
 ----
   <gfe:partitioned-region id="exampleRegion" name="Example" persistent="true">
@@ -997,23 +1015,23 @@ The following example shows how to configure a region bean in XML:
   </gfe:partitioned-region>
 ----
 
-While neither Java nor XML configuration is all that difficult, either one can be cumbersome, especially if an application
-has a large number of regions that need to be defined. Many relational database-based applications can literally
+While neither Java nor XML configuration is all that difficult to specify, either one can be cumbersome, especially if
+an application requires a large number of Regions. Many relational database-based applications can literally
 have hundreds or even thousands of tables.
 
-Now you can define and configure regions based on their application domain objects (that is, entities). No longer do
-you need to explicitly define `region` bean definitions in Spring configuration metadata, unless you require finer-grained
-control.
+Now you can define and configure Regions based on their application domain objects (entities) themselves. No longer do
+you need to explicitly define `Region` bean definitions in Spring configuration metadata, unless you require
+finer-grained control.
 
-To simplify region creation, Spring Data for {data-store-name} combines the use of Spring Data Repositories with the expressive
+To simplify Region creation, {sdg-name} combines the use of Spring Data Repositories with the expressive
 power of annotation-based configuration using the new `@EnableEntityDefinedRegions` annotation.
 
 NOTE: Most Spring Data application developers should already be familiar with the
 {spring-data-commons-docs-html}/#repositories[Spring Data Repository abstraction]
-and Spring Data for {data-store-name}'s <<gemfire-repositories,implementation/extension>> of Spring Data's_ _Repository abstraction,
+and {sdg-name}'s <<gemfire-repositories,implementation/extension>>,
 which has been specifically customized to optimize data access operations for {data-store-name}.
 
-First, an application developer starts by defining the application domain objects, as follows:
+First, an application developer starts by defining the application's domain objects, as follows:
 
 .Application domain object type modeling a Book
 [source, java]
@@ -1037,7 +1055,7 @@ class Book {
 }
 ----
 
-Next, you can define a basic repository for `Books` by extending Spring Data Commons
+Next, you define a basic repository for `Books` by extending Spring Data Commons
 `org.springframework.data.repository.CrudRepository` interface, as follows:
 
 .Repository for Books
@@ -1051,17 +1069,18 @@ operations (CRUD) along with support for simple queries (such as `findById(..)`)
 more sophisticated queries by declaring query methods on the repository interface
 (for example, `List<BooK> findByAuthor(Author author);`).
 
-Under the hood, Spring Data for {data-store-name} provides an implementation of the applications repository interface when
-the Spring container is bootstrapped. SDG even implements the query methods that you define, so long as
-you follow these <<gemfire-repositories.executing-queries,conventions>>.
+Under the hood, {sdg-name} provides an implementation of your applications repository interfaces when
+the Spring container is bootstrapped. {sdg-acronym} even implements the query methods you define so long as you follow
+the <<gemfire-repositories.executing-queries,conventions>>.
 
-Now, when you defined the `Book` class, you also specified the region in which instances of `Book` are mapped
-and stored by declaring the Spring Data for {data-store-name} mapping annotation, `@Region` on the entity's type. Of course, if
-the entity type (`Book`, in this case) referenced in the type parameter of the repository interface (`BookRepository`, in this case)
-is not annotated with `@Region`, the name is derived from the simple class name of the entity type (`Book`, in this case).
+Now, when you defined the `Book` class, you also specified the Region in which instances of `Book` are mapped (stored)
+by declaring the {sdg-name} mapping annotation, `@Region` on the entity's type. Of course, if the entity type (`Book`,
+in this case) referenced in the type parameter of the repository interface (`BookRepository`, in this case)
+is not annotated with `@Region`, the name is derived from the simple class name of the entity type (also `Book`,
+in this case).
 
-Spring Data for {data-store-name} uses the mapping context, which contains mapping metadata for all the entities defined in your
-application, to determine all the regions that are needed at runtime.
+{sdg-name} uses the mapping context, which contains mapping metadata for all the entities defined in your application,
+to determine all the Regions that are needed at runtime.
 
 To enable and use this feature, annotate the application class with `@EnableEntityDefinedRegions`, as follows:
 
@@ -1075,19 +1094,21 @@ To enable and use this feature, annotate the application class with `@EnableEnti
 class ClientApplication { .. }
 ----
 
-TIP: Creating regions from entity classes is most useful when using Spring Data repositories in your application.
-Spring Data for {data-store-name}'s repository support is enabled with the `@EnableGemfireRepositories` annotation, as shown
-in the preceding example.
+TIP: Creating Regions from entity classes is most useful when using Spring Data Repositories in your application.
+{sdg-name}'s Repository support is enabled with the `@EnableGemfireRepositories` annotation, as shown in
+the preceding example.
 
 By default, the `@EnableEntityDefinedRegions` annotation scans for entity classes recursively, starting from
 the package of the configuration class on which the `@EnableEntityDefinedRegions` annotation is declared.
 
-However, it is common to limit the search during the scan by setting the `basePackages` attribute with the package names
-that contain your application entity classes.
+However, it is common to limit the search during the scan by setting the `basePackages` attribute with
+the package names containing your application entity classes.
 
 Alternatively, you can use the more type-safe `basePackageClasses` attribute for specifying the package to scan
-by setting the attribute to an entity type in the package that contains the entity's class or by using a non-entity
-placeholder class specifically created for identifying the package to scan. The following example shows how to specify the entity types for which to scan for our book repository example:
+by setting the attribute to an entity type in the package that contains the entity's class, or by using a non-entity
+placeholder class specifically created for identifying the package to scan.
+
+The following example shows how to specify the entity types to scan:
 
 .Entity-defined Region Configuration using the Entity class type
 [source, java]
@@ -1102,56 +1123,57 @@ placeholder class specifically created for identifying the package to scan. The 
 class ClientApplication { .. }
 ----
 
-In addition to specifying where to begin the scan, like Spring's `@ComponentScan` annotation, you can
-specify `include` and `exclude` filters with all the same semantics of the
-`org.springframework.context.annotation.ComponentScan.Filter` annotation.
+In addition to specifying where to begin the scan, like Spring's `@ComponentScan` annotation, you can specify `include`
+and `exclude` filters with all the same semantics of the `org.springframework.context.annotation.ComponentScan.Filter`
+annotation.
 
-See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableEntityDefinedRegions.html[`@EnableEntityDefinedRegions` annotation Javadoc] for more details.
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableEntityDefinedRegions.html[`@EnableEntityDefinedRegions` annotation Javadoc]
+for more details.
 
 [[bootstrap-annotation-config-region-types]]
 === Configuring Type-specific Regions
 
-{data-store-name} supports many different
-{x-data-store-docs}/developing/region_options/region_types.html[types of regions].
-Each type corresponds to the region's
-{x-data-store-javadoc}/org/apache/geode/cache/DataPolicy.html[`DataPolicy`],
-which determines exactly how the data in the Region will be managed (e.g. distributed/replicated, etc).
+{data-store-name} supports many different {x-data-store-docs}/developing/region_options/region_types.html[types of Regions].
+Each type corresponds to the Region's {x-data-store-javadoc}/org/apache/geode/cache/DataPolicy.html[`DataPolicy`],
+which determines exactly how the data in the Region will be managed (i.e. distributed, replicated, and so on).
 
-NOTE: Other configuration settings (such as the region's `scope`) can also affect how data is managed.
+NOTE: Other configuration settings (such as the Region's `scope`) can also affect how data is managed.
 See {x-data-store-docs}/developing/region_options/storage_distribution_options.html["`Storage and Distribution Options`"]
 in the {data-store-name} User Guide for more details.
 
-When you annotates your application domain object types with the generic `@Region` mapping annotation,
-Spring Data for {data-store-name} decides which type of region to create. SDG's default strategy takes the cache type
-into consideration when determining the type of region to create.
+When you annotate your application domain object types with the generic `@Region` mapping annotation, {sdg-name} decides
+which type of Region to create. {sdg-acronym}'s default strategy takes the cache type into consideration when determining
+the type of Region to create.
 
 For example, if you declare the application as a `ClientCache` by using the `@ClientCacheApplication` annotation,
-SDG creates a client `PROXY` `Region`. Alternatively, if you declare the application as a peer `Cache` by using either the
-`@PeerCacheApplication` or `@CacheServerApplication` annotations, SDG creates a server `PARTITION` `Region`.
+{sdg-acronym} creates a client `PROXY` `Region`. Alternatively, if you declare the application as a peer `Cache`
+by using either the `@PeerCacheApplication` or `@CacheServerApplication` annotations, {sdg-acronym} creates
+a server `PARTITION` `Region`.
 
-Of course, you can always override the default when necessary. To override the default
-applied by Spring Data for {data-store-name}, four new region mapping annotations have been introduced:
+Of course, you can always override the default when necessary. To override the default applied by {sdg-name},
+four new Region mapping annotations have been introduced:
 
 * `@ClientRegion`
 * `@LocalRegion`
 * `@PartitionRegion`
 * `@ReplicateRegion`
 
-The `@ClientRegion` mapping annotation is specific to client applications. All of the other region mapping annotations
+The `@ClientRegion` mapping annotation is specific to client applications. All of the other Region mapping annotations
 listed above can be used only in server applications that have an embedded peer `Cache`.
 
-It is sometimes necessary for client applications to create and use "`local-only`" regions, perhaps to aggregate data
-from other regions in order to analyze the data locally and carry out some function performed by the application
-for the user. In this case, the data does not need to be distributed back to the server unless other applications
-need access to the results. This region might even be temporary and discarded after use, which could be accomplished
-with Idle-Timeout (TTI) and Time-To-Live (TTL) expiration policies on the region itself. (See "`<<bootstrap-annotation-config-region-expiration>>`" for more about expiration policies.)
+It is sometimes necessary for client applications to create and use local-only Regions, perhaps to aggregate data
+from other Regions in order to analyze the data locally and carry out some function performed by the application
+on the user's behalf. In this case, the data does not need to be distributed back to the server unless other
+applications need access to the results. This Region might even be temporary and discarded after use, which could be
+accomplished with Idle-Timeout (TTI) and Time-To-Live (TTL) expiration policies on the Region itself.
+(See "`<<bootstrap-annotation-config-region-expiration>>`" for more on expiration policies.)
 
 NOTE: Region-level Idle-Timeout (TTI) and Time-To-Live (TTL) expiration policies are independent of and different from
 entry-level TTI and TTL expiration policies.
 
-In any case, if you want to create a local-only client region where the data is not going to be distributed to
-a corresponding region with the same name on the server, you can declare the `@ClientRegion`
-mapping annotation and set the `shortcut` attribute to `ClientRegionShortcut.LOCAL`, as follows:
+In any case, if you want to create a local-only client Region where the data is not going to be distributed to
+a corresponding Region with the same name on the server, you can declare the `@ClientRegion` mapping annotation
+and set the `shortcut` attribute to `ClientRegionShortcut.LOCAL`, as follows:
 
 .Spring `ClientCache` application with a local-only, client Region
 [source, java]
@@ -1160,11 +1182,11 @@ mapping annotation and set the `shortcut` attribute to `ClientRegionShortcut.LOC
 class ClientLocalEntityType { .. }
 ----
 
-All `Region` type-specific annotations provide additional attributes that are both common across `Region` types
-as well as specific to only that type of region (for example, the `collocatedWith` and `redundantCopies` attributes
-in the `PartitionRegion` annotation apply to `PARTITION` regions only).
+All Region type-specific annotations provide additional attributes that are both common across Region types
+as well as specific to only that type of Region.  For example, the `collocatedWith` and `redundantCopies` attributes
+in the `PartitionRegion` annotation apply to `PARTITION` Regions only.
 
-More details on {data-store-name} region types can be found
+More details on {data-store-name} Region types can be found
 {x-data-store-docs}/developing/region_options/region_types.html[here].
 
 [[bootstrap-annotation-config-region-eviction]]
@@ -1178,20 +1200,20 @@ Given that {data-store-name} is an In-Memory Data Grid (IMDG), data is managed i
 that participate in a cluster in order to minimize latency, maximize throughput and ensure that data is highly available.
 Since not all of an application's data is going to typically fit in memory (even across an entire cluster of nodes,
 much less on a single node), you can increase capacity by adding new nodes to the cluster. This is commonly referred to
-as linear scale-out (rather than scaling up, which means adding more memory, more CPU, more disk, or more network bandwidth --
-basically more of every system resource in order to handle the load).
+as linear scale-out (rather than scaling up, which means adding more memory, more CPU, more disk,
+or more network bandwidth -- basically more of every system resource in order to handle the load).
 
 Still, even with a cluster of nodes, it is usually imperative that only the most important data be kept in memory.
 Running out of memory, or even venturing near full capacity, is rarely, if ever, a good thing. Stop-the-world GCs
-or worse, `OutOfMemoryErrors`, bring your application to a screaming halt.
+or worse, `OutOfMemoryErrors`, will bring your application to a screaming halt.
 
-So, to help manage memory and keep the most important data around, {data-store-name} supports Least Recently Used (LRU) eviction.
-That is, {data-store-name} evicts region entries based on when those entries were last accessed by using
+So, to help manage memory and keep the most important data around, {data-store-name} supports Least Recently Used (LRU)
+eviction. That is, {data-store-name} evicts Region entries based on when those entries were last accessed by using
 the Least Recently Used algorithm.
 
 To enable eviction, annotate the application class with `@EnableEviction`, as follows:
 
-.Spring application with Eviction enabled
+.Spring application with eviction enabled
 [source, java]
 ----
 @SpringBootApplication
@@ -1205,40 +1227,40 @@ To enable eviction, annotate the application class with `@EnableEviction`, as fo
 class ServerApplication { .. }
 ----
 
-Eviction policies are usually set on the regions in the servers.
+Eviction policies are usually set on the Regions in the servers.
 
-As shown earlier, the `policies` attribute can specify one or more nested `@EvictionPolicy` annotations, with each one being individually
-catered to one or more regions where the rviction policy needs to be applied.
+As shown earlier, the `policies` attribute can specify one or more nested `@EvictionPolicy` annotations, with each one
+being individually catered to one or more Regions where the eviction policy needs to be applied.
 
-Additionally, a user can reference a custom implementation of {data-store-name}'s
+Additionally, you can reference a custom implementation of {data-store-name}'s
 {x-data-store-javadoc}/org/apache/geode/cache/util/ObjectSizer.html[`org.apache.geode.cache.util.ObjectSizer`] interface,
-which can be defined as a bean in the Spring context and referenced by name by using the `objectSizerName` attribute.
+which can be defined as a bean in the Spring container and referenced by name by using the `objectSizerName` attribute.
 
-An `ObjectSizer` let you define the criteria used to evaluate and determine the the size of objects
-stored in a region.
+An `ObjectSizer` lets you define the criteria used to evaluate and determine the the size of objects stored in a Region.
 
-See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableEviction.html[`@EnableEviction` annotation Javadoc] for a complete list of eviction configuration options.
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableEviction.html[`@EnableEviction` annotation Javadoc]
+for a complete list of eviction configuration options.
 
-More details on {data-store-name} Eviction can be found
+More details on {data-store-name} eviction can be found
 {x-data-store-docs}/developing/eviction/chapter_overview.html[here].
 
 [[bootstrap-annotation-config-region-expiration]]
 === Configuring Expiration
 
-Along with <<bootstrap-annotation-config-region-eviction, Eviction>>, Expiration can also be used to manage memory
-by allowing entries stored in a region to expire. {data-store-name} supports both Time-to-Live (TTL)-based and Idle-Timeout (TTI)-based entry
-expiration policies.
+Along with <<bootstrap-annotation-config-region-eviction, eviction>>, expiration can also be used to manage memory
+by allowing entries stored in a Region to expire. {data-store-name} supports both Time-to-Live (TTL)
+and Idle-Timeout (TTI) entry expiration policies.
 
-Spring Data for {data-store-name}'s annotation-based expiration configuration is based on the
-<<bootstrap:region:expiration:annotation, earlier and existing entry expiration annotation support>> added in
-Spring Data for {data-store-name} version 1.5.
+{sdg-name}'s annotation-based expiration configuration is based on the
+<<bootstrap:region:expiration:annotation, earlier and existing entry expiration annotation support>>
+added in {sdg-name} version 1.5.
 
-Essentially, Spring Data for {data-store-name}'s expiration annotation support is based on a custom implementation of
-{data-store-name}'s {x-data-store-javadoc}/org/apache/geode/cache/CustomExpiry.html[`org.apache.geode.cache.CustomExpiry`] interface.
-This `o.a.g.cache.CustomExpiry` implementation inspects the user's application domain objects stored in a region
+Essentially, {sdg-name}'s expiration annotation support is based on a custom implementation of {data-store-name}'s
+{x-data-store-javadoc}/org/apache/geode/cache/CustomExpiry.html[`org.apache.geode.cache.CustomExpiry`] interface.
+This `o.a.g.cache.CustomExpiry` implementation inspects the user's application domain objects stored in a Region
 for the presence of type-level expiration annotations.
 
-Spring Data for {data-store-name} provides the following expiration annotations used on application domain object types:
+{sdg-name} provides the following expiration annotations:
 
 * `Expiration`
 * `IdleTimeoutExpiration`
@@ -1254,9 +1276,9 @@ An application domain object type can be annotated with one or more of the expir
 class Book { .. }
 ----
 
-To enable _Expiration_, simply annotate the application class with `@EnableExpiration`...
+To enable expiration, annotate the application class with `@EnableExpiration`, as follows:
 
-.Spring application with Expiration enabled
+.Spring application with expiration enabled
 [source, java]
 ----
 @SpringBootApplication
@@ -1265,8 +1287,8 @@ To enable _Expiration_, simply annotate the application class with `@EnableExpir
 class ServerApplication { .. }
 ----
 
-In addition to application domain object type-level expiration policies, you can directly configure individual expiration policies on a
-region-by-region basis by using the `@EnableExpiration` annotation, as follows:
+In addition to application domain object type-level expiration policies, you can directly and individually configure
+expiration policies on a Region by Region basis using the `@EnableExpiration` annotation, as follows:
 
 .Spring application with region-specific expiration policies
 [source, java]
@@ -1281,30 +1303,30 @@ region-by-region basis by using the `@EnableExpiration` annotation, as follows:
 class ServerApplication { .. }
 ----
 
-The preceding example sets expiration policies for the `Books`, `Customers`, and `Orders` regions.
+The preceding example sets expiration policies for the `Books`, `Customers`, and `Orders` Regions.
 
-Expiration policies are usually set on the regions in the servers.
+Expiration policies are usually set on the Regions in the servers.
 
-See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableExpiration.html[`@EnableExpiration` annotation Javadoc] for a complete list of Expiration configuration options.
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableExpiration.html[`@EnableExpiration` annotation Javadoc]
+for a complete list of expiration configuration options.
 
-More details on {data-store-name} Expiration can be found
+More details on {data-store-name} expiration can be found
 {x-data-store-docs}/developing/expiration/chapter_overview.html[here].
 
 [[bootstrap-annotation-config-region-compression]]
 === Configuring Compression
 
 In addition to <<bootstrap-annotation-config-region-expiration,eviction>>
-and <<bootstrap-annotation-config-region-expiration,expiration>>, you can also configure your data regions
-to use compression to reduce memory consumption.
+and <<bootstrap-annotation-config-region-expiration,expiration>>, you can also configure your data Regions
+with compression to reduce memory consumption.
 
-{data-store-name} lets you compress in-memory region values by using pluggable
-{x-data-store-javadoc}/org/apache/geode/compression/Compressor.html[`Compressors`],
-or different compression codecs.{data-store-name} uses Google's http://google.github.io/snappy/[Snappy]
-compression library.
+{data-store-name} lets you compress in memory Region values by using pluggable
+{x-data-store-javadoc}/org/apache/geode/compression/Compressor.html[`Compressors`], or different compression codecs.
+{data-store-name} uses Google's http://google.github.io/snappy/[Snappy] compression library by default.
 
-To enable compression support, annotate the application class with `@EnableCompression`, as follows:
+To enable compression, annotate the application class with `@EnableCompression`, as follows:
 
-.Spring application with compression enabled
+.Spring application with Region compression enabled
 [source, java]
 ----
 @SpringBootApplication
@@ -1313,43 +1335,46 @@ To enable compression support, annotate the application class with `@EnableCompr
 class ClientApplication { .. }
 ----
 
-NOTE: Neither the `compressorBeanName` nor the `regionNames` attribute are required.
+NOTE: Neither the `compressorBeanName` nor the `regionNames` attributes are required.
 
 The `compressorBeanName` defaults to `SnappyCompressor`, enabling {data-store-name}'s
 {x-data-store-javadoc}/org/apache/geode/compression/SnappyCompressor.html[`SnappyCompressor`].
 
-The `regionNames` attribute is an array of region names that specify the regions that have compression enabled.
-By default, all regions compress values if the `regionNames` attribute is not explicitly set.
+The `regionNames` attribute is an array of Region names that specify the Regions that have compression enabled.
+By default, all Regions compress values if the `regionNames` attribute is not explicitly set.
 
 TIP: Alternatively, you can use the `spring.data.gemfire.cache.compression.compressor-bean-name`
 and `spring.data.gemfire.cache.compression.region-names` properties in the `application.properties` file
 to set and configure the values of these `@EnableCompression` annotation attributes.
 
-WARNING: To use {data-store-name}'s Region Compression feature, you must include the `org.iq80.snappy:snappy` dependency
-in your application's `pom.xml` file (for Maven) or `build.gradle` file (for Gradle). This is necessary only
-if you use {data-store-name}'s default support for region compression, which uses the
-{x-data-store-javadoc}/org/apache/geode/compression/SnappyCompressor.html[`SnappyCompressor`]
-by default. Of course, if you use another compression library, you need to include dependencies
-for that compression library on your application's classpath. Additionally, you need to implement {data-store-name}'s
-{x-data-store-javadoc}/org/apache/geode/compression/Compressor.html[`Compressor`] interface
-to adapt your compression library of choice, define it as a bean in the Spring context, and set
-the `compressorBeanName` to this custom bean definition.
+WARNING: To use {data-store-name}'s Region compression feature, you must include the `org.iq80.snappy:snappy` dependency
+in your application's `pom.xml` file (for Maven) or `build.gradle` file (for Gradle). This is necessary only if you use
+{data-store-name}'s default support for Region compression, which uses the
+{x-data-store-javadoc}/org/apache/geode/compression/SnappyCompressor.html[`SnappyCompressor`] by default.
+Of course, if you use another compression library, you need to include dependencies for that compression library
+on your application's classpath. Additionally, you need to implement {data-store-name}'s
+{x-data-store-javadoc}/org/apache/geode/compression/Compressor.html[`Compressor`] interface to adapt your compression
+library of choice, define it as a bean in the Spring compressor, and set the `compressorBeanName`
+to this custom bean definition.
 
-See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableCompression.html[`@EnableCompression` annotation Javadoc] for more details.
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableCompression.html[`@EnableCompression` annotation Javadoc]
+for more details.
 
-More details on {data-store-name} Compression can be found
+More details on {data-store-name} compression can be found
 http://gemfire91.docs.pivotal.io/geode/managing/region_compression.html[here].
 
 [[bootstrap-annotation-config-region-off-heap]]
 === Configuring Off-Heap Memory
 
-Another effective means for reducing pressure on the JVM's Heap memory and minimizeing GC activity is to use
-{data-store-name}'s off-heap memory support. Rather than storing region entries on the JVM Heap, entries are stored
-in the system's main memory. Off-heap memory generally works best when the objects being stored are uniform in size,
-are mostly less than 128K, and do not need to be deserialized frequently, as explained in the {data-store-name}
+Another effective means for reducing pressure on the JVM's Heap memory and minimizing GC activity is to use
+{data-store-name}'s off-heap memory support.
+
+Rather than storing Region entries on the JVM Heap, entries are stored in the system's main memory. Off-heap memory
+generally works best when the objects being stored are uniform in size, are mostly less than 128K, and do not need
+to be deserialized frequently, as explained in the {data-store-name}
 {x-data-store-docs}/managing/heap_use/off_heap_management.html[User Guide].
 
-To enable off-heap support, annotate the application class with `@EnableOffHeap`, as follows:
+To enable off-heap, annotate the application class with `@EnableOffHeap`, as follows:
 
 .Spring application with Off-Heap enabled
 [source, java]
@@ -1361,25 +1386,26 @@ class ServerApplication { .. }
 ----
 
 The `memorySize` attribute is required. The value for the `memorySize` attribute specifies the amount of main memory
-a region can use in either megabytes (`m`) or gigabytes (`g`).
+a Region can use in either megabytes (`m`) or gigabytes (`g`).
 
-The `regionNames` attribute is an array of region names that specifies the regions that store entries in main memory.
-By default, all regions use main memory if the `regionNames` attribute is not explicitly set.
+The `regionNames` attribute is an array of Region names that specifies the Regions that store entries in main memory.
+By default, all Regions use main memory if the `regionNames` attribute is not explicitly set.
 
 TIP: Alternatively, you can use the `spring.data.gemfire.cache.off-heap.memory-size`
-and `spring.data.gemfire.cache.off-heap.region-names` properties in the `application.properties` file
-to set and configure the values of these `@EnableOffHeap` annotation attributes.
+and `spring.data.gemfire.cache.off-heap.region-names` properties in the `application.properties` file to set
+and configure the values of these `@EnableOffHeap` annotation attributes.
 
-See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableOffHeap.html[`@EnableOffHeap` annotation Javadoc] for more details.
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableOffHeap.html[`@EnableOffHeap` annotation Javadoc]
+for more details.
 
 [[bootstrap-annotation-config-region-indexes]]
 === Configuring Indexes
 
-There is not much use in storing data in regions unless the data can be accessed.
+There is not much use in storing data in Regions unless the data can be accessed.
 
-In addition to `Region.get(key)` operations, particularly when the key is known in advance,
-data is commonly retrieved by executing queries on the regions that contain the data. With {data-store-name}, queries are
-written by using the Object Query Language (OQL), and the specific data set that a client wishes to access is expressed
+In addition to `Region.get(key)` operations, particularly when the key is known in advance, data is commonly retrieved
+by executing queries on the Regions that contain the data. With {data-store-name}, queries are written by using
+the Object Query Language (OQL), and the specific data set that a client wishes to access is expressed
 in the query's predicate (for example, `SELECT * FROM /Books b WHERE b.author.name = 'Jon Doe'`).
 
 Generally, querying without indexes is inefficient. When executing queries without an index, {data-store-name}
@@ -1390,8 +1416,9 @@ expressed by the query's projection. Different types of indexes, such as
 {x-data-store-docs}/developing/query_index/creating_key_indexes.html[key]
 and {x-data-store-docs}/developing/query_index/creating_hash_indexes.html[hash] indexes, can be created.
 
-Spring Data for {data-store-name} makes it easy to create indexes on regions where the data is stored and accessed.
-Rather than explicitly declaring `Index` bean definitions by using Spring config as before, we can create an index bean definition in Java, as follows:
+{sdg-name} makes it easy to create indexes on Regions where the data is stored and accessed. Rather than explicitly
+declaring `Index` bean definitions by using Spring config as before, we can create an `Index` bean definition in Java,
+as follows:
 
 .Index bean definition using Java config
 [source, java]
@@ -1411,20 +1438,20 @@ IndexFactoryBean bookIsbnIndex(GemFireCache gemfireCache) {
 }
 ----
 
-Alternatively, we can use <<bootstrap:indexing, XML>> to create an index bean definition, as follows:
+Alternatively, we can use <<bootstrap:indexing, XML>> to create an `Index` bean definition, as follows:
 
 .Index bean definition using XML
 [source, xml]
 ----
-  <gfe:index id="BooksIsbnIndex" expression="isbn" from="/Books" type="KEY"/>
+<gfe:index id="BooksIsbnIndex" expression="isbn" from="/Books" type="KEY"/>
 ----
 
-You can now directly define indexes on the fields declared in the application domain object types that you know
-are used in query predicates to speed up those queries. You can even apply indexes for OQL queries generated
+However, now you can directly define indexes on the fields of your application domain object types for which you know
+will be used in query predicates to speed up those queries. You can even apply indexes for OQL queries generated
 from user-defined query methods on an application's repository interfaces.
 
-Re-using the example `Book` class from earlier, we can annotate the fields on `Book` that we know are used in queries that
-we define with query methods in the `BookRepository` interface, as follows:
+Re-using the example `Book` entity class from earlier, we can annotate the fields on `Book` that we know are used
+in queries that we define with query methods in the `BookRepository` interface, as follows:
 
 .Application domain object type modeling a book using indexes
 [source, java]
@@ -1452,8 +1479,8 @@ class Book {
 
 In our new `Book` class definition, we annotated the `author` field with `@Indexed` and the `title` field
 with `@LuceneIndexed`. Also, the `isbn` field had previously been annotated with Spring Data's `@Id` annotation,
-which identifies the field containing the unique identifier for `Book` instances, and, in Spring Data for {data-store-name},
-the `@Id` annotated field or property is used as the key in the region when storing the entry.
+which identifies the field containing the unique identifier for `Book` instances, and, in {sdg-name}, the `@Id`
+annotated field or property is used as the key in the Region when storing the entry.
 
 * `@Id` annotated fields or properties result in the creation of an {data-store-name} `KEY` Index.
 * `@Indexed` annotated fields or properties result in the creation of an {data-store-name} `HASH` Index (the default).
@@ -1463,12 +1490,12 @@ text-based searches with {data-store-name}'s Lucene integration and support.
 When the `@Indexed` annotation is used without setting any attributes, the index `name`, `expression`, and `fromClause`
 are derived from the field or property of the class on which the `@Indexed` annotation has been added. The `expression`
 is exactly the name of the field or property. The `fromClause` is derived from the `@Region` annotation on
-the domain object's class (or the simple name of the domain object class if the `@Region` annotation was not specified).
+the domain object's class, or the simple name of the domain object class if the `@Region` annotation was not specified.
 
 Of course, you can explicitly set any of the `@Indexed` annotation attributes to override the default values
-provided by Spring Data for {data-store-name}.
+provided by {sdg-name}.
 
-.Application domain object type modeling a book by using customized indexes
+.Application domain object type modeling a Book with customized indexes
 [source, java]
 ----
 @Region("Books")
@@ -1493,7 +1520,7 @@ class Book {
 ----
 
 The `name` of the index, which is auto-generated when not explicitly set, is also used as the name of the bean
-registered in the Spring context for the index. If necessary, this index bean ca  even be injected by name
+registered in the Spring container for the index. If necessary, this index bean can even be injected by name
 into another application component.
 
 The generated name of the index follows this pattern: `<Region Name><Field/Property Name><Index Type>Idx`.
@@ -1513,10 +1540,10 @@ class ServerApplication { .. }
 
 NOTE: The `@EnablingIndexing` annotation has no effect unless the `@EnableEntityDefinedRegions` is also declared.
 Essentially, indexes are defined from fields or properties on the entity class types, and entity classes must be scanned
-to inspect the entity's fields and properties for the presence of index annotations. Without this scan,
-index annotations cannot be found. We also strongly recommend that you limit the scope of the scan.
+to inspect the entity's fields and properties for the presence of index annotations. Without this scan, index annotations
+cannot be found. We also strongly recommend that you limit the scope of the scan.
 
-While Lucene queries are not (yet) supported on Spring Data for {data-store-name} repositories, SDG does provide comprehensive
+While Lucene queries are not (yet) supported on {sdg-name} repositories, SDG does provide comprehensive
 https://docs.spring.io/spring-data-gemfire/docs/current/reference/html/#bootstrap:lucene[support] for {data-store-name}
 Lucene queries by using the familiar Spring template design pattern.
 
@@ -1524,26 +1551,29 @@ Finally, we close this section with a few extra tips to keep in mind when using 
 
 * While OQL indexes are not required to execute OQL Queries, Lucene Indexes are required to execute Lucene
 text-based searches.
-* OQL Indexes are not persisted to disk. They are maintained only in memory.  So, when an {data-store-name}
-node is restarted, the Index must be rebuilt.
+* OQL indexes are not persisted to disk. They are only maintained in memory.  So, when an {data-store-name}
+node is restarted, the index must be rebuilt.
 * You also need to be aware of the overhead associated in maintaining indexes, particularly since an index is stored
-exclusively in memory and especially when region entries are updated. Index "`maintenance`" can be
+exclusively in memory and especially when Region entries are updated. Index "maintenance" can be
 {x-data-store-javadoc}/org/apache/geode/cache/RegionFactory.html#setIndexMaintenanceSynchronous-boolean-[configured]
 as an asynchronous task.
 
 Another optimization that you can use when restarting your Spring application where indexes have to be rebuilt
-is to first define all the indexes up front and then create them all at once, which, in Spring Data for {data-store-name}, happens
-when the Spring context is refreshed.
+is to first define all the indexes up front and then create them all at once, which, in {sdg-name}, happens
+when the Spring container is refreshed.
 
-You can define indexes up front and then create them all at once by setting the `define` attribute on the `@EnableIndexing`
-annotation to `true`.
+You can define indexes up front and then create them all at once by setting the `define` attribute on
+the `@EnableIndexing` annotation to `true`.
 
 See {x-data-store-docs}/developing/query_index/create_multiple_indexes.html["`Creating Multiple Indexes at Once`"]
 in {data-store-name}'s User Guide for more details.
 
-Creating sensible indexes is an important task, since it is possible for a poorly designed index to do more harm than good.
+Creating sensible indexes is an important task, since it is possible for a poorly designed index
+to do more harm than good.
 
-See both the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/mapping/annotation/Indexed.html[`@Indexed`] annotation and https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/mapping/annotation/LuceneIndexed.html[`@LuceneIndexed`] annotation Javadoc for complete list of configuration options.
+See both the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/mapping/annotation/Indexed.html[`@Indexed`] annotation
+and https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/mapping/annotation/LuceneIndexed.html[`@LuceneIndexed`] annotation
+Javadoc for complete list of configuration options.
 
 More details on {data-store-name} OQL queries can be found
 {x-data-store-docs}/developing/querying_basics/chapter_overview.html[here].
@@ -1557,23 +1587,22 @@ More details on {data-store-name} Lucene queries can be found
 [[bootstrap-annotation-config-region-continuous-queries]]
 === Configuring Disk Stores
 
-You can configure regions to persist data to disk. You can also configure regions to overflow data to disk when
-region entries are evicted. In both cases, a `DiskStore` is required to persist or overflow the data. When an
-explicit `DiskStore` has not been set on a region with persistence or overflow configured, {data-store-name}
+You can configure Regions to persist data to disk. You can also configure Regions to overflow data to disk when
+Region entries are evicted. In both cases, a `DiskStore` is required to persist and/or overflow the data.
+When an explicit `DiskStore` has not been configured for a Region with persistence or overflow, {data-store-name}
 uses the `DEFAULT` `DiskStore`.
 
-However, we recommend defining region-specific `DiskStores` when persisting or overflowing data
-to disk.
+We recommend defining Region-specific `DiskStores` when persisting and/or overflowing data to disk.
 
-Spring Data for {data-store-name} provides annotation support for defining and creating application region `DiskStores`
+{sdg-name} provides annotation support for defining and creating application Region `DiskStores`
 by annotating the application class with the `@EnableDiskStore` and `@EnableDiskStores` annotations.
 
 TIP: `@EnableDiskStores` is a composite annotation for aggregating one or more `@EnableDiskStore` annotations.
 
-For example, while `Book` product information might mostly consist of reference data from some external data source
-(such as Amazon), `Order` data is most likely going to be transactional in nature and something the application is going to
-need to retain (and maybe even overflow to disk if the transaction volume is high enough) -- or so any book publisher
-and author hopes, anyway.
+For example, while `Book` information might mostly consist of reference data from some external data source
+(such as Amazon), `Order` data is most likely going to be transactional in nature and something the application
+is going to need to retain (and maybe even overflow to disk if the transaction volume is high enough) --
+or so any book publisher and author hopes, anyway.
 
 Using the `@EnableDiskStore` annotation, you can define and create a `DiskStore` as follows:
 
@@ -1589,17 +1618,16 @@ class ServerApplication { .. }
 
 Again, more than one `DiskStore` can be defined by using the composite, `@EnableDiskStores` annotation.
 
-As other Annotations in Spring Data for {data-store-name}'s annotation-based configuration model, both `@EnableDiskStore`
+As with other annotations in {sdg-name}'s annotation-based configuration model, both `@EnableDiskStore`
 and `@EnableDiskStores` have many attributes along with associated configuration properties to customize
 the `DiskStores` created at runtime.
 
 Additionally, the `@EnableDiskStores` annotation defines certain common `DiskStore` attributes that apply to all
 `DiskStores` created from `@EnableDiskStore` annotations composed with the `@EnableDiskStores` annotation itself.
-Individual `DiskStore` configuration override a particular global setting, but the `@EnableDiskStores`
-annotation conveniently defines common configuration attributes that apply across all `DiskStores` aggregated by
-the annotation.
+Individual `DiskStore` configuration override a particular global setting, but the `@EnableDiskStores` annotation
+conveniently defines common configuration attributes that apply across all `DiskStores` aggregated by the annotation.
 
-Spring Data for {data-store-name} also provides the `DiskStoreConfigurer` callback interface, which can be declared in Java configuration
+{sdg-name} also provides the `DiskStoreConfigurer` callback interface, which can be declared in Java configuration
 and used instead of configuration properties to customize a `DiskStore` at runtime, as the following example shows:
 
 .Spring application with custom DiskStore configuration
@@ -1625,40 +1653,38 @@ class ServerApplication {
 }
 ----
 
-See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableDiskStore.html[`@EnableDiskStore`] and https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableDiskStores.html[`@EnableDiskStores`] annotation Javadoc for more details on the available
-attributes as well as associated configuration properties.
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableDiskStore.html[`@EnableDiskStore`] and https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableDiskStores.html[`@EnableDiskStores`] annotation
+Javadoc for more details on the available attributes as well as associated configuration properties.
 
-More details on {data-store-name} Region Persistence and Overflow (using disk stores) can be found
+More details on {data-store-name} Region persistence and overflow (using DiskStores) can be found
 {x-data-store-docs}/developing/storing_data_on_disk/chapter_overview.html[here].
 
 [[bootstrap-annotation-config-continuous-queries]]
 == Configuring Continuous Queries
 
 Another very important and useful feature of {data-store-name} is
-{x-data-store-docs}/developing/continuous_querying/chapter_overview.html[Continuous Querying].
+{x-data-store-docs}/developing/continuous_querying/chapter_overview.html[Continuous Queries].
 
 In a world of Internet-enabled things, events and streams of data come from everywhere. Being able to handle
-and process a large stream of data and react to events in real time is an increasingly
-important requirement for many applications. One example is self-driving vehicles. Being able to receive, filter,
-transform, analyze, and act on data in real time is a key differentiator and characteristic of real-time
-applications.
+and process a large stream of data and react to events in real time is an increasingly important requirement
+for many applications. One example is self-driving vehicles. Being able to receive, filter, transform, analyze,
+and act on data in real time is a key differentiator and characteristic of real time applications.
 
-Fortunately, {data-store-name} was ahead of its time in this regard. By using Continuous Queries (CQ), a client application
-can express the data or events it is interested in and register listeners to handle and process the events as they
-occur. The data that a client application may be interested in is expressed as an OQL query, where the query predicate
-is used to filter or identify the data of interest. When data is changed or added and it matches the criteria
-defined in the query predicate of the registered CQ, the client application is notified.
+Fortunately, {data-store-name} was ahead of its time in this regard. By using Continuous Queries (CQ),
+a client application can express the data or events it is interested in and register listeners to handle and process
+the events as they occur. The data that a client application may be interested in is expressed as an OQL query,
+where the query predicate is used to filter or identify the data of interest. When data is changed or added
+and it matches the criteria defined in the query predicate of the registered CQ, the client application is notified.
 
-Spring Data for {data-store-name} makes it easy to define and register CQs, along with an associated listener to handle and process CQ
-events without all the cruft of {data-store-name}'s plumbing. SDG's new annotation-based
-configuration for CQs builds on the existing continuous query support in the
-<<apis:continuous-query, continuous query listener container>>.
+{sdg-name} makes it easy to define and register CQs, along with an associated listener to handle and process CQ
+events without all the cruft of {data-store-name}'s plumbing. {sdg-acronym}'s new annotation-based configuration
+for CQs builds on the existing Continuous Query support in the <<apis:continuous-query, continuous query listener container>>.
 
 For instance, say a book publisher wants to register interest in and receive notification any time orders (demand)
 for a `Book` exceeds the current inventory (supply). Then the publisher's print application might register
 the following CQ:
 
-.Spring `ClientCache` application with registered CQ and Listener.
+.Spring `ClientCache` application with registered CQ and listener.
 [source, java]
 ----
 @SpringBootApplication
@@ -1678,46 +1704,46 @@ class PublisherPrintApplication {
         )
     ")
     void handleSupplyProblem(CqEvent event) {
-        // start printing more Books, fast!
+        // start printing more books, fast!
     }
 }
 ----
 
-To enable continuous queries, annotate your application class with `@EnableContinuousQueries`.
+To enable Continuous Queries, annotate your application class with `@EnableContinuousQueries`.
 
 Defining Continuous Queries consists of annotating any Spring `@Component`-annotated POJO class methods
-with the `@ContinuousQuery` annotation (in similar fashion to SDG's function-annotated POJO methods). A POJO method
-defined with a CQ by using the `@ContinuousQuery` annotation is called any time data matching the query predicate
-is added or changed.
+with the `@ContinuousQuery` annotation (in similar fashion to {sdg-acronym}'s Function-annotated POJO methods).
+A POJO method defined with a CQ by using the `@ContinuousQuery` annotation is called any time data matching
+the query predicate is added or changed.
 
 Additionally, the POJO method signature should adhere to the requirements outlined in the section on
 <<apis:continuous-query:adapter, the `ContinuousQueryListener` and the `ContinuousQueryListenerAdapter`>>.
 
-See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableContinuousQueries.html[`@EnableContinuousQueries`] and https://docs.spring.io/spring-data/gemfire/docs/current/api/index.html?org/springframework/data/gemfire/config/annotation/EnableContinuousQueries.html[`@ContinuousQuery`] annotation Javadoc for more details on
-available attributes and configuration settings.
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableContinuousQueries.html[`@EnableContinuousQueries`] and https://docs.spring.io/spring-data/gemfire/docs/current/api/index.html?org/springframework/data/gemfire/config/annotation/EnableContinuousQueries.html[`@ContinuousQuery`] annotation
+Javadoc for more details on available attributes and configuration settings.
 
-More details on Spring Data for {data-store-name}'s continuous query support can be found
+More details on {sdg-name}'s continuous query support can be found
 <<apis:continuous-query, here>>.
 
-More details on {data-store-name}'s continuous queries can be found
+More details on {data-store-name}'s Continuous Queries can be found
 {x-data-store-docs}/developing/continuous_querying/chapter_overview.html[here].
 
 [[bootstrap-annotation-config-caching]]
 == Configuring Spring's Cache Abstraction
 
-With Spring Data for {data-store-name}, {data-store-name} can be used as a caching provider in Spring's
+With {sdg-name}, {data-store-name} can be used as a caching provider in Spring's
 {spring-framework-docs}/integration.html#cache[cache abstraction].
 
-In Spring's cache abstraction, the caching annotations (such as `@Cacheable`) identify the cache on which a cache lookup
-is performed before invoking a potentially expensive operation or where the results of an application service method
-are cached after the operation is invoked.
+In Spring's Cache Abstraction, the caching annotations (such as `@Cacheable`) identify the cache on which a cache lookup
+is performed before invoking a potentially expensive operation. The results of an application service method are cached
+after the operation is invoked.
 
-In Spring Data for {data-store-name}, a Spring `Cache` corresponds directly to a region. The region must exist before any
-`@Cacheable` application service methods are called. This is true for any of Spring's caching annotations
-(that is, `@Cacheable`, `@CachePut` and `@CacheEvict`) that identify the cache to use in the operation.
+In {sdg-name}, a Spring `Cache` corresponds directly to a {data-store-name} Region. The Region must exist before
+any caching annotated application service methods are called. This is true for any of Spring's caching annotations
+(that is, `@Cacheable`, `@CachePut` and `@CacheEvict`) that identify the cache to use in the service operation.
 
-For instance, our publisher's Point-of-Sale (PoS) application might have a feature to determine or lookup
-the `Price` of a `Book` during a sales transaction, as the following example shows:
+For instance, our publisher's Point-of-Sale (PoS) application might have a feature to determine or lookup the `Price`
+of a `Book` during a sales transaction, as the following example shows:
 
 [source, java]
 ----
@@ -1738,12 +1764,12 @@ class PointOfSaleService
 }
 ----
 
-To make your work easier when you use Spring Data for {data-store-name} and {data-store-name} with
-Spring's cache abstraction, two new features have been added to the ne annotation-based configuration model.
+To make your work easier when you use {sdg-name} with Spring's Cache Abstraction, two new features have been added
+to the annotation-based configuration model.
 
 Consider the following Spring caching configuration:
 
-.Enabling Caching using {data-store-name} with Spring Data for {data-store-name}
+.Enabling Caching using {data-store-name} as the caching provider
 [source, java]
 ----
 @EnableCaching
@@ -1779,7 +1805,7 @@ class CachingConfiguration {
 }
 ----
 
-Using Spring Data for {data-store-name}'s new features, you can simplify the same caching configuration to the following:
+Using {sdg-name}'s new features, you can simplify the same caching configuration to the following:
 
 .Enabling {data-store-name} Caching
 [source, java]
@@ -1795,27 +1821,27 @@ class CachingConfiguration {
 }
 ----
 
-First, the `@EnableGemfireCaching` annotation replaces both the Spring `@EnableCaching` annotation and
-the need to declare an explicit `cacheManager` bean definition in the Spring config.
+First, the `@EnableGemfireCaching` annotation replaces both the Spring `@EnableCaching` annotation and the need
+to declare an explicit `CacheManager` bean definition (named "cacheManager") in the Spring config.
 
 Second, the `@EnableCachingDefinedRegions` annotation, like the `@EnableEntityDefinedRegions` annotation described in
-"`<<bootstrap-annotation-config-regions, Configuring Regions>>`", inspects the entire Spring application, caching annotated
-service components to identify all the caches that are needed by the application at run time and creating regions
-in {data-store-name} for these caches on application startup.
+"`<<bootstrap-annotation-config-regions, Configuring Regions>>`", inspects the entire Spring application, caching
+annotated service components to identify all the caches that are needed by the application at runtime and creates
+Regions in {data-store-name} for these caches on application startup.
 
-The created region is local to the application process that created the region. If the application is a peer `Cache`,
-the Region exists only on the application node. If the application is a `ClientCache`, then SDG creates
-a client `PROXY` Region and expects that a region with the same name already exists on the servers in the cluster.
+The Regions created are local to the application process that created the Regions. If the application is a peer `Cache`,
+the Regions exist only on the application node. If the application is a `ClientCache`, then {sdg-acronym} creates
+client `PROXY` Regions and expects those Regions with the same name to already exist on the servers in the cluster.
 
-NOTE: SDG cannot determine the cache required by a service method using a Spring `CacheResolver` to resolve the cache
-used in the operation at runtime.
+NOTE: {sdg-acronym} cannot determine the cache required by a service method using a Spring `CacheResolver`
+to resolve the cache used in the operation at runtime.
 
-TIP: SDG also supports JCache (JSR-107) cache annotations on application service components.
+TIP: {sdg-acronym} also supports JCache (JSR-107) cache annotations on application service components.
 See the core {spring-framework-docs}/integration.html#cache-jsr-107[_Spring Framework Reference Guide_]
 for the equivalent Spring caching annotation to use in place of JCache caching annotations.
 
-Refer to the <<apis:spring-cache-abstraction, "`Support for the Spring Cache Abstraction`">> section for more details on
-using {data-store-name} as a caching provider in Spring's Cache abstraction.
+Refer to the <<apis:spring-cache-abstraction, "`Support for the Spring Cache Abstraction`">> section for more details
+on using {data-store-name} as a caching provider in Spring's Cache Abstraction.
 
 More details on Spring's Cache Abstraction can be found
 {spring-framework-docs}/integration.html#cache[here].
@@ -1823,50 +1849,52 @@ More details on Spring's Cache Abstraction can be found
 [[bootstrap-annotation-config-cluster]]
 == Configuring Cluster Configuration Push
 
-This may be the most exciting new feature in Spring Data for {data-store-name}.
+This may be the most exciting new feature in {sdg-name}.
 
-When a client application class is annotated with `@EnableClusterConfiguration`, any regions or indexes defined
-and declared as beans in the Spring context by the client application are "`pushed`" to the cluster of servers to
-which the client is connected. Not only that, but this "`push`" is performed in such a way that {data-store-name}
+When a client application class is annotated with `@EnableClusterConfiguration`, any Regions or indexes defined
+and declared as beans in the Spring container by the client application are "`pushed`" to the cluster of servers
+to which the client is connected. Not only that, but this "`push`" is performed in such a way that {data-store-name}
 remembers the configuration pushed by the client when using HTTP. If all the nodes in the cluster go down, they
-come back up with the same configuration as before.
+come back up with the same configuration as before. If a new server is added to the cluster, it will acquire
+identical configuration.
 
-In a sense, this feature is not much different than if a user were to use Gfsh to manually create the regions and indexes
-on all the servers in the cluster. Except that now, with Spring Data for {data-store-name}, you need not use
-Gfsh to create regions and indexes.  Your Spring Boot application, enabled with the power of
-Spring Data for {data-store-name}, already contains all the configuration metadata needed to create regions and indexes
-for the user.
+In a sense, this feature is not much different than if you were to use _Gfsh_ to manually create the Regions and indexes
+on all the servers in the cluster. Except that now, with {sdg-name}, you no longer need to use _Gfsh_ to create Regions
+and indexes.  Your Spring Boot application, enabled with the power of {sdg-name}, already contains all the configuration
+metadata needed to create Regions and indexes for you.
 
-When you use the Spring Data repository abstraction, we know all the Regions (such as those defined by the `@Region`annotated
-entity types) and indexes (such as those defined by the `@Indexed`-annotated entity fields and properties) that your application
-needs. When you use Spring's Cache Abstraction, we also know all the regions for all the caches
-identified in the caching annotations needed by the application's service components. Essentially, you are
-already telling us everything we need to know by developing your application with the Spring Framework
-and all of its provided services, infrastructure, and other components, whether expressed in annotation metadata, Java, XML
-or otherwise, and whether for configuration, for mapping, or whatever purpose.
+When you use the Spring Data Repository abstraction, we know all the Regions (such as those defined by the `@Region` annotated
+entity classes) and indexes (such as those defined by the `@Indexed`-annotated entity fields and properties) that your application
+will need.
+
+When you use Spring's Cache Abstraction, we also know all the Regions for all the caches identified in the caching annotations
+needed by the application's service components.
+
+Essentially, you are already telling us everything we need to know simply by developing your application with the Spring Framework
+by using all of its provided services, infrastructure, and other components, whether expressed in annotation metadata, Java, XML
+or otherwise, and whether for configuration, mapping, or whatever the purpose.
 
 The point is that you can focus on your application's business logic while using the framework's services
-and supporting infrastructure (such Spring Data Repositories, Spring's Transaction Management, Spring Caching,
-and so on) and Spring Data for {data-store-name} takes care of all the {data-store-name} plumbing required by those framework
-services on the your behalf.
+and supporting infrastructure (such as Spring's Cache Abstraction, Spring Data Repositories, Spring's Transaction Management,
+and so on) and {sdg-name} takes care of all the {data-store-name} plumbing required by those framework services
+on the your behalf.
 
 Pushing configuration from the client to the servers in the cluster and having the cluster remember it is made possible
 in part by the use of {data-store-name}'s {x-data-store-docs}/configuring/cluster_config/gfsh_persist.html[Cluster Configuration]
-service. {data-store-name}'s Cluster Configuration service is also the same service used by Gfsh to record
-schema-related changes (for example, `gfsh> create region --name=Example --type=PARTITION`) issued by the user to the cluster
-from the shell.
+service. {data-store-name}'s Cluster Configuration service is also the same service used by _Gfsh_ to record schema-related changes
+(for example, `gfsh> create region --name=Example --type=PARTITION`) issued by the user to the cluster from the shell.
 
 Of course, since the cluster may "`remember`" the prior configuration pushed by a client from a previous run,
-Spring Data for {data-store-name} is careful not to stomp on any existing regions and indexes already defined in the servers.
-This is especially important, for instance, when regions already contain data.
+{sdg-name} is careful not to stomp on any existing Regions and indexes already defined in the servers.
+This is especially important, for instance, when Regions already contain data.
 
-NOTE: Currently, there is no option to overwrite any existing region or index definitions. To re-create a region
-or index, you must use Gfsh to first destroy the region or index and then restart the client application
-so that configuration is pushed up to the server again. Alternatively, you can use Gfsh to
-(re-)define the regions and indexes manually.
+NOTE: Currently, there is no option to overwrite any existing Region or Index definitions. To re-create a Region
+or Index, you must use _Gfsh_ to first destroy the Region or Index and then restart the client application
+so that configuration is pushed up to the server again. Alternatively, you can use _Gfsh_ to (re-)define the Regions
+and indexes manually.
 
-NOTE: Unlike Gfsh, Spring Data for {data-store-name} supports the creation of regions and indexes only on the servers from a client.
-For advanced configuration and use cases, you should use Gfsh to manage the cluster.
+NOTE: Unlike _Gfsh_, {sdg-name} supports the creation of Regions and indexes only on the servers from a client.
+For advanced configuration and use cases, you should use _Gfsh_ to manage the cluster.
 
 Consider the power expressed in the following configuration:
 
@@ -1884,78 +1912,79 @@ Consider the power expressed in the following configuration:
 class ClientApplication { .. }
 ----
 
-You instantly get a Spring Boot application that uses {data-store-name} `ClientCache`,
-Spring Data repositories, Spring's cache abstraction, and {data-store-name} as the caching provider
-(where regions and indexes are not only created on the client but pushed to the servers in the cluster).
+You instantly get a Spring Boot application with a {data-store-name} `ClientCache` instance, Spring Data Repositories,
+Spring's Cache Abstraction with {data-store-name} as the caching provider (where Regions and indexes
+are not only created on the client but pushed to the servers in the cluster).
 
-From there, you need to do the following:
+From there, you only need to do the following:
 
 * Define the application's domain model objects annotated with mapping and index annotations.
-* Define repository interfaces to support basic data access operations and simple queries for each of the entity types.
+* Define Repository interfaces to support basic data access operations and simple queries for each of the entity types.
 * Define the service components containing the business logic transacting the entities.
 * Declare the appropriate annotations on service methods that require caching, transactional behavior, and so on.
 
-Nothing in this case pertains to the infrastructure
-and plumbing required in the application's back-end services (such as {data-store-name}). Database users have similar
-features. Now Spring and {data-store-name} developers can, too.
+Nothing in this case pertains to the infrastructure and plumbing required in the application's back-end services
+(such as {data-store-name}). Database users have similar features. Now Spring and {data-store-name} developers can, too.
 
-When combined with the following Spring Data for {data-store-name} annotations, this application really starts to take flight, with minimal effort:
+When combined with the following {sdg-name} annotations, this application really starts to take flight,
+with very little effort:
 
 * `@EnableContinuousQueries`
 * `@EnableGemfireFunctionExecutions`
 * `@EnableGemfireCacheTransactions`
 
-See the https://docs.spring.io/spring-data/gemfire/docs/current/api/index.html?org/springframework/data/gemfire/config/annotation/EnableClusterConfiguration.html[`@EnableClusterConfiguration` annotation Javadoc] for more details.
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/index.html?org/springframework/data/gemfire/config/annotation/EnableClusterConfiguration.html[`@EnableClusterConfiguration` annotation
+Javadoc] for more details.
 
 [[bootstrap-annotation-config-security]]
 == Configuring Security
 
-Without a doubt, application Security is extremely important, and Spring Data for {data-store-name} provides comprehensive support
+Without a doubt, application security is extremely important, and {sdg-name} provides comprehensive support
 for securing both {data-store-name} clients and servers.
 
 Recently, {data-store-name} introduced a new {x-data-store-docs}/managing/security/implementing_security.html[Integrated Security] framework
 (replacing its old authentication and authorization security model) for handling authentication and authorization.
 One of the main features and benefits of this new security framework is that it integrates with
 https://shiro.apache.org/[Apache Shiro] and can therefore delegate both authentication and authorization requests
-to Apache Shiro when enforcing security.
+to Apache Shiro to enforce security.
 
-The remainder of this section demonstrates how Spring Data for {data-store-name} can simplify {data-store-name}'s Security story even further.
+The remainder of this section demonstrates how {sdg-name} can simplify {data-store-name}'s security story even further.
 
 [[bootstrap-annotation-config-security-server]]
 === Configuring Server Security
 
-There are several different ways in which you can configure security for servers in an {data-store-name} cluster.
+There are several different ways in which you can configure security for servers in a {data-store-name} cluster.
 
 * Implement the {data-store-name} `org.apache.geode.security.SecurityManager` interface and set {data-store-name}'s
-`security-manager` property to refer to your application `SecurityManager` implementation by the fully qualified class name.
-Alternatively, users can construct and initialize an instance of their `SecurityManager` implementation and set it
-with the {x-data-store-javadoc}/org/apache/geode/cache/CacheFactory.html#setSecurityManager-org.apache.geode.security.SecurityManager[CacheFactory.setSecurityManager(:SecurityManager)]
+`security-manager` property to refer to your application `SecurityManager` implementation using the fully qualified
+class name. Alternatively, users can construct and initialize an instance of their `SecurityManager` implementation
+and set it with the {x-data-store-javadoc}/org/apache/geode/cache/CacheFactory.html#setSecurityManager-org.apache.geode.security.SecurityManager[CacheFactory.setSecurityManager(:SecurityManager)]
 method when creating a {data-store-name} peer `Cache`.
 
 * Create an Apache Shiro https://shiro.apache.org/configuration.html[`shiro.ini`] file with the users, roles,
-and permissions defined for your application and then set the {data-store-name} `security-shiro-init` property to refer
-to this `shiro.ini` file, which must be available in the `CLASSPATH`.
+and permissions defined for your application and then set the {data-store-name} `security-shiro-init` property
+to refer to this `shiro.ini` file, which must be available in the `CLASSPATH`.
 
-* Using only Apache Shiro, annotate your Spring Boot application class with Spring Data for {data-store-name}'s new
-`@EnableSecurity` annotation and define one or more Apache Shiro https://shiro.apache.org/realm.html[`Realms`] (as needed)
-as beans in the Spring context for accessing your application's Security metadata (that is, authorized users, roles,
+* Using only Apache Shiro, annotate your Spring Boot application class with {sdg-name}'s new
+`@EnableSecurity` annotation and define one or more Apache Shiro https://shiro.apache.org/realm.html[`Realms`]
+as beans in the Spring container for accessing your application's security metadata (that is, authorized users, roles,
 and permissions).
 
-The problem with the first approach is that you must implement your own `SecurityManager`, which can be quite
-tedious and error-prone. Implementing a custom `SecurityManager` offers some flexibility in accessing
-security metadata from whatever data source stores the metadata, such as LDAP or even a proprietary, internal
-data source. However, that problem has already been solved by configuring and using Apache Shiro `Realms`, which is more
-universally known and non-{data-store-name}-specific.
+The problem with the first approach is that you must implement your own `SecurityManager`, which can be quite tedious
+and error-prone. Implementing a custom `SecurityManager` offers some flexibility in accessing security metadata from
+whatever data source stores the metadata, such as LDAP or even a proprietary, internal
+data source. However, that problem has already been solved by configuring and using Apache Shiro `Realms`,
+which is more universally known and non-{data-store-name}-specific.
 
-TIP: See {data-store-name}'s Security examples for {x-data-store-docs}/managing/security/authentication_examples.html[Authentication]
+TIP: See {data-store-name}'s security examples for {x-data-store-docs}/managing/security/authentication_examples.html[Authentication]
 and {x-data-store-docs}/managing/security/authorization_example.html[Authorization] as one possible way
 to implement your own custom, application-specific `SecurityManager`. However, we strongly recommend *against* doing so.
 
 The second approach, using an Apache Shiro INI file, is marginally better, but you still need to be familiar with
-the INI file format in the first place. Additionally, an INI file is static and not easily updatable at run time.
+the INI file format in the first place. Additionally, an INI file is static and not easily updatable at runtime.
 
 The third approach is the most ideal, since it adheres to widely known and industry-accepted concepts
-(that is, Apache Shiro's Security framework) and is easy to set up, as the following example shows:
+(that is, Apache Shiro's Security framework) and is easy to setup, as the following example shows:
 
 .Spring server application using Apache Shiro
 [source, java]
@@ -1990,43 +2019,41 @@ You could even create a custom implementation of an Apache Shiro `Realm`.
 
 See Apache Shiro's https://shiro.apache.org/realm.html[documentation on Realms] for more details.
 
-When Apache Shiro is on the `CLASSPATH` of the servers in the cluster and one or more Apache Shiro `Realms` have been
-defined as beans in the Spring context, Spring Data for {data-store-name} detects this configuration and uses Apache Shiro
+When Apache Shiro is on the `CLASSPATH` of the servers in the cluster and one or more Apache Shiro `Realms`
+have been defined as beans in the Spring container, {sdg-name} detects this configuration and uses Apache Shiro
 as the security provider to secure your {data-store-name} servers when the `@EnableSecurity` annotation is used.
 
-TIP: You can find more information about Spring Data for {data-store-name}'s support for {data-store-name}'s new integrated security
+TIP: You can find more information about {sdg-name}'s support for {data-store-name}'s new integrated security
 framework using Apache Shiro in this
 https://spring.io/blog/2016/11/10/spring-data-geode-1-0-0-incubating-release-released[spring.io blog post].
 
-See the https://docs.spring.io/spring-data/gemfire/docs/current/api/index.html?org/springframework/data/gemfire/config/annotation/EnableSecurity.html[`@EnableSecurity` annotation Javadoc] for more details on available attributes
-and associated configuration properties.
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/index.html?org/springframework/data/gemfire/config/annotation/EnableSecurity.html[`@EnableSecurity`] annotation
+Javadoc for more details on available attributes and associated configuration properties.
 
-More details on {data-store-name} Security can be found
+More details on {data-store-name} security can be found
 {x-data-store-docs}/managing/security/chapter_overview.html[here].
 
 [[bootstrap-annotation-config-security-client]]
 === Configuring Client Security
 
-The Security story would not be complete without discussing how to secure Spring-based {data-store-name} cache client
-applications.
+The security story would not be complete without discussing how to secure Spring-based, {data-store-name} cache client
+applications as well.
 
-{data-store-name}'s process for securing a client application is, honestly, rather involved. In a nutshell, you
-need to:
+{data-store-name}'s process for securing a client application is, honestly, rather involved. In a nutshell, you need to:
 
 . Provide an implementation of the
 {x-data-store-javadoc}/org/apache/geode/security/AuthInitialize.html[`org.apache.geode.security.AuthInitialize`] interface.
 . Set the {data-store-name} `security-client-auth-init` (System) property to refer to the custom, application-provided
 `AuthInitialize` interface.
-. Specify the user credentials in a proprietary, {data-store-name}
-`gfsecurity.properties` file.
+. Specify the user credentials in a proprietary, {data-store-name} `gfsecurity.properties` file.
 
-Spring Data for {data-store-name} simplifies all of those steps by using the same `@EnableSecurity` annotation on
-server applications. In other words, the same `@EnableSecurity` annotation handles security for both client
-and server applications. This feature makes it easier for users when (for instance) they decide to switch their applications from
-an embedded peer `Cache` application to a `ClientCache` application. Change the SDG annotation
+{sdg-name} simplifies all of those steps by using the same `@EnableSecurity` annotation that was used in the server
+applications. In other words, the same `@EnableSecurity` annotation handles security for both client and server
+applications. This feature makes it easier for users when they decide to switch their applications from an embedded,
+ peer `Cache` application to a `ClientCache` application, for instance. Simply change the {sdg-acronym} annotation
 from `@PeerCacheApplication` or `@CacheServerApplication` to `@ClientCacheApplication`, and you are done.
 
-Effectively, all you need do on the client is the following:
+Effectively, all you need to do on the client is the following:
 
 .Spring client application using `@EnableSecurity`
 [source, java]
@@ -2037,7 +2064,8 @@ Effectively, all you need do on the client is the following:
 class ClientApplication { .. }
 ----
 
-Then you can define the familiar Spring Boot `application.properties` file containing the required username and password, as the following example shows, and you are all set:
+Then you can define the familiar Spring Boot `application.properties` file containing the required username and password,
+as the following example shows, and you are all set:
 
 .Spring Boot `application.properties` file with the required Security credentials
 [source, java]
@@ -2046,12 +2074,12 @@ spring.data.gemfire.security.username=jackBlack
 spring.data.gemfire.security.password=b@cK!nB1@cK
 ----
 
-TIP: By default, Spring Boot can find an `application.properties` file when it is placed in the root of
-the application's `CLASSPATH`. Of course, Spring supports may ways to locate resources by using its
-{spring-framework-docs}/core.html#resources[resource abstraction].
+TIP: By default, Spring Boot can find your `application.properties` file when it is placed in the root of
+the application's `CLASSPATH`. Of course, Spring supports many ways to locate resources by using its
+{spring-framework-docs}/core.html#resources[Resource abstraction].
 
-See the https://docs.spring.io/spring-data/gemfire/docs/current/api/index.html?org/springframework/data/gemfire/config/annotation/EnableSecurity.html[`@EnableSecurity` annotation Javadoc] for more details on available attributes
-and associated configuration properties.
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/index.html?org/springframework/data/gemfire/config/annotation/EnableSecurity.html[`@EnableSecurity`] annotation
+Javadoc for more details on available attributes and associated configuration properties.
 
 More details on {data-store-name} Security can be found
 {x-data-store-docs}/managing/security/chapter_overview.html[here].
@@ -2067,8 +2095,8 @@ The following tips can help you get the most out of using the new annotation-bas
 [[bootstrap-annotation-config-tips-organization]]
 === Configuration Organization
 
-As we saw in the section on <<bootstrap-annotation-config-cluster, "`Configuring Cluster Configuration Push`">>, when
-many {data-store-name} or Spring Data for {data-store-name} features are enabled by using annotations, we start to stack a lot of
+As we saw in the section on <<bootstrap-annotation-config-cluster, "`Configuring Cluster Configuration Push`">>,
+when many {data-store-name} or {sdg-name} features are enabled by using annotations, we begin to stack a lot of
 annotations on the Spring `@Configuration` or `@SpringBootApplication` class. In this situation, it makes sense
 to start compartmentalizing the configuration a bit.
 
@@ -2129,57 +2157,56 @@ class QueriesConfiguration {
 class RepositoriesConfiguration { .. }
 ----
 
-While it does not matter to the Spring framework, we generally recommend aiming for readability, for the sake of the next person who has to maintain the code (which might be you at some point in the future).
+While it does not matter to the Spring Framework, we generally recommend aiming for readability, for the sake of
+the next person who has to maintain the code (which might be you at some point in the future).
 
 [[bootstrap-annotation-config-tips-undocumented-annotations]]
 === Additional Configuration-based Annotations
 
 The following SDG Annotations were not discussed in this reference documentation, either because the annotation supports
-a deprecated feature of {data-store-name} or because there are better, alternative ways to accomplishing the function that
-the annotation provides:
+a deprecated feature of {data-store-name} or because there are better, alternative ways to accomplishing
+the function that the annotation provides:
 
 * `@EnableAuth`: Enables {data-store-name}'s old authentication and authorization security model. (Deprecated.
-{data-store-name}'s new integrated security framework can be enabled on both clients and servers by using SDG's
+{data-store-name}'s new integrated security framework can be enabled on both clients and servers by using {sdg-acronym}'s
 `@EnableSecurity` annotation, as described in "`<<bootstrap-annotation-config-security>>`".)
-* `@EnableAutoRegionLookup`: Not recommended. Essentially, this annotation supports finding regions defined in
-external configuration metadata (such as `cache.xml` or cluster configuration when applied to a server) and automatically registers
-those regions as beans in the Spring context. Users should generally prefer Spring configuration when
-using Spring and Spring Data for {data-store-name}. See "`<<bootstrap-annotation-config-regions>>`"
-and "`<<bootstrap-annotation-config-cluster>>`" instead.
-* `@EnableBeanFactoryLocator`: Enables the SDG `GemfireBeanFactoryLocator` feature, which is only useful
+* `@EnableAutoRegionLookup`: Not recommended. Essentially, this annotation supports finding Regions defined in external
+configuration metadata (such as `cache.xml` or Cluster Configuration when applied to a server) and automatically
+registers those Regions as beans in the Spring container. Users should generally prefer Spring configuration when
+using Spring and {sdg-name}. See "`<<bootstrap-annotation-config-regions>>`" and "`<<bootstrap-annotation-config-cluster>>`"
+instead.
+* `@EnableBeanFactoryLocator`: Enables the {sdg-acronym} `GemfireBeanFactoryLocator` feature, which is only useful
 when using external configuration metadata (for example, `cache.xml`). For example, if you define a `CacheLoader` on
-a region defined in `cache.xml`, you can still auto-wire this `CacheLoader` with, say, a relational database
-`DataSource` bean defined in Spring configuration. This annotation takes advantage of this SDG <<apis:declarable, feature>>
-and might be useful if you have a large amount of legacy configuration metadata, such as `cache.xml` files.
-* `@EnableGemFireAsLastResource`: Discussed in
-<<apis:global-transaction-management, Global - JTA Transaction Management>> with {data-store-name}.
+a Region defined in `cache.xml`, you can still autowire this `CacheLoader` with, say, a relational database
+`DataSource` bean defined in Spring configuration. This annotation takes advantage of this {sdg-acronym}
+<<apis:declarable, feature>> and might be useful if you have a large amount of legacy configuration metadata,
+such as `cache.xml` files.
+* `@EnableGemFireAsLastResource`: Discussed in <<apis:global-transaction-management, Global - JTA Transaction Management>>
+with {data-store-name}.
 * `@EnableMcast`: Enables {data-store-name}'s old peer discovery mechanism that uses UDP-based multi-cast networking.
-(_Deprecated_. Use {data-store-name} locators instead. See
-"`<<bootstrap-annotation-config-embedded-services-locator>>`".
-* `@EnableRegionDataAccessTracing`: Useful for debugging purposes. The Annotation enables tracing for all
-data access operations performed on a region by registering an AOP Aspect that proxies all regions declared
-as beans in the Spring context, intercepting the region operation and logging the event.
+(_Deprecated_. Use {data-store-name} Locators instead. See "`<<bootstrap-annotation-config-embedded-services-locator>>`".
+* `@EnableRegionDataAccessTracing`: Useful for debugging purposes. This annotation enables tracing for all data access
+operations performed on a Region by registering an AOP Aspect that proxies all Regions declared as beans
+in the Spring container, intercepting the Region operation and logging the event.
 
 [[bootstrap-annotation-config-conclusion]]
 == Conclusion
 
-As we learned in the previous sections, Spring Data for {data-store-name}'s
-new annotation-based configuration model provides a tremendous amout of power. Hopefully, it lives up to its goal of making it easier for you
-to get started quickly when using {data-store-name} with Spring.
+As we learned in the previous sections, {sdg-name}'s new annotation-based configuration model provides a tremendous
+amount of power. Hopefully, it lives up to its goal of making it easier for you to get started quickly and easily
+when using {data-store-name} with Spring.
 
-Keep in mind that, when you use the new annotations, you can still use
-Java configuration or XML configuration. You can even combine all three approaches by using Spring's
-{spring-framework-javadoc}/org/springframework/context/annotation/Import.html[`@Import`]
+Keep in mind that, when you use the new annotations, you can still use Java configuration or XML configuration.
+You can even combine all three approaches by using Spring's {spring-framework-javadoc}/org/springframework/context/annotation/Import.html[`@Import`]
 and {spring-framework-javadoc}/org/springframework/context/annotation/ImportResource.html[`@ImportResource`]
-annotations on a Spring `@Configuration` or `@SpringBootApplication` class. The moment you explicitly
-provide a bean definition that would otherwise be provided by Spring Data for {data-store-name} by using an annotation,
-the annotation-based configuration backs away.
+annotations on a Spring `@Configuration` or `@SpringBootApplication` class. The moment you explicitly provide a bean definition
+that would otherwise be provided by {sdg-name} by using an annotation, the annotation-based configuration backs away.
 
 [NOTE]
 ====
-In certain cases, you may even need to fall back to Java configuration, as in the `Configurers` case, to handle more complex
-or conditional configuration logic that is not easily expressed in or cannot be accomplished by using annotations.
-Do not be alarmed. This behavior is to be expected.
+In certain cases, you may even need to fall back to Java configuration, as in the `Configurers` case, to handle
+more complex or conditional configuration logic that is not easily expressed in or cannot be accomplished by
+using annotations alone. Do not be alarmed. This behavior is to be expected.
 
 For example, another case where you need Java or XML configuration is when configuring {data-store-name} WAN components,
 which currently do not have any annotation configuration support. However, defining and registering WAN components
@@ -2188,7 +2215,7 @@ and `org.springframework.data.gemfire.wan.GatewaySenderFactoryBean` API classes 
 `@Configuration` or `@SpringBootApplication` classes (recommended).
 ====
 
-The Annotations were not meant to handle every situation. The Annotations were meant to help you
-get up and running as quickly and as easily as possible, especially during development.
+The annotations were not meant to handle every situation. The annotations were meant to help you _get up and running_
+as _quickly_ and as _easily_ as possible, especially during development.
 
 We hope you will enjoy these new capabilities!

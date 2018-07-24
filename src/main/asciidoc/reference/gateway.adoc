@@ -1,16 +1,17 @@
 [[bootstrap:gateway]]
 = Configuring WAN Gateways
 
-WAN Gateways provide a way to synchronize {data-store-name} Distributed Systems across geographic areas.
-Spring Data for {data-store-name} provides namespace support for configuring WAN Gateways as illustrated in the following examples.
+WAN Gateways provides a way to synchronize {data-store-name} Distributed Systems across geographic locations.
+{sdg-name} provides XML namespace support for configuring WAN Gateways as illustrated in the following examples.
 
 == WAN Configuration in {data-store-name} 7.0
 
-In the following example, `GatewaySenders` are configured for a `PARTITION` region by adding child elements
-(`gateway-sender` and `gateway-sender-ref`) to the region.
+In the following example, `GatewaySenders` are configured for a `PARTITION` Region by adding child elements
+(`gateway-sender` and `gateway-sender-ref`) to the Region.  A `GatewaySender` may register `EventFilters`
+and `TransportFilters`.
 
-A `GatewaySender` may register `EventFilters` and `TransportFilters`. The following example also shows a sample configuration
-of an `AsyncEventQueue`, which must also be wired into a region (not shown):
+The following example also shows a sample configuration of an `AsyncEventQueue`, which must also be auto-wired
+into a Region (not shown):
 
 [source,xml]
 ----
@@ -48,7 +49,7 @@ of an `AsyncEventQueue`, which must also be wired into a region (not shown):
 <bean id="transport-filter" class="org.springframework.data.gemfire.example.AnotherTransportFilter"/>
 ----
 
-On the other end of a `GatewaySender` is a corresponding `GatewayReceiver` to receive gateway events.
+On the other end of a `GatewaySender` is a corresponding `GatewayReceiver` to receive Gateway events.
 The `GatewayReceiver` may also be configured with `EventFilters` and `TransportFilters`, as follows:
 
 [source,xml]

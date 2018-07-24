@@ -1,29 +1,29 @@
 [[bootstrap:indexing]]
 = Configuring an Index
 
-{data-store-name} allows indexes (also sometimes pluralized as indices) to be created on region data to improve the performance of OQL (Object Query Language) queries.
+{data-store-name} allows indexes (also sometimes pluralized as indices) to be created on Region data
+to improve the performance of OQL (Object Query Language) queries.
 
-In Spring Data for {data-store-name} (SDG), indexes are declared with the `index` element, as the following example shows:
+In {sdg-name}, indexes are declared with the `index` element, as the following example shows:
 
 [source,xml]
 ----
 <gfe:index id="myIndex" expression="someField" from="/SomeRegion" type="HASH"/>
 ----
 
-In Spring Data for {data-store-name}'s XML schema (also called the SDG namespace), `index` bean declarations are not bound to a region,
-unlike {data-store-name}'s native `cache.xml`. Rather, they are top-level elements similar to `&lt;gfe:cache&gt;`. This lets
-you declare any number of indexes on any Region, whether they were just created or already exist -- a
-significant improvement over {data-store-name}'s native `cache.xml` format.
+In {sdg-name}'s XML schema (also called the {sdg-acronym} XML namespace), `index` bean declarations are not bound
+to a Region, unlike {data-store-name}'s native `cache.xml`. Rather, they are top-level elements similar to
+`&lt;gfe:cache&gt;` element. This lets you declare any number of indexes on any Region, whether they were just created
+or already exist -- a significant improvement over {data-store-name}'s native `cache.xml` format.
 
 An `Index` must have a name.  You can give the `Index` an explicit name by using the `name` attribute.
 Otherwise, the bean name (that is, the value of the `id` attribute) of the `index` bean definition is used as
-the `index` name.
+the `Index` name.
 
-The `expression` and `from` clause form the main components of an `index`, identifying the data to index
-(that is, the region identified in the `from` clause) along with what criteria (that is, `expression`) is used
-to index the data. The `expression` should be based on what application domain object fields are used
-in the predicate of application-defined OQL queries used to query and look up the objects stored
-in the Region.
+The `expression` and `from` clause form the main components of an `Index`, identifying the data to index
+(that is, the Region identified in the `from` clause) along with what criteria (that is, `expression`) is used
+to index the data. The `expression` should be based on what application domain object fields are used in the predicate
+of application-defined OQL queries used to query and look up the objects stored in the Region.
 
 Consider the following example, which has a `lastName` property:
 
@@ -42,7 +42,8 @@ class Customer {
 }
 ----
 
-Now consider the following example, which has an application-defined SDG repository to query for `Customer` objects:
+Now consider the following example, which has an application-defined {sdg-acronym} Repository
+to query for `Customer` objects:
 
 [source,java]
 ----
@@ -54,7 +55,7 @@ interface CustomerRepository extends GemfireRepository<Customer, Long> {
 }
 ----
 
-The SDG repository finder/query method results in the following OQL statement being run:
+The {sdg-acronym} Repository finder/query method results in the following OQL statement being generated and ran:
 
 [source,java]
 ----
@@ -68,32 +69,30 @@ Therefore, you might want to create an `Index` with a statement similar to the f
 <gfe:index id="myIndex" name="CustomersLastNameIndex" expression="lastName" from="/Customers" type="HASH"/>
 ----
 
-The `from` clause must refer to a valid, existing region and is how an `index` gets applied to a region.
-This is not specific to Spring Data Pivotal GemFir. It is a feature of {data-store-name}.
+The `from` clause must refer to a valid, existing Region and is how an `Index` gets applied to a Region.
+This is not specific to {sdg-name}. It is a feature of {data-store-name}.
 
-The `index` `type` may be one of three enumerated values defined by Spring Data for {data-store-name}'s
-http://docs.spring.io/spring-data-gemfire/docs/current/api/org/springframework/data/gemfire/IndexType.html[`IndexType`]
-enumeration: `FUNCTIONAL`, `HASH`, and `PRIMARY_KEY`.
+The `Index` `type` may be one of three enumerated values defined by {sdg-name}'s
+{sdg-javadoc}/org/springframework/data/gemfire/IndexType.html[`IndexType`] enumeration:
+`FUNCTIONAL`, `HASH`, and `PRIMARY_KEY`.
 
 Each of the enumerated values corresponds to one of the {x-data-store-javadoc}/org/apache/geode/cache/query/QueryService.html[`QueryService`]
-`create[|Key|Hash]Index` methods invoked when the actual `index` is to be created (or "`defined`" -- you can find more on "`defining`"
-indexes in the next section). For instance, if the `IndexType` is `PRIMARY_KEY`, then the
+`create[|Key|Hash]Index` methods invoked when the actual `Index` is to be created (or "`defined`" -- you can find
+more on "`defining`" indexes in the next section). For instance, if the `IndexType` is `PRIMARY_KEY`, then the
 {x-data-store-javadoc}/org/apache/geode/cache/query/QueryService.html#createKeyIndex-java.lang.String-java.lang.String-java.lang.String-[QueryService.createKeyIndex(..)]
 is invoked to create a `KEY` `Index`.
 
-The default is `FUNCTIONAL` and results in one of the `QueryService.createIndex(..)` methods
-being invoked.
-
-See the Spring Data for {data-store-name} XML schema for a full set of options.
+The default is `FUNCTIONAL` and results in one of the `QueryService.createIndex(..)` methods being invoked.  See the
+{sdg-name} XML schema for a full set of options.
 
 For more information on indexing in {data-store-name}, see "`http://gemfire90.docs.pivotal.io/geode/developing/query_index/query_index.html[Working with Indexes]`"
 in {data-store-name}'s User Guide.
 
 == Defining Indexes
 
-In addition to creating Indexes up front as `ndex` bean definitions are processed by Spring Data for {data-store-name}
-on Spring container initialization, you may also define all of your application indexes prior to creating
-them by using the `define` attribute, as follows:
+In addition to creating indexes up front as `Index` bean definitions are processed by {sdg-name} on Spring container
+initialization, you may also define all of your application indexes prior to creating them by using the `define`
+attribute, as follows:
 
 [source,xml]
 ----
@@ -101,9 +100,9 @@ them by using the `define` attribute, as follows:
 ----
 
 When `define` is set to `true` (it defaults to `false`), it does not actually create the `Index` at that moment.
-All "`defined`" Indexes are created all at once, when the Spring `ApplicationContext` is "`refreshed`" or, to put it differently,
-when a `ContextRefreshedEvent` is published by the Spring container.  Spring Data for {data-store-name} registers itself as
-an `ApplicationListener` listening for the `ContextRefreshedEvent`. When fired, Spring Data for {data-store-name} calls
+All "`defined`" Indexes are created all at once, when the Spring `ApplicationContext` is "`refreshed`" or, to put it
+differently, when a `ContextRefreshedEvent` is published by the Spring container.  {sdg-name} registers itself as
+an `ApplicationListener` listening for the `ContextRefreshedEvent`. When fired, {sdg-name} calls
 {x-data-store-javadoc}/org/apache/geode/cache/query/QueryService.html#createDefinedIndexes[`QueryService.createDefinedIndexes()`].
 
 Defining indexes and creating them all at once boosts speed and efficiency when creating indexes.
@@ -113,22 +112,22 @@ for more details.
 
 == `IgnoreIfExists` and `Override`
 
-Two Spring Data for {data-store-name} `Index` configuration options warrant special mention: `ignoreIfExists` and `override`.
+Two {sdg-name} `Index` configuration options warrant special mention: `ignoreIfExists` and `override`.
 
 These options correspond to the `ignore-if-exists` and `override` attributes on the `&lt;gfe:index&gt;` element
-in Spring Data for {data-store-name}'s XML schema, respectively.
+in {sdg-name}'s XML namespace, respectively.
 
 WARNING: Make sure you absolutely understand what you are doing before using either of these options. These options can
 affect the performance and resources (such as memory) consumed by your application at runtime. As a result, both of
-these options are disabled (set to `false`) in SDG by default.
+these options are disabled (set to `false`) in {sdg-acronym} by default.
 
-NOTE: These options are only available in Spring Data for {data-store-name} and exist to workaround known limitations
-with {data-store-name}. {data-store-name} has no equivalent options or functionality.
+NOTE: These options are only available in {sdg-name} and exist to workaround known limitations with {data-store-name}.
+{data-store-name} has no equivalent options or functionality.
 
-Each option significantly differs in behavior and entirely depends on the type of {data-store-name} `Index` exception thrown.
-This also means that neither option has any effect if a {data-store-name} Index-type exception is not thrown. These options
-are meant to specifically handle {data-store-name} `IndexExistsException` and `IndexNameConflictException` instances, which can occur
-for various, sometimes obscure reasons. The exceptions have the following causes:
+Each option significantly differs in behavior and entirely depends on the type of {data-store-name} `Index` exception
+thrown. This also means that neither option has any effect if a {data-store-name} Index-type exception is not thrown.
+These options are meant to specifically handle {data-store-name} `IndexExistsException` and `IndexNameConflictException`
+instances, which can occur for various, sometimes obscure reasons. The exceptions have the following causes:
 
 * An {x-data-store-javadoc}/org/apache/geode/cache/query/IndexExistsException.html[`IndexExistsException`]
 is thrown when there exists another `Index` with the same definition but a different name when attempting to
@@ -138,42 +137,42 @@ create an `Index`.
 is thrown when there exists another `Index` with the same name but possibly different definition when attempting to
 create an `Index`.
 
-Spring Data for {data-store-name}'s default behavior is to fail-fast, always.  So, neither `Index` _Exception_ are "`handled`"
-by default. These `Index` exceptions are wrapped in a SDG `GemfireIndexException` and rethrown. If you wish
-for Spring Data for {data-store-name} to handle them for you, you can set either of these `Index` bean definition options to `true`.
+{sdg-name}'s default behavior is to fail-fast, always.  So, neither `Index` _Exception_ are "`handled`" by default.
+These `Index` exceptions are wrapped in a {sdg-acronym} `GemfireIndexException` and rethrown. If you wish for {sdg-name}
+to handle them for you, you can set either of these `Index` bean definition options to `true`.
 
-`IgnoreIfExists` always takes precedence over `Override`, primarily because it uses fewer resources (because it returns
-the "`existing`" `index` in both exceptional cases).
+`IgnoreIfExists` always takes precedence over `Override`, primarily because it uses fewer resources, simply because
+it returns the "`existing`" `Index` in both exceptional cases.
 
 === `IgnoreIfExists` Behavior
 
 When an `IndexExistsException` is thrown and `ignoreIfExists` is set to `true` (or `&lt;gfe:index ignore-if-exists="true"&gt;`),
-then the `index` that would have been created by this `index` bean definition or declaration is ignored,
+then the `Index` that would have been created by this `index` bean definition or declaration is simply ignored,
 and the existing `Index` is returned.
 
-There is little consequence in returning the existing `index`, since the `Index` definition is the same,
-as determined by {data-store-name} itself, not SDG.
+There is little consequence in returning the existing `Index`, since the `index` bean definition is the same,
+as determined by {data-store-name} itself, not {sdg-acronym}.
 
-However, this also means that no `index` with the "`name`" specified in your `Index` bean definition or declaration
+However, this also means that no `Index` with the "`name`" specified in your `index` bean definition or declaration
 actually exists from {data-store-name}'s perspective (that is, with
 {x-data-store-javadoc}/org/apache/geode/cache/query/QueryService.html#getIndexes[`QueryService.getIndexes()`]).
-Therefore, you should be careful when writing OQL query statements that use query hints, especially hints that refer
-to the application `Index` being ignored. Those query hints need to be changed.
+Therefore, you should be careful when writing OQL query statements that use query hints, especially query hints
+that refer to the application `Index` being ignored. Those query hints need to be changed.
 
 When an `IndexNameConflictException` is thrown and `ignoreIfExists` is set to `true` (or `&lt;gfe:index ignore-if-exists="true"&gt;`),
-the `index` that would have been created by this `index` bean definition or declaration is also ignored,
-and the "existing" Index is returned, as when an `IndexExistsException` is thrown.
+the `Index` that would have been created by this `index` bean definition or declaration is also ignored,
+and the "existing" `Index` is again returned, as when an `IndexExistsException` is thrown.
 
-However, there is more risk in returning the existing `index` and ignoring the application's definition
-of the `Index` when an `IndexNameConflictException` is thrown. For a `IndexNameConflictException`, while the names
-of the conflicting indexes are the same, the definitions could be different. This situation could have
-implications for OQL queries specific to the application, where you would presume the indexes were defined specifically
-with the application data access patterns and queries in mind. However, if like-named indexes differ in definition,
-this might not be the case. Consequently, you should verify your index names.
+However, there is more risk in returning the existing `Index` and ignoring the application's definition of the `Index`
+when an `IndexNameConflictException` is thrown. For a `IndexNameConflictException`, while the names of the conflicting
+indexes are the same, the definitions could be different. This situation could have implications for OQL queries
+specific to the application, where you would presume the indexes were defined specifically with the application
+data access patterns and queries in mind. However, if like-named indexes differ in definition, this might not be
+the case. Consequently, you should verify your `Index` names.
 
-NOTE: SDG makes a best effort to inform the user when the `Index` being ignored is significantly different
-in its definition from the existing `Index`. However, in order for SDG to accomplish this, it must be able to find
-the existing `Index`, which is looked up by using the {data-store-name} API (the only means available).
+NOTE: {sdg-acronym} makes a best effort to inform the user when the `Index` being ignored is significantly different
+in its definition from the existing `Index`. However, in order for {sdg-acronym} to accomplish this, it must be able to
+find the existing `Index`, which is looked up by using the {data-store-name} API (the only means available).
 
 
 === `Override` Behavior
@@ -182,56 +181,55 @@ When an `IndexExistsException` is thrown and `override` is set to `true` (or `&l
 the `Index` is effectively renamed.  Remember, `IndexExistsExceptions` are thrown when multiple indexes exist that
 have the same definition but different names.
 
-Spring Data for {data-store-name} can only accomplish this by using {data-store-name}'s API, by first removing the existing `Index`
-and then recreating the `index` with the new name. It is possible that either the remove or subsequent
-create invocation could fail. There is no way to execute both actions atomically and rollback this joint operation
-if either fails.
+{sdg-name} can only accomplish this by using {data-store-name}'s API, by first removing the existing `Index`
+and then recreating the `Index` with the new name. It is possible that either the remove or subsequent create invocation
+could fail. There is no way to execute both actions atomically and rollback this joint operation if either fails.
 
 However, if it succeeds, then you have the same problem as before with the `ignoreIfExists` option. Any existing OQL
 query statement using query hints that refer to the old `Index` by name must be changed.
 
 When an `IndexNameConflictException` is thrown and `override` is set to `true` (or `&lt;gfe:index override="true"&gt;`),
-the existing `Index` can potentially be re-defined. We say "`potentially`" because it is possible for the
-like-named, existing `Index` to have exactly the same definition and name when an `IndexNameConflictException`
-is thrown.
+the existing `Index` can potentially be re-defined. We say "`potentially`" because it is possible for the like-named,
+existing `Index` to have exactly the same definition and name when an `IndexNameConflictException` is thrown.
 
-If so, SDG is smart and returns the existing Index as is, even on `override`. There is no harm in this behavior,
-since both the name and the definition are exactly the same. Of course, SDG can only accomplish this when
-SDG is able to find the existing `Index`, which is dependent on {data-store-name}'s APIs. If it cannot be found,
-nothing happens and a SDG `GemfireIndexException` is thrown that wraps the `IndexNameConflictException`.
+If so, {sdg-acronym} is smart and returns the existing `Index` as is, even on `override`. There is no harm
+in this behavior, since both the name and the definition are exactly the same. Of course, {sdg-acronym} can only
+accomplish this when {sdg-acronym} is able to find the existing `Index`, which is dependent on {data-store-name}'s APIs.
+If it cannot be found, nothing happens and a {sdg-acronym} `GemfireIndexException` is thrown that wraps the
+`IndexNameConflictException`.
 
-However, when the definition of the existing `Index` is different, SDG attempts to re-create the `Index` by
-using the `Index` definition specified in the `Index` bean definition or declaration. Make sure this is what you want
-and make sure the `Index` definition matches your expectations and application requirements.
+However, when the definition of the existing `Index` is different, {sdg-acronym} attempts to re-create the `Index`
+by using the `Index` definition specified in the `index` bean definition. Make sure this is what you want and make sure
+the `index` bean definition matches your expectations and application requirements.
 
 === How Does `IndexNameConflictExceptions` Actually Happen?
 
-It is probably not all that uncommon for `IndexExistsExceptions` to be thrown, especially when
-multiple configuration sources are used to configure {data-store-name} (Spring Data for {data-store-name}, {data-store-name} Cluster Config,
-{data-store-name} native `cache.xml`, the API, and so on). You should definitely prefer one configuration method
-and stick with it.
+It is probably not all that uncommon for `IndexExistsExceptions` to be thrown, especially when multiple configuration
+sources are used to configure {data-store-name} ({sdg-name}, {data-store-name} Cluster Config, {data-store-name} native
+`cache.xml`, the API, and so on). You should definitely prefer one configuration method and stick with it.
 
 However, when does an `IndexNameConflictException` get thrown?
 
-One particular case is an `Index` defined on a `PARTITION` region (PR). When an `Index` is defined on
-a `PARTITION` region (for example, `X`), {data-store-name} distributes the `Index` definition (and name) to other peer members
-in the cluster that also host the same `PARTITION` region (that is, "X"). The distribution of this `Index` definition
-to and subsequent creation of this `Index` by peer members on a need-to-know basis (that is, those hosting the same PR)
-is performed asynchronously.
+One particular case is an `Index` defined on a `PARTITION` Region (PR). When an `Index` is defined on a `PARTITION` Region
+(for example, `X`), {data-store-name} distributes the `Index` definition (and name) to other peer members
+in the cluster that also host the same `PARTITION` Region (that is, "X"). The distribution of this `Index` definition
+to, and subsequent creation of, this `Index` by peer members is on a need-to-know basis (that is, by peer member hosting
+the same PR) is performed asynchronously.
 
 During this window of time, it is possible that these pending PR `Indexes` cannot be identified by {data-store-name} --
 such as with a call to {x-data-store-javadoc}/org/apache/geode/cache/query/QueryService.html#getIndexes[`QueryService.getIndexes()`]
 with {x-data-store-javadoc}/org/apache/geode/cache/query/QueryService.html#getIndexes-org.apache.geode.cache.Region[`QueryService.getIndexes(:Region)`],
 or even with {x-data-store-javadoc}/org/apache/geode/cache/query/QueryService.html#getIndex-org.apache.geode.cache.Region-java.lang.String[`QueryService.getIndex(:Region, indexName:String)`].
 
-As a result, the only way for SDG or other {data-store-name} cache client applications (not involving Spring) to know for sure
-is to attempt to create the `Index`. If it fails with either an `IndexNameConflictException`
-or even an `IndexExistsException`, the application knows there is a problem. This is because the `QueryService` `Index` creation waits on
-pending `Index` definitions, whereas the other {data-store-name} API calls do not.
+As a result, the only way for {sdg-acronym} or other {data-store-name} cache client applications (not involving Spring)
+to know for sure is to attempt to create the `Index`. If it fails with either an `IndexNameConflictException` or even
+an `IndexExistsException`, the application knows there is a problem. This is because the `QueryService` `Index` creation
+waits on pending `Index` definitions, whereas the other {data-store-name} API calls do not.
 
-In any case, SDG makes a best effort and attempts to inform you what has happened or is happening and tell you
-the corrective action. Given that all {data-store-name} `QueryService.createIndex(..)` methods are synchronous, blocking operations,
-the state of {data-store-name} should be consistent and accessible after either of these index-type exceptions are thrown.
-Consequently, SDG can inspect the state of the system and act accordingly, based on your configuration.
+In any case, {sdg-acronym} makes a best effort and attempts to inform you what has happened or is happening and tell you
+the corrective action. Given that all {data-store-name} `QueryService.createIndex(..)` methods are synchronous,
+blocking operations, the state of {data-store-name} should be consistent and accessible after either of these index-type
+exceptions are thrown. Consequently, {sdg-acronym} can inspect the state of the system and act accordingly,
+based on your configuration.
 
-In all other cases, SDG embraces a fail-fast strategy.
+In all other cases, {sdg-acronym} embraces a fail-fast strategy.

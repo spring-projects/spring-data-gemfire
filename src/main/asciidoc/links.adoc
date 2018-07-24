@@ -1,11 +1,11 @@
 [[sgf-links]]
 = Useful Links
 
-* http://projects.spring.io/spring-data-gemfire[Spring Data for {data-store-name} Project Page]
-* https://github.com/spring-projects/spring-data-gemfire[Spring Data for {data-store-name} source code]
-* https://jira.spring.io/browse/SGF[Spring Data for {data-store-name} JIRA]
-* http://stackoverflow.com/questions/tagged/spring-data-gemfire[Spring Data for {data-store-name} on StackOverflow]
-* http://forum.spring.io/forum/spring-projects/data/gemfire[Archive of the Spring Data for {data-store-name} Forum on Spring IO]
+* http://projects.spring.io/spring-data-gemfire[{sdg-name} Project Page]
+* https://github.com/spring-projects/spring-data-gemfire[{sdg-name} source code]
+* https://jira.spring.io/browse/SGF[{sdg-name} JIRA]
+* http://stackoverflow.com/questions/tagged/spring-data-gemfire[{sdg-name} on StackOverflow]
+* http://forum.spring.io/forum/spring-projects/data/gemfire[Archive of the {sdg-name} Forum on Spring IO]
 * {x-data-store-website}[{data-store-name} Home Page]
 * {x-data-store-docs}/getting_started/book_intro.html[{data-store-name} Documentation]
 * {apache-geode-website}/community/[Apache Geode Community]

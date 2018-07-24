@@ -1,6 +1,6 @@
 [[appendix-schema]]
 [appendix]
-= Spring Data for {data-store-name} Schema
+= {sdg-name} Schema
 
-* {spring-data-schema-location}[Spring Data for {data-store-name} Core Schema (`gfe` namespace)]
-* {spring-data-access-schema-location}[Spring Data for {data-store-name} Data Access Schema (`gfe-data` namespace)]
+* {spring-data-schema-location}[{sdg-name} Core Schema (`gfe` XML namespace)]
+* {spring-data-access-schema-location}[{sdg-name} Data Access Schema (`gfe-data` XML namespace)]

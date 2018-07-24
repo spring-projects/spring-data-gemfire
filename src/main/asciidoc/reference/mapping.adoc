@@ -10,8 +10,8 @@ This section covers:
 [[mapping.entities]]
 == Entity Mapping
 
-Spring Data for {data-store-name} provides support to map entities that are stored in a region in the Geode In-Memory Data Grid.
-The mapping metadata is defined by using annotations on application domain classes, as the following example shows:
+{sdg-name} provides support to map entities that are stored in a Region.  The mapping metadata is defined by
+using annotations on application domain classes, as the following example shows:
 
 .Mapping a domain class to a {data-store-name} Region
 ====
@@ -35,14 +35,14 @@ public class Person {
 ----
 ====
 
-The `@Region` annotation can be used to customize the region
-in which an instance of the `Person` class is stored. The `@Id` annotation can be used to annotate the property
-that should be used as the cache (region) key, identifying the region entry. The `@PersistenceConstructor` annotation
-helps to disambiguate multiple potentially available constructors, taking parameters and explicitly marking
-the constructor annotated as the constructor to be used to construct entities. In an application domain class with no
-or only a single constructor, you can omit the annotation.
+The `@Region` annotation can be used to customize the Region in which an instance of the `Person` class is stored.
+The `@Id` annotation can be used to annotate the property that should be used as the cache Region key, identifying
+the Region entry. The `@PersistenceConstructor` annotation helps to disambiguate multiple potentially available
+constructors, taking parameters and explicitly marking the constructor annotated as the constructor to be used to
+construct entities. In an application domain class with no or only a single constructor, you can omit the annotation.
 
-In addition to storing entities in top-level regions, entities can be stored in Sub-Regions as well, as the following example shows:
+In addition to storing entities in top-level Regions, entities can be stored in Sub-Regions as well,
+as the following example shows:
 
 [source,java]
 ----
@@ -57,37 +57,37 @@ public class Guest extends User {
 }
 ----
 
-Be sure to use the full path of the {data-store-name} region, as defined with the Spring Data for {data-store-name} XML namespace by
-using the `id` or `name` attributes of the `<*-region>` element.
+Be sure to use the full path of the {data-store-name} Region, as defined with the {sdg-name} XML namespace
+by using the `id` or `name` attributes of the `<*-region>` element.
 
 [[mapping.entities.region]]
 === Entity Mapping by Region Type
 
-In addition to the `@Region` annotation, Spring Data for {data-store-name} also recognizes the region type-specific
-mapping annotations: `@ClientRegion`, `@LocalRegion`, `@PartitionRegion`, and `@ReplicateRegion`.
+In addition to the `@Region` annotation, {sdg-name} also recognizes type-specific Region mapping annotations:
+`@ClientRegion`, `@LocalRegion`, `@PartitionRegion`, and `@ReplicateRegion`.
 
-Functionally, these annotations are treated exactly the same as the generic `@Region` annotation in the SDG
-mapping infrastructure. However, these additional mapping annotations are useful in Spring Data for {data-store-name}'s
+Functionally, these annotations are treated exactly the same as the generic `@Region` annotation in the {sdg-acronym}
+mapping infrastructure. However, these additional mapping annotations are useful in {sdg-name}'s
 annotation configuration model. When combined with the `@EnableEntityDefinedRegions` configuration annotation
-on a Spring `@Configuration` annotated class, it is possible to generate regions in the local cache, whether
+on a Spring `@Configuration` annotated class, it is possible to generate Regions in the local cache, whether
 the application is a client or peer.
 
-These annotations let you be more specific about what type of region your application
-entity class should be mapped to and also have an impact on the data management policies of the region
-(for example, partition -- also known as sharding -- versus replicating data).
+These annotations let you be more specific about what type of Region your application entity class should be mapped to
+and also has an impact on the data management policies of the Region (for example, partition -- also known as sharding
+-- versus replicating data).
 
-Using these region type-specific mapping annotations with the SDG Annotation config model saves you from having to
-explicitly define these regions in configuration.
+Using these type-specific Region mapping annotations with the {sdg-acronym} annotation configuration model saves you
+from having to explicitly define these Regions in configuration.
 
 [[mapping.repositories]]
 == Repository Mapping
 
-As an alternative to specifying the region in which the entity is stored by using the `@Region` annotation
-on the entity class, you can also specify the `@Region` annotation on the entity's `Repository`.
+As an alternative to specifying the Region in which the entity is stored by using the `@Region` annotation
+on the entity class, you can also specify the `@Region` annotation on the entity's `Repository` interface.
 See <<gemfire-repositories>> for more details.
 
-However, suppose you want to store a `Person` record in multiple {data-store-name} Regions (for example, `People` and `Customers`).
-Then you can define your corresponding `Repository` interface extensions as follows:
+However, suppose you want to store a `Person` record in multiple {data-store-name} Regions (for example, `People`
+and `Customers`). Then you can define your corresponding `Repository` interface extensions as follows:
 
 [source,java]
 ----
@@ -102,7 +102,8 @@ public interface CustomerRepository extends GemfireRepository<Person, String> {
 }
 ----
 
-Then, using each Repository individually, you can store the entity in multiple {data-store-name} Regions, as the following example shows:
+Then, using each Repository individually, you can store the entity in multiple {data-store-name} Regions,
+as the following example shows:
 
 [source,java]
 ----
@@ -120,24 +121,24 @@ class CustomerService {
   }
 ----
 
-You can wrap the `update` service method in a Spring managed transaction,
-either as a local cache transaction or a global transaction.
+You can even wrap the `update` service method in a Spring managed transaction, either as a local cache transaction
+or a global transaction.
 
 [[mapping.pdx-serializer]]
 == Mapping PDX Serializer
 
-Spring Data for {data-store-name} provides a custom
-{x-data-store-javadoc}/org/apache/geode/pdx/PdxSerializer.html[`PdxSerializer`] implementation
-that uses the mapping information to customize entity serialization.
+{sdg-name} provides a custom {x-data-store-javadoc}/org/apache/geode/pdx/PdxSerializer.html[`PdxSerializer`]
+implementation that uses the mapping information to customize entity serialization.
 
 It also lets you customize entity instantiation by using the Spring Data `EntityInstantiator` abstraction.
 By default, the serializer uses a `ReflectionEntityInstantiator` that uses the persistence constructor of
-the mapped entity (the default constructor, a singly declared constructor, or a constructor
-explicitly annotated with `@PersistenceConstructor`).
+the mapped entity (the default constructor, a singly declared constructor, or a constructor explicitly
+annotated with `@PersistenceConstructor`).
 
 To provide arguments for constructor parameters, the serializer reads fields with the named constructor parameter,
 explicitly specified using Spring's `@Value` annotation, from the supplied
-{x-data-store-javadoc}/org/apache/geode/pdx/PdxReader.html[`PdxReader`], as shown in the following example:
+{x-data-store-javadoc}/org/apache/geode/pdx/PdxReader.html[`PdxReader`],
+as shown in the following example:
 
 .Using `@Value` on entity constructor parameters
 ====
@@ -153,21 +154,22 @@ public class Person {
 ====
 
 An entity class annotated in this way has the `thing` field read from the `PdxReader` and passed as the value
-for the constructor parameter, `firstname`. The value for `lastName` is a Spring bean with the name `bean`.
+for the constructor parameter, `firstname`. The value for `lastName` is a Spring bean with the name "`bean`".
 
 In addition to the custom instantiation logic and strategy provided by `EntityInstantiators`,
-the `MappingPdxSerializer` also provides capabilities beyond {data-store-name}'s own
+the `MappingPdxSerializer` also provides capabilities well beyond {data-store-name}'s own
 {x-data-store-javadoc}/org/apache/geode/pdx/ReflectionBasedAutoSerializer.html[`ReflectionBasedAutoSerializer`].
 
-While {data-store-name}'s `ReflectionBasedAutoSerializer` conveniently uses Java reflection to populate entities and
-uses regular expressions to identify types that should be handled (serialized and deserialized) by the `ReflectionBasedAutoSerializer`,
-it cannot, unlike `MappingPdxSerializer`, perform the following:
+While {data-store-name}'s `ReflectionBasedAutoSerializer` conveniently uses Java reflection to populate entities
+and uses regular expressions to identify types that should be handled (serialized and deserialized) by
+the `ReflectionBasedAutoSerializer`, it cannot, unlike `MappingPdxSerializer`, perform the following:
 
 * Register custom `PdxSerializer` objects per entity field and property names and types.
 * Conveniently identifies ID properties.
 * Automatically handles read-only properties.
 * Automatically handles transient properties.
-* Allows more robust type filtering in a `null`-safe manner (for example, not limited to only expressing types with regex).
+* Allows more robust type filtering in a `null`-safe manner (for example, not limited to
+only expressing types using regex).
 
 We now explore each feature of the `MappingPdxSerializer` in a bit more detail.
 
@@ -193,8 +195,8 @@ public class User {
 }
 ----
 
-While the user's name probably does not require any special logic to serialize the value, serializing
-the password might require additional logic to handle the sensitive nature of the field or property.
+While the user's name probably does not require any special logic to serialize the value, serializing the password
+might require additional logic to handle the sensitive nature of the field or property.
 
 Perhaps you want to protect the password when sending the value over the network, between a client and a server,
 and you only want to store the salted hash. When using the `MappingPdxSerializer`, you can register
@@ -212,12 +214,12 @@ mappingPdxSerializer.setCustomPdxSerializers(customPdxSerializers);
 ----
 
 After registering the application-defined `SaltedHashPasswordPdxSerializer` instance with the `Password`
-application domain model type, the `MappingPdxSerializer` consults the custom `PdxSerializer` to
-serialize and deserialize all `Password` objects regardless of the containing object (for example, `User`).
+application domain model type, the `MappingPdxSerializer` consults the custom `PdxSerializer` to serialize
+and deserialize all `Password` objects regardless of the containing object (for example, `User`).
 
 However, suppose you want to customize the serialization of only `Passwords` on `User` objects.
-To do so, you can register the custom `PdxSerializer` for the `User` type by specifying only the fully qualified
-name of the `Class's` field or property, as the following example shows:
+To do so, you can register the custom `PdxSerializer` for the `User` type by specifying the fully qualified name
+of the `Class's` field or property, as the following example shows:
 
 .Registering custom `PdxSerializers` by POJO field/property name
 ====
@@ -230,19 +232,19 @@ customPdxSerializers.put("example.app.auth.model.User.password", new SaltedHashP
 mappingPdxSerializer.setCustomPdxSerializers(customPdxSerializers);
 ----
 
-Notice the use of the fully-qualified field or propety name (that is `example.app.auth.model.User.password`)
+Notice the use of the fully-qualified field or property name (that is `example.app.auth.model.User.password`)
 as the custom `PdxSerializer` registration key.
 
 NOTE: You could construct the registration key by using a more logical code snippet, such as the following:
-`User.class.getName().concat(".password");`.  We recommended this over the example shown earlier. The preceding example
-tried to be as explicit as possible about the semantics of registration.
+`User.class.getName().concat(".password");`.  We recommended this over the example shown earlier.
+The preceding example tried to be as explicit as possible about the semantics of registration.
 
 [[mapping.pdx-serializer.id-properties]]
 === Mapping ID Properties
 
-Like {data-store-name}'s `ReflectionBasedAutoSerializer`, SDG's `MappingPdxSerializer` is also able to determine
-the identifier of the entity. However, `MappingPdxSerializer` does so by using Spring Data's mapping metadata,
-specifically by finding the entity property designated as the identifier by using Spring Data's
+Like {data-store-name}'s `ReflectionBasedAutoSerializer`, {sdg-acronym}'s `MappingPdxSerializer` is also able to
+determine the identifier of the entity. However, `MappingPdxSerializer` does so by using Spring Data's mapping metadata,
+specifically by finding the entity property designated as the identifier using Spring Data's
 {spring-data-commons-javadoc}/org/springframework/data/annotation/Id.html[`@Id`] annotation.
 
 For example:
@@ -267,8 +269,9 @@ when the `PdxSerializer.toData(..)` method is called during serialization.
 
 What happens when your entity defines a read-only property?
 
-First, it is important to understand what a "`read-only`" property is.  If you define a POJO by following the http://www.oracle.com/technetwork/java/javase/documentation/spec-136004.html[JavaBeans]
-specification (as Spring does), you might a POJO with a read-only property, as follows:
+First, it is important to understand what a "`read-only`" property is.  If you define a POJO by following the
+http://www.oracle.com/technetwork/java/javase/documentation/spec-136004.html[JavaBeans]specification (as Spring does),
+you might define a POJO with a read-only property, as follows:
 
 [source,java]
 ----
@@ -286,17 +289,17 @@ class ApplicationDomainType {
 }
 ----
 
-Then the `readOnly` property is "`read-only`" because it does not provide a setter method. It has only a getter method.
-In this case, the `readOnly` property (not to be confused with the `readOnly` `DomainType` field)
-is considered "`read-only`".
+The `readOnly` property is "`read-only`" because it does not provide a setter method. It has only a getter method.
+In this case, the `readOnly` property (not to be confused with the `readOnly` `DomainType` field) is considered
+"`read-only`".
 
-As a result, the `MappingPdxSerializer` does not try to write this value back when populating the instance of `DomainType`
-in the `PdxSerializer.fromData(:Class<?>, :PdxReader)` method.
+As a result, the `MappingPdxSerializer` does not try to write this value back when populating an instance of
+`DomainType` in the `PdxSerializer.fromData(:Class<?>, :PdxReader)` method.
 
 This is useful in situations where you might be returning a view or projection of some entity type and you only want
 to write state that is writable. Perhaps the view or projection of the entity is based on authorization or some other
-criteria. The point is that you can leverage this feature as is appropriate for your application's use cases and requirements.
-If you want the field or property to always be written, you can define a setter.
+criteria. The point is that you can leverage this feature as is appropriate for your application's use cases
+and requirements. If you want the field or property to always be written, you can define a setter.
 
 [[mapping.pdx-serializer.transient-properties]]
 === Mapping Transient Properties
@@ -304,11 +307,11 @@ If you want the field or property to always be written, you can define a setter.
 Likewise, what happens when your entity defines `transient` properties?
 
 You would expect the `transient` fields or properties of your entity not to be serialized to the stream of PDX bytes
-when serializing entity. That is exactly what happens, unlike {data-store-name}'s own
-`ReflectionBasedAutoSerializer`, which serializes everything accessible from the object through Java reflection.
+when serializing the entity. That is exactly what happens, unlike {data-store-name}'s own `ReflectionBasedAutoSerializer`,
+which serializes everything accessible from the object through Java reflection.
 
-The `MappingPdxSerializer` does not serialize any fields or properties that are qualified as being transient either by using
-Java's `transient` keyword (in the case of fields) or by using the
+The `MappingPdxSerializer` does not serialize any fields or properties that are qualified as being transient either
+by using Java's `transient` keyword (in the case of fields) or by using the
 {spring-data-commons-javadoc}/org/springframework/data/annotation/Transient.html[`@Transient`]
 Spring Data annotation on either fields or properties.
 
@@ -342,11 +345,11 @@ Neither the `Process` `id` field nor the readable `hostname` property are writte
 [[mapping.pdx-serializer.type-filtering]]
 === Filtering by Class types
 
-Similar to {data-store-name}'s `ReflectionBasedAutoSerializer`, SDG's `MappingPdxSerializer` lets you filter
+Similar to {data-store-name}'s `ReflectionBasedAutoSerializer`, {sdg-acronym}'s `MappingPdxSerializer` lets you filter
 the types of objects that the `MappingPdxSerializer` serializes and deserializes.
 
 However, unlike {data-store-name}'s `ReflectionBasedAutoSerializer`, which uses complex regular expressions to express
-which types the serializer handles, SDG's `MappingPdxSerializer` uses the much more robust
+which types the serializer handles, {sdg-acronym}'s `MappingPdxSerializer` uses the much more robust
 https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html[`java.util.function.Predicate`] interface
 and API to express type-matching criteria.
 

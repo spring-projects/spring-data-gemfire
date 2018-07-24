@@ -1,5 +1,5 @@
 [[requirements]]
 = Requirements
 
-Spring Data for {data-store-name} requires Java 8.0, {spring-framework-website}[Spring Framework] 5
+{sdg-name} requires Java 8.0, {spring-framework-website}[Spring Framework] 5
 and {x-data-store-website}[{data-store-name}] {data-store-version}.

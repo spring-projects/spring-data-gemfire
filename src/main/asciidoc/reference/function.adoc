@@ -1,20 +1,20 @@
 [[bootstrap:function]]
 = Configuring the Function Service
 
-Spring Data for {data-store-name} provides <<function-annotations,annotation>> support for implementing and registering
+{sdg-name} provides <<function-annotations,annotation>> support for implementing, registering and executing
 {data-store-name} Functions.
 
-Spring Data for {data-store-name} also provides namespace support for registering {data-store-name}
-{x-data-store-javadoc}/org/apache/geode/cache/execute/Function.html[functions]
+{sdg-name} also provides XML namespace support for registering {data-store-name}
+{x-data-store-javadoc}/org/apache/geode/cache/execute/Function.html[Functions]
 for remote function execution.
 
 See {data-store-name}'s {x-data-store-docs}/developing/function_exec/chapter_overview.html[documentation]
-for more information on the function execution framework.
+for more information on the Function execution framework.
 
 {data-store-name} Functions are declared as Spring beans and must implement the `org.apache.geode.cache.execute.Function`
 interface or extend `org.apache.geode.cache.execute.FunctionAdapter`.
 
-The namespace uses a familiar pattern to declare functions, as the following example shows:
+The namespace uses a familiar pattern to declare Functions, as the following example shows:
 
 [source,xml]
 ----

@@ -4,7 +4,7 @@
 NOTE: Sample applications are now maintained in the
 https://github.com/spring-projects/spring-gemfire-examples[Spring {data-store-name} Examples] repository.
 
-The Spring Data for {data-store-name} project also includes one sample application. Named "`Hello World`", the sample application
+The {sdg-name} project also includes one sample application. Named "`Hello World`", the sample application
 demonstrates how to configure and use {data-store-name} inside a Spring application. At run time, the sample offers
 a shell that lets you run various commands against the data grid. It provides an excellent
 starting point for developers who are unfamiliar with the essential components or with Spring and {data-store-name} concepts.
@@ -15,7 +15,7 @@ Maven-aware IDE (such as the https://spring.io/tools/sts[Spring Tool Suite]) or 
 [[samples:hello-world]]
 == Hello World
 
-The "`Hello World`" sample application demonstrates the core functionality of the Spring Data for {data-store-name} project.
+The "`Hello World`" sample application demonstrates the core functionality of the {sdg-name} project.
 It bootstraps {data-store-name}, configures it, executes arbitrary commands against the cache, and shuts it down
 when the application exits. Multiple instances of the application can be started at the same time
 and work together, sharing data without any user intervention.
