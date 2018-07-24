@@ -50,7 +50,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.core.SpringVersion;
+import org.springframework.core.Ordered;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
@@ -831,14 +831,16 @@ public class MappingPdxSerializerUnitTests {
 	@Test
 	public void toDataAcceptsIncludedEntityTypesOverridingExcludedEntityTypes() {
 
+		Ordered testOrdered = () -> 1;
+
 		this.pdxSerializer.setIncludeTypeFilters(type -> type.getPackage().getName().startsWith("org.springframework"));
 
 		doReturn(true).when(this.pdxSerializer).doToData(any(), any(PdxWriter.class));
 
-		assertThat(this.pdxSerializer.toData(new SpringVersion(), this.mockWriter)).isTrue();
+		assertThat(this.pdxSerializer.toData(testOrdered, this.mockWriter)).isTrue();
 
 		verify(this.pdxSerializer, times(1))
-			.doToData(isA(SpringVersion.class), eq(this.mockWriter));
+			.doToData(isA(Ordered.class), eq(this.mockWriter));
 	}
 
 	@Test
