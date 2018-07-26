@@ -3,6 +3,27 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.1.0.RC1 (2018-07-26)
+-----------------------------------------
+* SGF-769 - Adapt to API changes in the core Spring Framework.
+* SGF-768 - Review and merge SDG Reference Guide Edits.
+* SGF-767 - Annotations in imported configuration files not working.
+* SGF-766 - Upgrade to Pivotal GemFire 9.5.1.
+* SGF-765 - Allow CacheTypeAwareFactoryBean to register interests on client Region creation and implement SmartLifecycle.
+* SGF-764 - Relax type matching for resolving Function arguments in FunctionContextInjectingArgumentResolver.
+* SGF-761 - Refactor Function annotation configuration to be smarter in resolving Apache Geode objects on startup.
+* SGF-760 - Do not allow eager init when getting beans by type to resolve Configurers for Annotation configuration.
+* SGF-757 - Move configuration of PDX to a PdxConfiguration class imported by the EnablePdx annotation.
+* SGF-756 - Add ability to declare include filters in addition to exclude filters on o.s.d.g.mapping.MappingPdxSerializer.
+* SGF-755 - Add serializable-object-filter and validate-serializable-objects attributes to EnableGemFireProperties.
+* SGF-754 - Add name attribute to EnableGemFireProperties.
+* SGF-753 - Clean BeanFactoryLocator references on CacheFactoryBean destroy.
+* SGF-752 - Add ability to configure SecurityManager on CacheFactoryBean.
+* SGF-751 - Move client Region interests registration to on SmartLifecycle start.
+* SGF-750 - Downgrade to Pivotal GemFire 9.3.
+* SGF-748 - Release 2.1 RC1 (Lovelace).
+
+
 Changes in version 2.0.8.RELEASE (2018-06-13)
 ---------------------------------------------
 * SGF-761 - Refactor Function annotation configuration to be smarter in resolving Apache Geode objects on startup.
