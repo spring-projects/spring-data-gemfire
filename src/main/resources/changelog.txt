@@ -3,6 +3,14 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.0.9.RELEASE (2018-07-26)
+---------------------------------------------
+* SGF-768 - Review and merge SDG Reference Guide Edits.
+* SGF-765 - Allow CacheTypeAwareFactoryBean to register interests on client Region creation and implement SmartLifecycle.
+* SGF-764 - Relax type matching for resolving Function arguments in FunctionContextInjectingArgumentResolver.
+* SGF-763 - Release 2.0.9 (Kay SR9).
+
+
 Changes in version 2.1.0.RC1 (2018-07-26)
 -----------------------------------------
 * SGF-769 - Adapt to API changes in the core Spring Framework.
