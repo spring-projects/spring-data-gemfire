@@ -3,6 +3,11 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.9.14.RELEASE (2018-07-27)
+----------------------------------------------
+* SGF-762 - Release 1.9.14 (Ingalls SR14).
+
+
 Changes in version 2.0.9.RELEASE (2018-07-26)
 ---------------------------------------------
 * SGF-768 - Review and merge SDG Reference Guide Edits.
