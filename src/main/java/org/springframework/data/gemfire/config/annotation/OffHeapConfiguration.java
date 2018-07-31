@@ -72,7 +72,6 @@ public class OffHeapConfiguration extends EmbeddedServiceConfigurationSupport {
 		return EnableOffHeap.class;
 	}
 
-	/* (non-Javadoc) */
 	@Override
 	protected void registerBeanDefinitions(AnnotationMetadata importingClassMetadata,
 			Map<String, Object> annotationAttributes, BeanDefinitionRegistry registry) {
@@ -87,7 +86,6 @@ public class OffHeapConfiguration extends EmbeddedServiceConfigurationSupport {
 			builder.getBeanDefinition());
 	}
 
-	/* (non-Javadoc) */
 	@Override
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
 
@@ -98,7 +96,6 @@ public class OffHeapConfiguration extends EmbeddedServiceConfigurationSupport {
 			.build();
 	}
 
-	/* (non-Javadoc) */
 	@SuppressWarnings("unused")
 	protected static class OffHeapBeanFactoryPostProcessor extends AbstractAnnotationConfigSupport
 			implements BeanFactoryPostProcessor {

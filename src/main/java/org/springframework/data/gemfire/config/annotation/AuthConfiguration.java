@@ -17,6 +17,7 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
+import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Properties;
 
@@ -61,11 +62,10 @@ public class AuthConfiguration extends EmbeddedServiceConfigurationSupport {
 	 * @see org.springframework.data.gemfire.config.annotation.EnableAuth
 	 */
 	@Override
-	protected Class getAnnotationType() {
+	protected Class<? extends Annotation> getAnnotationType() {
 		return EnableAuth.class;
 	}
 
-	/* (non-Javadoc) */
 	@Override
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
 

@@ -81,7 +81,6 @@ public class GeodeIntegratedSecurityConfiguration extends EmbeddedServiceConfigu
 		return !isShiroSecurityConfigured();
 	}
 
-	/* (non-Javadoc) */
 	@Override
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
 

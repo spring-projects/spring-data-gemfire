@@ -88,9 +88,6 @@ public class GemFirePropertiesConfiguration extends EmbeddedServiceConfiguration
 		return EnableGemFireProperties.class;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
 

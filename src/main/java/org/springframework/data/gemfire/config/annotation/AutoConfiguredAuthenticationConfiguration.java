@@ -47,7 +47,6 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.core.env.Environment
  * @see org.springframework.data.gemfire.config.annotation.EnableBeanFactoryLocator
  * @see org.springframework.data.gemfire.config.annotation.support.AutoConfiguredAuthenticationInitializer
- * @see org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport
  * @see org.springframework.data.gemfire.util.PropertiesBuilder
  * @since 2.0.0
  */
