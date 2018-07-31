@@ -1,0 +1,603 @@
+[[bootstap-annotations-quickstart]]
+= Annotation-based Configuration Quick Start
+
+The following sections provide an overview to the {sdg-acronym} annotations in order to get started quickly.
+
+NOTE: All annotations provide additional configuration attributes along with associated <<bootstrap-annotation-config-properties, properties>>
+to conveniently customize the configuration and behavior of {data-store-name} at runtime.  However, in general,
+none of the attributes or associated properties are required to use a particular {data-store-name} feature.
+Simply declare the annotation to enable the feature and you are done.  Refer to the individual Javadoc of
+each annotation for more details.
+
+[[bootstap-annotations-quickstart-clientcache]]
+== Configure a `ClientCache` Application
+
+To configure and bootstrap a {data-store-name} `ClientCache` application, use the following:
+
+[source,java]
+----
+@SpringBootApplication
+@ClientCacheApplication
+public class ClientApplication {
+
+  public static void main(String[] args) {
+    SpringApplication.run(ClientApplication.class, args);
+  }
+}
+----
+
+See {sdg-javadoc}/org/springframework/data/gemfire/config/annotation/ClientCacheApplication.html[`@ClientCacheApplication` Javadoc].
+
+See <<bootstrap-annotation-config-geode-applications>> for more details.
+
+[[bootstap-annotations-quickstart-peercache]]
+== Configure a Peer `Cache` Application
+
+To configure and bootstrap a {data-store-name} Peer `Cache` application, use the following:
+
+[source,java]
+----
+@SpringBootApplication
+@PeerCacheApplication
+public class ServerApplication {
+
+  public static void main(String[] args) {
+    SpringApplication.run(ServerApplication.class, args);
+  }
+}
+----
+
+NOTE: If you would like to enable a `CacheServer` that allows `ClientCache` applications to connect to this server,
+then simply replace the `@PeerCacheApplication` annotation with the `@CacheServerApplication` annotation.  This will
+start a `CacheServer` running on "`localhost`", listening on the default `CacheServer` port of `40404`.
+
+See {sdg-javadoc}/org/springframework/data/gemfire/config/annotation/CacheServerApplication.html[`@CacheServerApplication` Javadoc].
+
+See {sdg-javadoc}/org/springframework/data/gemfire/config/annotation/PeerCacheApplication.html[`@PeerCacheApplication` Javadoc].
+
+See <<bootstrap-annotation-config-geode-applications>> for more details.
+
+[[bootstap-annotations-quickstart-locator]]
+== Configure an Embedded Locator
+
+Annotate your Spring `@PeerCacheApplication` or `@CacheServerApplication` class with `@EnableLocator` to start
+an embedded Locator bound to all NICs listening on the default Locator port, `10334`, as follows:
+
+[source,java]
+----
+@SpringBootApplication
+@CacheServerApplication
+@EnableLocator
+public class ServerApplication {
+
+  public static void main(String[] args) {
+    SpringApplication.run(ServerApplication.class, args);
+  }
+}
+----
+
+NOTE: `@EnableLocator` can only be used with {data-store-name} server applications.
+
+See {sdg-javadoc}/org/springframework/data/gemfire/config/annotation/EnableLocator.html[`@EnableLocator` Javadoc].
+
+See <<bootstrap-annotation-config-embedded-services-locator>> for more details.
+
+[[bootstap-annotations-quickstart-manager]]
+== Configure an Embedded Manager
+
+Annotate your Spring `@PeerCacheApplication` or `@CacheServerApplication` class with `@EnableManager` to start
+an embedded Manager bound to all NICs listening on the default Manager port, `1099`, as follows:
+
+[source,java]
+----
+@SpringBootApplication
+@CacheServerApplication
+@EnableManager
+public class ServerApplication {
+
+  public static void main(String[] args) {
+    SpringApplication.run(ServerApplication.class, args);
+  }
+}
+----
+
+NOTE: `@EnableManager` can only be used with {data-store-name} server applications.
+
+See {sdg-javadoc}/org/springframework/data/gemfire/config/annotation/EnableManager.html[`@EnableManager` Javadoc].
+
+See <<bootstrap-annotation-config-embedded-services-manager>> for more details.
+
+[[bootstap-annotations-quickstart-httpserver]]
+== Configure the Embedded HTTP Server
+
+Annotate your Spring `@PeerCacheApplication` or `@CacheServerApplication` class with `@EnableHttpService` to start
+the embedded HTTP server (Jetty) listening on port `7070`, as follows:
+
+[source,java]
+----
+@SpringBootApplication
+@CacheServerApplication
+@EnableHttpService
+public class ServerApplication {
+
+  public static void main(String[] args) {
+    SpringApplication.run(ServerApplication.class, args);
+  }
+}
+----
+
+NOTE: `@EnableHttpService` can only be used with {data-store-name} server applications.
+
+See {sdg-javadoc}/org/springframework/data/gemfire/config/annotation/EnableHttpService.html[`@EnableHttpService` Javadoc].
+
+See <<bootstrap-annotation-config-embedded-services-http>> for more details.
+
+[[bootstap-annotations-quickstart-memcachedserver]]
+== Configure the Embedded Memcached Server
+
+Annotate your Spring `@PeerCacheApplication` or `@CacheServerApplication` class with `@EnableMemcachedServer` to start
+the embedded Memcached server (Gemcached) listening on port `11211`, as follows:
+
+[source,java]
+----
+@SpringBootApplication
+@CacheServerApplication
+@EnableMemcachedServer
+public class ServerApplication {
+
+  public static void main(String[] args) {
+    SpringApplication.run(ServerApplication.class, args);
+  }
+}
+----
+
+NOTE: `@EnableMemcachedServer` can only be used with {data-store-name} server applications.
+
+See {sdg-javadoc}/org/springframework/data/gemfire/config/annotation/EnableMemcachedServer.html[`@EnableMemcachedServer` Javadoc].
+
+See <<bootstrap-annotation-config-embedded-services-memcached>> for more details.
+
+[[bootstap-annotations-quickstart-redisserver]]
+== Configure the Embedded Redis Server
+
+Annotate your Spring `@PeerCacheApplication` or `@CacheServerApplication` class with `@EnableRedisServer` to start
+the embedded Redis server listening on port `6379`, as follows:
+
+[source,java]
+----
+@SpringBootApplication
+@CacheServerApplication
+@EnableRedisServer
+public class ServerApplication {
+
+  public static void main(String[] args) {
+    SpringApplication.run(ServerApplication.class, args);
+  }
+}
+----
+
+NOTE: `@EnableRedisServer` can only be used with {data-store-name} server applications.
+
+See {sdg-javadoc}/org/springframework/data/gemfire/config/annotation/EnableRedisServer.html[`@EnableRedisServer` Javadoc].
+
+See <<bootstrap-annotation-config-embedded-services-redis>> for more details.
+
+[[bootstap-annotations-quickstart-logging]]
+== Configure Logging
+
+To configure or adjust {data-store-name} logging, annotate your Spring, {data-store-name} client or server
+application class with `@EnableLogging`, as follows:
+
+[source,java]
+----
+@SpringBootApplication
+@ClientCacheApplication
+@EnableLogging(logLevel="trace")
+public class ClientApplication {
+
+  public static void main(String[] args) {
+    SpringApplication.run(ClientApplication.class, args);
+  }
+}
+----
+
+NOTE: Default `log-level` is "`config`".  Also, this annotation will not adjust log levels in your application,
+only for {data-store-name}.
+
+See {sdg-javadoc}/org/springframework/data/gemfire/config/annotation/EnableLogging.html[`@EnableLogging` Javadoc].
+
+See <<bootstrap-annotation-config-logging>> for more details.
+
+[[bootstap-annotations-quickstart-statistics]]
+== Configure Statistics
+
+To gather {data-store-name} statistics at runtime, annotate your Spring, {data-store-name} client or server
+application class with `@EnableStatistics`, as follows:
+
+[source,java]
+----
+@SpringBootApplication
+@ClientCacheApplication
+@EnableStatistics
+public class ClientApplication {
+
+  public static void main(String[] args) {
+    SpringApplication.run(ClientApplication.class, args);
+  }
+}
+----
+
+See {sdg-javadoc}/org/springframework/data/gemfire/config/annotation/EnableStatistics.html[`@EnableStatistics` Javadoc].
+
+See <<bootstrap-annotation-config-statistics>> for more details.
+
+[[bootstap-annotations-quickstart-pdx]]
+== Configure PDX
+
+To enable {data-store-name} PDX serialization, annotate your Spring, {data-store-name} client or server
+application class with `@EnablePdx`, as follows:
+
+[source,java]
+----
+@SpringBootApplication
+@ClientCacheApplication
+@EnablePdx
+public class ClientApplication {
+
+  public static void main(String[] args) {
+    SpringApplication.run(ClientApplication.class, args);
+  }
+}
+----
+
+NOTE: {data-store-name} PDX Serialization is an alternative to Java Serialization with many added benefits.  For one,
+it makes short work of making all of your application domain model types serializable without having to implement
+`java.io.Serializable`.
+
+NOTE: By default, {sdg-acronym} configures the `MappingPdxSerializer` to serialize your application domain model types,
+which does not require any special configuration out-of-the-box in order to properly identify application domain objects
+that need to be serialized and htne perform the serialization since, the logic in `MappingPdxSerializer` is based on
+Spring Data's mapping infrastructure. See <<mapping.pdx-serialize>> for more details.
+
+See {sdg-javadoc}/org/springframework/data/gemfire/config/annotation/EnablePdx.html[`@EnablePdx` Javadoc].
+
+See <<bootstrap-annotation-config-pdx>> for more details.
+
+[[bootstap-annotations-quickstart-ssl]]
+== Configure SSL
+
+To enable {data-store-name} SSL, annotate your Spring, {data-store-name} client or server application class
+with `@EnableSsl`, as follows:
+
+[source,java]
+----
+@SpringBootApplication
+@ClientCacheApplication
+@EnableSsl(components = SERVER)
+public class ClientApplication {
+
+  public static void main(String[] args) {
+    SpringApplication.run(ClientApplication.class, args);
+  }
+}
+----
+
+NOTE: Minimally, {data-store-name} requires you to specify a keystore & truststore using the appropriate configuration
+attributes or properties. Both keystore & truststore configuration attributes or properties may refer to the same
+`KeyStore` file.  Additionally, you will need to specify a username and password to access the `KeyStore` file
+if the file has been secured.
+
+NOTE: {data-store-name} SSL allows you to configure the specific components of the system that require TLS, such as
+client/server, Locators, Gateways, etc.  Optionally, you can specify that all components of {data-store-name}
+use SSL with "`ALL`".
+
+See {sdg-javadoc}/org/springframework/data/gemfire/config/annotation/EnableSsl.html[`@EnableSsl` Javadoc].
+
+See <<bootstrap-annotation-config-ssl>> for more details.
+
+[[bootstap-annotations-quickstart-security]]
+== Configure Security
+
+To enable {data-store-name} security, annotate your Spring, {data-store-name} client or server application class
+with `@EnableSecurity`, as follows:
+
+[source,java]
+----
+@SpringBootApplication
+@ClientCacheApplication
+@EnableSecurity
+public class ClientApplication {
+
+  public static void main(String[] args) {
+    SpringApplication.run(ClientApplication.class, args);
+  }
+}
+----
+
+NOTE: On the server, you must configure access to the auth credentials.  You may either implement the {data-store-name}
+{x-data-store-javadoc}/org/apache/geode/security/SecurityManager.html[`SecurityManager`] interface or declare
+1 or more Apache Shiro `Realms`.  See <<bootstrap-annotation-config-security-server>> for more details.
+
+NOTE: On the client, you must configure a username and password.  See <<bootstrap-annotation-config-security-client>>
+for more details.
+
+See {sdg-javadoc}/org/springframework/data/gemfire/config/annotation/EnableSecurity.html[`@EnableSecurity` Javadoc].
+
+See <<bootstrap-annotation-config-security>> for more details.
+
+[[bootstap-annotations-quickstart-properties]]
+== Configure {data-store-name} Properties
+
+To configure other, low-level {data-store-name} properties not covered by the feature-oriented, {sdg-acronym}
+configuration annotations, annotate your Spring, {data-store-name} client or server application class
+with `@GemFireProperties`, as follows:
+
+[source,java]
+----
+@SpringBootApplication
+@PeerCacheApplication
+@EnableGemFireProperties(
+    cacheXmlFile = "/path/to/cache.xml",
+    conserveSockets = true,
+    groups = "GroupOne",
+    remoteLocators = "lunchbox[11235],mailbox[10101],skullbox[12480]"
+)
+public class ServerApplication {
+
+  public static void main(String[] args) {
+    SpringApplication.run(ServerApplication.class, args);
+  }
+}
+----
+
+NOTE: Some {data-store-name} properties are client-side only while others are server-side only. Please review the
+{data-store-name} {x-data-store-docs}/reference/topics/gemfire_properties.html[docs] for the appropriate use
+of each property.
+
+See {sdg-javadoc}/org/springframework/data/gemfire/config/annotation/EnableGemFireProperties.html[`@EnableGemFireProperties` Javadoc].
+
+See <<bootstrap-annotation-config-gemfire-properties>> for more details.
+
+[[bootstap-annotations-quickstart-caching]]
+== Configure Caching
+
+To use {data-store-name} as a _caching provider_ in Spring's {spring-framework-docs}/integration.html#cache[_Cache Abstraction_],
+and have {sdg-acronym} automatically create {data-store-name} Regions for the caches required by your application
+service components, then annotate your Spring, {data-store-name} client or server application class
+with `@EnableGemfireCaching` and `@EnableCachingDefinedRegions`, as follows:
+
+[source,java]
+----
+@SpringBootApplication
+@ClientCacheApplication
+@EnableCachingDefinedRegions
+@EnableGemfireCaching
+public class ClientApplication {
+
+  public static void main(String[] args) {
+    SpringApplication.run(ClientApplication.class, args);
+  }
+}
+----
+
+Then, simply go on to define the application services that require caching, as follows:
+
+[source,java]
+----
+@Service
+public class BookService {
+
+    @Cacheable("Books")
+    public Book findBy(ISBN isbn) {
+        ...
+    }
+}
+----
+
+NOTE: `@EnableCachingDefinedRegions` is optional.  That is, you may manually define your Regions if you desire.
+
+See {sdg-javadoc}/org/springframework/data/gemfire/config/annotation/EnableCachingDefinedRegions.html[`@EnableCachingDefinedRegions` Javadoc].
+
+See {sdg-javadoc}/org/springframework/data/gemfire/cache/config/EnableGemfireCaching.html[`@EnableGemfireCaching` Javadoc].
+
+See <<bootstrap-annotation-config-caching>> for more details.
+
+[[bootstap-annotations-quickstart-repositories]]
+== Configure Regions, Indexes, Repositories and Entities for Persistent Applications
+
+To make short work of creating Spring, {data-store-name} persistent client or server applications, annotate your
+application class with `@EnableEntityDefinedRegions`, `@EnableGemfireRepositories` and `@EnableIndexing`, as follows:
+
+[source,java]
+----
+@SpringBootApplication
+@ClientCacheApplication
+@EnableEntityDefinedRegions(basePackageClasses = Book.class)
+@EnableGemfireRepositories(basePackageClasses = BookRepository.class)
+@EnableIndexing
+public class ClientApplication {
+
+  public static void main(String[] args) {
+    SpringApplication.run(ClientApplication.class, args);
+  }
+}
+----
+
+NOTE: The `@EnableEntityDefinedRegions` annotation is required when using the `@EnableIndexing` annotation.
+See <<bootstrap-annotation-config-region-indexes>> for more details.
+
+Next, define your entity class and use the `@Region` mapping annotation to specify the Region in which your entity
+will be stored.  Use the `@Indexed` annotation to define Indexes on entity fields used in your application queries,
+as follows:
+
+[source,java]
+----
+package example.app.model;
+
+import ...;
+
+@Region("Books")
+public class Book {
+
+  @Id
+  private ISBN isbn;
+
+  @Indexed;
+  private Author author;
+
+  @Indexed
+  private LocalDate published;
+
+  @LuceneIndexed
+  private String title;
+
+}
+----
+
+NOTE: The `@Region("Books")` entity class annotation is used by the `@EnableEntityDefinedRegions` to determine
+the Regions required by the application.  See <<bootstrap-annotation-config-region-types>> and <<mapping>>
+for more details.
+
+Finally, define your CRUD Repository with simple queries to persist and access `Books`, as follows:
+
+[source,java]
+----
+package example.app.repo;
+
+import ...;
+
+public interface BookRepository extends CrudRepository {
+
+  List<Book> findByAuthorOrderByPublishedDesc(Author author);
+
+}
+----
+
+TIP: See <<gemfire-repositories>> for more details.
+
+See {sdg-javadoc}/org/springframework/data/gemfire/config/annotation/EnableEntityDefinedRegions.html[`@EnableEntityDefinedRegions` Javadoc].
+
+See {sdg-javadoc}/org/springframework/data/gemfire/repository/config/EnableGemfireRepositories.html[`@EnableGemfireRepositories` Javadoc].
+
+See {sdg-javadoc}/org/springframework/data/gemfire/config/annotation/EnableIndexing.html[`@EnableIndexing` Javadoc].
+
+See {sdg-javadoc}/org/springframework/data/gemfire/mapping/annotation/Region.html[`@Region` Javadoc].
+
+See {sdg-javadoc}/org/springframework/data/gemfire/mapping/annotation/Indexed.html[`@Indexed` Javadoc].
+
+See {sdg-javadoc}/org/springframework/data/gemfire/mapping/annotation/LuceneIndexed.html[`@LuceneIndexed` Javadoc].
+
+See <<bootstrap-annotation-config-regions>> for more details.
+
+See <<gemfire-repositories>> for more details.
+
+[[bootstap-annotations-quickstart-functions]]
+== Configure Functions
+
+{data-store-name} Functions are useful in distributed compute scenarios where a potentially expensive computation
+requiring data can be performed in parallel across the nodes in the cluster.  In this case, it is more efficient
+to bring the logic to where the data is located (stored) rather than requesting and fetching the data to be processed
+by the computation.
+
+Use the `@EnableGemfireFunctions` along with the `@GemfireFunction` annotation to enable {data-store-name} Functions
+definitions implemented as methods on POJOs, as follows:
+
+[source, java]
+----
+@PeerCacheApplication
+@EnableGemfireFunctions
+class ServerApplication {
+
+  public static void main(String[] args) {
+    SpringApplication.run(ServerApplication.class, args);
+  }
+
+  @GemfireFunction
+  Integer computeLoyaltyPoints(Customer customer) {
+    ...
+  }
+}
+----
+
+Use the `@EnableGemfireFunctionExecutions` along with 1 of the Function calling annotations: `@OnMember`, `@OnMembers`,
+`@OnRegion`, `@OnServer` and `@OnServers`.
+
+[source, java]
+----
+@ClientCacheApplication
+@EnableGemfireFunctionExecutions(basePackageClasses = CustomerRewardsFunction.class)
+class ClientApplication {
+
+  public static void main(String[] args) {
+    SpringApplication.run(ClientApplication.class, args);
+  }
+}
+
+@OnRegion("Customers")
+interface CustomerRewardsFunctions {
+
+  Integer computeLoyaltyPoints(Customer customer);
+
+}
+----
+
+See {sdg-javadoc}/org/springframework/data/gemfire/function/config/EnableGemfireFunctions.html[`@EnableGemfireFunctions` Javadoc].
+
+See {sdg-javadoc}/org/springframework/data/gemfire/function/annotation/GemfireFunction.html[`@GemfireFunction` Javadoc].
+
+See {sdg-javadoc}/org/springframework/data/gemfire/function/config/EnableGemfireFunctionExecutions.html[`@EnableGemfireFunctionExecutions` Javadoc].
+
+See {sdg-javadoc}/org/springframework/data/gemfire/function/annotation/OnMember.html[`@OnMember` Javadoc],
+{sdg-javadoc}/org/springframework/data/gemfire/function/annotation/OnMembers.html[`@OnMembers` Javadoc],
+{sdg-javadoc}/org/springframework/data/gemfire/function/annotation/OnRegion.html[`@OnRegion` Javadoc],
+{sdg-javadoc}/org/springframework/data/gemfire/function/annotation/OnServer.html[`@OnServer` Javadoc],
+and {sdg-javadoc}/org/springframework/data/gemfire/function/annotation/OnServers.html[`@OnServers` Javadoc].
+
+See <<function-annotations>> for more details.
+
+[[bootstap-annotations-quickstart-continuousquery]]
+== Configure Continuous Query
+
+Real-time, event stream processing is becoming an increasingly important task for data-intensive applications,
+primarily in order to respond to user requests in a timely manner.  {data-store-name} Continuous Query (CQ)
+will help you achieve this rather complex task quite easily.
+
+Enable CQ by annotating your application class with `@EnableContinuousQueries` and define your CQs along with
+the associated event handlers, as follows:
+
+[source,java]
+----
+@ClientCacheApplication
+@EnableContinuousQueries
+class ClientApplication {
+
+  public static void main(String[] args) {
+    SpringApplication.run(ClientApplication.class, args);
+  }
+}
+----
+
+Then, define your CQs by annotating the associated handler method with `@ContinousQuery`, as follows:
+
+[source,java]
+----
+@Service
+class CustomerService {
+
+  @ContinuousQuery(name = "CustomerQuery", query = "SELECT * FROM /Customers c WHERE ...")
+  public void process(CqEvent event) {
+    ...
+  }
+}
+----
+
+Anytime an event occurs changing the `Customer` data to match the predicate in your CQ query, the `process` method
+will be called.
+
+NOTE: {data-store-name} CQ is a client-side feature only.
+
+See {sdg-javadoc}/org/springframework/data/gemfire/config/annotation/EnableContinuousQueries.html[`@EnableContinuousQueries` Javadoc].
+
+See {sdg-javadoc}/org/springframework/data/gemfire/listener/annotation/ContinuousQuery.html[`@ContinuousQuery` Javadoc].
+
+See <<apis:continuous-query>> and <<bootstrap-annotation-config-continuous-queries>> for more details.

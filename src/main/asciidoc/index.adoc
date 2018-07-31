@@ -27,6 +27,7 @@ Costin Leau; David Turanski; John Blum; Oliver Gierke; Jay Bryant
 :sdg-acronym: SDG
 :sdg-javadoc: https://docs.spring.io/spring-data/{data-store-name-symbolic}/docs/current/api
 :sdg-name: Spring Data for {data-store-name}
+:sdg-website: https://projects.spring.io/spring-data-gemfire
 :spring-data-access-schema-location: http://www.springframework.org/schema/data/gemfire/spring-data-gemfire.xsd
 :spring-data-access-schema-namespace: http://www.springframework.org/schema/data/gemfire
 :spring-data-commons-docs: https://docs.spring.io/spring-data/commons/docs/current/reference

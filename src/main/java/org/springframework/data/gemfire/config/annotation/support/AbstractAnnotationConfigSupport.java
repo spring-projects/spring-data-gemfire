@@ -119,7 +119,7 @@ public abstract class AbstractAnnotationConfigSupport
 	 * @return a boolean value indicating whether the given {@link Object} has value.
 	 */
 	protected static boolean hasValue(Object value) {
-		return Optional.ofNullable(value).isPresent();
+		return value != null;
 	}
 
 	/**
@@ -177,7 +177,6 @@ public abstract class AbstractAnnotationConfigSupport
 		return evaluationContext;
 	}
 
-	/* (non-Javadoc) */
 	private void configureTypeConverter(EvaluationContext evaluationContext, BeanFactory beanFactory) {
 
 		Optional.ofNullable(evaluationContext)
