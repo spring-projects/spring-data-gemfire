@@ -17,6 +17,7 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
+import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -51,11 +52,10 @@ public class HttpServiceConfiguration extends EmbeddedServiceConfigurationSuppor
 	 * @see org.springframework.data.gemfire.config.annotation.EnableHttpService
 	 */
 	@Override
-	protected Class getAnnotationType() {
+	protected Class<? extends Annotation> getAnnotationType() {
 		return EnableHttpService.class;
 	}
 
-	/* (non-Javadoc) */
 	@Override
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
 

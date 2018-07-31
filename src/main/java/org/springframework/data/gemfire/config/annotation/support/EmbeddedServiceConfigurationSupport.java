@@ -35,7 +35,11 @@ import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.data.gemfire.CacheFactoryBean;
+import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 import org.springframework.data.gemfire.config.annotation.AbstractCacheConfiguration;
+import org.springframework.data.gemfire.config.annotation.ClientCacheConfigurer;
+import org.springframework.data.gemfire.config.annotation.PeerCacheConfigurer;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -64,8 +68,8 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 	public static final Integer DEFAULT_PORT = 0;
 	public static final String DEFAULT_HOST = "localhost";
 
-	@Autowired
 	@SuppressWarnings("all")
+	@Autowired(required = false)
 	private AbstractCacheConfiguration cacheConfiguration;
 
 	/**
@@ -83,9 +87,6 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 			.orElseThrow(() -> newIllegalStateException("AbstractCacheConfiguration is required"));
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public final void registerBeanDefinitions(AnnotationMetadata importingClassMetadata,
 			BeanDefinitionRegistry registry) {
@@ -112,16 +113,13 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 				getCacheConfiguration().add(gemfireProperties);
 			}
 			catch (Exception ignore) {
-				registerGemFirePropertiesBeanPostProcessor(registry, gemfireProperties);
+				//registerGemFirePropertiesBeanPostProcessor(registry, gemfireProperties);
+				registerGemFirePropertiesConfigurer(registry, gemfireProperties);
 			}
 		}
 	}
 
 	protected abstract Properties toGemFireProperties(Map<String, Object> annotationAttributes);
-
-	protected boolean isAnnotationPresent(AnnotationMetadata importingClassMetadata) {
-		return importingClassMetadata.hasAnnotation(getAnnotationTypeName());
-	}
 
 	protected boolean hasProperties(Properties properties) {
 		return !CollectionUtils.isEmpty(properties);
@@ -134,6 +132,16 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 			BeanDefinitionBuilder.genericBeanDefinition(GemFirePropertiesBeanPostProcessor.class);
 
 		builder.addConstructorArgValue(customGemFireProperties);
+
+		BeanDefinitionReaderUtils.registerBeanDefinition(newBeanDefinitionHolder(builder), registry);
+	}
+
+	protected void registerGemFirePropertiesConfigurer(BeanDefinitionRegistry registry, Properties gemfireProperties) {
+
+		BeanDefinitionBuilder builder =
+			BeanDefinitionBuilder.genericBeanDefinition(GemFirePropertiesConfigurer.class);
+
+		builder.addConstructorArgValue(gemfireProperties);
 
 		BeanDefinitionReaderUtils.registerBeanDefinition(newBeanDefinitionHolder(builder), registry);
 	}
@@ -203,6 +211,32 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 
 	protected Integer resolvePort(Integer port, Integer defaultPort) {
 		return Optional.ofNullable(port).orElse(defaultPort);
+	}
+
+	protected static class GemFirePropertiesConfigurer implements PeerCacheConfigurer, ClientCacheConfigurer {
+
+		private final Properties gemfireProperties;
+
+		public GemFirePropertiesConfigurer(Properties gemfireProperties) {
+
+			Assert.notEmpty(gemfireProperties, "GemFire Properties are required");
+
+			this.gemfireProperties = gemfireProperties;
+		}
+
+		@Override
+		public void configure(String beanName, CacheFactoryBean bean) {
+			configureGemFireProperties(bean);
+		}
+
+		@Override
+		public void configure(String beanName, ClientCacheFactoryBean bean) {
+			configureGemFireProperties(bean);
+		}
+
+		private void configureGemFireProperties(CacheFactoryBean bean) {
+			bean.getProperties().putAll(this.gemfireProperties);
+		}
 	}
 
 	/**

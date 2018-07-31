@@ -55,7 +55,6 @@ public class SslConfiguration extends EmbeddedServiceConfigurationSupport {
 		return EnableSsl.class;
 	}
 
-	/* (non-Javadoc) */
 	@Override
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributesMap) {
 

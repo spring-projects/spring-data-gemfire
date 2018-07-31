@@ -17,6 +17,7 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
+import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -52,11 +53,10 @@ public class LocatorConfiguration extends EmbeddedServiceConfigurationSupport {
 	 * @see org.springframework.data.gemfire.config.annotation.EnableLocator
 	 */
 	@Override
-	protected Class getAnnotationType() {
+	protected Class<? extends Annotation> getAnnotationType() {
 		return EnableLocator.class;
 	}
 
-	/* (non-Javadoc) */
 	@Override
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
 

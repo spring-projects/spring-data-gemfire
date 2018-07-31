@@ -17,7 +17,9 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
+import java.lang.annotation.Annotation;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
@@ -46,46 +48,52 @@ public class ManagerConfiguration extends EmbeddedServiceConfigurationSupport {
 	 * @see org.springframework.data.gemfire.config.annotation.EnableManager
 	 */
 	@Override
-	protected Class getAnnotationType() {
+	protected Class<? extends Annotation> getAnnotationType() {
 		return EnableManager.class;
 	}
 
-	/* (non-Javadoc) */
 	@Override
 	protected Properties toGemFireProperties(Map<String, Object> annotationAttributes) {
 
-		PropertiesBuilder gemfireProperties = PropertiesBuilder.create();
+		return Optional.of(resolveProperty(managerProperty("enabled"), Boolean.TRUE))
+			.filter(Boolean.TRUE::equals)
+			.map(enabled -> {
 
-		gemfireProperties.setProperty("jmx-manager",
-			resolveProperty(managerProperty("enabled"), Boolean.TRUE));
+				PropertiesBuilder gemfireProperties = PropertiesBuilder.create();
 
-		gemfireProperties.setProperty("jmx-manager-access-file",
-			resolveProperty(managerProperty("access-file"),
-				(String) annotationAttributes.get("accessFile")));
+				gemfireProperties.setProperty("jmx-manager",
+					resolveProperty(managerProperty("enabled"), Boolean.TRUE));
 
-		gemfireProperties.setProperty("jmx-manager-bind-address",
-			resolveProperty(managerProperty("bind-address"),
-				(String) annotationAttributes.get("bindAddress")));
+				gemfireProperties.setProperty("jmx-manager-access-file",
+					resolveProperty(managerProperty("access-file"),
+						(String) annotationAttributes.get("accessFile")));
 
-		gemfireProperties.setProperty("jmx-manager-hostname-for-clients",
-			resolveProperty(managerProperty("hostname-for-clients"),
-				(String) annotationAttributes.get("hostnameForClients")));
+				gemfireProperties.setProperty("jmx-manager-bind-address",
+					resolveProperty(managerProperty("bind-address"),
+						(String) annotationAttributes.get("bindAddress")));
 
-		gemfireProperties.setProperty("jmx-manager-password-file",
-			resolveProperty(managerProperty("password-file"),
-				(String) annotationAttributes.get("passwordFile")));
+				gemfireProperties.setProperty("jmx-manager-hostname-for-clients",
+					resolveProperty(managerProperty("hostname-for-clients"),
+						(String) annotationAttributes.get("hostnameForClients")));
 
-		gemfireProperties.setProperty("jmx-manager-port",
-			resolvePort(resolveProperty(managerProperty("port"),
-				(Integer) annotationAttributes.get("port")), DEFAULT_JMX_MANAGER_PORT));
+				gemfireProperties.setProperty("jmx-manager-password-file",
+					resolveProperty(managerProperty("password-file"),
+						(String) annotationAttributes.get("passwordFile")));
 
-		gemfireProperties.setProperty("jmx-manager-start",
-			resolveProperty(managerProperty("start"), (Boolean) annotationAttributes.get("start")));
+				gemfireProperties.setProperty("jmx-manager-port",
+					resolvePort(resolveProperty(managerProperty("port"),
+						(Integer) annotationAttributes.get("port")), DEFAULT_JMX_MANAGER_PORT));
 
-		gemfireProperties.setProperty("jmx-manager-update-rate",
-			resolveProperty(managerProperty("update-rate"),
-				(Integer) annotationAttributes.get("updateRate")));
+				gemfireProperties.setProperty("jmx-manager-start",
+					resolveProperty(managerProperty("start"), (Boolean) annotationAttributes.get("start")));
 
-		return gemfireProperties.build();
+				gemfireProperties.setProperty("jmx-manager-update-rate",
+					resolveProperty(managerProperty("update-rate"),
+						(Integer) annotationAttributes.get("updateRate")));
+
+				return gemfireProperties.build();
+
+			})
+			.orElseGet(Properties::new);
 	}
 }
