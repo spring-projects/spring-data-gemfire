@@ -1,12 +1,17 @@
 [[bootstrap-annotation-config]]
 = Bootstrapping {data-store-name} using Spring Annotations
 
-{sdg-name} (SDG) 2.0 introduces a new annotation-based configuration model
+{sdg-name} ({sdg-acronym}) 2.0 introduces a new annotation-based configuration model
 to configure and bootstrap {data-store-name} using the Spring container.
 
 The primary motivation for introducing an annotation-based approach to the configuration of {data-store-name}
-in a Spring context is to enable application developers to _get up and running_ as _quickly_
+in a Spring context is to enable Spring application developers to _get up and running_ as _quickly_
 and as _easily_ as possible.
+
+Let's get started!
+
+TIP: If you would like to get started even faster, refer to
+the <<bootstap-annotations-quickstart, Quick Start>> section.
 
 [[bootstrap-annotation-config-introduction]]
 == Introduction
@@ -32,10 +37,10 @@ Further complexity arises from the different supported topologies:
 The annotation-based configuration model aims to simplify all this and more.
 
 The annotation-based configuration model is an alternative to XML-based configuration using {sdg-name}'s XML namespace.
-With XML, you could use the `gfe` XML schema for configuration and the `gfe-data` XML schema for data access
-related concerns. See "<<bootstrap>>" for more details.
+With XML, you could use the `gfe` XML schema for configuration and the `gfe-data` XML schema for data access.
+See "<<bootstrap>>" for more details.
 
-NOTE: As of SDG 2.0, the annotation-based configuration model does not yet support the configuration of
+NOTE: As of {sdg-acronym} 2.0, the annotation-based configuration model does not yet support the configuration of
 {data-store-name}'s WAN components and topology.
 
 Like Spring Boot, {sdg-name}'s annotation-based configuration model was designed as an opinionated,
@@ -46,9 +51,9 @@ By following convention, all annotations provide reasonable and sensible default
 The default value for a given annotation attribute directly corresponds to the default value provided in
 {data-store-name} for the same configuration property.
 
-The intention is to let you enable a {data-store-name} feature or an embedded service by declaring the annotation
-on your Spring `@Configuration` or `@SpringBootApplication` class without needing to unnecessarily configure
-a large number of properties just to use the feature.
+The intention is to let you enable {data-store-name} features or an embedded services by declaring the appropriate
+annotation on your Spring `@Configuration` or `@SpringBootApplication` class without needing to unnecessarily configure
+a large number of properties just to use the feature or service.
 
 Again, _getting started_, _quickly_ and as _easily_, is the primary objective.
 
@@ -57,7 +62,8 @@ and {sdg-name}'s annotation-based configuration quietly backs away. You need onl
 you wish to adjust. Also, as we will see later in this document, there are several ways to configure a {data-store-name}
 feature or embedded service by using the annotations.
 
-You can find all the new SDG Java `Annotations` in the `org.springframework.data.gemfire.config.annotation` package.
+You can find all the new {sdg-acronym} Java `Annotations` in the `org.springframework.data.gemfire.config.annotation`
+package.
 
 [[bootstrap-annotation-config-geode-applications]]
 == Bootstrapping {data-store-name} Applications with Spring
@@ -1399,6 +1405,81 @@ and configure the values of these `@EnableOffHeap` annotation attributes.
 See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableOffHeap.html[`@EnableOffHeap` annotation Javadoc]
 for more details.
 
+[[bootstrap-annotation-config-region-disk-stores]]
+=== Configuring Disk Stores
+
+Alternatively, you can configure Regions to persist data to disk. You can also configure Regions to overflow
+data to disk when Region entries are evicted. In both cases, a `DiskStore` is required to persist and/or overflow
+the data. When an explicit `DiskStore` has not been configured for a Region with persistence or overflow,
+{data-store-name} uses the `DEFAULT` `DiskStore`.
+
+We recommend defining Region-specific `DiskStores` when persisting and/or overflowing data to disk.
+
+{sdg-name} provides annotation support for defining and creating application Region `DiskStores`
+by annotating the application class with the `@EnableDiskStore` and `@EnableDiskStores` annotations.
+
+TIP: `@EnableDiskStores` is a composite annotation for aggregating one or more `@EnableDiskStore` annotations.
+
+For example, while `Book` information might mostly consist of reference data from some external data source
+(such as Amazon), `Order` data is most likely going to be transactional in nature and something the application
+is going to need to retain (and maybe even overflow to disk if the transaction volume is high enough) --
+or so any book publisher and author hopes, anyway.
+
+Using the `@EnableDiskStore` annotation, you can define and create a `DiskStore` as follows:
+
+.Spring application defining a `DiskStore`
+[source, java]
+----
+@SpringBootApplication
+@PeerCacheApplication
+@EnableDiskStore(name = "OrdersDiskStore", autoCompact = true, compactionThreshold = 70,
+    maxOplogSize = 512, diskDirectories = @DiskDiretory(location = "/absolute/path/to/order/disk/files"))
+class ServerApplication { .. }
+----
+
+Again, more than one `DiskStore` can be defined by using the composite, `@EnableDiskStores` annotation.
+
+As with other annotations in {sdg-name}'s annotation-based configuration model, both `@EnableDiskStore`
+and `@EnableDiskStores` have many attributes along with associated configuration properties to customize
+the `DiskStores` created at runtime.
+
+Additionally, the `@EnableDiskStores` annotation defines certain common `DiskStore` attributes that apply to all
+`DiskStores` created from `@EnableDiskStore` annotations composed with the `@EnableDiskStores` annotation itself.
+Individual `DiskStore` configuration override a particular global setting, but the `@EnableDiskStores` annotation
+conveniently defines common configuration attributes that apply across all `DiskStores` aggregated by the annotation.
+
+{sdg-name} also provides the `DiskStoreConfigurer` callback interface, which can be declared in Java configuration
+and used instead of configuration properties to customize a `DiskStore` at runtime, as the following example shows:
+
+.Spring application with custom DiskStore configuration
+[source, java]
+----
+@SpringBootApplication
+@PeerCacheApplication
+@EnableDiskStore(name = "OrdersDiskStore", autoCompact = true, compactionThreshold = 70,
+    maxOplogSize = 512, diskDirectories = @DiskDiretory(location = "/absolute/path/to/order/disk/files"))
+class ServerApplication {
+
+  @Bean
+  DiskStoreConfigurer ordersDiskStoreDiretoryConfigurer(
+          @Value("${orders.disk.store.location}") String location) {
+
+      return (beanName, diskStoreFactoryBean) -> {
+
+          if ("OrdersDiskStore".equals(beanName) {
+              diskStoreFactoryBean.setDiskDirs(Collections.singletonList(new DiskDir(location));
+          }
+      }
+  }
+}
+----
+
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableDiskStore.html[`@EnableDiskStore`] and https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableDiskStores.html[`@EnableDiskStores`] annotation
+Javadoc for more details on the available attributes as well as associated configuration properties.
+
+More details on {data-store-name} Region persistence and overflow (using DiskStores) can be found
+{x-data-store-docs}/developing/storing_data_on_disk/chapter_overview.html[here].
+
 [[bootstrap-annotation-config-region-indexes]]
 === Configuring Indexes
 
@@ -1544,7 +1625,7 @@ Essentially, indexes are defined from fields or properties on the entity class t
 to inspect the entity's fields and properties for the presence of index annotations. Without this scan, index annotations
 cannot be found. We also strongly recommend that you limit the scope of the scan.
 
-While Lucene queries are not (yet) supported on {sdg-name} repositories, SDG does provide comprehensive
+While Lucene queries are not (yet) supported on {sdg-name} repositories, {sdg-acronym} does provide comprehensive
 https://docs.spring.io/spring-data-gemfire/docs/current/reference/html/#bootstrap:lucene[support] for {data-store-name}
 Lucene queries by using the familiar Spring template design pattern.
 
@@ -1584,81 +1665,6 @@ More details on {data-store-name} indexes can be found
 
 More details on {data-store-name} Lucene queries can be found
 {x-data-store-docs}/tools_modules/lucene_integration.html[here].
-
-[[bootstrap-annotation-config-region-continuous-queries]]
-=== Configuring Disk Stores
-
-You can configure Regions to persist data to disk. You can also configure Regions to overflow data to disk when
-Region entries are evicted. In both cases, a `DiskStore` is required to persist and/or overflow the data.
-When an explicit `DiskStore` has not been configured for a Region with persistence or overflow, {data-store-name}
-uses the `DEFAULT` `DiskStore`.
-
-We recommend defining Region-specific `DiskStores` when persisting and/or overflowing data to disk.
-
-{sdg-name} provides annotation support for defining and creating application Region `DiskStores`
-by annotating the application class with the `@EnableDiskStore` and `@EnableDiskStores` annotations.
-
-TIP: `@EnableDiskStores` is a composite annotation for aggregating one or more `@EnableDiskStore` annotations.
-
-For example, while `Book` information might mostly consist of reference data from some external data source
-(such as Amazon), `Order` data is most likely going to be transactional in nature and something the application
-is going to need to retain (and maybe even overflow to disk if the transaction volume is high enough) --
-or so any book publisher and author hopes, anyway.
-
-Using the `@EnableDiskStore` annotation, you can define and create a `DiskStore` as follows:
-
-.Spring application defining a `DiskStore`
-[source, java]
-----
-@SpringBootApplication
-@PeerCacheApplication
-@EnableDiskStore(name = "OrdersDiskStore", autoCompact = true, compactionThreshold = 70,
-    maxOplogSize = 512, diskDirectories = @DiskDiretory(location = "/absolute/path/to/order/disk/files"))
-class ServerApplication { .. }
-----
-
-Again, more than one `DiskStore` can be defined by using the composite, `@EnableDiskStores` annotation.
-
-As with other annotations in {sdg-name}'s annotation-based configuration model, both `@EnableDiskStore`
-and `@EnableDiskStores` have many attributes along with associated configuration properties to customize
-the `DiskStores` created at runtime.
-
-Additionally, the `@EnableDiskStores` annotation defines certain common `DiskStore` attributes that apply to all
-`DiskStores` created from `@EnableDiskStore` annotations composed with the `@EnableDiskStores` annotation itself.
-Individual `DiskStore` configuration override a particular global setting, but the `@EnableDiskStores` annotation
-conveniently defines common configuration attributes that apply across all `DiskStores` aggregated by the annotation.
-
-{sdg-name} also provides the `DiskStoreConfigurer` callback interface, which can be declared in Java configuration
-and used instead of configuration properties to customize a `DiskStore` at runtime, as the following example shows:
-
-.Spring application with custom DiskStore configuration
-[source, java]
-----
-@SpringBootApplication
-@PeerCacheApplication
-@EnableDiskStore(name = "OrdersDiskStore", autoCompact = true, compactionThreshold = 70,
-    maxOplogSize = 512, diskDirectories = @DiskDiretory(location = "/absolute/path/to/order/disk/files"))
-class ServerApplication {
-
-  @Bean
-  DiskStoreConfigurer ordersDiskStoreDiretoryConfigurer(
-          @Value("${orders.disk.store.location}") String location) {
-
-      return (beanName, diskStoreFactoryBean) -> {
-
-          if ("OrdersDiskStore".equals(beanName) {
-              diskStoreFactoryBean.setDiskDirs(Collections.singletonList(new DiskDir(location));
-          }
-      }
-  }
-}
-----
-
-See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableDiskStore.html[`@EnableDiskStore`] and https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableDiskStores.html[`@EnableDiskStores`] annotation
-Javadoc for more details on the available attributes as well as associated configuration properties.
-
-More details on {data-store-name} Region persistence and overflow (using DiskStores) can be found
-{x-data-store-docs}/developing/storing_data_on_disk/chapter_overview.html[here].
 
 [[bootstrap-annotation-config-continuous-queries]]
 == Configuring Continuous Queries
@@ -2164,9 +2170,9 @@ the next person who has to maintain the code (which might be you at some point i
 [[bootstrap-annotation-config-tips-undocumented-annotations]]
 === Additional Configuration-based Annotations
 
-The following SDG Annotations were not discussed in this reference documentation, either because the annotation supports
-a deprecated feature of {data-store-name} or because there are better, alternative ways to accomplishing
-the function that the annotation provides:
+The following {sdg-acronym} Annotations were not discussed in this reference documentation, either because
+the annotation supports a deprecated feature of {data-store-name} or because there are better, alternative ways
+to accomplishing the function that the annotation provides:
 
 * `@EnableAuth`: Enables {data-store-name}'s old authentication and authorization security model. (Deprecated.
 {data-store-name}'s new integrated security framework can be enabled on both clients and servers by using {sdg-acronym}'s
