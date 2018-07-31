@@ -296,8 +296,8 @@ to support externalization of environment-specific properties from the main code
 
 NOTE: To avoid initialization problems, the `CacheServer` started by {sdg-name} starts *after* the Spring container
 has been fully initialized. Doing so lets potential Regions, listeners, writers or instantiators that are defined
-declaratively be fully initialized and registered before the server starts accepting connections. Keep this in mind
-when programmatically configuring these elements, as the server might start after your components and thus not be seen
+declaratively to be fully initialized and registered before the server starts accepting connections. Keep this in mind
+when programmatically configuring these elements, as the server might start before your components and thus not be seen
 by the clients connecting right away.
 
 [[bootstrap:cache:client]]

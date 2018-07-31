@@ -16,12 +16,13 @@ and as _easily_ as possible.
 and different configuration options:
 
 * {x-data-store-javadoc}[Java API]
-* {x-data-store-docs}/reference/topics/chapter_overview_cache_xml.html[cache.xml]
+* {x-data-store-docs}/reference/topics/chapter_overview_cache_xml.html[`cache.xml`]
 * {x-data-store-docs}/tools_modules/gfsh/chapter_overview.html[_Gfsh_]
-with {x-data-store-docs}/configuring/chapter_overview.html[cluster configuration]
-* <<bootstrap,Spring XML/Java-based configuration>>)
+with {x-data-store-docs}/configuring/chapter_overview.html[Cluster Configuration]
+* <<bootstrap,Spring XML/Java-based configuration>>
 
-Further complexity comes from the different supported topologies:
+Further complexity arises from the different supported topologies:
+
 * ({x-data-store-docs}/topologies_and_comm/cs_configuration/chapter_overview.html[client/server]
 * {x-data-store-docs}/topologies_and_comm/p2p_configuration/chapter_overview.html[P2P]
 * {x-data-store-docs}/topologies_and_comm/multi_site_configuration/chapter_overview.html[WAN])
@@ -56,7 +57,7 @@ and {sdg-name}'s annotation-based configuration quietly backs away. You need onl
 you wish to adjust. Also, as we will see later in this document, there are several ways to configure a {data-store-name}
 feature or embedded service by using the annotations.
 
-You can find all the new SDG Java Annotations in the `org.springframework.data.gemfire.config.annotation` package.
+You can find all the new SDG Java `Annotations` in the `org.springframework.data.gemfire.config.annotation` package.
 
 [[bootstrap-annotation-config-geode-applications]]
 == Bootstrapping {data-store-name} Applications with Spring
@@ -140,9 +141,10 @@ The most common and recommended approach is to use {data-store-name} Locators.
 NOTE: A cache client can connect to one or more Locators in the {data-store-name} cluster instead of directly to a
 `CacheServer`.  The advantage of using Locators over direct `CacheServer` connections is that Locators provide metadata
 about the cluster to which the client is connected. This metadata includes information such as which servers contain
-the data of interest or which servers have the least amount of load. A Locator also provides fail-over capabilities
-in case a `CacheServer` crashes. By enabling the PR single-hop feature in the client `Pool`, the client is routed
-directly to the server containing the data requested and needed by the client.
+the data of interest or which servers have the least amount of load. A client `Pool` in conjuction with a Locator
+also provides fail-over capabilities in case a `CacheServer` crashes. By enabling the `PARTITION` Region (PR)
+single-hop feature in the client `Pool`, the client is routed directly to the server containing the data requested
+and needed by the client.
 
 NOTE: Locators are also peer members in a cluster. Locators actually constitute what makes up a cluster of {data-store-name}
 nodes. That is, all nodes connected by a Locator are peers in the cluster, and new members use Locators to join a cluster
@@ -474,12 +476,11 @@ The following example shows a nested property being set in Java:
 .Property placehodler nesting
 [source, java]
 ----
-  @Bean
-  CacheServerConfigurer cacheServerPortConfigurer(
-          @Value("${gemfire.cache.server.port:${some.other.property:40404}}") int cacheServerPort) {
-
-      ...
-  }
+@Bean
+CacheServerConfigurer cacheServerPortConfigurer(
+    @Value("${gemfire.cache.server.port:${some.other.property:40404}}")
+    int cacheServerPort) {
+  ...
 }
 ----
 
@@ -1010,9 +1011,9 @@ The following example shows how to configure the same Region bean in XML:
 .Example Region bean definition using {sdg-acronym}'s XML Namespace
 [source, xml]
 ----
-  <gfe:partitioned-region id="exampleRegion" name="Example" persistent="true">
-     ...
-  </gfe:partitioned-region>
+<gfe:partitioned-region id="exampleRegion" name="Example" persistent="true">
+    ...
+</gfe:partitioned-region>
 ----
 
 While neither Java nor XML configuration is all that difficult to specify, either one can be cumbersome, especially if
@@ -2193,14 +2194,15 @@ in the Spring container, intercepting the Region operation and logging the event
 == Conclusion
 
 As we learned in the previous sections, {sdg-name}'s new annotation-based configuration model provides a tremendous
-amount of power. Hopefully, it lives up to its goal of making it easier for you to get started quickly and easily
+amount of power. Hopefully, it lives up to its goal of making it easier for you to _get started quickly_ and _easily_
 when using {data-store-name} with Spring.
 
 Keep in mind that, when you use the new annotations, you can still use Java configuration or XML configuration.
 You can even combine all three approaches by using Spring's {spring-framework-javadoc}/org/springframework/context/annotation/Import.html[`@Import`]
 and {spring-framework-javadoc}/org/springframework/context/annotation/ImportResource.html[`@ImportResource`]
-annotations on a Spring `@Configuration` or `@SpringBootApplication` class. The moment you explicitly provide a bean definition
-that would otherwise be provided by {sdg-name} by using an annotation, the annotation-based configuration backs away.
+annotations on a Spring `@Configuration` or `@SpringBootApplication` class. The moment you explicitly provide
+a bean definition that would otherwise be provided by {sdg-name} using 1 of the annotations, the annotation-based
+configuration backs away.
 
 [NOTE]
 ====
@@ -2219,3 +2221,5 @@ The annotations were not meant to handle every situation. The annotations were m
 as _quickly_ and as _easily_ as possible, especially during development.
 
 We hope you will enjoy these new capabilities!
+
+include::{basedocdir}/reference/bootstrap-annotations-quickstart.adoc[leveloffset=+1]

@@ -20,11 +20,11 @@ stored in {data-store-name} by using basic CRUD and simple query operations.
 to perform distributed computations where the data lives.
 
 * <<apis:continuous-query>> describes how to use {data-store-name}'s Continuous Query (CQ) functionality
-to process a stream of events based on interest defined and registered using {data-store-name}'s
-OQL (Object Query Language) query.
+to process a stream of events based on interest that is defined and registered with {data-store-name}'s
+OQL (Object Query Language).
 
-* <<gemfire-bootstrap>> describes how to bootstrap a Spring `ApplicationContext` running in an {data-store-name} server
-using `Gfsh`.
+* <<gemfire-bootstrap>> describes how to configure and bootstrap a Spring `ApplicationContext`
+running in an {data-store-name} server using `Gfsh`.
 
 * <<samples>> describes the examples provided with the distribution to illustrate the various features
 available in {sdg-name}.
