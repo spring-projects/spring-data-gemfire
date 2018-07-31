@@ -348,11 +348,11 @@ in the {data-store-name} documentation for more details.
 [[bootstrap:region:compression]]
 == Compression
 
-{data-store-name} Regions may also be compressed in order to reduce JVM memory consumption and pressure
-to possibly avoid global GCs. When you enable compression for a Region, all values stored in memory for the Region
-are compressed, while keys and indexes remain uncompressed. New values are compressed when put into the Region
-and all values are decompressed automatically when read back from the Region. Values are not compressed when
-persisted to disk or when sent over the wire to other peer members or clients.
+{data-store-name} Regions may also be compressed in order to reduce JVM memory consumption and pressure to possibly
+avoid global GCs. When you enable compression for a Region, all values stored in memory for the Region are compressed,
+while keys and indexes remain uncompressed. New values are compressed when put into the Region and all values
+are decompressed automatically when read back from the Region. Values are not compressed when persisted to disk
+or when sent over the wire to other peer members or clients.
 
 The following example shows a Region with compression enabled:
 
@@ -369,6 +369,48 @@ The following example shows a Region with compression enabled:
 
 See {data-store-name}'s documentation for more information on
 {x-data-store-docs}/managing/region_compression/region_compression.html[Region Compression].
+
+[[bootstrap:region:off-heap]]
+== Off-Heap
+
+{data-store-name} Regions may also be configured to store Region values in off-heap memory, which is a portion of
+JVM memory that is not subject to Garbage Collection (GC).  By avoid expensive GC cycles, your application
+can spend more of its time on things that matter, like processing requests.
+
+Using off-heap memory is as simple as declaring the amount of memory to use and then enabling your Regions
+to use off-heap memory, as shown in the following configuration:
+
+[source,xml]
+----
+<util:properties id="gemfireProperties">
+    <prop key="off-heap-memory-size">200G</prop>
+</util:properties>
+
+<gfe:cache properties-ref="gemfireProperties"/>
+
+<gfe:partitioned-region id="ExampleOffHeapRegion" off-heap="true"/>
+----
+
+You can control other aspects of off-heap memory management by setting the following {data-store-name} configuration
+properties using the `&lt;gfe:cache&gt;` element:s
+
+[source,xml]
+----
+<gfe:cache critical-off-heap-percentage="90" eviction-off-heap-percentage"80"/>
+----
+
+{data-store-name}'s `ResourceManager` will use these two threshold values (`critical-off-heap-percentage`
+& `eviction-off-heap-percentage`) to more effectively manage the off-heap memory in much the same way
+as the JVM does when managing heap memory.  {data-store-name} `ResourceManager` will prevent the cache
+from consuming too much off-heap memory by evicting old data.  If the off-heap manager is unable to keep up,
+then the `ResourceManager` refuses additions to the cache until the off-heap memory manager has freed up
+an adequate amount of memory.
+
+See {data-store-name}'s documentation for more information on
+{x-data-store-docs}/managing/heap_use/heap_management.html[Managing Heap and Off-Heap Memory].
+
+Specifically, read the section,
+{x-data-store-docs}/managing/heap_use/off_heap_management.html[Managing Off-Heap Memory].
 
 [[bootstrap:region:subregions]]
 == Subregions
@@ -1032,7 +1074,7 @@ meaning there is no redundancy. Each copy provides extra backup at the expense o
 | The maximum amount of memory (in megabytes) used by the region in *this* process.
 
 | total-max-memory
-| *any integer value*
+| any integer value
 | The maximum amount of memory (in megabytes) used by the region in *all* processes.
 
 | partition-listener
@@ -1049,7 +1091,7 @@ meaning there is no redundancy. Each copy provides extra backup at the expense o
 -1 (the default) indicates that redundancy is not recovered after a failure.
 
 | startup-recovery-delay
-| *any long value*
+| any long value
 | The delay in milliseconds that new members wait before satisfying redundancy.
 -1 indicates that adding new members does not trigger redundancy recovery. The default is to recover redundancy
 immediately when a new member is added.
