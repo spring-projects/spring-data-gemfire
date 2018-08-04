@@ -540,6 +540,7 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	 * @see java.lang.Object
 	 * @see java.lang.Class
 	 */
+	@SuppressWarnings("unchecked")
 	Object doFromData(Class<?> type, PdxReader reader) {
 
 		GemfirePersistentEntity<?> entity = getPersistentEntity(type);

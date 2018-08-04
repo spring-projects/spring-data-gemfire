@@ -5,7 +5,7 @@ This section covers:
 
 * <<mapping.entities>>
 * <<mapping.repositories>>
-* The <<Mapping PDX Serializer>>
+* <<Mapping PDX Serializer>>
 
 [[mapping.entities]]
 == Entity Mapping
@@ -125,18 +125,18 @@ You can even wrap the `update` service method in a Spring managed transaction, e
 or a global transaction.
 
 [[mapping.pdx-serializer]]
-== Mapping PDX Serializer
+== MappingPdxSerializer
 
 {sdg-name} provides a custom {x-data-store-javadoc}/org/apache/geode/pdx/PdxSerializer.html[`PdxSerializer`]
-implementation that uses the mapping information to customize entity serialization.
+implementation, called `MappingPdxSerializer`, that uses Spring Data mapping metadata to customize entity serialization.
 
-It also lets you customize entity instantiation by using the Spring Data `EntityInstantiator` abstraction.
-By default, the serializer uses a `ReflectionEntityInstantiator` that uses the persistence constructor of
-the mapped entity (the default constructor, a singly declared constructor, or a constructor explicitly
-annotated with `@PersistenceConstructor`).
+The serializer also lets you customize entity instantiation by using the Spring Data `EntityInstantiator` abstraction.
+By default, the serializer use the `ReflectionEntityInstantiator`, which uses the persistence constructor of
+the mapped entity.  The persistence constructor is either the default constructor, a singly declared constructor,
+or a constructor explicitly annotated with `@PersistenceConstructor`.
 
 To provide arguments for constructor parameters, the serializer reads fields with the named constructor parameter,
-explicitly specified using Spring's `@Value` annotation, from the supplied
+explicitly identified by using Spring's `@Value` annotation, from the supplied
 {x-data-store-javadoc}/org/apache/geode/pdx/PdxReader.html[`PdxReader`],
 as shown in the following example:
 
@@ -147,43 +147,43 @@ as shown in the following example:
 public class Person {
 
   public Person(@Value("#root.thing") String firstName, @Value("bean") String lastName) {
-    // …
+    …
   }
 }
 ----
 ====
 
-An entity class annotated in this way has the `thing` field read from the `PdxReader` and passed as the value
+An entity class annotated in this way has the "`thing`" field read from the `PdxReader` and passed as the argument value
 for the constructor parameter, `firstname`. The value for `lastName` is a Spring bean with the name "`bean`".
 
 In addition to the custom instantiation logic and strategy provided by `EntityInstantiators`,
 the `MappingPdxSerializer` also provides capabilities well beyond {data-store-name}'s own
 {x-data-store-javadoc}/org/apache/geode/pdx/ReflectionBasedAutoSerializer.html[`ReflectionBasedAutoSerializer`].
 
-While {data-store-name}'s `ReflectionBasedAutoSerializer` conveniently uses Java reflection to populate entities
-and uses regular expressions to identify types that should be handled (serialized and deserialized) by
-the `ReflectionBasedAutoSerializer`, it cannot, unlike `MappingPdxSerializer`, perform the following:
+While {data-store-name}'s `ReflectionBasedAutoSerializer` conveniently uses Java Reflection to populate entities
+and uses regular expressions to identify types that should be handled (serialized and deserialized) by the serializer,
+it cannot, unlike `MappingPdxSerializer`, perform the following:
 
-* Register custom `PdxSerializer` objects per entity field and property names and types.
+* Register custom `PdxSerializer` objects per entity field or property names and types.
 * Conveniently identifies ID properties.
 * Automatically handles read-only properties.
 * Automatically handles transient properties.
-* Allows more robust type filtering in a `null`-safe manner (for example, not limited to
-only expressing types using regex).
+* Allows more robust type filtering in a `null` and type-safe manner (for example, not limited to
+only expressing types with regex).
 
 We now explore each feature of the `MappingPdxSerializer` in a bit more detail.
 
 [[mapping.pdx-serializer.custom-serialization]]
 === Custom PdxSerializer Registration
 
-The `MappingPdxSerializer` gives you the ability to register custom `PdxSerializers` based on an entity's
-field and property names and types.
+The `MappingPdxSerializer` gives you the ability to register custom `PdxSerializers` based on an entity's field
+or property names and types.
 
-For instance, suppose you have defined an entity type modeling a `User` as follows:
+For example, suppose you have defined an entity type modeling a `User` as follows:
 
 [source,java]
 ----
-package example.app.auth.model;
+package example.app.security.auth.model;
 
 public class User {
 
@@ -196,10 +196,10 @@ public class User {
 ----
 
 While the user's name probably does not require any special logic to serialize the value, serializing the password
-might require additional logic to handle the sensitive nature of the field or property.
+on the other hand might require additional logic to handle the sensitive nature of the field or property.
 
 Perhaps you want to protect the password when sending the value over the network, between a client and a server,
-and you only want to store the salted hash. When using the `MappingPdxSerializer`, you can register
+beyond TLS alone, and you only want to store the salted hash. When using the `MappingPdxSerializer`, you can register
 a custom `PdxSerializer` to handle the user's password, as follows:
 
 .Registering custom `PdxSerializers` by POJO field/property type
@@ -212,12 +212,13 @@ customPdxSerializers.put(Password.class, new SaltedHashPasswordPdxSerializer());
 
 mappingPdxSerializer.setCustomPdxSerializers(customPdxSerializers);
 ----
+====
 
 After registering the application-defined `SaltedHashPasswordPdxSerializer` instance with the `Password`
-application domain model type, the `MappingPdxSerializer` consults the custom `PdxSerializer` to serialize
-and deserialize all `Password` objects regardless of the containing object (for example, `User`).
+application domain model type, the `MappingPdxSerializer` will then consult the custom `PdxSerializer`
+to serialize and deserialize all `Password` objects regardless of the containing object (for example, `User`).
 
-However, suppose you want to customize the serialization of only `Passwords` on `User` objects.
+However, suppose you want to customize the serialization of `Passwords` only on `User` objects.
 To do so, you can register the custom `PdxSerializer` for the `User` type by specifying the fully qualified name
 of the `Class's` field or property, as the following example shows:
 
@@ -227,12 +228,13 @@ of the `Class's` field or property, as the following example shows:
 ----
 Map<?, PdxSerializer> customPdxSerializers = new HashMap<>();
 
-customPdxSerializers.put("example.app.auth.model.User.password", new SaltedHashPasswordPdxSerializer());
+customPdxSerializers.put("example.app.security.auth.model.User.password", new SaltedHashPasswordPdxSerializer());
 
 mappingPdxSerializer.setCustomPdxSerializers(customPdxSerializers);
 ----
+====
 
-Notice the use of the fully-qualified field or property name (that is `example.app.auth.model.User.password`)
+Notice the use of the fully-qualified field or property name (that is `example.app.security.auth.model.User.password`)
 as the custom `PdxSerializer` registration key.
 
 NOTE: You could construct the registration key by using a more logical code snippet, such as the following:
@@ -246,6 +248,8 @@ Like {data-store-name}'s `ReflectionBasedAutoSerializer`, {sdg-acronym}'s `Mappi
 determine the identifier of the entity. However, `MappingPdxSerializer` does so by using Spring Data's mapping metadata,
 specifically by finding the entity property designated as the identifier using Spring Data's
 {spring-data-commons-javadoc}/org/springframework/data/annotation/Id.html[`@Id`] annotation.
+Alternatively, any field or property named "`id`", not explicitly annotated with `@Id`, is also designated as
+the entity's identifier.
 
 For example:
 
@@ -270,7 +274,7 @@ when the `PdxSerializer.toData(..)` method is called during serialization.
 What happens when your entity defines a read-only property?
 
 First, it is important to understand what a "`read-only`" property is.  If you define a POJO by following the
-http://www.oracle.com/technetwork/java/javase/documentation/spec-136004.html[JavaBeans]specification (as Spring does),
+http://www.oracle.com/technetwork/java/javase/documentation/spec-136004.html[JavaBeans] specification (as Spring does),
 you might define a POJO with a read-only property, as follows:
 
 [source,java]
@@ -289,29 +293,30 @@ class ApplicationDomainType {
 }
 ----
 
-The `readOnly` property is "`read-only`" because it does not provide a setter method. It has only a getter method.
-In this case, the `readOnly` property (not to be confused with the `readOnly` `DomainType` field) is considered
-"`read-only`".
+The `readOnly` property is read-only because it does not provide a setter method. It only has a getter method.
+In this case, the `readOnly` property (not to be confused with the `readOnly` `DomainType` field)
+is considered read-only.
 
-As a result, the `MappingPdxSerializer` does not try to write this value back when populating an instance of
-`DomainType` in the `PdxSerializer.fromData(:Class<?>, :PdxReader)` method.
+As a result, the `MappingPdxSerializer` will not try to set a value for this property when populating an instance of
+`ApplicationDomainType` in the `PdxSerializer.fromData(:Class<ApplicationDomainType>, :PdxReader)` method
+during deserialization, particularly if a value is present in the PDX serialized bytes.
 
 This is useful in situations where you might be returning a view or projection of some entity type and you only want
-to write state that is writable. Perhaps the view or projection of the entity is based on authorization or some other
-criteria. The point is that you can leverage this feature as is appropriate for your application's use cases
-and requirements. If you want the field or property to always be written, you can define a setter.
+to set state that is writable. Perhaps the view or projection of the entity is based on authorization or some other
+criteria. The point is, you can leverage this feature as is appropriate for your application's use cases
+and requirements. If you want the field or property to always be written, simply define a setter method.
 
 [[mapping.pdx-serializer.transient-properties]]
 === Mapping Transient Properties
 
 Likewise, what happens when your entity defines `transient` properties?
 
-You would expect the `transient` fields or properties of your entity not to be serialized to the stream of PDX bytes
-when serializing the entity. That is exactly what happens, unlike {data-store-name}'s own `ReflectionBasedAutoSerializer`,
-which serializes everything accessible from the object through Java reflection.
+You would expect the `transient` fields or properties of your entity not to be serialized to PDX when serializing
+the entity. That is exactly what happens, unlike {data-store-name}'s own `ReflectionBasedAutoSerializer`,
+which serializes everything accessible from the object through Java Reflection.
 
-The `MappingPdxSerializer` does not serialize any fields or properties that are qualified as being transient either
-by using Java's `transient` keyword (in the case of fields) or by using the
+The `MappingPdxSerializer` will not serialize any fields or properties that are qualified as being transient, either
+by using Java's own `transient` keyword (in the case of class instance fields) or by using the
 {spring-data-commons-javadoc}/org/springframework/data/annotation/Transient.html[`@Transient`]
 Spring Data annotation on either fields or properties.
 
@@ -340,21 +345,21 @@ class Process {
 }
 ----
 
-Neither the `Process` `id` field nor the readable `hostname` property are written to the PDX serialized bytes.
+Neither the `Process` `id` field nor the readable `hostname` property are written to PDX.
 
 [[mapping.pdx-serializer.type-filtering]]
-=== Filtering by Class types
+=== Filtering by Class Type
 
 Similar to {data-store-name}'s `ReflectionBasedAutoSerializer`, {sdg-acronym}'s `MappingPdxSerializer` lets you filter
-the types of objects that the `MappingPdxSerializer` serializes and deserializes.
+the types of objects that are serialized and deserialized.
 
 However, unlike {data-store-name}'s `ReflectionBasedAutoSerializer`, which uses complex regular expressions to express
 which types the serializer handles, {sdg-acronym}'s `MappingPdxSerializer` uses the much more robust
 https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html[`java.util.function.Predicate`] interface
 and API to express type-matching criteria.
 
-If you like to use regular expressions, you can implement a `Predicate` by using
-Java's https://docs.oracle.com/javase/8/docs/api/java/util/regex/package-summary.html[regular expression support].
+TIP: If you like to use regular expressions, you can implement a `Predicate` using Java's
+https://docs.oracle.com/javase/8/docs/api/java/util/regex/package-summary.html[regular expression support].
 
 The nice part about Java's `Predicate` interface is that you can compose `Predicates` by using convenient
 and appropriate API methods, including:
@@ -362,21 +367,75 @@ https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html#and-
 https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html#or-java.util.function.Predicate-[`or(:Predicate)`],
 and https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html#negate--[`negate()`].
 
-The following example shows the `Predicate` API in use:
+The following example shows the `Predicate` API in action:
 
 [source,java]
 ----
 Predicate<Class<?>> customerTypes =
-  type -> Customer.class.getPackage().getName().startsWith(type.getName());
+  type -> Customer.class.getPackage().getName().startsWith(type.getName()); // Include all types in the same package as `Customer`
 
-Predicate typeFilters = customerTypes
-  .or(type -> User.class.isAssignble(type)) // Include User sub-types (e.g. Admin, Guest, etc)
-  .and(type -> !Reference.class.getPackage(type.getPackage()); // Exclude all Reference types
+Predicate includedTypes = customerTypes
+  .or(type -> User.class.isAssignble(type)); // Additionally, include User sub-types (e.g. Admin, Guest, etc)
 
-mappingPdxSerializer.setTypeFilters(typeFilters);
+mappingPdxSerializer.setIncludeTypeFilters(includedTypes);
+
+mappingPdxSerializer.setExcludeTypeFilters(
+  type -> !Reference.class.getPackage(type.getPackage()); // Exclude Reference types
 ----
 
-NOTE: In addition to setting your own type filtering `Predicates`, SDG's `MappingPdxSerializer` now automatically
-registers pre-defined `Predicates` that filter types from the `org.apache.geode` package along with `null` objects
-when calling `PdxSerializer.toData(:Object, :PdxWriter)` or `null` `Class` types when calling
-`PdxSerializer.fromData(:Class<?>, :PdxReader)` methods.
+NOTE: Any `Class` object passed to your `Predicate` is guaranteed not to be `null`.
+
+{sdg-acronym}'s `MappingPdxSerializer` includes support for both include and exclude class type filters.
+
+[[mapping.pdx-serializer.type-filtering.execludes]]
+==== Exclude Type Filtering
+
+By default, {sdg-acronym}'s `MappingPdxSerializer`  registers pre-defined `Predicates` that filter, or exclude types
+from the folliowing packages:
+
+* `java.*`
+* `com.gemstone.gemfire.*`
+* `org.apache.geode.*`
+* `org.springframework.*`
+
+In addition, the `MappingPdxSerializer`  filters `null` objects when calling `PdxSerializer.toData(:Object, :PdxWriter)`
+and `null` class types when calling `PdxSerializer.fromData(:Class<?>, :PdxReader)` methods.
+
+It is very easy to add exclusions for other class types, or an entire package of types, by simply defining a `Predicate`
+and adding it to the `MappingPdxSerializer` as shown earlier.
+
+The `MappingPdxSerializer.setExcludeTypeFilters(:Predicate<Class<?>>)` method is additive, meaning it composes
+your application-defined type filters with the existing, pre-defined type filter `Predicates` indicated above
+using the `Predicate.and(:Predicate<Class<?>>)` method.
+
+However, what if you want to include a class type (for example, `java.security Principal`) implicitly excluded by
+the exclude type filters?  See <<mapping.pdx-serializer.type-filtering.includes>>.
+
+[[mapping.pdx-serializer.type-filtering.includes]]
+==== Include Type Filtering
+
+If you want to include a class type explicitly, or override a class type filter that implicitly excludes a class type
+required by your application (for example, `java.security.Principal`, which is excluded by default with the `java.*`
+package exclude type filter on `MappingPdxSerializer`), then just define the appropriate `Predicate` and add it to
+the serializer using `MappingPdxSerializer.setIncludeTypeFilters(:Predicate<Class<?>>)` method, as follows:
+
+[source,java]
+----
+Predicate<Class<?>> principalTypeFilter =
+  type -> java.security.Principal.class.isAssignableFrom(type);
+
+mappingPdxSerializer.setIncludeTypeFilters(principalTypeFilters);
+----
+
+Again, the `MappingPdxSerializer.setIncludeTypeFilters(:Predicate<Class<?>>)` method,
+like `setExcludeTypeFilters(:Predicate<Class<?>>)`, is additive and therefore composes any passed type filter
+using `Predicate.or(:Predicate<Class<?>>)`.  This means you may call `setIncludeTypeFilters(:Predicate<Class<?>>)`
+as many time as necessary.
+
+When include type filters are present, then the `MappingPdxSerializer` makes a decision of whether to de/serialize
+an instance of a class type when the class type is either not implicitly excluded OR when the class type
+is explicitly included, whichever returns true.  Then, an instance of the class type will be serialized
+or deserialized appropriately.
+
+For example, when a type filter of `Predicate<Class<Principal>>` is explicitly registered as shown previously,
+it cancels out the implicit exclude type filter on `java.*` package types.
