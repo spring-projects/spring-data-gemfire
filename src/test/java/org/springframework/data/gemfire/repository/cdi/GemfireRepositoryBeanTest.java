@@ -38,7 +38,6 @@ import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -57,7 +56,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.data.gemfire.GemfireAccessor;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.mapping.GemfireMappingContext;
@@ -93,11 +91,7 @@ public class GemfireRepositoryBeanTest {
 	private BeanManager mockBeanManager;
 
 	private CustomRepositoryImplementationDetector newCustomRepositoryImplementationDetector() {
-
-		MetadataReaderFactory mockMetadataReaderFactory = mock(MetadataReaderFactory.class);
-
-		return new CustomRepositoryImplementationDetector(mockMetadataReaderFactory,
-			new StandardEnvironment(), new DefaultResourceLoader());
+		return new CustomRepositoryImplementationDetector(new StandardEnvironment(), new DefaultResourceLoader());
 	}
 
 	private <T> Set<T> toSet(Iterable<T> collection) {
