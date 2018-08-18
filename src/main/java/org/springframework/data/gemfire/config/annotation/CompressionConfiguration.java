@@ -87,7 +87,9 @@ public class CompressionConfiguration extends AbstractAnnotationConfigSupport im
 	}
 
 	protected String resolveCompressorBeanName() {
-		return Optional.ofNullable(this.compressorBeanName).filter(StringUtils::hasText)
+
+		return Optional.ofNullable(this.compressorBeanName)
+			.filter(StringUtils::hasText)
 			.orElse(SNAPPY_COMPRESSOR_BEAN_NAME);
 	}
 
