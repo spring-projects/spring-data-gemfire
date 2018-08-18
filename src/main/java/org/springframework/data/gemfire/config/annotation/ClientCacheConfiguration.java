@@ -382,10 +382,13 @@ public class ClientCacheConfiguration extends AbstractCacheConfiguration {
 			resolveProperty(poolProperty("servers"), (String) null));
 
 		if (StringUtils.hasText(serversFromProperty)) {
+
 			String[] serverHostsPorts = serversFromProperty.split(",");
+
 			poolServers = ConnectionEndpointList.parse(CacheServer.DEFAULT_PORT, serverHostsPorts);
 		}
 		else {
+
 			poolServers = new ConnectionEndpointList();
 
 			AnnotationAttributes[] servers = (AnnotationAttributes[]) clientCacheApplicationAttributes.get("servers");
