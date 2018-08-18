@@ -54,6 +54,7 @@ public class EnableCompressionConfigurationUnitTests {
 	@After
 	public void tearDown() {
 		Optional.ofNullable(this.applicationContext).ifPresent(ConfigurableApplicationContext::close);
+		//GemFireMockObjectsSupport.destroy();
 	}
 
 	private ConfigurableApplicationContext newApplicationContext(Class<?>... annotatedClasses) {
@@ -75,6 +76,7 @@ public class EnableCompressionConfigurationUnitTests {
 		this.applicationContext = newApplicationContext(EnableCompressionForAllRegionsConfiguration.class);
 
 		assertThat(this.applicationContext).isNotNull();
+		assertThat(this.applicationContext.containsBean("ExampleClientRegion")).isFalse();
 
 		Compressor compressor = this.applicationContext.getBean(Compressor.class);
 
@@ -98,6 +100,7 @@ public class EnableCompressionConfigurationUnitTests {
 		Compressor compressor = this.applicationContext.getBean("MockCompressor", Compressor.class);
 
 		assertThat(compressor).isNotNull();
+		assertThat(compressor).isNotInstanceOf(SnappyCompressor.class);
 		assertThat(this.applicationContext.containsBean(SNAPPY_COMPRESSOR_BEAN_NAME)).isTrue();
 
 		Arrays.asList("People", "ExampleClientRegion").forEach(regionName -> {
