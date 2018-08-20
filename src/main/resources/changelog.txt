@@ -3,6 +3,19 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.1.0.RC2 (2018-08-20)
+-----------------------------------------
+* SGF-780 - Correct Pool references in 'Runtime configuration using Properties' documentation.
+* SGF-779 - Adapt to @EventListener API behavior changes in Spring Framework 5.1.0.RC2.
+* SGF-778 - Adapt to API change in Spring Data Commons CDI infrastructure.
+* SGF-777 - Fix typo in Global, JTA Transaction Management documentation.
+* SGF-776 - Edit MappingPdxSerializer type filter documentation to cover includes and excludes.
+* SGF-775 - Add quick start reference to the "Bootstrapping Apache Geode Using Annotations" chapter.
+* SGF-774 - Polish SDG Reference Guide Edits.
+* SGF-773 - Replace all BeanPostProcessors setting GemFire/Geode Properties using SDG service enabling annotations with Configurers.
+* SGF-770 - Release 2.1 RC2 (Lovelace).
+
+
 Changes in version 1.9.14.RELEASE (2018-07-27)
 ----------------------------------------------
 * SGF-762 - Release 1.9.14 (Ingalls SR14).
