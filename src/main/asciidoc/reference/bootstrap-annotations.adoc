@@ -1,5 +1,5 @@
 [[bootstrap-annotation-config]]
-= Bootstrapping {data-store-name} using Spring Annotations
+= Bootstrapping {data-store-name} with the Spring Container using Annotations
 
 {sdg-name} ({sdg-acronym}) 2.0 introduces a new annotation-based configuration model
 to configure and bootstrap {data-store-name} using the Spring container.
@@ -66,7 +66,7 @@ You can find all the new {sdg-acronym} Java `Annotations` in the `org.springfram
 package.
 
 [[bootstrap-annotation-config-geode-applications]]
-== Bootstrapping {data-store-name} Applications with Spring
+== Configuring {data-store-name} Applications with Spring
 
 Like all Spring Boot applications that begin by annotating the application class with `@SpringBootApplication`,
 a Spring Boot application can easily become a {data-store-name} cache application by declaring any one of three
@@ -83,8 +83,8 @@ that can be created with {data-store-name}: a client cache or a peer cache.
 
 You can configure a Spring Boot application as a {data-store-name} cache client with an instance of `ClientCache`,
 which can communicate with an existing cluster of {data-store-name} servers used to manage the application's data.
-The client-server topology is the most common system architecture employed when using {data-store-name} and you
-can make your Spring Boot application a cache client, with a `ClientCache` instance, simply by annotating it with
+The client-server topology is the most common system architecture employed when using {data-store-name} and you can
+make your Spring Boot application a cache client, with a `ClientCache` instance, simply by annotating it with
 `@ClientCacheApplication`.
 
 Alternatively, a Spring Boot application may be a peer member of a {data-store-name} cluster. That is, the application
@@ -94,15 +94,15 @@ an "embedded", peer `Cache` instance when you annotate your application class wi
 By extension, a peer cache application may also serve as a `CacheServer` too, allowing cache clients to connect
 and perform data access operations on the server. This is accomplished by annotating the application class with
 `@CacheServerApplication` in place of `@PeerCacheApplication`, which creates a peer `Cache` instance along with
-the `CacheServer`.
+the `CacheServer` that allows cache clients to connect.
 
 NOTE: A {data-store-name} server is not necessarily a cache server by default. That is, a server is not necessarily
 set up to serve cache clients just because it is a server.  A {data-store-name} server can be a peer member (data node)
 of the cluster managing data without serving any clients while other peer members in the cluster are indeed set up
 to serve clients in addition to managing data. It is also possible to set up certain peer members in the cluster as
 non-data nodes, called {x-data-store-docs}/developing/region_options/data_hosts_and_accessors.html[data accessors],
-which do not store data, but act as a proxy to service clients as `CacheServers`.   This is beyond the scope
-of this document.
+which do not store data, but act as a proxy to service clients as `CacheServers`.  Many different topologies
+and cluster arrangements are supported by {data-store-name}, but are beyond the scope of this document.
 
 By way of example, if you want to create a Spring Boot cache client application, start with the following:
 
@@ -115,7 +115,7 @@ class ClientApplication { .. }
 ----
 
 Or, if you want to create a Spring Boot application with an embedded peer `Cache` instance, where your application
-will be a server and peer member of a cluster, or distributed system, formed by {data-store-name},
+will be a server and peer member of a cluster (distributed system) formed by {data-store-name},
 start with the following:
 
 .Spring-based {data-store-name} embedded peer `Cache` application
@@ -127,7 +127,7 @@ class ServerApplication { .. }
 ----
 
 Alternatively, you can use the `@CacheServerApplication` annotation in place of `@PeerCacheApplication` to create
-both an embedded peer `Cache` instance and a `CacheServer` running on `localhost`, listening on the default
+both an embedded peer `Cache` instance along with a `CacheServer` running on `localhost`, listening on the default
 cache server port, `40404`, as follows:
 
 .Spring-based {data-store-name} embedded peer `Cache` application with `CacheServer`
@@ -147,25 +147,25 @@ The most common and recommended approach is to use {data-store-name} Locators.
 NOTE: A cache client can connect to one or more Locators in the {data-store-name} cluster instead of directly to a
 `CacheServer`.  The advantage of using Locators over direct `CacheServer` connections is that Locators provide metadata
 about the cluster to which the client is connected. This metadata includes information such as which servers contain
-the data of interest or which servers have the least amount of load. A client `Pool` in conjuction with a Locator
+the data of interest or which servers have the least amount of load. A client `Pool` in conjunction with a Locator
 also provides fail-over capabilities in case a `CacheServer` crashes. By enabling the `PARTITION` Region (PR)
 single-hop feature in the client `Pool`, the client is routed directly to the server containing the data requested
 and needed by the client.
 
-NOTE: Locators are also peer members in a cluster. Locators actually constitute what makes up a cluster of {data-store-name}
-nodes. That is, all nodes connected by a Locator are peers in the cluster, and new members use Locators to join a cluster
-and find other members.
+NOTE: Locators are also peer members in a cluster. Locators actually constitute what makes up a cluster of
+{data-store-name} nodes. That is, all nodes connected by a Locator are peers in the cluster, and new members
+use Locators to join a cluster and find other members.
 
 By default, {data-store-name} sets up a "DEFAULT" `Pool` connected to a `CacheServer` running on `localhost`,
 listening on port `40404` when a `ClientCache` instance is created. A `CacheServer` listens on port `40404`,
-accepting connections from all system NICs. You do not need to do anything special to use the client-server topology.
-Simply annotate your server-side Spring Boot application with `@CacheServerApplication` and your client-side Spring Boot
-application with `@ClientCacheApplication`, and you are ready to go.
+accepting connections on all system NICs. You do not need to do anything special to use the client-server topology.
+Simply annotate your server-side Spring Boot application with `@CacheServerApplication` and your client-side
+Spring Boot application with `@ClientCacheApplication`, and you are ready to go.
 
 If you prefer, you can even start your servers with Gfsh's `start server` command. Your Spring Boot `@ClientCacheApplication`
-can still connect to the server regardless of how it was started. However, you may prefer to configure and start
-your servers by using the {sdg-name} approach since a properly annotated Spring Boot application class is far more
-intuitive and easier to debug.
+can still connect to the server regardless of how it was started. However, you may prefer to configure and start your
+servers by using the {sdg-name} approach since a properly annotated Spring Boot application class is far more intuitive
+and easier to debug.
 
 As an application developer, you will no doubt want to customize the "DEFAULT" `Pool` set up by {data-store-name}
 to possibly connect to one or more Locators, as the following example demonstrates:
@@ -691,7 +691,7 @@ the annotation attributes or corresponding configuration properties to adjust th
 Follow the earlier links for more details on HTTP support and the services provided.
 
 [[bootstrap-annotation-config-embedded-services-memcached]]
-=== Configuring the embedded Memcached Server (Gemcached)
+=== Configuring the Embedded Memcached Server (Gemcached)
 
 {data-store-name} also implements the Memcached protocol with the ability to service Memcached clients.  That is,
 Memcached clients can connect to a {data-store-name} cluster and perform Memcached operations as if
@@ -883,51 +883,6 @@ or associated configuration properties.
 See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnablePdx.html[`@EnablePdx` annotation Javadoc]
 for more details.
 
-[[bootstrap-annotation-config-ssl]]
-== Configuring SSL
-
-Equally important to serializing data to be transferred over the wire is securing the data while in transit.
-Of course, the common way to accomplish this in Java is by using the Secure Sockets Extension (SSE)
-and Transport Layer Security (TLS).
-
-To enable SSL, annotate your application class with `@EnableSsl`, as follows:
-
-.Spring `ClientCache` application with SSL enabled
-[source, java]
-----
-@SpringBootApplication
-@ClientCacheApplication
-@EnableSsl
-public class ClientApplication { .. }
-----
-
-Then you need to set the necessary SSL configuration attributes or properties: keystores, usernames/passwords, and so on.
-
-You can individually configure different {data-store-name} components (`GATEWAY`, `HTTP`, `JMX`, `LOCATOR`, and `SERVER`)
-with SSL, or you can collectively configure them to use SSL by using the `CLUSTER` enumerated value.
-
-You can specify which {data-store-name} components the SSL configuration settings should applied by using
-the nested `@EnableSsl` annotation, `components` attribute  with enumerated values from the `Component` enum,
-as follows:
-
-.Spring `ClientCache` application with SSL enabled by component
-[source, java]
-----
-@SpringBootApplication
-@ClientCacheApplication
-@EnableSsl(components = { GATEWAY, LOCATOR, SERVER })
-public class ClientApplication { .. }
-----
-
-In addition, you can also specify component-level SSL configuration (`ciphers`, `protocols` and `keystore`/`truststore`
-information) by using the corresponding annotation attribute or associated configuration properties.
-
-See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableSsl.html[`@EnableSsl` annotation Javadoc]
-for more details.
-
-More details on {data-store-name} SSL support can be found
-{x-data-store-docs}/managing/security/ssl_overview.html[here].
-
 [[bootstrap-annotation-config-gemfire-properties]]
 == Configuring {data-store-name} Properties
 
@@ -971,9 +926,9 @@ More details on {data-store-name} properties can be found
 == Configuring Regions
 
 So far, outside of PDX, our discussion has centered around configuring {data-store-name}'s more administrative functions:
-creating a cache instance, starting embedded services, enabling logging, statistics, SSL, and using `gemfire.properties`
-to affect low-level configuration and behavior. While all these configuration options are important, none of them
-relate directly to your application. In other words, we still need some place to store our application data
+creating a cache instance, starting embedded services, enabling logging and statistics, configuring PDX, and using
+`gemfire.properties` to affect low-level configuration and behavior. While all these configuration options are important,
+none of them relate directly to your application. In other words, we still need some place to store our application data
 and make it generally available and accessible.
 
 {data-store-name} organizes data in a cache into {x-data-store-docs}/basic_config/data_regions/chapter_overview.html[Regions].
@@ -981,9 +936,9 @@ You can think of a Region as a table in a relational database. Generally, a Regi
 which makes it more conducive for building effective indexes and writing queries. We cover indexing
 <<bootstrap-annotation-config-indexes,later>>.
 
-Previously, {sdg-name} users needed to explicitly define and declare the Regions used in their applications to store data
+Previously, {sdg-name} users needed to explicitly define and declare the Regions used by their applications to store data
 by writing very verbose Spring configuration metadata, whether using {sdg-acronym}'s `FactoryBeans` from the API
-in Spring's {spring-framework-docs}/core.html#beans-java[Java-based container configuration]
+with Spring's {spring-framework-docs}/core.html#beans-java[Java-based container configuration]
 or using <<bootstrap:region, XML>>.
 
 The following example demonstrates how to configure a Region bean in Java:
@@ -1011,7 +966,7 @@ class GemFireConfiguration {
 }
 ----
 
-The following example shows how to configure the same Region bean in XML:
+The following example demonstrates how to configure the same Region bean in XML:
 
 .Example Region bean definition using {sdg-acronym}'s XML Namespace
 [source, xml]
@@ -1022,8 +977,10 @@ The following example shows how to configure the same Region bean in XML:
 ----
 
 While neither Java nor XML configuration is all that difficult to specify, either one can be cumbersome, especially if
-an application requires a large number of Regions. Many relational database-based applications can literally
-have hundreds or even thousands of tables.
+an application requires a large number of Regions. Many relational database-based applications can have hundreds
+or even thousands of tables.
+
+Defining and declaring all these Regions by hand would be cumbersome and error prone.  Well, now there is a better way.
 
 Now you can define and configure Regions based on their application domain objects (entities) themselves. No longer do
 you need to explicitly define `Region` bean definitions in Spring configuration metadata, unless you require
@@ -1037,7 +994,7 @@ NOTE: Most Spring Data application developers should already be familiar with th
 and {sdg-name}'s <<gemfire-repositories,implementation/extension>>,
 which has been specifically customized to optimize data access operations for {data-store-name}.
 
-First, an application developer starts by defining the application's domain objects, as follows:
+First, an application developer starts by defining the application's domain objects (entities), as follows:
 
 .Application domain object type modeling a Book
 [source, java]
@@ -1075,7 +1032,7 @@ operations (CRUD) along with support for simple queries (such as `findById(..)`)
 more sophisticated queries by declaring query methods on the repository interface
 (for example, `List<BooK> findByAuthor(Author author);`).
 
-Under the hood, {sdg-name} provides an implementation of your applications repository interfaces when
+Under the hood, {sdg-name} provides an implementation of your application's repository interfaces when
 the Spring container is bootstrapped. {sdg-acronym} even implements the query methods you define so long as you follow
 the <<gemfire-repositories.executing-queries,conventions>>.
 
@@ -1103,6 +1060,9 @@ class ClientApplication { .. }
 TIP: Creating Regions from entity classes is most useful when using Spring Data Repositories in your application.
 {sdg-name}'s Repository support is enabled with the `@EnableGemfireRepositories` annotation, as shown in
 the preceding example.
+
+NOTE: Currently, only entity classes explicitly annotated with `@Region` are picked up by the scan
+and will have Regions created.  If an entity class is not explicitly mapped with `@Region` no Region will be created.
 
 By default, the `@EnableEntityDefinedRegions` annotation scans for entity classes recursively, starting from
 the package of the configuration class on which the `@EnableEntityDefinedRegions` annotation is declared.
@@ -1148,13 +1108,13 @@ See {x-data-store-docs}/developing/region_options/storage_distribution_options.h
 in the {data-store-name} User Guide for more details.
 
 When you annotate your application domain object types with the generic `@Region` mapping annotation, {sdg-name} decides
-which type of Region to create. {sdg-acronym}'s default strategy takes the cache type into consideration when determining
-the type of Region to create.
+which type of Region to create. {sdg-acronym}'s default strategy takes the cache type into consideration when
+determining the type of Region to create.
 
 For example, if you declare the application as a `ClientCache` by using the `@ClientCacheApplication` annotation,
-{sdg-acronym} creates a client `PROXY` `Region`. Alternatively, if you declare the application as a peer `Cache`
-by using either the `@PeerCacheApplication` or `@CacheServerApplication` annotations, {sdg-acronym} creates
-a server `PARTITION` `Region`.
+{sdg-acronym} creates a client `PROXY` `Region` by default. Alternatively, if you declare the application as a
+peer `Cache` by using either the `@PeerCacheApplication` or `@CacheServerApplication` annotations,
+{sdg-acronym} creates a server `PARTITION` `Region` by default.
 
 Of course, you can always override the default when necessary. To override the default applied by {sdg-name},
 four new Region mapping annotations have been introduced:
@@ -1165,7 +1125,7 @@ four new Region mapping annotations have been introduced:
 * `@ReplicateRegion`
 
 The `@ClientRegion` mapping annotation is specific to client applications. All of the other Region mapping annotations
-listed above can be used only in server applications that have an embedded peer `Cache`.
+listed above can only be used in server applications that have an embedded peer `Cache`.
 
 It is sometimes necessary for client applications to create and use local-only Regions, perhaps to aggregate data
 from other Regions in order to analyze the data locally and carry out some function performed by the application
@@ -1177,8 +1137,8 @@ accomplished with Idle-Timeout (TTI) and Time-To-Live (TTL) expiration policies 
 NOTE: Region-level Idle-Timeout (TTI) and Time-To-Live (TTL) expiration policies are independent of and different from
 entry-level TTI and TTL expiration policies.
 
-In any case, if you want to create a local-only client Region where the data is not going to be distributed to
-a corresponding Region with the same name on the server, you can declare the `@ClientRegion` mapping annotation
+In any case, if you want to create a local-only client Region where the data is not going to be distributed back to
+a corresponding Region on the server with the same name, you can declare the `@ClientRegion` mapping annotation
 and set the `shortcut` attribute to `ClientRegionShortcut.LOCAL`, as follows:
 
 .Spring `ClientCache` application with a local-only, client Region
@@ -1190,10 +1150,184 @@ class ClientLocalEntityType { .. }
 
 All Region type-specific annotations provide additional attributes that are both common across Region types
 as well as specific to only that type of Region.  For example, the `collocatedWith` and `redundantCopies` attributes
-in the `PartitionRegion` annotation apply to `PARTITION` Regions only.
+in the `PartitionRegion` annotation apply to server-side, `PARTITION` Regions only.
 
 More details on {data-store-name} Region types can be found
 {x-data-store-docs}/developing/region_options/region_types.html[here].
+
+[[bootstrap-annotation-config-region-cluster-defined]]
+=== Configured Cluster-defined Regions
+
+In addition to the `@EnableEntityDefinedRegions` annotation, {sdg-name} also provides the inverse annotation,
+`@EnableClusterDefinedRegions`.  Rather than basing your Regions on the entity classes defined and driven from
+your application use cases (UC) and requirements (the most common and logical approach), alternatively, you can
+declare your Regions from the Regions already defined in the cluster to which your `ClientCache` application
+will connect.
+
+This allows you to centralize your configuration using the cluster of servers as the primary source of data definitions
+and ensure that all client applications of the cluster have a consistent configuration.  This is particularly useful
+when quickly scaling up a large number instances of the same client application to handle the increased load
+in a cloud-managed environment.
+
+The idea is, rather than the client application(s) driving the data dictionary, the user defines Regions
+using {data-store-name}'s _Gfsh_ CLI shell tool.  This has the added advantage that when additional peers are added
+to the cluster, they too will also have and share the same configuration since it is remembered by {data-store-name}'s
+_Cluster Configuration Service_.
+
+By way of example, a user might defined a Region in _Gfsh_, as follows:
+
+.Defining a Region with Gfsh
+[source,txt]
+----
+gfsh>create region --name=Books --type=PARTITION
+ Member   | Status
+--------- | --------------------------------------
+ServerOne | Region "/Books" created on "ServerOne"
+ServerTwo | Region "/Books" created on "ServerTwo"
+
+gfsh>list regions
+List of regions
+---------------
+Books
+
+gfsh>describe region --name=/Books
+..........................................................
+Name            : Books
+Data Policy     : partition
+Hosting Members : ServerTwo
+                  ServerOne
+
+Non-Default Attributes Shared By Hosting Members
+
+ Type  |    Name     | Value
+------ | ----------- | ---------
+Region | size        | 0
+       | data-policy | PARTITION
+----
+
+With {data-store-name}'s _Cluster Configuration Service_, any additional peer members added to the cluster of servers
+to handle the increased load (on the backend) will also have the same configuration, for example:
+
+.Adding an additional peer member to the cluster
+[source,txt]
+----
+gfsh>list members
+  Name    | Id
+--------- | ----------------------------------------------
+Locator   | 10.0.0.121(Locator:68173:locator)<ec><v0>:1024
+ServerOne | 10.0.0.121(ServerOne:68242)<v3>:1025
+ServerTwo | 10.0.0.121(ServerTwo:68372)<v4>:1026
+
+gfsh>start server --name=ServerThree --log-level=config --server-port=41414
+Starting a Geode Server in /Users/you/geode/cluster/ServerThree...
+...
+Server in /Users/you/geode/cluster/ServerThree... on 10.0.0.121[41414] as ServerThree is currently online.
+Process ID: 68467
+Uptime: 3 seconds
+Geode Version: 1.2.1
+Java Version: 1.8.0_152
+Log File: /Users/you/geode/cluster/ServerThree/ServerThree.log
+JVM Arguments: -Dgemfire.default.locators=10.0.0.121[10334]
+  -Dgemfire.use-cluster-configuration=true
+  -Dgemfire.start-dev-rest-api=false
+  -Dgemfire.log-level=config
+  -XX:OnOutOfMemoryError=kill -KILL %p
+  -Dgemfire.launcher.registerSignalHandlers=true
+  -Djava.awt.headless=true
+  -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
+Class-Path: /Users/you/geode/cluster/apache-geode-1.2.1/lib/geode-core-1.2.1.jar
+  :/Users/you/geode/cluster/apache-geode-1.2.1/lib/geode-dependencies.jar
+
+gfsh>list members
+   Name     | Id
+----------- | ----------------------------------------------
+Locator     | 10.0.0.121(Locator:68173:locator)<ec><v0>:1024
+ServerOne   | 10.0.0.121(ServerOne:68242)<v3>:1025
+ServerTwo   | 10.0.0.121(ServerTwo:68372)<v4>:1026
+ServerThree | 10.0.0.121(ServerThree:68467)<v5>:1027
+
+gfsh>describe member --name=ServerThree
+Name        : ServerThree
+Id          : 10.0.0.121(ServerThree:68467)<v5>:1027
+Host        : 10.0.0.121
+Regions     : Books
+PID         : 68467
+Groups      :
+Used Heap   : 37M
+Max Heap    : 3641M
+Working Dir : /Users/you/geode/cluster/ServerThree
+Log file    : /Users/you/geode/cluster/ServerThree/ServerThree.log
+Locators    : 10.0.0.121[10334]
+
+Cache Server Information
+Server Bind              :
+Server Port              : 41414
+Running                  : true
+Client Connections       : 0
+----
+
+As you can see, "ServerThree" now has the "Books" Region.  If the any or all of the server go down, they will have
+the same configuration along with the "Books" Region when they come back up.
+
+On the client-side, many Book Store client application instances might be started to process books against
+the Book Store online service. The "Books" Region might be 1 of many different Regions needed to implement
+the Book Store application service.  Rather than have to create and configure each Region individually, {sdg-acronym}
+conveniently allows the client application Regions to be defined from the cluster, as follows:
+
+.Defining Client Regions from the Cluster with `@EnableClusterDefinedRegions`
+[source,java]
+----
+@ClientCacheApplication
+@EnableClusterDefinedRegions
+class BookStoreClientApplication {
+
+    public static void main(String[] args) {
+        ....
+    }
+
+    ...
+}
+----
+
+NOTE: `@EnableClusterDefinedRegions` can only used on the client.
+
+TIP: You can use the `clientRegionShortcut` annotation attribute to control the type of Region created on the client.
+By default, a client `PROXY` Region is created.  Set `clientRegionShortcut` to `ClientRegionShortcut.CACHING_PROXY`
+to implement "_near caching_".  This setting applies to all client Regions created from Cluster-defined Regions.
+If you want to control individual settings (like data policy) of the client Regions created from Regions defined
+on the Cluster, then you can implement a
+{sdg-javadoc}/org/springframework/data/gemfire/config/annotation/RegionConfigurer.html[`RegionConfigurer`]
+with custom logic based on the Region name.
+
+Then, it becomes a simple matter to use the "Books" Region in your application.  You can inject the "Books" Region
+directly, as follows:
+
+.Using the "Books" Region
+[source,java]
+----
+@org.springframework.stereotype.Repository
+class BooksDataAccessObject {
+
+    @Resource(name = "Books")
+    private Region<ISBN, Book> books;
+
+    // implement CRUD and queries with the "Books" Region
+}
+----
+
+Or, even define a Spring Data Repository definition based on the application domain type (entity), `Book`,
+mapped to the "Books" Region, as follows:
+
+.Using the "Books" Region with a SD Repository
+[source,java]
+----
+interface BookRepository extends CrudRepository<Book, ISBN> {
+    ...
+}
+----
+
+You can then either inject your custom `BooksDataAccessObject` or the `BookRepository` into your application service
+components to carry out whatever business function required.
 
 [[bootstrap-annotation-config-region-eviction]]
 === Configuring Eviction
@@ -1942,6 +2076,51 @@ with very little effort:
 See the https://docs.spring.io/spring-data/gemfire/docs/current/api/index.html?org/springframework/data/gemfire/config/annotation/EnableClusterConfiguration.html[`@EnableClusterConfiguration` annotation
 Javadoc] for more details.
 
+[[bootstrap-annotation-config-ssl]]
+== Configuring SSL
+
+Equally important to serializing data to be transferred over the wire is securing the data while in transit.
+Of course, the common way to accomplish this in Java is by using the Secure Sockets Extension (SSE)
+and Transport Layer Security (TLS).
+
+To enable SSL, annotate your application class with `@EnableSsl`, as follows:
+
+.Spring `ClientCache` application with SSL enabled
+[source, java]
+----
+@SpringBootApplication
+@ClientCacheApplication
+@EnableSsl
+public class ClientApplication { .. }
+----
+
+Then you need to set the necessary SSL configuration attributes or properties: keystores, usernames/passwords, and so on.
+
+You can individually configure different {data-store-name} components (`GATEWAY`, `HTTP`, `JMX`, `LOCATOR`, and `SERVER`)
+with SSL, or you can collectively configure them to use SSL by using the `CLUSTER` enumerated value.
+
+You can specify which {data-store-name} components the SSL configuration settings should applied by using
+the nested `@EnableSsl` annotation, `components` attribute  with enumerated values from the `Component` enum,
+as follows:
+
+.Spring `ClientCache` application with SSL enabled by component
+[source, java]
+----
+@SpringBootApplication
+@ClientCacheApplication
+@EnableSsl(components = { GATEWAY, LOCATOR, SERVER })
+public class ClientApplication { .. }
+----
+
+In addition, you can also specify component-level SSL configuration (`ciphers`, `protocols` and `keystore`/`truststore`
+information) by using the corresponding annotation attribute or associated configuration properties.
+
+See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/config/annotation/EnableSsl.html[`@EnableSsl` annotation Javadoc]
+for more details.
+
+More details on {data-store-name} SSL support can be found
+{x-data-store-docs}/managing/security/ssl_overview.html[here].
+
 [[bootstrap-annotation-config-security]]
 == Configuring Security
 
@@ -2178,9 +2357,10 @@ to accomplishing the function that the annotation provides:
 `@EnableSecurity` annotation, as described in "`<<bootstrap-annotation-config-security>>`".)
 * `@EnableAutoRegionLookup`: Not recommended. Essentially, this annotation supports finding Regions defined in external
 configuration metadata (such as `cache.xml` or Cluster Configuration when applied to a server) and automatically
-registers those Regions as beans in the Spring container. Users should generally prefer Spring configuration when
-using Spring and {sdg-name}. See "`<<bootstrap-annotation-config-regions>>`" and "`<<bootstrap-annotation-config-cluster>>`"
-instead.
+registers those Regions as beans in the Spring container. This annotation corresponds with the `<gfe:auto-region-lookup>`
+element in SDG's XML namespace.  More details can found <<bootstrap:region:lookup:auto, here>>.  Users should generally
+prefer Spring configuration when using Spring and {sdg-name}. See "`<<bootstrap-annotation-config-regions>>`"
+and "`<<bootstrap-annotation-config-cluster>>`" instead.
 * `@EnableBeanFactoryLocator`: Enables the {sdg-acronym} `GemfireBeanFactoryLocator` feature, which is only useful
 when using external configuration metadata (for example, `cache.xml`). For example, if you define a `CacheLoader` on
 a Region defined in `cache.xml`, you can still autowire this `CacheLoader` with, say, a relational database

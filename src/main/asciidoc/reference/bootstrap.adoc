@@ -1,5 +1,5 @@
 [[bootstrap]]
-= Bootstrapping {data-store-name} with the Spring container
+= Bootstrapping {data-store-name} with the Spring Container
 
 {sdg-name} provides full configuration and initialization of the {data-store-name} In-Memory Data Grid (IMDG)
 using the Spring IoC container. The framework includes several classes to help simplify the configuration of

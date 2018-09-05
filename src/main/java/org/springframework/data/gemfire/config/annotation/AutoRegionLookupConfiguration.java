@@ -17,7 +17,7 @@
 
 package org.springframework.data.gemfire.config.annotation;
 
-import java.util.Map;
+import java.lang.annotation.Annotation;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -30,7 +30,7 @@ import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.context.expression.BeanFactoryResolver;
-import org.springframework.core.env.Environment;
+import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport;
 import org.springframework.data.gemfire.config.support.AutoRegionLookupBeanPostProcessor;
@@ -73,14 +73,12 @@ public class AutoRegionLookupConfiguration extends AbstractAnnotationConfigSuppo
 
 	private static final AtomicBoolean AUTO_REGION_LOOKUP_BEAN_POST_PROCESSOR_REGISTERED = new AtomicBoolean(false);
 
-	private Environment environment;
-
 	private ExpressionParser spelParser = new SpelExpressionParser();
 
 	private StandardEvaluationContext evaluationContext = new StandardEvaluationContext();
 
 	@Override
-	protected Class getAnnotationType() {
+	protected Class<? extends Annotation> getAnnotationType() {
 		return EnableAutoRegionLookup.class;
 	}
 
@@ -98,8 +96,7 @@ public class AutoRegionLookupConfiguration extends AbstractAnnotationConfigSuppo
 
 			ConfigurableBeanFactory configurableBeanFactory = (ConfigurableBeanFactory) beanFactory;
 
-			this.evaluationContext.setTypeLocator(new StandardTypeLocator(
-				configurableBeanFactory.getBeanClassLoader()));
+			this.evaluationContext.setTypeLocator(new StandardTypeLocator(configurableBeanFactory.getBeanClassLoader()));
 
 			Optional.ofNullable(configurableBeanFactory.getConversionService())
 				.ifPresent(conversionService ->
@@ -113,24 +110,23 @@ public class AutoRegionLookupConfiguration extends AbstractAnnotationConfigSuppo
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 
-		Map<String, Object> enableAutoRegionLookupAttributes =
-			importingClassMetadata.getAnnotationAttributes(EnableAutoRegionLookup.class.getName());
+		AnnotationAttributes enableAutoRegionLookupAttributes = getAnnotationAttributes(importingClassMetadata);
 
-		Optional.ofNullable(resolveProperty(propertyName("enable-auto-region-lookup"),
-				(Boolean) enableAutoRegionLookupAttributes.get("enabled")))
+		Optional.ofNullable(resolveProperty(cacheProperty("enable-auto-region-lookup"),
+			resolveProperty(propertyName("enable-auto-region-lookup"),
+				enableAutoRegionLookupAttributes.getBoolean("enabled"))))
 			.filter(Boolean.TRUE::equals)
 			.ifPresent(enabled -> registerAutoRegionLookupBeanPostProcessor(registry));
 	}
 
 	/**
-	 * (non-Javadoc)
-	 *
-	 * This method was used to support Spring property placeholders and SpEL Expressions
-	 * in the {@link EnableAutoRegionLookup#enabled()} attribute.  However, this required the attribute to be
-	 * of type {@link String}, which violates type-safety.  We are favoring type-safety over configuration
-	 * flexibility and offering alternative means to achieve flexible and dynamic configuration, e.g. properties
+	 * This method is used to support Spring property placeholders and SpEL Expressions
+	 * in the {@link EnableAutoRegionLookup#enabled()} attribute.  However, this requires the attribute to be of type
+	 * {@link String}, which violates type-safety.  We are favoring type-safety over configuration flexibility
+	 * and offering alternative means to achieve flexible and dynamic configuration, e.g. properties
 	 * from an {@literal application.properties} file.
 	 */
+	@SuppressWarnings("unused")
 	private boolean isEnabled(String enabled) {
 
 		enabled = StringUtils.trimWhitespace(enabled);
@@ -138,7 +134,8 @@ public class AutoRegionLookupConfiguration extends AbstractAnnotationConfigSuppo
 		if (!Boolean.parseBoolean(enabled)) {
 			try {
 				// try parsing as a SpEL expression...
-				return this.spelParser.parseExpression(enabled).getValue(this.evaluationContext, Boolean.TYPE);
+				return Boolean.TRUE.equals(this.spelParser.parseExpression(enabled)
+					.getValue(this.evaluationContext, Boolean.TYPE));
 			}
 			catch (EvaluationException ignore) {
 				return false;
@@ -155,6 +152,7 @@ public class AutoRegionLookupConfiguration extends AbstractAnnotationConfigSuppo
 	private void registerAutoRegionLookupBeanPostProcessor(BeanDefinitionRegistry registry) {
 
 		if (AUTO_REGION_LOOKUP_BEAN_POST_PROCESSOR_REGISTERED.compareAndSet(false, true)) {
+
 			AbstractBeanDefinition autoRegionLookupBeanPostProcessor = BeanDefinitionBuilder
 				.rootBeanDefinition(AutoRegionLookupBeanPostProcessor.class)
 				.setRole(AbstractBeanDefinition.ROLE_INFRASTRUCTURE)

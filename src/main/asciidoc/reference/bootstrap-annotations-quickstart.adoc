@@ -491,6 +491,30 @@ See <<bootstrap-annotation-config-regions>> for more details.
 
 See <<gemfire-repositories>> for more details.
 
+[[bootstap-annotations-quickstart-cluster-defined-regions]]
+== Configure Client Regions from Cluster-defined Regions
+
+Alternatively, you can define client [*PROXY] Regions from Regions already defined in the cluster
+using `@EnableClusterDefinedRegions`, as follows:
+
+[source,java]
+----
+@SpringBootApplication
+@ClientCacheApplication
+@EnableClusterDefinedRegions
+@EnableGemfireRepositories
+public class ClientApplication {
+
+  public static void main(String[] args) {
+    SpringApplication.run(ClientApplication.class, args);
+  }
+
+  ...
+}
+----
+
+See <<bootstrap-annotation-config-region-cluster-defined>> for more details.
+
 [[bootstap-annotations-quickstart-functions]]
 == Configure Functions
 

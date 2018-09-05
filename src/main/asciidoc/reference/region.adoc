@@ -61,7 +61,7 @@ or setup infrastructure.
 [[bootstrap:region:lookup:auto]]
 == Auto Region Lookup
 
-"`auto-lookup`" lets you import all Regions defined in a {data-store-name} native `cache.xml` file into
+`auto-region-lookup` lets you import all Regions defined in a {data-store-name} native `cache.xml` file into
 a Spring `ApplicationContext` when you use the `cache-xml-location` attribute on the `<gfe:cache>` element.
 
 For instance, consider the following `cache.xml` file:
@@ -105,7 +105,7 @@ It is important to realize that {sdg-name} uses a Spring
 to post-process the cache after it is both created and initialized to determine the Regions defined in {data-store-name}
 to add as beans in the Spring `ApplicationContext`.
 
-You may inject these "`auto-looked-up`" Regions as you would any other bean defined in the Spring `ApplicationContext`,
+You may inject these "auto-looked-up" Regions as you would any other bean defined in the Spring `ApplicationContext`,
 with one exception: You may need to define a `depends-on` association with the '`gemfireCache`' bean, as follows:
 
 [source,java]
@@ -138,7 +138,7 @@ If you declare your components by using Spring XML config, then you would do the
 ----
 
 Doing so ensures that the {data-store-name} cache and all the Regions defined in `cache.xml` get created before
-any components with auto-wire references when using the new `<gfe:auto-region-lookup>` element.
+any components with auto-wire references when using the `<gfe:auto-region-lookup>` element.
 
 [[bootstrap:region:overview]]
 == Configuring Regions
