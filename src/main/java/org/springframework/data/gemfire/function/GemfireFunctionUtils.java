@@ -24,11 +24,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.security.ResourcePermission;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -50,6 +52,8 @@ import org.springframework.util.StringUtils;
  */
 public abstract class GemfireFunctionUtils {
 
+	private static final String DEFAULT_FUNCTION_ID = null;
+
 	private static Log log = LogFactory.getLog(GemfireFunctionUtils.class);
 
 	/**
@@ -61,19 +65,39 @@ public abstract class GemfireFunctionUtils {
 	 * @see java.lang.reflect.Method
 	 */
 	public static boolean isGemfireFunction(Method method) {
-		return (method != null && method.isAnnotationPresent(GemfireFunction.class));
+		return method != null && method.isAnnotationPresent(GemfireFunction.class);
 	}
 
-	private static boolean isMatchingGemfireFunction(Method method, String functionId) {
+	/**
+	 * Determines whether the given {@link Method} is a POJO, {@link GemfireFunction} annotated {@link Method}
+	 * having an ID matching the given {@code functionId}.
+	 *
+	 * @param method {@link Method} to evaluate.
+	 * @param functionId {@link String} containing the {@link Function#getId() ID} to match.
+	 * @return a boolean indicating whether the given {@link Method} is a POJO, {@link GemfireFunction} annotated
+	 * {@link Method} with the given {@code functionId}.
+	 * @see #getGemfireFunctionId(Method)
+	 * @see java.lang.reflect.Method
+	 */
+	public static boolean isMatchingGemfireFunction(Method method, String functionId) {
 		return getGemfireFunctionId(method).filter(methodFunctionId ->
 			ObjectUtils.nullSafeEquals(methodFunctionId, functionId)).isPresent();
 	}
 
-	private static AnnotationAttributes getAnnotationAttributes(AnnotatedElement element,
+	static Annotation getAnnotation(AnnotatedElement element, Class<? extends Annotation> annotationType) {
+		return AnnotationUtils.getAnnotation(element, annotationType);
+	}
+
+	static AnnotationAttributes getAnnotationAttributes(AnnotatedElement element, Annotation annotation) {
+		return AnnotationAttributes.fromMap(AnnotationUtils.getAnnotationAttributes(element, annotation));
+	}
+
+	static AnnotationAttributes getAnnotationAttributes(AnnotatedElement element,
 			Class<? extends Annotation> annotationType) {
 
-		return AnnotationAttributes.fromMap(
-			AnnotationUtils.getAnnotationAttributes(element, element.getAnnotation(annotationType)));
+		return element.isAnnotationPresent(annotationType)
+			? getAnnotationAttributes(element, getAnnotation(element, annotationType))
+			: null;
 	}
 
 	/**
@@ -83,24 +107,24 @@ public abstract class GemfireFunctionUtils {
 	 * If the {@link Method} is not {@literal null} and annotated with {@link GemfireFunction} then this method
 	 * tries to determine the {@link Function#getId()} from the {@link GemfireFunction#id()} attribute.
 	 *
-	 * If the {@link GemfireFunction#id()} attribute was not set, then the {@link Method#getName()}
+	 * If the {@link GemfireFunction#id()} attribute was not explicitly set, then the {@link Method#getName()}
 	 * is returned as the {@link Function#getId() Function ID}.
 	 *
 	 * @param method {@link GemfireFunction} annotated POJO {@link Method} containing the implementation
-	 * for a Pivotal GemFire/Apache Geode {@link Function}.
-	 * @return the Pivotal GemFire/Apache Geode Function ID of the given {@link Method}, or an empty {@link Optional}
-	 * if the {@link Method} is not a Pivotal GemFire/Apache Geode {@link Function}.
+	 * of the GemFire/Geode {@link Function}.
+	 * @return the GemFire/Geode {@link Function#getId() Function ID} of the given {@link Method},
+	 * or an empty {@link Optional} if the {@link Method} is not a GemFire/Geode {@link Function}.
 	 * @see org.springframework.data.gemfire.function.annotation.GemfireFunction
 	 * @see java.lang.reflect.Method
 	 * @see #isGemfireFunction(Method)
 	 */
-	private static Optional<String> getGemfireFunctionId(Method method) {
+	@SuppressWarnings("all")
+	public static Optional<String> getGemfireFunctionId(Method method) {
 
 		return Optional.ofNullable(method)
 			.filter(GemfireFunctionUtils::isGemfireFunction)
 			.map(it ->
-				Optional.of(it.getAnnotation(GemfireFunction.class))
-					.map(annotation -> getAnnotationAttributes(it, annotation.getClass()))
+				Optional.ofNullable(getAnnotationAttributes(it, GemfireFunction.class))
 					.filter(annotationAttributes -> annotationAttributes.containsKey("id"))
 					.map(annotationAttributes -> annotationAttributes.getString("id"))
 					.filter(StringUtils::hasText)
@@ -114,7 +138,8 @@ public abstract class GemfireFunctionUtils {
 			.map(constructor -> BeanUtils.instantiateClass(constructor, constructorArguments))
 			.orElseThrow(() -> newIllegalArgumentException(
 				"No suitable constructor was found for type [%s] having parameters [%s]", type.getName(),
-				stream(nullSafeArray(constructorArguments, Object.class)).map(ObjectUtils::nullSafeClassName)
+				stream(nullSafeArray(constructorArguments, Object.class))
+					.map(ObjectUtils::nullSafeClassName)
 					.collect(Collectors.toList())));
 	}
 
@@ -160,6 +185,7 @@ public abstract class GemfireFunctionUtils {
 	 * @see #registerFunctionForPojoMethod(Object, Method, AnnotationAttributes, boolean)
 	 * @see #isMatchingGemfireFunction(Method, String)
 	 */
+	@SuppressWarnings("unused")
 	public static void registerFunctionForPojoMethod(Object target, String functionId) {
 
 		Assert.notNull(target, "Target object is required");
@@ -183,6 +209,7 @@ public abstract class GemfireFunctionUtils {
 	 * @see #registerFunctionForPojoMethod(Object, Method, AnnotationAttributes, boolean)
 	 * @see #isGemfireFunction(Method)
 	 */
+	@SuppressWarnings("unused")
 	public static void registerFunctionForPojoMethod(Object target, Method method, boolean overwrite) {
 
 		Assert.notNull(target, "Target object is required");
@@ -206,58 +233,158 @@ public abstract class GemfireFunctionUtils {
 	public static void registerFunctionForPojoMethod(Object target, Method method,
 			AnnotationAttributes gemfireFunctionAttributes, boolean overwrite) {
 
-		String id = gemfireFunctionAttributes.containsKey("id")
-			? gemfireFunctionAttributes.getString("id") : "";
+		PojoFunctionWrapper function =
+			new PojoFunctionWrapper(target, method, resolveFunctionId(gemfireFunctionAttributes));
 
-		PojoFunctionWrapper function = new PojoFunctionWrapper(target, method, id);
+		configureBatchSize(target, method, gemfireFunctionAttributes, function);
+		configureHighAvailability(gemfireFunctionAttributes, function);
+		configureHasResult(gemfireFunctionAttributes, function);
+		configureOptimizeForWrite(gemfireFunctionAttributes, function);
+		configureRequiredPermissions(gemfireFunctionAttributes, function);
+
+		doFunctionRegistration(function, overwrite);
+	}
+
+	static String resolveFunctionId(AnnotationAttributes gemfireFunctionAttributes) {
+
+		return gemfireFunctionAttributes.containsKey("id")
+			? gemfireFunctionAttributes.getString("id")
+			: DEFAULT_FUNCTION_ID;
+	}
+
+	static void configureBatchSize(Object target, Method method, AnnotationAttributes gemfireFunctionAttributes,
+			PojoFunctionWrapper function) {
 
 		if (gemfireFunctionAttributes.containsKey("batchSize")) {
 
 			int batchSize = gemfireFunctionAttributes.getNumber("batchSize");
 
 			Assert.isTrue(batchSize >= 0,
-				String.format("batchSize [%1$d] specified on [%2$s.%3$s] must be a non-negative value",
-					batchSize, target.getClass().getName(), method.getName()));
+				String.format("%1$s.batchSize [%2$d] specified on [%3$s.%4$s] must be a non-negative value",
+					GemfireFunction.class.getSimpleName(), batchSize, target.getClass().getName(), method.getName()));
 
 			function.setBatchSize(batchSize);
 		}
+	}
+
+	static void configureHighAvailability(AnnotationAttributes gemfireFunctionAttributes,
+			PojoFunctionWrapper function) {
 
 		if (gemfireFunctionAttributes.containsKey("HA")) {
 			function.setHA(gemfireFunctionAttributes.getBoolean("HA"));
 		}
+	}
+
+	static void configureHasResult(AnnotationAttributes gemfireFunctionAttributes, PojoFunctionWrapper function) {
 
 		if (gemfireFunctionAttributes.containsKey("hasResult")) {
 			if (Boolean.TRUE.equals(gemfireFunctionAttributes.getBoolean("hasResult"))) {
 				function.setHasResult(true);
 			}
 		}
+	}
+
+	static void configureOptimizeForWrite(AnnotationAttributes gemfireFunctionAttributes,
+			PojoFunctionWrapper function) {
 
 		if (gemfireFunctionAttributes.containsKey("optimizeForWrite")) {
 			function.setOptimizeForWrite(gemfireFunctionAttributes.getBoolean("optimizeForWrite"));
 		}
+	}
+
+	static void configureRequiredPermissions(AnnotationAttributes gemfireFunctionAttributes,
+			PojoFunctionWrapper function) {
+
+		String[] requiredPermissionStrings = nullSafeArray(gemfireFunctionAttributes.containsKey("requiredPermissions")
+			? gemfireFunctionAttributes.getStringArray("requiredPermissions")
+			: null, String.class);
+
+		Stream<String> requiredPermissionsStream = Arrays.stream(requiredPermissionStrings);
+
+		Optional.of(requiredPermissionsStream
+			.filter(StringUtils::hasText)
+			.map(GemfireFunctionUtils::parseResourcePermission)
+			.collect(Collectors.toList()))
+			.filter(requiredPermissions -> !requiredPermissions.isEmpty())
+			.ifPresent(function::setRequiredPermissions);
+	}
+
+	static ResourcePermission parseResourcePermission(String resourcePermissionString) {
+
+		Assert.hasText(resourcePermissionString,
+			String.format("ResourcePermission [%s] is required", resourcePermissionString));
+
+		ResourcePermission.Resource resource = ResourcePermission.Resource.DATA;
+		ResourcePermission.Operation operation = ResourcePermission.Operation.WRITE;
+
+		String key = null;
+		String target = null;
+
+		String[] resourcePermissionStringComponents = resourcePermissionString.split(":");
+
+		if (resourcePermissionStringComponents.length > 0) {
+			resource = parseEnum(resourcePermissionStringComponents[0], ResourcePermission.Resource.class,
+				ResourcePermission.Resource.values());
+		}
+		if (resourcePermissionStringComponents.length > 1) {
+			operation = parseEnum(resourcePermissionStringComponents[1], ResourcePermission.Operation.class,
+				ResourcePermission.Operation.values());
+		}
+		if (resourcePermissionStringComponents.length > 2) {
+			target	= nullSafeTrim(resourcePermissionStringComponents[2]);
+		}
+		if (resourcePermissionStringComponents.length > 3) {
+			key = nullSafeTrim(resourcePermissionStringComponents[3]);
+		}
+
+		return new ResourcePermission(resource, operation, target, key);
+	}
+
+	private static String nullSafeToUpperCase(String value) {
+		return StringUtils.hasText(value) ? value.trim().toUpperCase() : "null";
+	}
+
+	private static String nullSafeTrim(String value) {
+		return value != null ? value.trim() : null;
+	}
+
+	private static <T extends Enum<T>> T parseEnum(String name, Class<T> enumType, Enum[] enumeratedValues) {
+
+		name = nullSafeToUpperCase(name);
+
+		try {
+			return Enum.valueOf(enumType, name);
+		}
+		catch (IllegalArgumentException cause) {
+			throw newIllegalArgumentException(cause, "[%1$s] is not a valid [%2$s] type; must be 1 of %3$s",
+				name, enumType.getName(), Arrays.toString(enumeratedValues));
+		}
+	}
+
+	static void doFunctionRegistration(PojoFunctionWrapper function, boolean overwrite) {
 
 		if (FunctionService.isRegistered(function.getId())) {
 			if (overwrite) {
 
 				if (log.isDebugEnabled()) {
-					log.debug(String.format("Unregistering Function [%s]", function.getId()));
+					log.debug(String.format("Overwrite enabled; Unregistering Function [%s]", function.getId()));
 				}
 
 				FunctionService.unregisterFunction(function.getId());
 			}
 		}
 
-		if (!FunctionService.isRegistered(function.getId())) {
+		if (FunctionService.isRegistered(function.getId())) {
+			if (log.isDebugEnabled()) {
+				log.debug(String.format("Function [%s] is already registered", function.getId()));
+			}
+		}
+		else {
 
 			FunctionService.registerFunction(function);
 
 			if (log.isDebugEnabled()) {
 				log.debug(String.format("Registered Function [%s]", function.getId()));
-			}
-		}
-		else {
-			if (log.isDebugEnabled()) {
-				log.debug(String.format("Function [%s] is already registered", function.getId()));
 			}
 		}
 	}

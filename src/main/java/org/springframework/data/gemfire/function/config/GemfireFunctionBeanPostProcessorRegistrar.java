@@ -30,7 +30,10 @@ public class GemfireFunctionBeanPostProcessorRegistrar implements ImportBeanDefi
 	 */
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(GemfireFunctionBeanPostProcessor.class);
+
+		BeanDefinitionBuilder builder =
+			BeanDefinitionBuilder.genericBeanDefinition(GemfireFunctionBeanPostProcessor.class);
+
 		BeanDefinitionReaderUtils.registerWithGeneratedName(builder.getBeanDefinition(), registry);
 	}
 }

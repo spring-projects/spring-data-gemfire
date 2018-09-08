@@ -17,36 +17,32 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.ResultSender;
+
 /**
  *
- * Used to declare a concrete method as a Pivotal GemFire function implementation
+ * Used to declare a concrete method as a Pivotal GemFire {@link Function} implementation.
  *
  * @author David Turanski
- *
+ * @author John Blum
+ * @see org.apache.geode.cache.execute.Function
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 public @interface GemfireFunction {
 
+	String DEFAULT_RESOURCE_PERMISSION = "DATA:WRITE";
+
 	/**
-	 * The name of the registered function. If not provided the simple method name will be used
-	 * @return the function id
+	 * The {@link String name} of the registered {@link Function}.
+	 *
+	 * If not provided the simple {@link String method name} will be used.
+	 *
+	 * @return the {@link Function} {@link Function#getId() id}.
+	 * @see org.apache.geode.cache.execute.Function#getId()
      */
 	String id() default "";
-
-	/**
-	 * Attribute to determine whether the Pivotal GemFire Function is HA (Highly Available).
-	 *
-	 * @return a boolean value indicating whether the defined Pivotal GemFire Function is HA.
-	 */
-	boolean HA() default false;
-
-	/**
-	 * Attribute to determine whether the Pivotal GemFire Function is optimized for write operations.
-	 *
-	 * @return a boolean value indicating if the Pivotal GemFire Function is configured for optimized write operations.
-	 */
-	boolean optimizeForWrite() default false;
 
 	/**
 	 * Controls the maximum number of results sent at one time.
@@ -56,11 +52,31 @@ public @interface GemfireFunction {
 	int batchSize() default 0;
 
 	/**
-	 * Normally follows the method return type, i.e., false if void, true otherwise. This allows overriding
-	 * a void method which uses the resultSender directly.
+	 * Attribute used to configure whether the {@link Function} is HA (Highly Available).
 	 *
-	 * @return a boolean value indicating if the Pivotal GemFire Function is expected to return a result.
+	 * @return a boolean value configuring whether the defined {@link Function} is HA.
+	 * @see org.apache.geode.cache.execute.Function#isHA()
+	 */
+	boolean HA() default false;
+
+	/**
+	 * Normally follows the method return type, i.e. {@literal false} if {@code void}, {@literal true} otherwise.
+	 *
+	 * This allows overriding a {@code void} method which uses the {@link ResultSender} directly.
+	 *
+	 * @return a boolean value indicating if the {@link Function} is expected to return a result.
+	 * @see org.apache.geode.cache.execute.Function#hasResult()
 	 */
 	boolean hasResult() default false;
+
+	/**
+	 * Attribute to configure whether the {@link Function} is optimized for write operations.
+	 *
+	 * @return a boolean value indicating if the {@link Function} is configured for optimized write operations.
+	 * @see org.apache.geode.cache.execute.Function#optimizeForWrite()
+	 */
+	boolean optimizeForWrite() default false;
+
+	String[] requiredPermissions() default { DEFAULT_RESOURCE_PERMISSION };
 
 }

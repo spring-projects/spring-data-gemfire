@@ -12,7 +12,11 @@
  */
 package org.springframework.data.gemfire.function;
 
+import static org.springframework.data.gemfire.util.CollectionUtils.asSet;
+
 import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Collections;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -20,6 +24,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
@@ -52,6 +58,8 @@ public class PojoFunctionWrapper implements Function {
 
 	private volatile int batchSize;
 
+	private Collection<ResourcePermission> requiredPermissions = asSet(ResourcePermissions.DATA_WRITE);
+
 	private final FunctionArgumentResolver functionArgumentResolver;
 
 	private final Method method;
@@ -60,19 +68,39 @@ public class PojoFunctionWrapper implements Function {
 
 	private final String id;
 
+	public PojoFunctionWrapper(Object target, Method method) {
+		this(target, method, null);
+	}
+
 	public PojoFunctionWrapper(Object target, Method method, String id) {
 
 		this.target = target;
 		this.method = method;
-		this.id = StringUtils.hasText(id) ? id : method.getName();
-		this.functionArgumentResolver = new FunctionContextInjectingArgumentResolver(method);
+		this.id = resolveId(method, id);
+		this.functionArgumentResolver = newFunctionArgumentResolver(method);
 		this.HA = false;
-		this.hasResult = !method.getReturnType().equals(void.class);
+		this.hasResult = resolveHasResult(method);
 		this.optimizeForWrite = false;
+	}
+
+	protected FunctionArgumentResolver newFunctionArgumentResolver(Method method) {
+		return new FunctionContextInjectingArgumentResolver(method);
+	}
+
+	protected boolean resolveHasResult(Method method) {
+		return !method.getReturnType().equals(void.class);
+	}
+
+	protected String resolveId(Method method, String id) {
+		return StringUtils.hasText(id) ? id : method.getName();
 	}
 
 	public void setBatchSize(int batchSize) {
 		this.batchSize = batchSize;
+	}
+
+	public int getBatchSize() {
+		return this.batchSize;
 	}
 
 	public void setHA(boolean HA) {
@@ -105,6 +133,15 @@ public class PojoFunctionWrapper implements Function {
 	@Override
 	public boolean optimizeForWrite() {
 		return this.optimizeForWrite;
+	}
+
+	public void setRequiredPermissions(Collection<ResourcePermission> requiredPermissions) {
+		this.requiredPermissions = requiredPermissions;
+	}
+
+	@Override
+	public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+		return Collections.unmodifiableCollection(this.requiredPermissions);
 	}
 
 	@Override

@@ -15,9 +15,11 @@ package org.springframework.data.gemfire.function.config;
 import static java.util.Arrays.stream;
 import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
+import org.apache.geode.cache.execute.Function;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.core.annotation.AnnotationAttributes;
@@ -28,17 +30,21 @@ import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
 /**
- * Spring {@link BeanPostProcessor} that discovers bean components wired as Function implementations,
- * i.e. beans containing methods annotated with {@link GemfireFunction}.
+ * Spring {@link BeanPostProcessor} that discovers bean components configured as {@link Function} implementations,
+ * i.e. beans containing {@link Method methods} annotated with {@link GemfireFunction}.
  *
  * @author David Turanski
  * @author John Blum
+ * @see java.lang.annotation.Annotation
+ * @see java.lang.reflect.Method
+ * @see org.apache.geode.cache.execute.Function
  * @see org.springframework.beans.factory.config.BeanPostProcessor
  * @see org.springframework.data.gemfire.function.annotation.GemfireFunction
  */
 public class GemfireFunctionBeanPostProcessor implements BeanPostProcessor {
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
 	 * @see org.springframework.beans.factory.config.BeanPostProcessor#postProcessAfterInitialization(java.lang.Object, java.lang.String)
 	 */
 	@Override
@@ -61,11 +67,17 @@ public class GemfireFunctionBeanPostProcessor implements BeanPostProcessor {
 					String.format("The bean [%s] method [%s] annotated with [%s] must be public",
 						bean.getClass().getName(), method.getName(), GemfireFunction.class.getName()));
 
-				AnnotationAttributes annotationAttributes = AnnotationAttributes.fromMap(
-					AnnotationUtils.getAnnotationAttributes(gemfireFunctionAnnotation,false,true));
+				AnnotationAttributes gemfireFunctionAttributes = resolveAnnotationAttributes(gemfireFunctionAnnotation);
 
-				GemfireFunctionUtils.registerFunctionForPojoMethod(bean, method, annotationAttributes, false);
+				GemfireFunctionUtils.registerFunctionForPojoMethod(bean, method,
+					gemfireFunctionAttributes, false);
 			}
 		});
+	}
+
+	private AnnotationAttributes resolveAnnotationAttributes(Annotation annotation) {
+
+		return AnnotationAttributes.fromMap(AnnotationUtils.getAnnotationAttributes(annotation,
+			false, true));
 	}
 }
