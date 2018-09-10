@@ -3,6 +3,11 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.9.15.RELEASE (2018-09-10)
+----------------------------------------------
+* SGF-772 - Release 1.9.15 (Ingalls SR15).
+
+
 Changes in version 2.1.0.RC2 (2018-08-20)
 -----------------------------------------
 * SGF-780 - Correct Pool references in 'Runtime configuration using Properties' documentation.
