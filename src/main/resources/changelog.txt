@@ -3,6 +3,17 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.0.10.RELEASE (2018-09-10)
+----------------------------------------------
+* SGF-780 - Correct Pool references in 'Runtime configuration using Properties' documentation.
+* SGF-777 - Fix typo in Global, JTA Transaction Management documentation.
+* SGF-776 - Edit MappingPdxSerializer type filter documentation to cover includes and excludes.
+* SGF-775 - Add quick start reference to the "Bootstrapping Apache Geode Using Annotations" chapter.
+* SGF-774 - Polish SDG Reference Guide Edits.
+* SGF-773 - Replace all BeanPostProcessors setting GemFire/Geode Properties using SDG service enabling annotations with Configurers.
+* SGF-771 - Release 2.0.10 (Kay SR10).
+
+
 Changes in version 1.9.15.RELEASE (2018-09-10)
 ----------------------------------------------
 * SGF-772 - Release 1.9.15 (Ingalls SR15).
