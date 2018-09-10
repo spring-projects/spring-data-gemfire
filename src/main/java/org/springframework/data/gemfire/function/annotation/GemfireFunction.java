@@ -19,6 +19,7 @@ import java.lang.annotation.Target;
 
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.security.ResourcePermission;
 
 /**
  *
@@ -77,6 +78,11 @@ public @interface GemfireFunction {
 	 */
 	boolean optimizeForWrite() default false;
 
+	/**
+	 * Returns the list of {@link ResourcePermission} required by this {@link Function}.
+	 *
+	 * By default, {@link Function Functions} require {@literal DATA:WRITE} permission.
+	 */
 	String[] requiredPermissions() default { DEFAULT_RESOURCE_PERMISSION };
 
 }

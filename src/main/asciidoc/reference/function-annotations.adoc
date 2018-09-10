@@ -109,7 +109,7 @@ public class ApplicationFunctions {
    @GemfireFunction
    public String function1(String value, @RegionData Map<?, ?> data, int i2) { ... }
 
-   @GemfireFunction("myFunction", batchSize=100, HA=true, optimizedForWrite=true)
+   @GemfireFunction(id = "myFunction", batchSize=100, HA=true, optimizedForWrite=true)
    public List<String> function2(String value, @RegionData Map<?, ?> data, int i2, @Filter Set<?> keys) { ... }
 
    @GemfireFunction(hasResult=true)
@@ -126,23 +126,34 @@ http://docs.spring.io/spring-data-gemfire/docs/current/api/org/springframework/d
 Spring creates a wrapper instance for each method annotated with `@GemfireFunction`. Each wrapper instance shares
 the same target object instance to invoke the corresponding method.
 
-TIP: The fact that the POJO Function class is a Spring bean may offer other benefits, since it shares
-the `ApplicationContext` with {data-store-name} components, such as the cache and Regions. These may be injected into
+TIP: The fact that the POJO Function class is a Spring bean may offer other benefits. Since it shares
+the `ApplicationContext` with {data-store-name} components, such as the cache and Regions, these may be injected into
 the class if necessary.
 
 Spring creates the wrapper class and registers the Functions with {data-store-name}'s `FunctionService`. The Function ID
 used to register each Function must be unique. By using convention, it defaults to the simple (unqualified) method name.
 The name can be explicitly defined by using the `id` attribute of the `@GemfireFunction` annotation.
 
-The `@GemfireFunction` annotation also provides other configuration attributes, `HA` and `optimizedForWrite`,
+The `@GemfireFunction` annotation also provides other configuration attributes: `HA` and `optimizedForWrite`,
 which correspond to properties defined by {data-store-name}'s
 {x-data-store-javadoc}/org/apache/geode/cache/execute/Function.html[`Function`] interface.
-If the POJO method's return type is `void`, then the `hasResult` attribute is automatically set to `false`.
-Otherwise, if the method returns a value, the `hasResult` attributes is set to `true`.
 
-Even for `void` method return types, the annotation's `hasResult` attribute can be set to `true` to override
-this convention, as shown in the `functionWithContext` method shown previously. Presumably, the intention is
-to use the `ResultSender` directly to send results to the caller.
+If the POJO Function method's return type is `void`, then the `hasResult` attribute is automatically set to `false`.
+Otherwise, if the method returns a value, the `hasResult` attributes is set to `true`. Even for `void` method return
+types, the `GemfireFunction` annotation's `hasResult` attribute can be set to `true` to override this convention,
+as shown in the `functionWithContext` method shown previously. Presumably, the intention is that you will use
+the `ResultSender` directly to send results to the caller.
+
+Finally, the `GemfireFunction` annotation supports the `requiredPermissions` attribute, which specifies the permissions
+required to execute the Function.  By default, all Functions require the `DATA:WRITE` permission.  The attribute
+accepts an array of Strings allowing you to modify the permissions as required by your application and/or Function UC.
+Each resource permission is expected to be in the following format: `<RESOURCE>:<OPERATION>:[Target]:[Key]`.
+
+`RESOURCE` can be 1 of the {data-store-javadoc]/org/apache/geode/security/ResourcePermission.Resource.html[`ResourcePermission.Resource`]
+enumerated values.  `OPERATION` can be 1 of the {data-store-javadoc}/org/apache/geode/security/ResourcePermission.Operation.html[`ResourcePermission.Operation`]
+enumerated values.  Optionally, `Target` can be the name of a Region or 1 of the
+{data-store-javadoc}/org/apache/geode/security/ResourcePermission.Target.html[`ResourcePermission.Target`]
+enumerated values. And finally, optionally, `Key` is a valid Key in the `Target` Region if specified.
 
 The `PojoFunctionWrapper` implements {data-store-name}'s `Function` interface, binds method parameters, and invokes
 the target method in its `execute()` method. It also sends the method's return value back to the caller
