@@ -87,8 +87,8 @@ include::{basedocdir}/links.adoc[leveloffset=+1]
 = Appendices
 
 :!sectnums:
-include::{spring-data-commons-docs}/repository-namespace-reference.adoc[leveloffset=+1]
-include::{spring-data-commons-docs}/repository-populator-namespace-reference.adoc[leveloffset=+1]
-include::{spring-data-commons-docs}/repository-query-keywords-reference.adoc[leveloffset=+1]
-include::{spring-data-commons-docs}/repository-query-return-types-reference.adoc[leveloffset=+1]
+include::{spring-data-commons-include}/repository-namespace-reference.adoc[leveloffset=+1]
+include::{spring-data-commons-include}/repository-populator-namespace-reference.adoc[leveloffset=+1]
+include::{spring-data-commons-include}/repository-query-keywords-reference.adoc[leveloffset=+1]
+include::{spring-data-commons-include}/repository-query-return-types-reference.adoc[leveloffset=+1]
 include::{basedocdir}/appendix/appendix-schema.adoc[leveloffset=+1]

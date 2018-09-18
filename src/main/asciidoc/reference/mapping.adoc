@@ -5,7 +5,7 @@ This section covers:
 
 * <<mapping.entities>>
 * <<mapping.repositories>>
-* <<Mapping PDX Serializer>>
+* <<mapping.pdx-serializer>>
 
 include::../{spring-data-commons-include}/object-mapping.adoc[leveloffset=+1]
 
