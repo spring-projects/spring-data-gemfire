@@ -7,6 +7,8 @@ This section covers:
 * <<mapping.repositories>>
 * <<Mapping PDX Serializer>>
 
+include::../{spring-data-commons-include}/object-mapping.adoc[leveloffset=+1]
+
 [[mapping.entities]]
 == Entity Mapping
 
