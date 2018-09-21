@@ -3,6 +3,15 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.1.0.RELEASE (2018-09-21)
+---------------------------------------------
+* SGF-788 - Include documentation about Object Mapping Fundamentals.
+* SGF-787 - Add "requiredPermissions" to @GemfireFunction annotation.
+* SGF-782 - Add annotation configuration support to create Cluster-defined Regions in a ClientCache.
+* SGF-781 - Release 2.1 GA (Lovelace).
+* SGF-749 - Refactor and reorganize codebase.
+
+
 Changes in version 2.0.10.RELEASE (2018-09-10)
 ----------------------------------------------
 * SGF-780 - Correct Pool references in 'Runtime configuration using Properties' documentation.
