@@ -3,6 +3,11 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.1.1.RELEASE (2018-10-15)
+---------------------------------------------
+* SGF-789 - Release 2.1.1 (Lovelace SR1).
+
+
 Changes in version 2.1.0.RELEASE (2018-09-21)
 ---------------------------------------------
 * SGF-788 - Include documentation about Object Mapping Fundamentals.
