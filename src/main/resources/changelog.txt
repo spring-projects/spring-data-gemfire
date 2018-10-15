@@ -3,6 +3,12 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.0.11.RELEASE (2018-10-15)
+----------------------------------------------
+* SGF-785 - Release 2.0.11 (Kay SR11).
+* SGF-671 - Include support for GemFire with Spring Boot Actuator.
+
+
 Changes in version 2.1.1.RELEASE (2018-10-15)
 ---------------------------------------------
 * SGF-789 - Release 2.1.1 (Lovelace SR1).
