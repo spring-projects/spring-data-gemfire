@@ -25,6 +25,7 @@ import org.junit.Test;
 
 /**
  * @author David Turanski
+ * @author Udo Kohlmeyer
  *
  */
 public class BatchingResultSenderTest {
@@ -35,8 +36,13 @@ public class BatchingResultSenderTest {
 		testBatchingResultSender(new TestArrayResultSender(),1);
 		testBatchingResultSender(new TestArrayResultSender(),0);
 		testBatchingResultSender(new TestArrayResultSender(),9);
-		testBatchingResultSender(new TestArrayResultSender(),10);
+		testBatchingResultSender(new TestArrayResultSender(),10,99);
+		testBatchingResultSender(new TestArrayResultSender(),10,100);
+		testBatchingResultSender(new TestArrayResultSender(),10,101);
 		testBatchingResultSender(new TestArrayResultSender(),1000);
+
+		testBatchingResultSender(new TestArrayResultSender(),2,0);
+		testBatchingResultSender(new TestArrayResultSender(),0,0);
 	}
 
 
@@ -45,40 +51,57 @@ public class BatchingResultSenderTest {
 		testBatchingResultSender(new TestListResultSender(),1);
 		testBatchingResultSender(new TestListResultSender(),0);
 		testBatchingResultSender(new TestListResultSender(),9);
-		testBatchingResultSender(new TestListResultSender(),10);
+		testBatchingResultSender(new TestListResultSender(),10,99);
+		testBatchingResultSender(new TestListResultSender(),10,100);
+		testBatchingResultSender(new TestListResultSender(),10,101);
 		testBatchingResultSender(new TestListResultSender(),1000);
+
+		testBatchingResultSender(new TestListResultSender(),3,0);
+		testBatchingResultSender(new TestListResultSender(),0,0);
 	}
 
+    private void testBatchingResultSender(AbstractTestResultSender resultSender, int batchSize,int resultSetSize){
+        BatchingResultSender brs = new BatchingResultSender(batchSize, resultSender);
+
+        List<Integer> result = new ArrayList<>();
+        for (int i = 0; i< resultSetSize; i++) {
+            result.add(i);
+        }
+        //TODO: Clean this up. Ok for test code
+        if (resultSender instanceof TestArrayResultSender) {
+            brs.sendArrayResults(result.toArray(new Integer[resultSetSize]));
+        } else {
+            brs.sendResults(result);
+        }
+
+        assertEquals(resultSetSize,resultSender.getResults().size());
+
+        assertTrue(resultSender.isLastResultSent());
+
+        for(int i=0; i< resultSetSize; i++) {
+            assertEquals(i,resultSender.getResults().get(i));
+        }
+
+    }
+
 	private void testBatchingResultSender(AbstractTestResultSender resultSender, int batchSize){
-		BatchingResultSender brs = new BatchingResultSender(batchSize, resultSender);
-
-		List<Integer> result = new ArrayList<Integer>();
-		for (int i = 0; i< 100; i++) {
-			result.add(i);
-		}
-		//TODO: Clean this up. Ok for test code
-		if (resultSender instanceof TestArrayResultSender) {
-			brs.sendArrayResults(result.toArray(new Integer[100]));
-		} else {
-			brs.sendResults(result);
-		}
-
-		assertEquals(100,resultSender.getResults().size());
-
-		for(int i=0; i< 100; i++) {
-			assertEquals(i,resultSender.getResults().get(i));
-		}
-
+		testBatchingResultSender(resultSender,batchSize,100);
 	}
 
 	public static abstract class AbstractTestResultSender implements ResultSender<Object> {
 		private List<Object> results = new ArrayList<Object>();
+		private boolean lastResultSent = false;
 
-		/* (non-Javadoc)
+        public boolean isLastResultSent() {
+            return lastResultSent;
+        }
+
+        /* (non-Javadoc)
 		 * @see org.apache.geode.cache.execute.ResultSender#lastResult(java.lang.Object)
 		 */
 		@Override
 		public void lastResult(Object arg0) {
+		    lastResultSent = true;
 			if (arg0 == null) {
 				return;
 			}
