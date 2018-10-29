@@ -3,6 +3,12 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.1.2.RELEASE (2018-10-29)
+---------------------------------------------
+* SGF-795 - Upgrade to Pivotal GemFire 9.5.2.
+* SGF-792 - Release 2.1.2 (Lovelace SR2).
+
+
 Changes in version 1.9.16.RELEASE (2018-10-15)
 ----------------------------------------------
 * SGF-786 - Upgrade to Pivotal GemFire 8.2.12.
