@@ -3,6 +3,11 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.0.12.RELEASE (2018-11-27)
+----------------------------------------------
+* SGF-793 - Release 2.0.12 (Kay SR12).
+
+
 Changes in version 1.9.17.RELEASE (2018-11-27)
 ----------------------------------------------
 * SGF-794 - Release 1.9.17 (Ingalls SR17).
