@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>1.9.17.BUILD-SNAPSHOT</version>
+		<version>1.9.17.RELEASE</version>
 	</parent>
 
 	<groupId>org.springframework.data</groupId>
@@ -23,13 +23,13 @@
 		<google-code-findbugs.version>2.0.2</google-code-findbugs.version>
 		<multithreadedtc.version>1.01</multithreadedtc.version>
 		<servlet-api.version>2.5</servlet-api.version>
-		<springdata.commons>1.13.17.BUILD-SNAPSHOT</springdata.commons>
+		<springdata.commons>1.13.17.RELEASE</springdata.commons>
 	</properties>
 
 	<repositories>
 		<repository>
-			<id>spring-libs-snapshot</id>
-			<url>https://repo.spring.io/libs-snapshot</url>
+			<id>spring-libs-release</id>
+			<url>https://repo.spring.io/libs-release</url>
 		</repository>
 	</repositories>
 
