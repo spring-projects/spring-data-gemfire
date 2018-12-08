@@ -289,6 +289,34 @@
 		</profile>
 
 		<profile>
+			<id>pivotal-gemfire-96</id>
+			<properties>
+				<gemfire.version>9.6.0</gemfire.version>
+			</properties>
+		</profile>
+
+		<profile>
+			<id>pivotal-gemfire-96-next</id>
+			<properties>
+				<gemfire.version>9.6.0-SNAPSHOT</gemfire.version>
+			</properties>
+		</profile>
+
+		<profile>
+			<id>pivotal-gemfire-97-next</id>
+			<properties>
+				<gemfire.version>9.7.0-SNAPSHOT</gemfire.version>
+			</properties>
+		</profile>
+
+		<profile>
+			<id>pivotal-gemfire-98-next</id>
+			<properties>
+				<gemfire.version>9.8.0-SNAPSHOT</gemfire.version>
+			</properties>
+		</profile>
+
+		<profile>
 			<id>html-asciidoc</id>
 			<build>
 				<plugins>
