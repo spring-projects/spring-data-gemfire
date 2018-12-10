@@ -2,14 +2,6 @@
 Costin Leau; David Turanski; John Blum; Oliver Gierke; Jay Bryant
 :revdate: {localdate}
 :revnumber: {version}
-:linkcss:
-:doctype: book
-:docinfo: shared
-:toc: left
-:toclevels: 4
-:source-highlighter: prettify
-:icons: font
-:imagesdir: images
 :apache-geode-version: 16
 :apache-geode-docs: http://geode.apache.org/docs/guide/{apache-geode-version}
 :apache-geode-javadoc: http://geode.apache.org/releases/latest/javadoc
