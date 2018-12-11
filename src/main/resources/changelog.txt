@@ -3,6 +3,14 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.2.0.M1 (2018-12-11)
+----------------------------------------
+* SGF-802 - Simplify reference documentation setup.
+* SGF-801 - Release 2.2 M1 (Moore).
+* SGF-790 - Upgrade to Pivotal GemFire 9.6.0.
+* SGF-783 - Upgrade to Pivotal GemFire 9.6.0.
+
+
 Changes in version 2.1.3.RELEASE (2018-11-27)
 ---------------------------------------------
 * SGF-796 - Release 2.1.3 (Lovelace SR3).
