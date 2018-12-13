@@ -256,8 +256,8 @@ it makes short work of making all of your application domain model types seriali
 
 NOTE: By default, {sdg-acronym} configures the `MappingPdxSerializer` to serialize your application domain model types,
 which does not require any special configuration out-of-the-box in order to properly identify application domain objects
-that need to be serialized and htne perform the serialization since, the logic in `MappingPdxSerializer` is based on
-Spring Data's mapping infrastructure. See <<mapping.pdx-serialize>> for more details.
+that need to be serialized and then perform the serialization since, the logic in `MappingPdxSerializer` is based on
+Spring Data's mapping infrastructure. See <<mapping.pdx-serializer>> for more details.
 
 See {sdg-javadoc}/org/springframework/data/gemfire/config/annotation/EnablePdx.html[`@EnablePdx` Javadoc].
 
