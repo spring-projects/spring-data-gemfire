@@ -49,6 +49,9 @@ import org.springframework.util.ObjectUtils;
 @SuppressWarnings("unused")
 public class Person implements Comparable<Person>, Serializable {
 
+	protected static final String PERSON_TO_STRING =
+		"{ @type = %1$s, id = %2$d, firstName = %3$s, lastName = %4$s, birthDate = %5$s, gender = %6$s}";
+
 	protected static final String BIRTH_DATE_PATTERN = "yyyy/MM/dd";
 
 	private Date birthDate;
@@ -101,7 +104,7 @@ public class Person implements Comparable<Person>, Serializable {
 	}
 
 	public Long getId() {
-		return id;
+		return this.id;
 	}
 
 	public void setId(Long id) {
@@ -109,7 +112,7 @@ public class Person implements Comparable<Person>, Serializable {
 	}
 
 	public Date getBirthDate() {
-		return birthDate;
+		return this.birthDate;
 	}
 
 	public void setBirthDate(Date birthDate) {
@@ -117,11 +120,11 @@ public class Person implements Comparable<Person>, Serializable {
 	}
 
 	public String getFirstName() {
-		return firstName;
+		return this.firstName;
 	}
 
 	public Gender getGender() {
-		return gender;
+		return this.gender;
 	}
 
 	public void setGender(Gender gender) {
@@ -129,7 +132,7 @@ public class Person implements Comparable<Person>, Serializable {
 	}
 
 	public String getLastName() {
-		return lastName;
+		return this.lastName;
 	}
 
 	public String getName() {
@@ -141,14 +144,17 @@ public class Person implements Comparable<Person>, Serializable {
 
 		int result = nullSafeCompareTo(this.getLastName(), that.getLastName());
 
-		result = (result != 0 ? result : nullSafeCompareTo(this.getFirstName(), that.getLastName()));
-		result = (result != 0 ? result : nullSafeCompareTo(this.getBirthDate(), that.getBirthDate()));
+		result = result != 0 ? result : nullSafeCompareTo(this.getFirstName(), that.getLastName());
+		result = result != 0 ? result : nullSafeCompareTo(this.getBirthDate(), that.getBirthDate());
 
 		return result;
 	}
 
 	private <T extends Comparable<T>> int nullSafeCompareTo(T comparableOne, T comparableTwo) {
-		return (comparableOne == null ? 1 : (comparableTwo == null ? -1 : comparableOne.compareTo(comparableTwo)));
+
+		return comparableOne == null ? 1
+			: comparableTwo == null ? -1
+			: comparableOne.compareTo(comparableTwo);
 	}
 
 	@Override
@@ -184,15 +190,16 @@ public class Person implements Comparable<Person>, Serializable {
 		return hashValue;
 	}
 
-	protected static String toString(Date dateTime, String DATE_FORMAT_PATTERN) {
-		return (dateTime == null ? null : new SimpleDateFormat(DATE_FORMAT_PATTERN).format(dateTime));
-	}
-
 	@Override
 	public String toString() {
-		return String.format(
-			"{ @type = %1$s, id = %2$d, firstName = %3$s, lastName = %4$s, birthDate = %5$s, gender = %6$s}",
-				getClass().getName(), getId(), getFirstName(), getLastName(),
-					toString(getBirthDate(), BIRTH_DATE_PATTERN), getGender());
+		return String.format(PERSON_TO_STRING, getClass().getName(), getId(), getFirstName(), getLastName(),
+			toString(getBirthDate(), BIRTH_DATE_PATTERN), getGender());
+	}
+
+	protected static String toString(Date dateTime, String DATE_FORMAT_PATTERN) {
+
+		return dateTime != null
+			? new SimpleDateFormat(DATE_FORMAT_PATTERN).format(dateTime)
+			: null;
 	}
 }
