@@ -26,9 +26,12 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.query.Index;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.IndexType;
 import org.springframework.data.gemfire.mapping.annotation.Indexed;
+import org.springframework.data.gemfire.test.model.Book;
 import org.springframework.data.gemfire.test.model.Person;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -49,7 +52,8 @@ import org.springframework.test.context.junit4.SpringRunner;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration
-public class EnableIndexingConfigurationIntegrationTests {
+@SuppressWarnings("unused")
+public class EnableOqlIndexingConfigurationIntegrationTests {
 
 	@Resource(name = "People")
 	private Region<Long, Person> people;
@@ -91,8 +95,12 @@ public class EnableIndexingConfigurationIntegrationTests {
 	}
 
 	@ClientCacheApplication(logLevel = "none")
-	@EnableEntityDefinedRegions(basePackageClasses = Person.class, clientRegionShortcut = ClientRegionShortcut.LOCAL)
+	@EnableEntityDefinedRegions(
+		basePackageClasses = Person.class,
+		clientRegionShortcut = ClientRegionShortcut.LOCAL,
+		excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = Book.class)
+	)
 	@EnableIndexing
-	static class TestConfiguration {
-	}
+	static class TestConfiguration { }
+
 }
