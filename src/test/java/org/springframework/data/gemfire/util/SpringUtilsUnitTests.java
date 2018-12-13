@@ -32,6 +32,7 @@ import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newI
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newRuntimeException;
 
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -43,6 +44,7 @@ import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 /**
  * Unit tests for {@link SpringUtils}.
@@ -398,6 +400,51 @@ public class SpringUtilsUnitTests {
 			assertThat(expected).hasMessage("test");
 			assertThat(expected).hasCauseInstanceOf(RuntimeException.class);
 			assertThat(expected.getCause()).hasMessage("error");
+			assertThat(expected.getCause()).hasNoCause();
+
+			throw expected;
+		}
+	}
+
+	@Test
+	public void safeRunOperationRunsSuccessfully() {
+
+		AtomicBoolean operationRan = new AtomicBoolean(false);
+
+		SpringUtils.safeRunOperation(() -> operationRan.set(true));
+
+		assertThat(operationRan.get()).isTrue();
+	}
+
+	@Test(expected = InvalidDataAccessApiUsageException.class)
+	public void safeRunOperationThrowsInvalidDataAccessApiUsageException() {
+
+		try {
+			SpringUtils.safeRunOperation(() -> { throw new Exception("TEST"); });
+		}
+		catch (InvalidDataAccessApiUsageException expected) {
+
+			assertThat(expected).hasMessageContaining("Failed to run operation");
+			assertThat(expected).hasCauseInstanceOf(Exception.class);
+			assertThat(expected.getCause()).hasMessage("TEST");
+			assertThat(expected.getCause()).hasNoCause();
+
+			throw expected;
+		}
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void safeRunOperationThrowsCustomRuntimeException() {
+
+		try {
+			SpringUtils.safeRunOperation(() -> { throw new Exception("TEST"); },
+				cause -> new IllegalStateException("FOO", cause));
+		}
+		catch (IllegalStateException expected) {
+
+			assertThat(expected).hasMessage("FOO");
+			assertThat(expected).hasCauseInstanceOf(Exception.class);
+			assertThat(expected.getCause()).hasMessage("TEST");
 			assertThat(expected.getCause()).hasNoCause();
 
 			throw expected;

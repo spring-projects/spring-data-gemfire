@@ -30,12 +30,16 @@ import java.util.function.Supplier;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.util.StringUtils;
 
 /**
- * SpringUtils is a utility class encapsulating common functionality on objects and other class types.
+ * Abstract utility class encapsulating common functionality on {@link Object Objects}
+ * and other {@link Class Class types}.
  *
  * @author John Blum
+ * @see org.springframework.beans.factory.BeanFactory
+ * @see org.springframework.beans.factory.config.BeanDefinition
  * @since 1.8.0
  */
 @SuppressWarnings("unused")
@@ -136,5 +140,25 @@ public abstract class SpringUtils {
 		catch (Throwable cause) {
 			return exceptionHandler.apply(cause);
 		}
+	}
+
+	public static void safeRunOperation(VoidReturningExceptionThrowingOperation operation) {
+		safeRunOperation(operation, cause -> new InvalidDataAccessApiUsageException("Failed to run operation", cause));
+	}
+
+	public static void safeRunOperation(VoidReturningExceptionThrowingOperation operation,
+			Function<Throwable, RuntimeException> exceptionConverter) {
+
+		try {
+			operation.run();
+		}
+		catch (Throwable cause) {
+			throw exceptionConverter.apply(cause);
+		}
+	}
+
+	@FunctionalInterface
+	public interface VoidReturningExceptionThrowingOperation {
+		void run() throws Throwable;
 	}
 }

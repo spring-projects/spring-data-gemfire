@@ -65,6 +65,7 @@ import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.gemfire.config.annotation.PeerCacheConfigurer;
 import org.springframework.data.gemfire.support.AbstractFactoryBeanSupport;
 import org.springframework.data.gemfire.support.GemfireBeanFactoryLocator;
+import org.springframework.data.gemfire.util.SpringUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -583,7 +584,9 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 					type, Arrays.toString(JndiDataSourceType.values())));
 
 			jndiDataSource.getAttributes().put("type", jndiDataSourceType.getName());
-			JNDIInvoker.mapDatasource(jndiDataSource.getAttributes(), jndiDataSource.getProps());
+
+			SpringUtils.safeRunOperation(() ->
+				JNDIInvoker.mapDatasource(jndiDataSource.getAttributes(), jndiDataSource.getProps()));
 		});
 
 		return cache;
