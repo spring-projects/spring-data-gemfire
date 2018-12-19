@@ -12,76 +12,179 @@
  */
 package org.springframework.data.gemfire.function;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.IntStream;
 
 import org.apache.geode.cache.execute.ResultSender;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 /**
+ * Unit tests for {@link BatchingResultSender}.
+ *
  * @author David Turanski
  * @author Udo Kohlmeyer
- *
+ * @author John Blum
+ * @see org.junit.Test
+ * @see org.apache.geode.cache.execute.ResultSender
+ * @see org.springframework.data.gemfire.function.BatchingResultSender
+ * @since 1.3.0
  */
 public class BatchingResultSenderTest {
 
 	@Test
-	public void testArrayChunking() {
+	@SuppressWarnings("unchecked")
+	public void constructBatchingResultSender() {
+
+		ResultSender<Object> mockResultSender = mock(ResultSender.class);
+
+		BatchingResultSender batchResultSender = new BatchingResultSender(20, mockResultSender);
+
+		assertThat(batchResultSender).isNotNull();
+		assertThat(batchResultSender.getBatchSize()).isEqualTo(20);
+		assertThat(batchResultSender.getResultSender()).isEqualTo(mockResultSender);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test(expected = IllegalArgumentException.class)
+	public void constructBatchingResultSenderWithBatchSizeOfMinusOne() {
+
+		try {
+			new BatchingResultSender(-1, mock(ResultSender.class));
+		}
+		catch (IllegalArgumentException expected) {
+
+			assertThat(expected).hasMessage("batchSize must be greater than equal to 0");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void constructBatchingResultSenderWithNullResultSender() {
+
+		try {
+			new BatchingResultSender(0, null);
+		}
+		catch (IllegalArgumentException expected) {
+
+			assertThat(expected).hasMessage("ResultSender must not be null");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test(expected = IllegalArgumentException.class)
+	public void sendArrayResultsWithNonArrayThrowIllegalArgumentException() {
+
+		try {
+			new BatchingResultSender(20, mock(ResultSender.class)).sendArrayResults(new Object());
+		}
+		catch (IllegalArgumentException expected) {
+
+			assertThat(expected).hasMessage("Object must be an array; was [java.lang.Object]");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
+	}
+
+	@Test
+	public void arrayChunkingIsCorrectWhenBatchSizeIsZero() {
+
+		testBatchingResultSender(new TestArrayResultSender(),0); // Default result set size is 100
+		testBatchingResultSender(new TestArrayResultSender(),0,1);
+		testBatchingResultSender(new TestArrayResultSender(),0,2);
+	}
+
+	@Test
+	public void arrayChunkingIsCorrectWhenBothBatchSizeAndResultSetSizeAreZero() {
+		testBatchingResultSender(new TestArrayResultSender(),0,0);
+	}
+
+	@Test
+	public void arrayCheckingIsCorrectWhenResultSetSizeIsZero() {
+
+		testBatchingResultSender(new TestArrayResultSender(),1,0);
+		testBatchingResultSender(new TestArrayResultSender(),2,0);
+		testBatchingResultSender(new TestArrayResultSender(),3,0);
+		testBatchingResultSender(new TestArrayResultSender(),50,0);
+	}
+
+	@Test
+	public void arrayChunkingIsCorrect() {
 
 		testBatchingResultSender(new TestArrayResultSender(),1);
-		testBatchingResultSender(new TestArrayResultSender(),0);
 		testBatchingResultSender(new TestArrayResultSender(),9);
 		testBatchingResultSender(new TestArrayResultSender(),10,99);
 		testBatchingResultSender(new TestArrayResultSender(),10,100);
 		testBatchingResultSender(new TestArrayResultSender(),10,101);
 		testBatchingResultSender(new TestArrayResultSender(),1000);
-
-		testBatchingResultSender(new TestArrayResultSender(),2,0);
-		testBatchingResultSender(new TestArrayResultSender(),0,0);
 	}
 
+	@Test
+	public void listChunkingIsCorrectWhenBatchSizeIsZero() {
+
+		testBatchingResultSender(new TestListResultSender(),0); // Default result set size is 100
+		testBatchingResultSender(new TestListResultSender(),0, 1);
+		testBatchingResultSender(new TestListResultSender(),0, 2);
+	}
 
 	@Test
-	public void testListChunking() {
+	public void listChunkingIsCorrectWhenBothBatchSizeAndResultSetSizeAreZero() {
+
+		testBatchingResultSender(new TestListResultSender(),0,0);
+	}
+
+	@Test
+	public void listChunkingIsCorrectWhenResultSetSizeIsZero() {
+
+		testBatchingResultSender(new TestListResultSender(),1,0);
+		testBatchingResultSender(new TestListResultSender(),2,0);
+		testBatchingResultSender(new TestListResultSender(),3,0);
+		testBatchingResultSender(new TestListResultSender(),50,0);
+	}
+
+	@Test
+	public void listChunkingIsCorrect() {
+
 		testBatchingResultSender(new TestListResultSender(),1);
-		testBatchingResultSender(new TestListResultSender(),0);
 		testBatchingResultSender(new TestListResultSender(),9);
 		testBatchingResultSender(new TestListResultSender(),10,99);
 		testBatchingResultSender(new TestListResultSender(),10,100);
 		testBatchingResultSender(new TestListResultSender(),10,101);
 		testBatchingResultSender(new TestListResultSender(),1000);
-
-		testBatchingResultSender(new TestListResultSender(),3,0);
-		testBatchingResultSender(new TestListResultSender(),0,0);
 	}
 
-    private void testBatchingResultSender(AbstractTestResultSender resultSender, int batchSize,int resultSetSize){
-        BatchingResultSender brs = new BatchingResultSender(batchSize, resultSender);
+    private void testBatchingResultSender(AbstractTestResultSender resultSender, int batchSize, int resultSetSize){
+
+        BatchingResultSender batchResultSender = new BatchingResultSender(batchSize, resultSender);
 
         List<Integer> result = new ArrayList<>();
-        for (int i = 0; i< resultSetSize; i++) {
-            result.add(i);
-        }
-        //TODO: Clean this up. Ok for test code
+
+        IntStream.range(0, resultSetSize).forEach(result::add);
+
         if (resultSender instanceof TestArrayResultSender) {
-            brs.sendArrayResults(result.toArray(new Integer[resultSetSize]));
+            batchResultSender.sendArrayResults(result.toArray(new Integer[resultSetSize]));
         } else {
-            brs.sendResults(result);
+            batchResultSender.sendResults(result);
         }
 
-        assertEquals(resultSetSize,resultSender.getResults().size());
+        assertThat(resultSender.isLastResultSent()).isTrue();
+        assertThat(resultSender.getResults()).hasSize(resultSetSize);
 
-        assertTrue(resultSender.isLastResultSent());
-
-        for(int i=0; i< resultSetSize; i++) {
-            assertEquals(i,resultSender.getResults().get(i));
-        }
-
+        IntStream.range(0, resultSetSize).forEach(index ->
+			assertThat(resultSender.getResults().get(index)).isEqualTo(index));
     }
 
 	private void testBatchingResultSender(AbstractTestResultSender resultSender, int batchSize){
@@ -89,43 +192,34 @@ public class BatchingResultSenderTest {
 	}
 
 	public static abstract class AbstractTestResultSender implements ResultSender<Object> {
-		private List<Object> results = new ArrayList<Object>();
+
 		private boolean lastResultSent = false;
 
+		private List<Object> results = new ArrayList<>();
+
         public boolean isLastResultSent() {
-            return lastResultSent;
+            return this.lastResultSent;
         }
 
-        /* (non-Javadoc)
-		 * @see org.apache.geode.cache.execute.ResultSender#lastResult(java.lang.Object)
-		 */
 		@Override
-		public void lastResult(Object arg0) {
-		    lastResultSent = true;
-			if (arg0 == null) {
-				return;
-			}
-			addResults(arg0, results);
+		public void lastResult(Object result) {
+
+		    this.lastResultSent = true;
+
+			Optional.ofNullable(result)
+				.ifPresent(it -> addResults(it, this.results));
 		}
 
-		/* (non-Javadoc)
-		 * @see org.apache.geode.cache.execute.ResultSender#sendException(java.lang.Throwable)
-		 */
 		@Override
-		public void sendException(Throwable arg0) {
-			fail();
-
+		public void sendException(Throwable cause) {
+			Assertions.fail("Function send result operation failed", cause);
 		}
 
-		/* (non-Javadoc)
-		 * @see org.apache.geode.cache.execute.ResultSender#sendResult(java.lang.Object)
-		 */
 		@Override
-		public void sendResult(Object arg0) {
-			if (arg0 == null) {
-				return;
-			}
-			addResults(arg0, results);
+		public void sendResult(Object result) {
+
+			Optional.ofNullable(result)
+				.ifPresent(it -> addResults(it, this.results));
 		}
 
 		protected abstract void addResults(Object item, List<Object> results);
@@ -133,28 +227,28 @@ public class BatchingResultSenderTest {
 		public List<Object> getResults() {
 			return this.results;
 		}
-
-
 	}
 
 	public static class TestArrayResultSender extends AbstractTestResultSender {
 
-		protected void addResults(Object arg0, List<Object> results) {
-			assertTrue(arg0.getClass().isArray());
-			Object[] array = (Object[]) arg0;
- 			for (Object obj: array) {
-				results.add(obj);
-			}
+		protected void addResults(Object result, List<Object> results) {
+
+			assertThat(result.getClass().isArray()).isTrue();
+
+			Object[] array = (Object[]) result;
+
+			Collections.addAll(results, array);
 		}
 	}
 
 	public static class TestListResultSender extends AbstractTestResultSender {
-		protected void addResults(Object arg0, List<Object> results) {
-			if (arg0 == null) {
-				return;
-			}
-			assertTrue(arg0 instanceof Collection);
-			Collection<?> list  = (Collection<?>) arg0;
+
+		protected void addResults(Object result, List<Object> results) {
+
+			assertThat(result).isInstanceOf(Collection.class);
+
+			Collection<?> list = (Collection<?>) result;
+
 			results.addAll(list);
 		}
 	}

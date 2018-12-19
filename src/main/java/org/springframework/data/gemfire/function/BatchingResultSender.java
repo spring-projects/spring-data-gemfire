@@ -12,164 +12,180 @@
  */
 package org.springframework.data.gemfire.function;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultSender;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-
 /**
- * Sends collection results using a {@link ResultSender} in chunks determined by batchSize
+ * Sends {@link Collection} {@link Function} results using a {@link ResultSender} in chunks
+ * determined by {@code batchSize}.
  *
  * @author David Turanski
  * @author Udo Kohlmeyer
+ * @author John Blum
  * @since 1.3.0
  */
 class BatchingResultSender {
-    private final int batchSize;
-    private ResultSender<Object> resultSender;
 
-    public BatchingResultSender(int batchSize, ResultSender<Object> resultSender) {
-        Assert.notNull(resultSender, "resultSender cannot be null");
-        Assert.isTrue(batchSize >= 0, "batchSize must be >= 0");
-        this.batchSize = batchSize;
-        this.resultSender = resultSender;
-    }
+	private final int batchSize;
 
+	private ResultSender<Object> resultSender;
 
-    public void sendResults(Iterable<?> result) {
-        //Handle both batchSize == 0 or empty Iterable
-        if (batchSize == 0 || !result.iterator().hasNext()) {
-            resultSender.lastResult(result);
-            return;
-        }
+	/**
+	 * Constructs a new instance of {@link BatchingResultSender} initialized with the given {@link Integer batch size}
+	 * and {@link ResultSender} object used to delegate all send operations.
+	 *
+	 * @param batchSize {@link Integer} specifying the configured batch size.
+	 * @param resultSender {@link ResultSender} used to delegate all send operations.
+	 * @throws IllegalArgumentException if {@link ResultSender} is {@literal null}
+	 * or {@code batchSize} is less than {@literal 0}.
+	 * @see org.apache.geode.cache.execute.ResultSender
+	 */
+	public BatchingResultSender(int batchSize, ResultSender<Object> resultSender) {
 
-        List<Object> chunk = new ArrayList<Object>(batchSize);
+		Assert.notNull(resultSender, "ResultSender must not be null");
+		Assert.isTrue(batchSize >= 0, "batchSize must be greater than equal to 0");
 
-        for (Iterator<?> it = result.iterator(); it.hasNext(); ) {
-            if (chunk.size() < batchSize) {
-                chunk.add(it.next());
-            }
+		this.batchSize = batchSize;
+		this.resultSender = resultSender;
+	}
 
-            if (chunk.size() == batchSize || !it.hasNext()) {
-                if (it.hasNext()) {
-                    resultSender.sendResult(chunk);
-                } else {
-                    resultSender.lastResult(chunk);
-                }
-                chunk.clear();
-            }
-        }
-    }
+	/**
+	 * Returns the configured {@link Integer batchSize} of this batching {@link ResultSender}.
+	 *
+	 * @return an {@link Integer} value specifying the configured {@link Integer batchSize}
+	 * of this batching {@link ResultSender}.
+	 */
+	public int getBatchSize() {
+		return this.batchSize;
+	}
 
+	/**
+	 * Returns a reference to the configured {@link ResultSender} used to send {@link Function} results.
+	 *
+	 * @return a reference to the configured {@link ResultSender} used to send {@link Function} results.
+	 * @see org.apache.geode.cache.execute.ResultSender
+	 */
+	public ResultSender<Object> getResultSender() {
+		return this.resultSender;
+	}
 
-    public void sendArrayResults(Object result) {
-        Assert.isTrue(ObjectUtils.isArray(result));
+	protected boolean isBatchingDisabled() {
+		return !isBatchingEnabled();
+	}
 
-        if (batchSize == 0) {
-            resultSender.lastResult(result);
-            return;
-        }
+	protected boolean isBatchingEnabled() {
+		return getBatchSize() > 0;
+	}
 
-        int length = Array.getLength(result);
+	protected boolean doNotSendChunks(boolean resultSetIsEmpty) {
+		return resultSetIsEmpty || isBatchingDisabled();
+	}
 
-        if (length == 0) {
-            resultSender.lastResult(result);
-            return;
-        }
+	public void sendResults(Iterable<?> result) {
 
-        for (int from = 0; from < length; from += batchSize) {
-            int to = Math.min(length, from + batchSize);
-            Object chunk = copyOfRange(result, from, to);
+		ResultSender<Object> resultSender = getResultSender();
 
-            if (to == length) {
-                resultSender.lastResult(chunk);
-            } else {
-                resultSender.sendResult(chunk);
-            }
-        }
-    }
+		if (doNotSendChunks(!result.iterator().hasNext())) {
+			resultSender.lastResult(result);
+		}
+		else {
 
+			int batchSize = getBatchSize();
 
-    /**
-     * @param result
-     * @param from
-     * @param to
-     * @return
-     */
-    private Object copyOfRange(Object result, int from, int to) {
-        Class<?> arrayClass = result.getClass();
-        int size = to - from;
+			List<Object> chunk = new ArrayList<>(batchSize);
 
-        if (int[].class.isAssignableFrom(arrayClass)) {
-            int[] array = new int[size];
-            for (int i = 0; i < size; ++i) {
-                array[i] = Array.getInt(result, from + i);
-            }
-            return array;
-        }
+			for (Iterator<?> it = result.iterator(); it.hasNext(); ) {
 
-        if (float[].class.isAssignableFrom(arrayClass)) {
-            float[] array = new float[size];
-            for (int i = 0; i < size; ++i) {
-                array[i] = Array.getFloat(result, from + i);
-            }
-            return array;
-        }
+				if (chunk.size() < batchSize) {
+					chunk.add(it.next());
+				}
 
-        if (double[].class.isAssignableFrom(arrayClass)) {
-            double[] array = new double[size];
-            for (int i = 0; i < size; ++i) {
-                array[i] = Array.getDouble(result, from + i);
-            }
-            return array;
-        }
+				if (chunk.size() == batchSize || !it.hasNext()) {
 
-        if (boolean[].class.isAssignableFrom(arrayClass)) {
-            boolean[] array = new boolean[size];
-            for (int i = 0; i < size; ++i) {
-                array[i] = Array.getBoolean(result, from + i);
-            }
-            return array;
-        }
+					if (it.hasNext()) {
+						resultSender.sendResult(chunk);
+					}
+					else {
+						resultSender.lastResult(chunk);
+					}
 
-        if (byte[].class.isAssignableFrom(arrayClass)) {
-            byte[] array = new byte[size];
-            for (int i = 0; i < size; ++i) {
-                array[i] = Array.getByte(result, from + i);
-            }
-            return array;
-        }
+					chunk.clear();
+				}
+			}
+		}
+	}
 
-        if (short[].class.isAssignableFrom(arrayClass)) {
-            short[] array = new short[size];
-            for (int i = 0; i < size; ++i) {
-                array[i] = Array.getShort(result, from + i);
-            }
-            return array;
-        }
+	public void sendArrayResults(Object result) {
 
-        if (long[].class.isAssignableFrom(arrayClass)) {
-            long[] array = new long[size];
-            for (int i = 0; i < size; ++i) {
-                array[i] = Array.getLong(result, from + i);
-            }
-            return array;
-        }
+		Assert.isTrue(ObjectUtils.isArray(result),
+			() -> String.format("Object must be an array; was [%s]", ObjectUtils.nullSafeClassName(result)));
 
-        if (char[].class.isAssignableFrom(arrayClass)) {
-            char[] array = new char[size];
-            for (int i = 0; i < size; ++i) {
-                array[i] = Array.getChar(result, from + i);
-            }
-            return array;
-        }
+		int arrayLength = Array.getLength(result);
 
-        return Arrays.copyOfRange((Object[]) result, from, to);
+		ResultSender<Object> resultSender = getResultSender();
 
-    }
+		if (doNotSendChunks(arrayLength == 0)) {
+			resultSender.lastResult(result);
+		}
+		else {
+
+			int batchSize = getBatchSize();
+
+			for (int from = 0; from < arrayLength; from += batchSize) {
+
+				int to = Math.min(arrayLength, from + batchSize);
+
+				Object chunk = copyOfRange(result, from, to);
+
+				if (to == arrayLength) {
+					resultSender.lastResult(chunk);
+				}
+				else {
+					resultSender.sendResult(chunk);
+				}
+			}
+		}
+	}
+
+	private Object copyOfRange(Object result, int from, int to) {
+
+		Class<?> resultType = result.getClass();
+
+		if (boolean[].class.isAssignableFrom(resultType)) {
+			return Arrays.copyOfRange((boolean[]) result, from, to);
+		}
+		else if (byte[].class.isAssignableFrom(resultType)) {
+			return Arrays.copyOfRange((byte[]) result, from, to);
+		}
+		else if (short[].class.isAssignableFrom(resultType)) {
+			return Arrays.copyOfRange((short[]) result, from, to);
+		}
+		else if (int[].class.isAssignableFrom(resultType)) {
+			return Arrays.copyOfRange((int[]) result, from, to);
+		}
+		else if (long[].class.isAssignableFrom(resultType)) {
+			return Arrays.copyOfRange((long[]) result, from, to);
+		}
+		else if (float[].class.isAssignableFrom(resultType)) {
+			return Arrays.copyOfRange((float[]) result, from, to);
+		}
+		else if (double[].class.isAssignableFrom(resultType)) {
+			return Arrays.copyOfRange((double[]) result, from, to);
+		}
+		else if (char[].class.isAssignableFrom(resultType)) {
+			return Arrays.copyOfRange((char[]) result, from, to);
+		}
+		else {
+			return Arrays.copyOfRange((Object[]) result, from, to);
+		}
+	}
 }
