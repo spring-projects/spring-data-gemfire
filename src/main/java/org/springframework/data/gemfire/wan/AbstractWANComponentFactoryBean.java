@@ -40,7 +40,7 @@ import org.springframework.util.StringUtils;
 public abstract class AbstractWANComponentFactoryBean<T>
 		implements BeanNameAware, DisposableBean, FactoryBean<T>, InitializingBean {
 
-	protected final Cache cache;
+	protected Cache cache;
 
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -50,6 +50,10 @@ public abstract class AbstractWANComponentFactoryBean<T>
 	private String name;
 
 	protected AbstractWANComponentFactoryBean(Cache cache) {
+		this.cache = cache;
+	}
+
+	public void setCache(Cache cache) {
 		this.cache = cache;
 	}
 

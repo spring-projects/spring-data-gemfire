@@ -15,14 +15,19 @@
  */
 package org.springframework.data.gemfire.wan;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.gemfire.util.CollectionUtils;
+import org.springframework.data.gemfire.wan.annotation.EnableGatewayReceiverConfigurer;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -31,6 +36,7 @@ import org.springframework.util.StringUtils;
  *
  * @author David Turanski
  * @author John Blum
+ * @author Udo Kohlmeyer
  * @see org.springframework.context.SmartLifecycle
  * @see org.springframework.data.gemfire.wan.AbstractWANComponentFactoryBean
  * @see org.apache.geode.cache.Cache
@@ -50,10 +56,14 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 	private Integer socketBufferSize;
 	private Integer startPort;
 
+	@Autowired
 	private List<GatewayTransportFilter> transportFilters;
 
 	private String bindAddress;
 	private String hostnameForSenders;
+
+	@Autowired
+	private EnableGatewayReceiverConfigurer gatewayReceiverConfigurer;
 
 	/**
 	 * Constructs an instance of the {@link GatewayReceiverFactoryBean} class initialized with a reference to
@@ -88,6 +98,9 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 	@Override
 	protected void doInit() throws Exception {
 		GatewayReceiverFactory gatewayReceiverFactory = cache.createGatewayReceiverFactory();
+
+		Optional.of(gatewayReceiverConfigurer)
+				.ifPresent(gatewayReceiverConfigurer1 -> gatewayReceiverConfigurer1.configure("GatewayReceiver",this));
 
 		if (StringUtils.hasText(bindAddress)) {
 			gatewayReceiverFactory.setBindAddress(bindAddress);
@@ -160,5 +173,13 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 
 	public void setTransportFilters(List<GatewayTransportFilter> transportFilters) {
 		this.transportFilters = transportFilters;
+	}
+
+	public Collection<? extends GatewayTransportFilter> getTransportFilters() {
+		return Collections.unmodifiableList(transportFilters);
+	}
+
+	public void setGatewayReceiverConfigurer(EnableGatewayReceiverConfigurer gatewayReceiverConfigurer) {
+		this.gatewayReceiverConfigurer = gatewayReceiverConfigurer;
 	}
 }
