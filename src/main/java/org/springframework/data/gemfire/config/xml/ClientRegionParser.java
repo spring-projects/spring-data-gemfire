@@ -1,8 +1,8 @@
 /*
 <<<<<<< Updated upstream
- * Copyright 2010-2018 the original author or authors.
+ * Copyright 2010-2019 the original author or authors.
 =======
- * Copyright 2018 the original author or authors.
+ * Copyright 2018-2019 the original author or authors.
 >>>>>>> Stashed changes
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
