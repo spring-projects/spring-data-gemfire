@@ -3,6 +3,16 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.1.4.RELEASE (2019-01-10)
+---------------------------------------------
+* SGF-813 - Update copyright years to 2019.
+* SGF-812 - BatchingResultSender does not send result when results are empty.
+* SGF-811 - Add dependency between Lucene Index bean definition and the GemFireCache instance.
+* SGF-810 - Fix link in Annotation Config Quickstart doc to the MappingPdxSerializer section of the POJO Mapping chapter.
+* SGF-800 - Setup Maven build profile for Pivotal GemFire 9.6.
+* SGF-799 - Release 2.1.4 (Lovelace SR4).
+
+
 Changes in version 2.0.13.RELEASE (2019-01-10)
 ----------------------------------------------
 * SGF-813 - Update copyright years to 2019.
