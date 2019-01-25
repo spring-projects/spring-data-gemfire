@@ -93,14 +93,14 @@ public class EnableEnableGatewayReceiverConfigurerTests {
 	public void gatewayReceiverConfigurerWithPropertiesConfiguration() {
 
 		MockPropertySource testPropertySource = new MockPropertySource()
-		.withProperty("spring.data.gemfire.gateway.receiver.bindAddress", "123.123.123.123")
-		.withProperty("spring.data.gemfire.gateway.receiver.hostnameForSenders", "testHostName")
-		.withProperty("spring.data.gemfire.gateway.receiver.startPort", 16000)
-		.withProperty("spring.data.gemfire.gateway.receiver.endPort", 17000)
-		.withProperty("spring.data.gemfire.gateway.receiver.maximumTimeBetweenPings", 30000)
-		.withProperty("spring.data.gemfire.gateway.receiver.socketBufferSize", 32768)
-		.withProperty("spring.data.gemfire.gateway.receiver.manualStart", true)
-		.withProperty("spring.data.gemfire.gateway.receiver.transportFilters", "transportBean1,transportBean2");
+			.withProperty("spring.data.gemfire.gateway.receiver.bind-address", "123.123.123.123")
+			.withProperty("spring.data.gemfire.gateway.receiver.hostname-for-senders", "testHostName")
+			.withProperty("spring.data.gemfire.gateway.receiver.start-port", 16000)
+			.withProperty("spring.data.gemfire.gateway.receiver.end-port", 17000)
+			.withProperty("spring.data.gemfire.gateway.receiver.maximum-time-between-pings", 30000)
+			.withProperty("spring.data.gemfire.gateway.receiver.socket-buffer-size", 32768)
+			.withProperty("spring.data.gemfire.gateway.receiver.manual-start", true)
+			.withProperty("spring.data.gemfire.gateway.receiver.transport-filters", "transportBean1,transportBean2");
 
 		this.applicationContext = newApplicationContext(testPropertySource,
 			EnableEnableGatewayReceiverConfigurerTests.TestConfigurationWithProperties.class);
@@ -127,11 +127,11 @@ public class EnableEnableGatewayReceiverConfigurerTests {
 	public void gatewayReceiverConfigurerWithPropertiesAndAnnotationConfiguration() {
 
 		MockPropertySource testPropertySource = new MockPropertySource()
-			.withProperty("spring.data.gemfire.gateway.receiver.hostnameForSenders", "testHostName")
-			.withProperty("spring.data.gemfire.gateway.receiver.maximumTimeBetweenPings", 30000)
-			.withProperty("spring.data.gemfire.gateway.receiver.socketBufferSize", 32768)
-			.withProperty("spring.data.gemfire.gateway.receiver.manualStart", true)
-			.withProperty("spring.data.gemfire.gateway.receiver.transportFilters", "transportBean2,transportBean1");
+			.withProperty("spring.data.gemfire.gateway.receiver.hostname-for-senders", "testHostName")
+			.withProperty("spring.data.gemfire.gateway.receiver.maximum-time-between-pings", 30000)
+			.withProperty("spring.data.gemfire.gateway.receiver.socket-buffer-size", 32768)
+			.withProperty("spring.data.gemfire.gateway.receiver.manual-start", true)
+			.withProperty("spring.data.gemfire.gateway.receiver.transport-filters", "transportBean2,transportBean1");
 
 		this.applicationContext = newApplicationContext(testPropertySource,
 			EnableEnableGatewayReceiverConfigurerTests.TestConfiguration.class);

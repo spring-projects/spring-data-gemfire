@@ -2,6 +2,14 @@ package org.springframework.data.gemfire.config.annotation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.junit.After;
@@ -15,10 +23,6 @@ import org.springframework.data.gemfire.wan.GatewayReceiverFactoryBean;
 import org.springframework.data.gemfire.wan.annotation.EnableGatewayReceiver;
 import org.springframework.data.gemfire.wan.annotation.EnableGatewayReceiverConfiguration;
 import org.springframework.data.gemfire.wan.annotation.EnableGatewayReceiverConfigurer;
-
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.*;
 
 /**
  * Tests for {@link org.springframework.data.gemfire.wan.annotation.EnableGatewayReceiver}.

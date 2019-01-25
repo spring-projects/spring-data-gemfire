@@ -1,5 +1,9 @@
 package org.springframework.data.gemfire.wan.annotation;
 
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.Optional;
+
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.config.BeanReference;
@@ -13,10 +17,6 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.gemfire.wan.GatewayReceiverFactoryBean;
-
-import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.Optional;
 
 /**
  * Spring {@link Configuration} class used to construct, configure and initialize a {@link GatewayReceiver} instance
@@ -39,14 +39,24 @@ public class EnableGatewayReceiverConfiguration extends AbstractAnnotationConfig
 	static final int DEFAULT_SOCKET_BUFFER_SIZE = GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE;
 	static final String DEFAULT_BIND_ADDRESS = GatewayReceiver.DEFAULT_BIND_ADDRESS;
 	static final String DEFAULT_HOSTNAME_FOR_SENDERS = GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS;
+
 	private final String START_PORT_LITERAL = "startPort";
-	private final String END_PORT_LITERAL = "END_PORT_LITERAL";
+	private final String END_PORT_LITERAL = "endPort";
 	private final String MANUAL_START_LITERAL = "manualStart";
 	private final String MAXIMUM_TIME_BETWEEN_PINGS_LITERAL = "maximumTimeBetweenPings";
 	private final String SOCKET_BUFFER_SIZE_LITERAL = "socketBufferSize";
 	private final String BIND_ADDRESS_LITERAL = "bindAddress";
 	private final String HOSTNAME_FOR_SENDERS_LITERAL = "hostnameForSenders";
 	private final String TRANSPORT_FILTERS_LITERAL = "transportFilters";
+
+	private final String START_PORT_PROPERTY_LITERAL = "start-port";
+	private final String END_PORT_PROPERTY_LITERAL = "end-port";
+	private final String MANUAL_START_PROPERTY_LITERAL = "manual-start";
+	private final String MAXIMUM_TIME_BETWEEN_PINGS_PROPERTY_LITERAL = "maximum-time-between-pings";
+	private final String SOCKET_BUFFER_SIZE_PROPERTY_LITERAL = "socket-buffer-size";
+	private final String BIND_ADDRESS_PROPERTY_LITERAL = "bind-address";
+	private final String HOSTNAME_FOR_SENDERS_PROPERTY_LITERAL = "hostname-for-senders";
+	private final String TRANSPORT_FILTERS_PROPERTY_LITERAL = "transport-filters";
 
 	@Override
 	protected Class<? extends Annotation> getAnnotationType() {
@@ -65,8 +75,8 @@ public class EnableGatewayReceiverConfiguration extends AbstractAnnotationConfig
 	}
 
 	/**
-	 * Configures a {@link GatewayReceiver} from the {@link EnableGatewayReceiver} annotation, "spring.data.gemfire.gateway.receiver.*"
-	 * properties and {@link EnableGatewayReceiverConfigurer}
+	 * Configures a {@link GatewayReceiver} from the {@link EnableGatewayReceiver} annotation, <b><i>spring.data.gemfire.gateway.receiver.*</i></b>
+	 * properties or {@link EnableGatewayReceiverConfigurer}
 	 *
 	 * @param enableGatewayReceiverAttributes
 	 * @param registry
@@ -132,7 +142,7 @@ public class EnableGatewayReceiverConfiguration extends AbstractAnnotationConfig
 	}
 
 	/**
-	 * Configures GatewayReceiver {@link BeanDefinitionBuilder} using properties, defined under "spring.data.gemfire.gateway.receiver.*"
+	 * Configures GatewayReceiver {@link BeanDefinitionBuilder} using properties, defined under <b><i>spring.data.gemfire.gateway.receiver.*</i></b>
 	 *
 	 * @param gatewayReceiverBeanBuilder
 	 */
@@ -140,22 +150,31 @@ public class EnableGatewayReceiverConfiguration extends AbstractAnnotationConfig
 		BeanDefinitionBuilder gatewayReceiverBeanBuilder) {
 		MutablePropertyValues beanPropertyValues = gatewayReceiverBeanBuilder.getRawBeanDefinition()
 			.getPropertyValues();
-		configureFromProperties(gatewayReceiverBeanBuilder, START_PORT_LITERAL,
+		configureFromProperties(gatewayReceiverBeanBuilder, START_PORT_LITERAL, START_PORT_PROPERTY_LITERAL,
 			(Integer) beanPropertyValues.getPropertyValue(START_PORT_LITERAL).getValue());
-		configureFromProperties(gatewayReceiverBeanBuilder, END_PORT_LITERAL,
+
+		configureFromProperties(gatewayReceiverBeanBuilder, END_PORT_LITERAL, END_PORT_PROPERTY_LITERAL,
 			(Integer) beanPropertyValues.getPropertyValue(END_PORT_LITERAL).getValue());
-		configureFromProperties(gatewayReceiverBeanBuilder, MANUAL_START_LITERAL,
+
+		configureFromProperties(gatewayReceiverBeanBuilder, MANUAL_START_LITERAL, MANUAL_START_PROPERTY_LITERAL,
 			(Boolean) beanPropertyValues.getPropertyValue(MANUAL_START_LITERAL).getValue());
+
 		configureFromProperties(gatewayReceiverBeanBuilder, MAXIMUM_TIME_BETWEEN_PINGS_LITERAL,
+			MAXIMUM_TIME_BETWEEN_PINGS_PROPERTY_LITERAL,
 			(Integer) beanPropertyValues.getPropertyValue(MAXIMUM_TIME_BETWEEN_PINGS_LITERAL).getValue());
+
 		configureFromProperties(gatewayReceiverBeanBuilder, SOCKET_BUFFER_SIZE_LITERAL,
+			SOCKET_BUFFER_SIZE_PROPERTY_LITERAL,
 			(Integer) beanPropertyValues.getPropertyValue(SOCKET_BUFFER_SIZE_LITERAL).getValue());
-		configureFromProperties(gatewayReceiverBeanBuilder, BIND_ADDRESS_LITERAL,
+
+		configureFromProperties(gatewayReceiverBeanBuilder, BIND_ADDRESS_LITERAL, BIND_ADDRESS_PROPERTY_LITERAL,
 			(String) beanPropertyValues.getPropertyValue(BIND_ADDRESS_LITERAL).getValue());
+
 		configureFromProperties(gatewayReceiverBeanBuilder, HOSTNAME_FOR_SENDERS_LITERAL,
+			HOSTNAME_FOR_SENDERS_PROPERTY_LITERAL,
 			(String) beanPropertyValues.getPropertyValue(HOSTNAME_FOR_SENDERS_LITERAL).getValue());
 
-		String[] filters = resolveProperty(gatewayReceiverProperty(TRANSPORT_FILTERS_LITERAL), String[].class);
+		String[] filters = resolveProperty(gatewayReceiverProperty(TRANSPORT_FILTERS_PROPERTY_LITERAL), String[].class);
 		Optional.ofNullable(filters)
 			.ifPresent(transportFilters ->
 			{
@@ -164,23 +183,26 @@ public class EnableGatewayReceiverConfiguration extends AbstractAnnotationConfig
 			});
 	}
 
-	private void configureFromProperties(BeanDefinitionBuilder gatewayReceiverBeanBuilder, String propertyName,
+	private void configureFromProperties(BeanDefinitionBuilder gatewayReceiverBeanBuilder, String beanPropertyName,
+		String propertyName,
 		Integer annotatedPropertyValue) {
 		Integer propertyValue = resolveProperty(gatewayReceiverProperty(propertyName), annotatedPropertyValue);
-		gatewayReceiverBeanBuilder.addPropertyValue(propertyName, propertyValue);
+		gatewayReceiverBeanBuilder.addPropertyValue(beanPropertyName, propertyValue);
 	}
 
 
-	private void configureFromProperties(BeanDefinitionBuilder gatewayReceiverBeanBuilder, String propertyName,
+	private void configureFromProperties(BeanDefinitionBuilder gatewayReceiverBeanBuilder, String beanPropertyName,
+		String propertyName,
 		String annotatedPropertyValue) {
 		String propertyValue = resolveProperty(gatewayReceiverProperty(propertyName), annotatedPropertyValue);
-		gatewayReceiverBeanBuilder.addPropertyValue(propertyName, propertyValue);
+		gatewayReceiverBeanBuilder.addPropertyValue(beanPropertyName, propertyValue);
 	}
 
-	private void configureFromProperties(BeanDefinitionBuilder gatewayReceiverBeanBuilder, String propertyName,
+	private void configureFromProperties(BeanDefinitionBuilder gatewayReceiverBeanBuilder, String beanPropertyName,
+		String propertyName,
 		Boolean annotatedPropertyValue) {
 		Boolean propertyValue = resolveProperty(gatewayReceiverProperty(propertyName), annotatedPropertyValue);
-		gatewayReceiverBeanBuilder.addPropertyValue(propertyName, propertyValue);
+		gatewayReceiverBeanBuilder.addPropertyValue(beanPropertyName, propertyValue);
 	}
 
 	private ManagedList<BeanReference> resolveTransportBeanReferences(String[] transportFilters) {
