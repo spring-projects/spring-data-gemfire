@@ -58,6 +58,7 @@ import org.springframework.util.ObjectUtils;
  * @author Oliver Gierke
  * @author David Turanski
  * @author John Blum
+ * @author Jeff Cherng
  * @see org.apache.geode.pdx.PdxReader
  * @see org.apache.geode.pdx.PdxSerializer
  * @see org.apache.geode.pdx.PdxWriter
@@ -249,6 +250,9 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 		this.entityInstantiators = new EntityInstantiators();
 
 		this.pdxSerializerResolvers.addAll(Arrays.asList(
+			PdxSerializerResolvers.ENTITY,
+			PdxSerializerResolvers.ENTITY_NAME,
+			PdxSerializerResolvers.ENTITY_TYPE,
 			PdxSerializerResolvers.PROPERTY,
 			PdxSerializerResolvers.PROPERTY_NAME,
 			PdxSerializerResolvers.PROPERTY_TYPE
@@ -478,6 +482,10 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 
 		GemfirePersistentEntity<?> entity = getPersistentEntity(type);
 
+		if(resolveCustomPdxSerializer(entity) != null){
+			return resolveCustomPdxSerializer(entity).fromData(type, reader);
+		}
+
 		Object instance = resolveEntityInstantiator(entity)
 			.createInstance(entity, new PersistentEntityParameterValueProvider<>(entity,
 				new GemfirePropertyValueProvider(reader), null));
@@ -564,6 +572,10 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 
 		GemfirePersistentEntity<?> entity = getPersistentEntity(value);
 
+		if(resolveCustomPdxSerializer(entity) != null){
+			return resolveCustomPdxSerializer(entity).toData(value, writer);
+		}
+
 		// Entity will be null for simple types (e.g. int, Long, String, etc).
 		if (entity != null) {
 
@@ -635,6 +647,26 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 	}
 
 	/**
+	 * Returns a custom PDX serializer for the given {@link PersistentEntity entity}.
+	 *
+	 * @param entity {@link PersistentEntity} used to lookup the custom PDX serializer.
+	 * @return a custom {@link PdxSerializer} for the given entity {@link PersistentEntity},
+	 * or {@literal null} if no custom {@link PdxSerializer} could be found.
+	 * @see org.apache.geode.pdx.PdxSerializer
+	 */
+	@Nullable
+	protected PdxSerializer resolveCustomPdxSerializer(@NonNull PersistentEntity<?, ? extends PersistentProperty<?>> entity) {
+
+		Map<?, PdxSerializer> customPdxSerializers = getCustomPdxSerializers();
+
+		return this.pdxSerializerResolvers.stream()
+			.map(it -> it.resolve(customPdxSerializers, entity))
+			.filter(Objects::nonNull)
+			.findFirst()
+			.orElse(null);
+	}
+
+	/**
 	 * Returns a custom PDX serializer for the given {@link PersistentProperty entity persistent property}.
 	 *
 	 * @param property {@link PersistentProperty} of the entity used to lookup the custom PDX serializer.
@@ -685,35 +717,101 @@ public class MappingPdxSerializer implements PdxSerializer, ApplicationContextAw
 
 		@Nullable
 		PdxSerializer resolve(@NonNull Map<?, PdxSerializer> customPdxSerializers,
-			@NonNull PersistentProperty<?> property);
+			@NonNull Object param);
 
 	}
 
 	public enum PdxSerializerResolvers implements PdxSerializerResolver {
 
+		ENTITY {
+
+			@Override
+			public PdxSerializer resolve(Map<?, PdxSerializer> customPdxSerializers, Object param) {
+				PdxSerializer pdxSerializer = null;
+				if(param instanceof PersistentEntity){
+					PersistentEntity entity = (PersistentEntity) param;
+					pdxSerializer = customPdxSerializers.get(entity);
+				}
+				return pdxSerializer;
+			}
+		},
+
+		ENTITY_NAME {
+
+			@Override
+			public PdxSerializer resolve(Map<?, PdxSerializer> customPdxSerializers, Object param) {
+				PdxSerializer pdxSerializer = null;
+				if(param instanceof PersistentEntity){
+					PersistentEntity entity = (PersistentEntity) param;
+					pdxSerializer = customPdxSerializers.get(toFullyQualifiedEntityName(entity));
+				}
+				return pdxSerializer;
+			}
+		},
+
+		ENTITY_TYPE {
+
+			@Override
+			public PdxSerializer resolve(Map<?, PdxSerializer> customPdxSerializers, Object param) {
+				PdxSerializer pdxSerializer = null;
+				if(param instanceof PersistentEntity){
+					PersistentEntity entity = (PersistentEntity) param;
+					pdxSerializer = customPdxSerializers.get(entity.getType());
+				}
+				return pdxSerializer;
+			}
+		},
+
 		PROPERTY {
 
 			@Override
-			public PdxSerializer resolve(Map<?, PdxSerializer> customPdxSerializers, PersistentProperty<?> property) {
-				return customPdxSerializers.get(property);
+			public PdxSerializer resolve(Map<?, PdxSerializer> customPdxSerializers, Object param) {
+				PdxSerializer pdxSerializer = null;
+				if(param instanceof PersistentProperty){
+					PersistentProperty property = (PersistentProperty) param;
+					pdxSerializer = customPdxSerializers.get(property);
+				}
+				return pdxSerializer;
 			}
 		},
 
 		PROPERTY_NAME {
 
 			@Override
-			public PdxSerializer resolve(Map<?, PdxSerializer> customPdxSerializers, PersistentProperty<?> property) {
-				return customPdxSerializers.get(toFullyQualifiedPropertyName(property));
+			public PdxSerializer resolve(Map<?, PdxSerializer> customPdxSerializers, Object param) {
+				PdxSerializer pdxSerializer = null;
+				if(param instanceof PersistentProperty){
+					PersistentProperty property = (PersistentProperty) param;
+					pdxSerializer = customPdxSerializers.get(toFullyQualifiedPropertyName(property));
+				}
+				return pdxSerializer;
 			}
 		},
 
 		PROPERTY_TYPE {
 
 			@Override
-			public PdxSerializer resolve(Map<?, PdxSerializer> customPdxSerializers, PersistentProperty<?> property) {
-				return customPdxSerializers.get(property.getType());
+			public PdxSerializer resolve(Map<?, PdxSerializer> customPdxSerializers, Object param) {
+				PdxSerializer pdxSerializer = null;
+				if(param instanceof PersistentProperty){
+					PersistentProperty property = (PersistentProperty) param;
+					pdxSerializer = customPdxSerializers.get(property.getType());
+				}
+				return pdxSerializer;
 			}
 		};
+
+		/**
+		 * Converts the entity {@link PersistentEntity} to a {@link String fully-qualified name}.
+		 *
+		 * @param entity {@link PersistentEntity}.
+		 * @return the {@link String fully-qualified name of the entity {@link PersistentEntity}.
+		 * @see org.springframework.data.mapping.PersistentEntity
+		 */
+		@NonNull
+		static String toFullyQualifiedEntityName(@NonNull PersistentEntity<?, ? extends PersistentProperty<?>> entity) {
+			return entity.getType().getName();
+		}
 
 		/**
 		 * Converts the entity {@link PersistentProperty} to a {@link String fully-qualified property name}.
