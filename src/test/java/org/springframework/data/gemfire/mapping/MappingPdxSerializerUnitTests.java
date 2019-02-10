@@ -81,6 +81,7 @@ import org.springframework.data.mapping.model.ParameterValueProvider;
  *
  * @author Oliver Gierke
  * @author John Blum
+ * @auther Jeff Cherng
  * @see org.junit.Rule
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
@@ -117,6 +118,10 @@ public class MappingPdxSerializerUnitTests {
 		this.conversionService = new GenericConversionService();
 		this.mappingContext = new GemfireMappingContext();
 		this.pdxSerializer = spy(new MappingPdxSerializer(this.mappingContext, this.conversionService));
+	}
+
+	private String toFullyQualifiedEntityName(PersistentEntity<?, ? extends PersistentProperty<?>> entity) {
+		return MappingPdxSerializer.PdxSerializerResolvers.toFullyQualifiedEntityName(entity);
 	}
 
 	private String toFullyQualifiedPropertyName(PersistentProperty<?> property) {
@@ -401,7 +406,27 @@ public class MappingPdxSerializerUnitTests {
 		PersistentProperty addressProperty = personEntity.getPersistentProperty("address");
 
 		assertThat(this.pdxSerializer.getCustomPdxSerializers()).isEmpty();
+		assertThat(this.pdxSerializer.resolveCustomPdxSerializer(personEntity)).isNull();
 		assertThat(this.pdxSerializer.resolveCustomPdxSerializer(addressProperty)).isNull();
+	}
+
+	@Test
+	@SuppressWarnings("all")
+	public void resolveCustomPdxSerializerReturnsPdxSerializerForEntity() {
+
+		PdxSerializer mockNamedSerializer = mock(PdxSerializer.class);
+		PdxSerializer mockEntitySerializer = mock(PdxSerializer.class);
+		PdxSerializer mockTypedSerializer = mock(PdxSerializer.class);
+
+		PersistentEntity personEntity = this.mappingContext.getPersistentEntity(Person.class);
+
+		this.pdxSerializer.setCustomPdxSerializers(MapBuilder.<Object, PdxSerializer>newMapBuilder()
+				.put(personEntity, mockEntitySerializer)
+				.put(toFullyQualifiedEntityName(personEntity), mockNamedSerializer)
+				.put(Person.class, mockTypedSerializer)
+				.build());
+
+		assertThat(this.pdxSerializer.resolveCustomPdxSerializer(personEntity)).isEqualTo(mockEntitySerializer);
 	}
 
 	@Test
@@ -427,6 +452,25 @@ public class MappingPdxSerializerUnitTests {
 
 	@Test
 	@SuppressWarnings("all")
+	public void resolveCustomPdxSerializerReturnsPdxSerializerForEntityName() {
+
+		PdxSerializer mockNamedSerializer = mock(PdxSerializer.class);
+		PdxSerializer mockTypedSerializer = mock(PdxSerializer.class);
+
+		PersistentEntity personEntity = this.mappingContext.getPersistentEntity(Person.class);
+
+//		PersistentProperty addressProperty = personEntity.getPersistentProperty("address");
+
+		this.pdxSerializer.setCustomPdxSerializers(MapBuilder.<Object, PdxSerializer>newMapBuilder()
+				.put(toFullyQualifiedEntityName(personEntity), mockNamedSerializer)
+				.put(Person.class, mockTypedSerializer)
+				.build());
+
+		assertThat(this.pdxSerializer.resolveCustomPdxSerializer(personEntity)).isEqualTo(mockNamedSerializer);
+	}
+
+	@Test
+	@SuppressWarnings("all")
 	public void resolveCustomPdxSerializerReturnsPdxSerializerForPropertyName() {
 
 		PdxSerializer mockNamedSerializer = mock(PdxSerializer.class);
@@ -442,6 +486,25 @@ public class MappingPdxSerializerUnitTests {
 			.build());
 
 		assertThat(this.pdxSerializer.resolveCustomPdxSerializer(addressProperty)).isEqualTo(mockNamedSerializer);
+	}
+
+	@Test
+	@SuppressWarnings("all")
+	public void resolveCustomPdxSerializerReturnsPdxSerializerForEntityType() {
+
+		PdxSerializer mockNamedSerializer = mock(PdxSerializer.class);
+		PdxSerializer mockTypedSerializer = mock(PdxSerializer.class);
+
+		Map<Object, PdxSerializer> customPdxSerializers = new HashMap<>();
+
+		PersistentEntity personEntity = this.mappingContext.getPersistentEntity(Person.class);
+
+		customPdxSerializers.put("example.Type.person", mockNamedSerializer);
+		customPdxSerializers.put(Person.class, mockTypedSerializer);
+
+		this.pdxSerializer.setCustomPdxSerializers(customPdxSerializers);
+
+		assertThat(this.pdxSerializer.resolveCustomPdxSerializer(personEntity)).isEqualTo(mockTypedSerializer);
 	}
 
 	@Test
@@ -507,6 +570,19 @@ public class MappingPdxSerializerUnitTests {
 	@Test
 	public void resolveTypeWithNullType() {
 		assertThat(this.pdxSerializer.resolveType(null)).isNull();
+	}
+
+	@Test
+	public void toFullyQualifiedEntityName() {
+
+		PersistentEntity mockEntity = mock(PersistentEntity.class);
+
+		when(mockEntity.getType()).thenReturn(Person.class);
+
+		assertThat(MappingPdxSerializer.PdxSerializerResolvers.toFullyQualifiedEntityName(mockEntity))
+				.isEqualTo(Person.class.getName());
+
+		verify(mockEntity, times(1)).getType();
 	}
 
 	@Test
