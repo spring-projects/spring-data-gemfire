@@ -18,6 +18,7 @@
 package org.springframework.data.gemfire.domain.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -153,7 +154,7 @@ public class AbstractSliceSupportTests {
 	@SuppressWarnings("unchecked")
 	public void iteratorWithContent() {
 		doReturn(Arrays.asList(1, 2, 3)).when(mockSlice).getContent();
-		assertThat(mockSlice.iterator()).contains(1, 2, 3);
-		verify(mockSlice, times(1)).getContent();
+		assertThat((Iterable) () -> mockSlice.iterator()).contains(1, 2, 3);
+		verify(mockSlice, atLeastOnce()).getContent();
 	}
 }
