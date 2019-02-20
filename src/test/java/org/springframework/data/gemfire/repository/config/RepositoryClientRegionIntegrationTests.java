@@ -12,9 +12,7 @@
  */
 package org.springframework.data.gemfire.repository.config;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.Collection;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -23,7 +21,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.gemfire.fork.ServerProcess;
 import org.springframework.data.gemfire.process.ProcessWrapper;
-import org.springframework.data.gemfire.repository.sample.Person;
 import org.springframework.data.gemfire.repository.sample.PersonRepository;
 import org.springframework.data.gemfire.test.support.ClientServerIntegrationTestsSupport;
 import org.springframework.test.context.ContextConfiguration;
@@ -67,8 +64,9 @@ public class RepositoryClientRegionIntegrationTests extends ClientServerIntegrat
 	}
 
 	@Test
-	public void findAllAndCountIsCorrect() {
-		assertEquals(2, repository.count());
-		assertEquals(2, ((Collection<Person>) repository.findAll()).size());
+	public void findAllAndCountMatch() {
+
+		assertThat(this.repository.count()).isEqualTo(2);
+		assertThat(this.repository.findAll()).hasSize(2);
 	}
 }
