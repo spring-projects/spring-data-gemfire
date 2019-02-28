@@ -1,0 +1,19 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: openjdk
+    tag: 8-jdk-alpine
+
+inputs:
+- name: spring-data-gemfire-github
+
+outputs:
+- name: spring-data-gemfire-artifactory
+
+caches:
+- path: maven
+
+run:
