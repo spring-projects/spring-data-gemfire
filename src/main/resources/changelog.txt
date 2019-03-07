@@ -3,6 +3,19 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.2.0.M2 (2019-03-07)
+----------------------------------------
+* SGF-824 - Introduce Concourse CI.
+* SGF-823 - Adapt to Repository API (findAll) changes in Spring Data Commons.
+* SGF-821 - Upgrade to AssertJ 3.12.0.
+* SGF-813 - Update copyright years to 2019.
+* SGF-812 - BatchingResultSender does not send result when results are empty.
+* SGF-811 - Add dependency between Lucene Index bean definition and the GemFireCache instance.
+* SGF-810 - Fix link in Annotation Config Quickstart doc to the MappingPdxSerializer section of the POJO Mapping chapter.
+* SGF-809 - Upgrade to Pivotal GemFire 9.7.
+* SGF-804 - Release 2.2 M2 (Moore).
+
+
 Changes in version 2.1.5.RELEASE (2019-02-13)
 ---------------------------------------------
 * SGF-816 - Release 2.1.5 (Lovelace SR5).
