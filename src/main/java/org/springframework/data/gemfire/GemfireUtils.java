@@ -24,19 +24,20 @@ import org.springframework.util.ClassUtils;
 import org.w3c.dom.Element;
 
 /**
- * {@link GemfireUtils} is an abstract utility class encapsulating common functionality to access features
- * and capabilities of Pivotal GemFire based on version and other configuration meta-data.
+ * {@link GemfireUtils} is an abstract utility class encapsulating common functionality for accessing features
+ * and capabilities of Apache Geode or Pivotal GemFire based on version as well as other configuration meta-data.
  *
  * @author John Blum
  * @see org.apache.geode.cache.CacheFactory
- * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.internal.GemFireVersion
+ * @see org.springframework.data.gemfire.config.support.GemfireFeature
  * @see org.springframework.data.gemfire.util.RegionUtils
  * @since 1.3.3
  */
 @SuppressWarnings("unused")
 public abstract class GemfireUtils extends RegionUtils {
 
-	public final static String APACHE_GEODE_NAME = "Aache Geode";
+	public final static String APACHE_GEODE_NAME = "Apache Geode";
 	public final static String GEMFIRE_NAME = apacheGeodeProductName();
 	public final static String GEMFIRE_VERSION = apacheGeodeVersion();
 	public final static String UNKNOWN = "unknown";
@@ -131,6 +132,6 @@ public abstract class GemfireUtils extends RegionUtils {
 	}
 
 	public static void main(final String... args) {
-		System.out.printf("Pivotal GemFire Product Name [%1$s] Version [%2$s]%n", GEMFIRE_NAME, GEMFIRE_VERSION);
+		System.out.printf("Product Name [%1$s] Version [%2$s]%n", GEMFIRE_NAME, GEMFIRE_VERSION);
 	}
 }

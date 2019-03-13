@@ -35,9 +35,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.gemfire.GemfireTemplate;
+import org.springframework.data.gemfire.mapping.GemfireMappingContext;
+import org.springframework.data.gemfire.mapping.GemfirePersistentEntity;
 import org.springframework.data.gemfire.repository.GemfireRepository;
 import org.springframework.data.gemfire.repository.sample.Customer;
-import org.springframework.data.repository.core.support.ReflectionEntityInformation;
+import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.data.repository.core.support.PersistentEntityInformation;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -73,23 +76,26 @@ public class SimpleGemfireRepositoryTransactionalIntegrationTest {
 	private Region customers;
 
 	static Customer createCustomer(String firstName, String lastName) {
+
 		Customer customer = new SerializableCustomer(firstName, lastName);
+
 		customer.setId(ID_SEQUENCE.incrementAndGet());
+
 		return customer;
 	}
 
 	@Before
 	public void setup() {
 
-		assertNotNull("The 'Customers' Cache Region was not properly configured and initialized!", customers);
-		assertEquals("Customers", customers.getName());
-		assertEquals("/Customers", customers.getFullPath());
-		assertTrue(customers.isEmpty());
+		assertNotNull("The 'Customers' Cache Region was not properly configured and initialized!", this.customers);
+		assertEquals("Customers", this.customers.getName());
+		assertEquals("/Customers", this.customers.getFullPath());
+		assertTrue(this.customers.isEmpty());
 	}
 
 	@After
 	public void tearDown() {
-		customers.clear();
+		this.customers.clear();
 	}
 
 	@Test
@@ -102,24 +108,24 @@ public class SimpleGemfireRepositoryTransactionalIntegrationTest {
 		expectedCustomers.add(createCustomer("Pie", "Doe"));
 		expectedCustomers.add(createCustomer("Cookie", "Doe"));
 
-		customerService.saveAll(expectedCustomers);
+		this.customerService.saveAll(expectedCustomers);
 
-		assertFalse(customers.isEmpty());
-		assertEquals(expectedCustomers.size(), customers.size());
+		assertFalse(this.customers.isEmpty());
+		assertEquals(expectedCustomers.size(), this.customers.size());
 
 		try {
-			customerService.removeAllCausingTransactionRollback();
+			this.customerService.removeAllCausingTransactionRollback();
 		}
 		catch (RuntimeException ignore) {
 			// the RuntimeException should cause the Cache Transaction to rollback and avoid the Region modification!
 		}
 
-		assertFalse(customers.isEmpty());
-		assertEquals(expectedCustomers.size(), customers.size());
+		assertFalse(this.customers.isEmpty());
+		assertEquals(expectedCustomers.size(), this.customers.size());
 
-		customerService.removeAll();
+		this.customerService.removeAll();
 
-		assertTrue(customers.isEmpty());
+		assertTrue(this.customers.isEmpty());
 	}
 
 	public static class SerializableCustomer extends Customer implements Serializable {
@@ -142,34 +148,51 @@ public class SimpleGemfireRepositoryTransactionalIntegrationTest {
 		private TransactionTemplate transactionTemplate;
 
 		@Autowired
+		@SuppressWarnings("all")
 		public CustomerService(GemfireTemplate customersTemplate, PlatformTransactionManager transactionManager) {
-			customerRepository = new SimpleGemfireRepository<Customer, Long>(customersTemplate,
-				new ReflectionEntityInformation<Customer, Long>(Customer.class));
 
-			transactionTemplate = new TransactionTemplate(transactionManager);
+			GemfireMappingContext mappingContext = new GemfireMappingContext();
+
+			GemfirePersistentEntity<Customer> customerEntity =
+				(GemfirePersistentEntity<Customer>) mappingContext.getPersistentEntity(Customer.class);
+
+			EntityInformation<Customer, Long> entityInformation = new PersistentEntityInformation<>(customerEntity);
+
+			this.customerRepository = new SimpleGemfireRepository<Customer, Long>(customersTemplate, entityInformation);
+			this.transactionTemplate = new TransactionTemplate(transactionManager);
 		}
 
 		void saveAll(final Iterable<Customer> customers) {
-			transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-				@Override  protected void doInTransactionWithoutResult(TransactionStatus status) {
-					customerRepository.saveAll(customers);
+
+			this.transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+
+				@Override
+				protected void doInTransactionWithoutResult(TransactionStatus status) {
+					CustomerService.this.customerRepository.saveAll(customers);
 				}
 			});
 		}
 
 		void removeAllCausingTransactionRollback() {
-			transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-				@Override protected void doInTransactionWithoutResult(TransactionStatus status) {
+			this.transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+
+				@Override
+				protected void doInTransactionWithoutResult(TransactionStatus status) {
+
 					removeAll();
+
 					throw new IllegalStateException("'removeAll' operation not permitted");
 				}
 			});
 		}
 
 		void removeAll() {
-			transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-				@Override protected void doInTransactionWithoutResult(TransactionStatus status) {
-					customerRepository.deleteAll();
+
+			this.transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+
+				@Override
+				protected void doInTransactionWithoutResult(TransactionStatus status) {
+					CustomerService.this.customerRepository.deleteAll();
 				}
 			});
 		}

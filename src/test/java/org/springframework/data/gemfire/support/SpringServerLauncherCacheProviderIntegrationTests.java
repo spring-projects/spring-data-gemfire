@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.support;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -46,18 +45,21 @@ public class SpringServerLauncherCacheProviderIntegrationTests {
 
 	@After
 	public void tearDown() {
+
 		System.clearProperty(gemfireName());
 		SpringContextBootstrappingInitializer.getApplicationContext().close();
 		GemfireUtils.closeClientCache();
 	}
 
 	String gemfireName() {
-		return (GemfireUtils.GEMFIRE_PREFIX + GemfireUtils.NAME_PROPERTY_NAME);
+		return GemfireUtils.GEMFIRE_PREFIX + GemfireUtils.NAME_PROPERTY_NAME;
 	}
 
 	@Test
 	public void createCacheWithSpring() {
+
 		String springXmlLocation = getClass().getSimpleName() + "-context.xml";
+
 		ServerLauncher.Builder builder = new ServerLauncher.Builder();
 
 		builder.setSpringXmlLocation(springXmlLocation);
@@ -65,6 +67,7 @@ public class SpringServerLauncherCacheProviderIntegrationTests {
 		builder.setDisableDefaultServer(true);
 
 		ServerLauncher launcher = builder.build();
+
 		ServerState state = launcher.start();
 
 		assertThat(state.getStatus(), is(equalTo(Status.ONLINE)));

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.support;
 
 import static org.junit.Assert.assertEquals;
@@ -52,6 +51,7 @@ import org.springframework.data.gemfire.repository.sample.User;
 import org.springframework.data.gemfire.support.sample.TestUserDao;
 import org.springframework.data.gemfire.support.sample.TestUserService;
 import org.springframework.data.gemfire.test.support.DataSourceAdapter;
+import org.springframework.data.gemfire.util.SpringUtils;
 import org.springframework.util.Assert;
 
 /**
@@ -77,7 +77,7 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 	private static final Object MUTEX_LOCK = new Object();
 
 	protected static final String GEMFIRE_LOCATORS = "localhost[11235]";
-	protected static final String GEMFIRE_LOG_LEVEL = "warning";
+	protected static final String GEMFIRE_LOG_LEVEL = "error";
 	protected static final String GEMFIRE_JMX_MANAGER = "true";
 	protected static final String GEMFIRE_JMX_MANAGER_PORT = "1199";
 	protected static final String GEMFIRE_JMX_MANAGER_START = "true";
@@ -87,56 +87,52 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 
 	@Before
 	public void setup() {
-		setupBeforeCacheCreate();
-	}
 
-	private void setupBeforeCacheCreate() {
 		try {
-			long timeout = (System.currentTimeMillis() + CACHE_CLOSE_TIMEOUT);
+
+			long timeout = System.currentTimeMillis() + CACHE_CLOSE_TIMEOUT;
 
 			while (CacheFactory.getAnyInstance() != null && System.currentTimeMillis() < timeout) {
 				synchronized (MUTEX_LOCK) {
 					try {
-						System.out.printf("Waiting in setup...%n");
-						MUTEX_LOCK.wait(500l);
+						MUTEX_LOCK.wait(500L);
 					}
-					catch (InterruptedException ignore) {
-					}
+					catch (InterruptedException ignore) { }
 				}
 			}
 
-			fail(String.format("The Cache instance was not properly closed in the allotted timeout of %1$d seconds!%n",
-				(CACHE_CLOSE_TIMEOUT / 1000)));
+			fail(String.format("The Cache instance was not properly closed in the allotted timeout of %d seconds%n",
+				TimeUnit.MILLISECONDS.toSeconds(CACHE_CLOSE_TIMEOUT)));
 		}
-		catch (CacheClosedException ignore) {
-		}
+		catch (CacheClosedException ignore) { }
 	}
 
 	@After
 	public void tearDown() {
+
 		SpringContextBootstrappingInitializer.getApplicationContext().close();
 		UserDataStoreCacheLoader.INSTANCE.set(null);
 		tearDownCache();
 	}
 
 	private void tearDownCache() {
+
 		try {
+
 			Cache cache = CacheFactory.getAnyInstance();
 
 			if (cache != null) {
-				System.out.printf("Closing Cache...%n");
+
 				cache.close();
 
-				// Now, wait for the Pivotal GemFireHog to shutdown, OIY!
+				// Now, wait for the Apache Geode or Pivotal GemFire Hog to shutdown, OIY!
 				synchronized (MUTEX_LOCK) {
-					while (!cache.isClosed()) {
-						try {
-							System.out.printf("Waiting in tearDown...");
-							MUTEX_LOCK.wait(500l);
+
+					SpringUtils.safeRunOperation(() -> {
+						while (!cache.isClosed()) {
+							MUTEX_LOCK.wait(500L);
 						}
-						catch (InterruptedException ignore) {
-						}
-					}
+					});
 
 					MUTEX_LOCK.notifyAll();
 				}
@@ -149,13 +145,12 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 		}
 	}
 
-	protected void doSpringContextBootstrappingInitializationTest(final String cacheXmlFile) {
+	protected void doSpringContextBootstrappingInitializationTest(String cacheXmlFile) {
+
 		Cache gemfireCache = new CacheFactory()
 			.set("name", GEMFIRE_NAME)
-			.set("mcast-port", GEMFIRE_MCAST_PORT)
 			.set("log-level", GEMFIRE_LOG_LEVEL)
 			.set("cache-xml-file", cacheXmlFile)
-			//.set("locators", GEMFIRE_LOCATORS)
 			//.set("start-locator", GEMFIRE_LOCATORS)
 			//.set("jmx-manager", GEMFIRE_JMX_MANAGER)
 			//.set("jmx-manager-port", GEMFIRE_JMX_MANAGER_PORT)
@@ -173,12 +168,13 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 		assertNotNull(gemfireCache.getRegion("/TestRegion"));
 		assertNotNull(gemfireCache.getRegion("/Users"));
 
-		ConfigurableApplicationContext applicationContext = SpringContextBootstrappingInitializer.getApplicationContext();
+		ConfigurableApplicationContext applicationContext =
+			SpringContextBootstrappingInitializer.getApplicationContext();
 
 		assertNotNull(applicationContext);
 		assertTrue(applicationContext.containsBean(GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME));
 		assertTrue(applicationContext.containsBean("TestRegion"));
-		assertFalse(applicationContext.containsBean("Users")); // Region 'Users' is defined in Pivotal GemFirecache.xml
+		assertFalse(applicationContext.containsBean("Users")); // Region 'Users' is defined in Pivotal GemFire cache.xml
 		assertTrue(applicationContext.containsBean("userDataSource"));
 		assertTrue(applicationContext.containsBean("userDao"));
 		assertTrue(applicationContext.containsBean("userService"));
@@ -190,7 +186,7 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 		assertSame(userDataSource, userDao.getDataSource());
 		assertSame(userDao, userService.getUserDao());
 
-		// NOTE a Pivotal GemFiredeclared component initialized by Spring!
+		// NOTE Pivotal GemFire declared component initialized by Spring!
 		UserDataStoreCacheLoader usersCacheLoader = UserDataStoreCacheLoader.getInstance();
 
 		assertSame(userDataSource, usersCacheLoader.getDataSource());
@@ -210,9 +206,10 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 
 	@Test
 	public void testSpringContextBootstrappingInitializerUsingAnnotatedClasses() {
+
 		SpringContextBootstrappingInitializer.register(TestAppConfig.class);
 
-		new SpringContextBootstrappingInitializer().init(new Properties());
+		new SpringContextBootstrappingInitializer().init(null, new Properties());
 
 		ConfigurableApplicationContext applicationContext = SpringContextBootstrappingInitializer.getApplicationContext();
 
@@ -231,7 +228,8 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 
 	@Test
 	public void testSpringContextBootstrappingInitializerUsingContextConfigLocations() {
-		doSpringContextBootstrappingInitializationTest("cache-with-spring-context-bootstrap-initializer.xml");
+		doSpringContextBootstrappingInitializationTest(
+			"cache-with-spring-context-bootstrap-initializer.xml");
 	}
 
 	@Configuration
@@ -248,14 +246,14 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 		}
 	}
 
-	public static final class TestDataSource extends DataSourceAdapter {
-	}
+	public static final class TestDataSource extends DataSourceAdapter { }
 
-	public static final class UserDataStoreCacheLoader extends LazyWiringDeclarableSupport implements CacheLoader<String, User> {
+	public static final class UserDataStoreCacheLoader extends LazyWiringDeclarableSupport
+			implements CacheLoader<String, User> {
 
-		private static final AtomicReference<UserDataStoreCacheLoader> INSTANCE = new AtomicReference<UserDataStoreCacheLoader>();
+		private static final AtomicReference<UserDataStoreCacheLoader> INSTANCE = new AtomicReference<>();
 
-		private static final Map<String, User> USER_DATA = new ConcurrentHashMap<String, User>(3);
+		private static final Map<String, User> USER_DATA = new ConcurrentHashMap<>(3);
 
 		static {
 			USER_DATA.put("jblum", new User("jblum"));
@@ -279,10 +277,12 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 		}
 
 		protected static User createUser(String username, Boolean active, Calendar since, String email) {
+
 			User user = new User(username);
 			user.setActive(active);
 			user.setEmail(email);
 			user.setSince(since);
+
 			return user;
 		}
 
@@ -291,32 +291,35 @@ public class SpringContextBootstrappingInitializerIntegrationTest {
 		}
 
 		public UserDataStoreCacheLoader() {
-			Assert.state(INSTANCE.compareAndSet(null, this), String.format("An instance of %1$s was already created!",
-				getClass().getName()));
+			Assert.state(INSTANCE.compareAndSet(null, this),
+				String.format("An instance of %1$s was already created!", getClass().getName()));
 		}
 
 		@Override
 		protected void assertInitialized() {
+
 			super.assertInitialized();
-			Assert.state(userDataSource != null, String.format(
-				"The 'User' Data Source was not properly configured and initialized for use in (%1$s!)",
+
+			Assert.state(this.userDataSource != null,
+				String.format("The 'User' Data Source was not properly configured and initialized for use in (%s)",
 					getClass().getName()));
 		}
 
 		protected DataSource getDataSource() {
-			return userDataSource;
+			return this.userDataSource;
 		}
 
 		@Override
 		public void close() {
-			userDataSource = null;
+			this.userDataSource = null;
 		}
 
 		@Override
-		public User load(final LoaderHelper<String, User> helper) throws CacheLoaderException {
+		public User load(LoaderHelper<String, User> helper) throws CacheLoaderException {
+
 			assertInitialized();
+
 			return USER_DATA.get(helper.getKey());
 		}
 	}
-
 }

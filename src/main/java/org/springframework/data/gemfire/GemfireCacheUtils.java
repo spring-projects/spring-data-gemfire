@@ -30,6 +30,7 @@ import org.apache.geode.NoSystemException;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemIsRunningException;
 import org.apache.geode.UnmodifiableException;
+import org.apache.geode.admin.AdminException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheExistsException;
 import org.apache.geode.cache.CacheLoaderException;
@@ -76,24 +77,24 @@ import org.springframework.dao.TypeMismatchDataAccessException;
 import org.springframework.util.ClassUtils;
 
 /**
- * Helper class featuring methods for Pivotal GemFire Cache or Region handling.
+ * Abstract utility class featuring methods for Apache Geode / Pivotal GemFire Cache or Region handling.
  *
  * @author Costin Leau
+ * @author John Blum
  */
 public abstract class GemfireCacheUtils {
 
 	private static Class<?> CQ_EXCEPTION_CLASS;
 
 	static {
+
 		Class<?> type = null;
 
 		try {
 			type = ClassUtils.resolveClassName("org.apache.geode.cache.query.CqInvalidException",
 				GemfireCacheUtils.class.getClassLoader());
-
 		}
-		catch (IllegalArgumentException ignore) {
-		}
+		catch (IllegalArgumentException ignore) { }
 
 		CQ_EXCEPTION_CLASS = type;
 	}
@@ -103,149 +104,209 @@ public abstract class GemfireCacheUtils {
 	 * Converts the given (unchecked) Gemfire exception to an appropriate one from the
 	 * <code>org.springframework.dao</code> hierarchy.
 	 *
-	 * @param ex Gemfire unchecked exception
+	 * @param cause Gemfire unchecked exception
 	 * @return new the corresponding DataAccessException instance
 	 */
 	@SuppressWarnings("deprecation")
-	public static DataAccessException convertGemfireAccessException(GemFireException ex) {
-		if (ex instanceof CacheException) {
-			if (ex instanceof CacheExistsException) {
-				return new DataIntegrityViolationException(ex.getMessage(), ex);
+	public static DataAccessException convertGemfireAccessException(GemFireException cause) {
+
+		if (cause instanceof CacheException) {
+			if (cause instanceof CacheExistsException) {
+				return new DataIntegrityViolationException(cause.getMessage(), cause);
 			}
-			if (ex instanceof CommitConflictException) {
-				return new DataIntegrityViolationException(ex.getMessage(), ex);
+			if (cause instanceof CommitConflictException) {
+				return new DataIntegrityViolationException(cause.getMessage(), cause);
 			}
-			if (ex instanceof CommitIncompleteException) {
-				return new DataIntegrityViolationException(ex.getMessage(), ex);
+			if (cause instanceof CommitIncompleteException) {
+				return new DataIntegrityViolationException(cause.getMessage(), cause);
 			}
-			if (ex instanceof EntryExistsException) {
-				return new DuplicateKeyException(ex.getMessage(), ex);
+			if (cause instanceof EntryExistsException) {
+				return new DuplicateKeyException(cause.getMessage(), cause);
 			}
-			if (ex instanceof EntryNotFoundException) {
-				return new DataRetrievalFailureException(ex.getMessage(), ex);
+			if (cause instanceof EntryNotFoundException) {
+				return new DataRetrievalFailureException(cause.getMessage(), cause);
 			}
-			if (ex instanceof RegionExistsException) {
-				return new DataIntegrityViolationException(ex.getMessage(), ex);
+			if (cause instanceof RegionExistsException) {
+				return new DataIntegrityViolationException(cause.getMessage(), cause);
 			}
 		}
-		if (ex instanceof CacheRuntimeException) {
-			if (ex instanceof CacheXmlException) {
-				return new GemfireSystemException(ex);
+
+		if (cause instanceof CacheRuntimeException) {
+			if (cause instanceof CacheXmlException) {
+				return new GemfireSystemException(cause);
 			}
-			if (ex instanceof CancelException) {
+			if (cause instanceof CancelException) {
 				// all cancellations go wrapped by this exception
-				return new GemfireCancellationException((CancelException) ex);
+				return new GemfireCancellationException((CancelException) cause);
 			}
-			if (ex instanceof CqClosedException) {
-				return new InvalidDataAccessApiUsageException(ex.getMessage(), ex);
+			if (cause instanceof CqClosedException) {
+				return new InvalidDataAccessApiUsageException(cause.getMessage(), cause);
 			}
-			if (ex instanceof DiskAccessException) {
-				return new DataAccessResourceFailureException(ex.getMessage(), ex);
+			if (cause instanceof DiskAccessException) {
+				return new DataAccessResourceFailureException(cause.getMessage(), cause);
 			}
-			if (ex instanceof EntryDestroyedException) {
-				return new InvalidDataAccessApiUsageException(ex.getMessage(), ex);
+			if (cause instanceof EntryDestroyedException) {
+				return new InvalidDataAccessApiUsageException(cause.getMessage(), cause);
 			}
-			if (ex instanceof FailedSynchronizationException) {
-				return new PessimisticLockingFailureException(ex.getMessage(), ex);
+			if (cause instanceof FailedSynchronizationException) {
+				return new PessimisticLockingFailureException(cause.getMessage(), cause);
 			}
-			if (ex instanceof IndexMaintenanceException) {
-				return new GemfireIndexException((IndexMaintenanceException) ex);
+			if (cause instanceof IndexMaintenanceException) {
+				return new GemfireIndexException((IndexMaintenanceException) cause);
 			}
-			if (ex instanceof OperationAbortedException) {
+			if (cause instanceof OperationAbortedException) {
 				// treat user exceptions first
-				if (ex instanceof CacheLoaderException) {
-					return new GemfireSystemException(ex);
+				if (cause instanceof CacheLoaderException) {
+					return new GemfireSystemException(cause);
 				}
-				if (ex instanceof CacheWriterException) {
-					return new GemfireSystemException(ex);
+				if (cause instanceof CacheWriterException) {
+					return new GemfireSystemException(cause);
 				}
 				// the rest are treated as resource failures
-				return new DataAccessResourceFailureException(ex.getMessage(), ex);
+				return new DataAccessResourceFailureException(cause.getMessage(), cause);
 			}
-			if (ex instanceof PartitionedRegionDistributionException) {
-				return new DataAccessResourceFailureException(ex.getMessage(), ex);
+			if (cause instanceof PartitionedRegionDistributionException) {
+				return new DataAccessResourceFailureException(cause.getMessage(), cause);
 			}
-			if (ex instanceof PartitionedRegionStorageException) {
-				return new DataAccessResourceFailureException(ex.getMessage(), ex);
+			if (cause instanceof PartitionedRegionStorageException) {
+				return new DataAccessResourceFailureException(cause.getMessage(), cause);
 			}
-			if (ex instanceof QueryExecutionTimeoutException) {
-				return new GemfireQueryException((QueryExecutionTimeoutException) ex);
+			if (cause instanceof QueryExecutionTimeoutException) {
+				return new GemfireQueryException((QueryExecutionTimeoutException) cause);
 			}
-			if (ex instanceof RegionDestroyedException) {
-				return new InvalidDataAccessResourceUsageException(ex.getMessage(), ex);
+			if (cause instanceof RegionDestroyedException) {
+				return new InvalidDataAccessResourceUsageException(cause.getMessage(), cause);
 			}
-			if (ex instanceof org.apache.geode.admin.RegionNotFoundException) {
-				return new InvalidDataAccessResourceUsageException(ex.getMessage(), ex);
+			if (cause instanceof org.apache.geode.admin.RegionNotFoundException) {
+				return new InvalidDataAccessResourceUsageException(cause.getMessage(), cause);
 			}
-			if (ex instanceof ResourceException) {
-				return new DataAccessResourceFailureException(ex.getMessage(), ex);
+			if (cause instanceof ResourceException) {
+				return new DataAccessResourceFailureException(cause.getMessage(), cause);
 			}
-			if (ex instanceof RoleException) {
-				return new GemfireSystemException(ex);
+			if (cause instanceof RoleException) {
+				return new GemfireSystemException(cause);
 			}
-			if (ex instanceof StatisticsDisabledException) {
-				return new GemfireSystemException(ex);
+			if (cause instanceof StatisticsDisabledException) {
+				return new GemfireSystemException(cause);
 			}
-			if (ex instanceof SynchronizationCommitConflictException) {
-				return new PessimisticLockingFailureException(ex.getMessage(), ex);
+			if (cause instanceof SynchronizationCommitConflictException) {
+				return new PessimisticLockingFailureException(cause.getMessage(), cause);
 			}
 		}
-		if (ex instanceof CopyException) {
-			return new GemfireSystemException(ex);
+
+		if (cause instanceof CopyException) {
+			return new GemfireSystemException(cause);
 		}
-		if (ex instanceof FunctionException) {
-			return new InvalidDataAccessApiUsageException(ex.getMessage(), ex);
+		if (cause instanceof FunctionException) {
+			return new InvalidDataAccessApiUsageException(cause.getMessage(), cause);
 		}
-		if (ex instanceof GemFireCacheException) {
-			return convertGemfireAccessException(((GemFireCacheException) ex).getCacheException());
+		if (cause instanceof GemFireCacheException) {
+			return convertGemfireAccessException(((GemFireCacheException) cause).getCacheException());
 		}
-		if (ex instanceof GemFireConfigException) {
-			return new GemfireSystemException(ex);
+		if (cause instanceof GemFireConfigException) {
+			return new GemfireSystemException(cause);
 		}
-		if (ex instanceof GemFireIOException) {
-			return new DataAccessResourceFailureException(ex.getMessage(), ex);
+		if (cause instanceof GemFireIOException) {
+			return new DataAccessResourceFailureException(cause.getMessage(), cause);
 		}
-		if (ex instanceof GemFireSecurityException) {
-			return new PermissionDeniedDataAccessException(ex.getMessage(), ex);
+		if (cause instanceof GemFireSecurityException) {
+			return new PermissionDeniedDataAccessException(cause.getMessage(), cause);
 		}
-		if (ex instanceof IncompatibleSystemException) {
-			return new GemfireSystemException(ex);
+		if (cause instanceof IncompatibleSystemException) {
+			return new GemfireSystemException(cause);
 		}
-		if (ex instanceof InternalGemFireException) {
-			return new GemfireSystemException(ex);
+		if (cause instanceof InternalGemFireException) {
+			return new GemfireSystemException(cause);
 		}
-		if (ex instanceof InvalidValueException) {
-			return new TypeMismatchDataAccessException(ex.getMessage(), ex);
+		if (cause instanceof InvalidValueException) {
+			return new TypeMismatchDataAccessException(cause.getMessage(), cause);
 		}
-		if (ex instanceof LeaseExpiredException) {
-			return new PessimisticLockingFailureException(ex.getMessage(), ex);
+		if (cause instanceof LeaseExpiredException) {
+			return new PessimisticLockingFailureException(cause.getMessage(), cause);
 		}
-		if (ex instanceof NoSystemException) {
-			return new GemfireSystemException(ex);
+		if (cause instanceof NoSystemException) {
+			return new GemfireSystemException(cause);
 		}
-		if (ex instanceof org.apache.geode.admin.RuntimeAdminException) {
-			return new GemfireSystemException(ex);
+		if (cause instanceof org.apache.geode.admin.RuntimeAdminException) {
+			return new GemfireSystemException(cause);
 		}
-		if (ex instanceof ServerConnectivityException) {
-			return new DataAccessResourceFailureException(ex.getMessage(), ex);
+		if (cause instanceof ServerConnectivityException) {
+			return new DataAccessResourceFailureException(cause.getMessage(), cause);
 		}
-		if (ex instanceof SystemConnectException) {
-			return new DataAccessResourceFailureException(ex.getMessage(), ex);
+		if (cause instanceof SystemConnectException) {
+			return new DataAccessResourceFailureException(cause.getMessage(), cause);
 		}
-		if (ex instanceof SystemIsRunningException) {
-			return new GemfireSystemException(ex);
+		if (cause instanceof SystemIsRunningException) {
+			return new GemfireSystemException(cause);
 		}
-		if (ex instanceof UnmodifiableException) {
-			return new GemfireSystemException(ex);
+		if (cause instanceof UnmodifiableException) {
+			return new GemfireSystemException(cause);
 		}
 
 		// for exceptions that had their parent changed in 6.5
-		DataAccessException dae = convertQueryExceptions(ex);
-		if (dae != null)
-			return dae;
+		DataAccessException dataAccessException = convertQueryExceptions(cause);
 
-		// fall back
-		return new GemfireSystemException(ex);
+		if (dataAccessException != null) {
+			return dataAccessException;
+		}
+
+		return new GemfireSystemException(cause);
+	}
+
+	/**
+	 * Converts the given (checked) Gemfire exception to an appropriate one from the
+	 * <code>org.springframework.dao</code> hierarchy.
+	 *
+	 * @param cause Gemfire unchecked exception
+	 * @return new the corresponding DataAccessException instance
+	 */
+	@SuppressWarnings("deprecation")
+	public static DataAccessException convertGemfireAccessException(GemFireCheckedException cause) {
+
+		if (cause instanceof AdminException) {
+			return new GemfireSystemException(cause);
+		}
+
+		if (cause instanceof QueryException) {
+			return new GemfireQueryException((QueryException) cause);
+		}
+
+		if (cause instanceof VersionException) {
+			return new DataAccessResourceFailureException(cause.getMessage(), cause);
+		}
+
+		return new GemfireSystemException(cause);
+	}
+
+	/**
+	 * Converts the given (unchecked) Gemfire exception to an appropriate one from the
+	 * <code>org.springframework.dao</code> hierarchy. This method exists to handle backwards compatibility
+	 * for exceptions that had their parents changed in Pivotal GemFire 6.5.
+	 *
+	 * @param cause Gemfire unchecked exception
+	 * @return new the corresponding DataAccessException instance
+	 */
+	public static DataAccessException convertGemfireAccessException(IndexInvalidException cause) {
+		return new GemfireIndexException(cause);
+	}
+
+	/**
+	 * Converts the given (unchecked) Gemfire exception to an appropriate one from the
+	 * <code>org.springframework.dao</code> hierarchy. This method exists to handle backwards compatibility
+	 * for exceptions that had their parents changed in Pivotal GemFire 6.5.
+	 *
+	 * @param cause Gemfire unchecked exception
+	 * @return new the corresponding DataAccessException instance
+	 */
+	public static DataAccessException convertGemfireAccessException(QueryInvalidException cause) {
+		return new GemfireQueryException(cause);
+	}
+
+	/**
+	 * Package protected method for detecting CqInvalidException which has been removed in Pivotal GemFire 6.5 GA.
+	 */
+	static boolean isCqInvalidException(RuntimeException cause) {
+		return CQ_EXCEPTION_CLASS != null && CQ_EXCEPTION_CLASS.isInstance(cause);
 	}
 
 	/**
@@ -253,76 +314,21 @@ public abstract class GemfireCacheUtils {
 	 * parent changed. This method exists to 'fool' the compiler type checks
 	 * by loosening the type so the code compiles on both 6.5 (pre and current) branches.
 	 */
-	static DataAccessException convertQueryExceptions(RuntimeException ex) {
-		if (ex instanceof IndexInvalidException) {
-			return convertGemfireAccessException((IndexInvalidException) ex);
-		}
-		if (ex instanceof QueryInvalidException) {
-			return convertGemfireAccessException((QueryInvalidException) ex);
+	static DataAccessException convertQueryExceptions(RuntimeException cause) {
+
+		if (cause instanceof IndexInvalidException) {
+			return convertGemfireAccessException((IndexInvalidException) cause);
 		}
 
-		if (isCqInvalidException(ex)) {
-			return convertCqInvalidException(ex);
+		if (cause instanceof QueryInvalidException) {
+			return convertGemfireAccessException((QueryInvalidException) cause);
 		}
 
-		// fall back
-		return new GemfireSystemException(ex);
-	}
-
-	/**
-	 * Converts the given (checked) Gemfire exception to an appropriate one from the
-	 * <code>org.springframework.dao</code> hierarchy.
-	 *
-	 * @param ex Gemfire unchecked exception
-	 * @return new the corresponding DataAccessException instance
-	 */
-	@SuppressWarnings("deprecation")
-	public static DataAccessException convertGemfireAccessException(GemFireCheckedException ex) {
-		// query exceptions
-		if (ex instanceof QueryException) {
-			return new GemfireQueryException((QueryException) ex);
+		if (isCqInvalidException(cause)) {
+			return convertCqInvalidException(cause);
 		}
-		// version exception
-		if (ex instanceof VersionException) {
-			return new DataAccessResourceFailureException(ex.getMessage(), ex);
-		}
-		// admin exception
-		if (ex instanceof org.apache.geode.admin.AdminException) {
-			return new GemfireSystemException(ex);
-		}
-		// fall back
-		return new GemfireSystemException(ex);
-	}
 
-	/**
-	 * Converts the given (unchecked) Gemfire exception to an appropriate one from the
-	 * <code>org.springframework.dao</code> hierarchy. This method exists to handle backwards compatibility
-	 * for exceptions that had their parents changed in Pivotal GemFire 6.5.
-	 *
-	 * @param ex Gemfire unchecked exception
-	 * @return new the corresponding DataAccessException instance
-	 */
-	public static DataAccessException convertGemfireAccessException(IndexInvalidException ex) {
-		return new GemfireIndexException(ex);
-	}
-
-	/**
-	 * Converts the given (unchecked) Gemfire exception to an appropriate one from the
-	 * <code>org.springframework.dao</code> hierarchy. This method exists to handle backwards compatibility
-	 * for exceptions that had their parents changed in Pivotal GemFire 6.5.
-	 *
-	 * @param ex Gemfire unchecked exception
-	 * @return new the corresponding DataAccessException instance
-	 */
-	public static DataAccessException convertGemfireAccessException(QueryInvalidException ex) {
-		return new GemfireQueryException(ex);
-	}
-
-	/**
-	 * Package protected method for detecting CqInvalidException which has been removed in Pivotal GemFire 6.5 GA.
-	 */
-	static boolean isCqInvalidException(RuntimeException ex) {
-		return (CQ_EXCEPTION_CLASS != null && CQ_EXCEPTION_CLASS.isAssignableFrom(ex.getClass()));
+		return new GemfireSystemException(cause);
 	}
 
 	/**
@@ -330,10 +336,10 @@ public abstract class GemfireCacheUtils {
 	 * <code>org.springframework.dao</code> hierarchy. This method exists to handle backwards compatibility
 	 * for exceptions that have been removed in 6.5.
 	 *
-	 * @param ex Gemfire unchecked exception
+	 * @param cause Gemfire unchecked exception
 	 * @return new the corresponding DataAccessException instance
 	 */
-	static DataAccessException convertCqInvalidException(RuntimeException ex) {
-		return new GemfireQueryException(ex);
+	static DataAccessException convertCqInvalidException(RuntimeException cause) {
+		return new GemfireQueryException(cause);
 	}
 }

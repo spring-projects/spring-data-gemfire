@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
@@ -51,7 +52,7 @@ public abstract class SpringUtils {
 
 		Collections.addAll(dependsOnList, nullSafeArray(bean.getDependsOn(), String.class));
 		dependsOnList.addAll(Arrays.asList(nullSafeArray(beanNames, String.class)));
-		bean.setDependsOn(dependsOnList.toArray(new String[dependsOnList.size()]));
+		bean.setDependsOn(dependsOnList.toArray(new String[0]));
 
 		return bean;
 	}
@@ -59,9 +60,9 @@ public abstract class SpringUtils {
 	public static Optional<Object> getPropertyValue(BeanDefinition beanDefinition, String propertyName) {
 
 		return Optional.ofNullable(beanDefinition)
-			.map(it -> it.getPropertyValues())
+			.map(BeanDefinition::getPropertyValues)
 			.map(propertyValues -> propertyValues.getPropertyValue(propertyName))
-			.map(propertyValue -> propertyValue.getValue());
+			.map(PropertyValue::getValue);
 	}
 
 	public static BeanDefinition setPropertyReference(BeanDefinition beanDefinition,

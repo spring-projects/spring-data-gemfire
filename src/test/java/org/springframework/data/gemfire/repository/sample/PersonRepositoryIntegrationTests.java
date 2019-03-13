@@ -80,7 +80,8 @@ public class PersonRepositoryIntegrationTests {
 
 	@Before
 	public void setup() {
-		if (personRepository.count() == 0) {
+
+		if (this.personRepository.count() == 0) {
 			sourDoe = personRepository.save(sourDoe);
 			sandyHandy = personRepository.save(sandyHandy);
 			jonDoe = personRepository.save(jonDoe);
@@ -91,10 +92,11 @@ public class PersonRepositoryIntegrationTests {
 			cookieDoe = personRepository.save(cookieDoe);
 		}
 
-		assertThat(personRepository.count()).isEqualTo(8L);
+		assertThat(this.personRepository.count()).isEqualTo(8L);
 	}
 
 	protected <T> List<T> asList(Iterable<T> iterable) {
+
 		List<T> list = new ArrayList<T>();
 
 		for (T element : iterable) {
@@ -117,12 +119,13 @@ public class PersonRepositoryIntegrationTests {
 	}
 
 	protected Sort newSort(Sort.Order... orders) {
-		return new Sort(orders);
+		return Sort.by(orders);
 	}
 
 	@Test
 	public void findAllPeopleSorted() {
-		Iterable<Person> people = personRepository.findAll(newSort(newSortOrder("firstname")));
+
+		Iterable<Person> people = this.personRepository.findAll(newSort(newSortOrder("firstname")));
 
 		assertThat(people).isNotNull();
 
@@ -135,7 +138,8 @@ public class PersonRepositoryIntegrationTests {
 
 	@Test
 	public void findDistinctPeopleOrderedByLastnameDescendingFirstnameAscending() {
-		List<Person> actualPeople = personRepository.findDistinctPeopleByOrderByLastnameDesc(
+
+		List<Person> actualPeople = this.personRepository.findDistinctPeopleByOrderByLastnameDesc(
 			newSort(newSortOrder("firstname")));
 
 		assertThat(actualPeople).isNotNull();
@@ -146,7 +150,8 @@ public class PersonRepositoryIntegrationTests {
 
 	@Test
 	public void findDistinctPeopleByLastnameUnordered() {
-		List<Person> actualPeople = personRepository.findDistinctByLastname("Handy", null);
+
+		List<Person> actualPeople = this.personRepository.findDistinctByLastname("Handy", null);
 
 		assertThat(actualPeople).isNotNull();
 		assertThat(actualPeople.size()).isEqualTo(2);
@@ -155,7 +160,8 @@ public class PersonRepositoryIntegrationTests {
 
 	@Test
 	public void findDistinctPeopleByFirstOrLastNameWithSort() {
-		Collection<Person> people = personRepository.findDistinctByFirstnameOrLastname("Cookie", "Pigg",
+
+		Collection<Person> people = this.personRepository.findDistinctByFirstnameOrLastname("Cookie", "Pigg",
 			newSort(newSortOrder("lastname", Sort.Direction.DESC), newSortOrder("firstname", Sort.Direction.ASC)));
 
 		assertThat(people).isNotNull();
@@ -172,7 +178,8 @@ public class PersonRepositoryIntegrationTests {
 
 	@Test
 	public void findPersonByFirstAndLastNameIgnoringCase() {
-		Collection<Person> people = personRepository.findByFirstnameIgnoreCaseAndLastnameIgnoreCase("jON", "doE");
+
+		Collection<Person> people = this.personRepository.findByFirstnameIgnoreCaseAndLastnameIgnoreCase("jON", "doE");
 
 		assertThat(people).isNotNull();
 		assertThat(people.size()).isEqualTo(1);
@@ -181,7 +188,8 @@ public class PersonRepositoryIntegrationTests {
 
 	@Test
 	public void findByFirstAndLastNameAllIgnoringCase() {
-		Collection<Person> people = personRepository.findByFirstnameAndLastnameAllIgnoringCase("IMa", "PIGg");
+
+		Collection<Person> people = this.personRepository.findByFirstnameAndLastnameAllIgnoringCase("IMa", "PIGg");
 
 		assertThat(people).isNotNull();
 		assertThat(people.size()).isEqualTo(1);
@@ -195,6 +203,7 @@ public class PersonRepositoryIntegrationTests {
 	public static class GemFireConfiguration {
 
 		Properties gemfireProperties() {
+
 			Properties gemfireProperties = new Properties();
 
 			gemfireProperties.setProperty("name", applicationName());
@@ -215,6 +224,7 @@ public class PersonRepositoryIntegrationTests {
 
 		@Bean
 		CacheFactoryBean gemfireCache() {
+
 			CacheFactoryBean gemfireCache = new CacheFactoryBean();
 
 			gemfireCache.setClose(true);
@@ -225,6 +235,7 @@ public class PersonRepositoryIntegrationTests {
 
 		@Bean(name = "simple")
 		LocalRegionFactoryBean simpleRegion(Cache gemfireCache, RegionAttributes<Long, Person> simpleRegionAttributes) {
+
 			LocalRegionFactoryBean<Long, Person> simpleRegion = new LocalRegionFactoryBean<Long, Person>();
 
 			simpleRegion.setAttributes(simpleRegionAttributes);
@@ -238,6 +249,7 @@ public class PersonRepositoryIntegrationTests {
 		@Bean
 		@SuppressWarnings("unchecked")
 		RegionAttributesFactoryBean simpleRegionAttributes() {
+
 			RegionAttributesFactoryBean simpleRegionAttributes = new RegionAttributesFactoryBean();
 
 			simpleRegionAttributes.setKeyConstraint(Long.class);

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.support;
 
 import java.util.Arrays;
@@ -39,6 +38,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.SimpleApplicationEventMulticaster;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.data.gemfire.util.CacheUtils;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -95,6 +95,7 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	 * @see org.springframework.context.ConfigurableApplicationContext
 	 */
 	public static synchronized ConfigurableApplicationContext getApplicationContext() {
+
 		Assert.state(applicationContext != null,
 			"A Spring ApplicationContext was not configured and initialized properly");
 
@@ -111,7 +112,8 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	 * @see java.lang.ClassLoader
 	 */
 	public static void setBeanClassLoader(ClassLoader beanClassLoader) {
-		if (applicationContext == null || !applicationContext.isActive()) {
+
+		if (isApplicationContextInitializable()) {
 			beanClassLoaderReference.set(beanClassLoader);
 		}
 		else {
@@ -132,6 +134,7 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	 * @see org.springframework.context.event.ContextRefreshedEvent
 	 */
 	protected static void notifyOnExistingContextRefreshedEvent(ApplicationListener<ContextRefreshedEvent> listener) {
+
 		synchronized (applicationEventNotifier) {
 			if (contextRefreshedEvent != null) {
 				listener.onApplicationEvent(contextRefreshedEvent);
@@ -156,6 +159,7 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	 * 	#addApplicationListener(org.springframework.context.ApplicationListener)
 	 */
 	public static <T extends ApplicationListener<ContextRefreshedEvent>> T register(T listener) {
+
 		synchronized (applicationEventNotifier) {
 			applicationEventNotifier.addApplicationListener(listener);
 			notifyOnExistingContextRefreshedEvent(listener);
@@ -173,7 +177,9 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	 * @see #unregister(Class)
 	 */
 	public static boolean register(Class<?> annotatedClass) {
+
 		Assert.notNull(annotatedClass, "The Spring annotated class to register must not be null");
+
 		return registeredAnnotatedClasses.add(annotatedClass);
 	}
 
@@ -192,6 +198,7 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	 * 	#removeApplicationListener(org.springframework.context.ApplicationListener)
 	 */
 	public static <T extends ApplicationListener<ContextRefreshedEvent>> T unregister(T listener) {
+
 		synchronized (applicationEventNotifier) {
 			applicationEventNotifier.removeApplicationListener(listener);
 		}
@@ -222,11 +229,11 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 		return LogFactory.getLog(getClass());
 	}
 
-	/* (non-Javadoc) */
 	private boolean isConfigurable(Collection<Class<?>> annotatedClasses, String[] basePackages,
-		String[] contextConfigLocations) {
+			String[] contextConfigLocations) {
 
-		return !(CollectionUtils.isEmpty(annotatedClasses) && ObjectUtils.isEmpty(basePackages)
+		return !(CollectionUtils.isEmpty(annotatedClasses)
+			&& ObjectUtils.isEmpty(basePackages)
 			&& ObjectUtils.isEmpty(contextConfigLocations));
 	}
 
@@ -255,21 +262,24 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	 * @see org.springframework.context.support.ClassPathXmlApplicationContext
 	 */
 	protected ConfigurableApplicationContext createApplicationContext(String[] basePackages, String[] configLocations) {
-		Assert.isTrue(isConfigurable(registeredAnnotatedClasses, basePackages, configLocations),
-			"'AnnotatedClasses', 'basePackages' or 'configLocations' must be specified in order to"
-				+ " construct and configure an instance of the ConfigurableApplicationContext");
 
-		Class<?>[] annotatedClasses = registeredAnnotatedClasses.toArray(
-			new Class<?>[registeredAnnotatedClasses.size()]);
+		String message = "'AnnotatedClasses', 'basePackages' or 'configLocations' must be specified"
+			+ " in order to construct and configure an instance of the ConfigurableApplicationContext";
 
-		return scanBasePackages(registerAnnotatedClasses(createApplicationContext(configLocations),
-			annotatedClasses), basePackages);
+		Assert.isTrue(isConfigurable(registeredAnnotatedClasses, basePackages, configLocations), message);
+
+		Class<?>[] annotatedClasses = registeredAnnotatedClasses.toArray(new Class<?>[0]);
+
+		ConfigurableApplicationContext applicationContext = createApplicationContext(configLocations);
+
+		return scanBasePackages(registerAnnotatedClasses(applicationContext, annotatedClasses), basePackages);
 	}
 
-	/* (non-Javadoc) - used for testing purposes only */
 	ConfigurableApplicationContext createApplicationContext(String[] configLocations) {
-		return (ObjectUtils.isEmpty(configLocations) ? new AnnotationConfigApplicationContext()
-			: new ClassPathXmlApplicationContext(configLocations, false));
+
+		return ObjectUtils.isEmpty(configLocations)
+			? new AnnotationConfigApplicationContext()
+			: new ClassPathXmlApplicationContext(configLocations, false);
 	}
 
 	/**
@@ -284,6 +294,7 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	 * @throws java.lang.IllegalArgumentException if the ApplicationContext reference is null!
 	 */
 	protected ConfigurableApplicationContext initApplicationContext(ConfigurableApplicationContext applicationContext) {
+
 		Assert.notNull(applicationContext, "ConfigurableApplicationContext must not be null");
 
 		applicationContext.addApplicationListener(this);
@@ -302,6 +313,7 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	 * @throws java.lang.IllegalArgumentException if the ApplicationContext reference is null!
 	 */
 	protected ConfigurableApplicationContext refreshApplicationContext(ConfigurableApplicationContext applicationContext) {
+
 		Assert.notNull(applicationContext, "ConfigurableApplicationContext must not be null");
 
 		applicationContext.refresh();
@@ -323,11 +335,15 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	ConfigurableApplicationContext registerAnnotatedClasses(ConfigurableApplicationContext applicationContext,
 			Class<?>[] annotatedClasses) {
 
-		if (applicationContext instanceof AnnotationConfigApplicationContext
-				&& !ObjectUtils.isEmpty(annotatedClasses)) {
+		return applicationContext instanceof AnnotationConfigApplicationContext && !ObjectUtils.isEmpty(annotatedClasses)
+			? doRegister(applicationContext, annotatedClasses)
+			: applicationContext;
+	}
 
-			((AnnotationConfigApplicationContext) applicationContext).register(annotatedClasses);
-		}
+	ConfigurableApplicationContext doRegister(ConfigurableApplicationContext applicationContext,
+			Class<?>[] annotatedClasses) {
+
+		((AnnotationConfigApplicationContext) applicationContext).register(annotatedClasses);
 
 		return applicationContext;
 	}
@@ -345,11 +361,14 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	ConfigurableApplicationContext scanBasePackages(ConfigurableApplicationContext applicationContext,
 			String[] basePackages) {
 
-		if (applicationContext instanceof AnnotationConfigApplicationContext
-				&& !ObjectUtils.isEmpty(basePackages)) {
+		return applicationContext instanceof AnnotationConfigApplicationContext && !ObjectUtils.isEmpty(basePackages)
+			? doScan(applicationContext, basePackages)
+			: applicationContext;
+	}
 
-			((AnnotationConfigApplicationContext) applicationContext).scan(basePackages);
-		}
+	ConfigurableApplicationContext doScan(ConfigurableApplicationContext applicationContext, String[] basePackages) {
+
+		((AnnotationConfigApplicationContext) applicationContext).scan(basePackages);
 
 		return applicationContext;
 	}
@@ -363,6 +382,7 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	 * @see java.lang.ClassLoader
 	 */
 	ConfigurableApplicationContext setClassLoader(ConfigurableApplicationContext applicationContext) {
+
 		ClassLoader beanClassLoader = beanClassLoaderReference.get();
 
 		if (applicationContext instanceof DefaultResourceLoader && beanClassLoader != null) {
@@ -372,25 +392,33 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 		return applicationContext;
 	}
 
+	@Override
+	@SuppressWarnings("deprecation")
+	public void init(Properties parameters) {
+		init(CacheUtils.getCache(), parameters);
+	}
+
 	/**
-	 * Initializes a Spring ApplicationContext with the given parameters specified with a Pivotal GemFire &lt;initializer&gt;
-	 * block in cache.xml.
+	 * Initializes a Spring {@link ApplicationContext} with the given parameters specified with an Apache Geode
+	 * or Pivotal GemFire &lt;initializer&gt; block in {@literal cache.xml}.
 	 *
-	 * @param parameters a Properties object containing the configuration parameters and settings defined in the
-	 * Pivotal GemFire cache.xml &lt;initializer&gt; block for the declared SpringContextBootstrappingInitializer
-	 * Pivotal GemFire Declarable object.
-	 * @throws org.springframework.context.ApplicationContextException if the Spring ApplicationContext could not be
-	 * successfully created, configured and initialized.
+	 * @param parameters {@link Properties} object containing the configuration parameters and settings defined in the
+	 * Apache Geode/Pivotal GemFire {@literal cache.xml} &lt;initializer&gt; block for the declared
+	 * {@link SpringContextBootstrappingInitializer} Apache Geode/Pivotal GemFire {@link Declarable} object.
+	 * @param cache reference to the peer {@link Cache}.
+	 * @throws org.springframework.context.ApplicationContextException if the Spring {@link ApplicationContext}
+	 * could not be successfully constructed, configured and initialized.
 	 * @see #createApplicationContext(String[], String[])
 	 * @see #initApplicationContext(org.springframework.context.ConfigurableApplicationContext)
 	 * @see #refreshApplicationContext(org.springframework.context.ConfigurableApplicationContext)
 	 * @see java.util.Properties
 	 */
-	@Override
-	public void init(Properties parameters) {
+	public void init(Cache cache, Properties parameters) {
+
 		try {
 			synchronized (SpringContextBootstrappingInitializer.class) {
-				if (applicationContext == null || !applicationContext.isActive()) {
+				if (isApplicationContextInitializable()) {
+
 					String basePackages = parameters.getProperty(BASE_PACKAGES_PARAMETER);
 					String contextConfigLocations = parameters.getProperty(CONTEXT_CONFIG_LOCATIONS_PARAMETER);
 
@@ -419,6 +447,10 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 		}
 	}
 
+	private static boolean isApplicationContextInitializable() {
+		return applicationContext == null || !applicationContext.isActive();
+	}
+
 	/**
 	 * Null-safe operation used to get the ID of the Spring ApplicationContext.
 	 *
@@ -427,7 +459,10 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	 * @see org.springframework.context.ApplicationContext#getId()
 	 */
 	String nullSafeGetApplicationContextId(ApplicationContext applicationContext) {
-		return (applicationContext != null ? applicationContext.getId() : null);
+
+		return applicationContext != null
+			? applicationContext.getId()
+			: null;
 	}
 
 	/**
@@ -448,6 +483,7 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	 */
 	@Override
 	public void onApplicationEvent(ApplicationContextEvent event) {
+
 		if (event instanceof ContextRefreshedEvent) {
 			synchronized (applicationEventNotifier) {
 				contextRefreshedEvent = (ContextRefreshedEvent) event;
