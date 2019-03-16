@@ -134,12 +134,12 @@ javadoc {
       ]
 
      links = [
-        "http://static.springframework.org/spring/docs/3.1.x/javadoc-api",
-        "http://download.oracle.com/javase/6/docs/api",
-        "http://www.gemstone.com/docs/6.5.1/product/docs/japi/",
-        "http://asm.objectweb.org/asm223/javadoc/user",
-        "http://logging.apache.org/log4j/docs/api/",
-        "http://atinject.googlecode.com/svn/trunk/javadoc/"
+        "https://docs.spring.io/spring/docs/3.1.x/javadoc-api",
+        "https://download.oracle.com/javase/6/docs/api",
+        "https://www.gemstone.com/docs/6.5.1/product/docs/japi/",
+        "https://asm.ow2.org/asm223/javadoc/user",
+        "https://logging.apache.org/log4j/docs/api/",
+        "https://atinject.googlecode.com/svn/trunk/javadoc/"
      ]
 
      exclude "org/springframework/data/gemfire/config/**"

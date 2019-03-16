@@ -10,7 +10,7 @@ apply plugin: 'application'
 
 repositories {
     // Public Spring artefacts
-    maven { url "http://repo.springsource.org/libs-snapshot" }
+    maven { url "https://repo.springsource.org/libs-snapshot" }
     mavenLocal()
 }
 
