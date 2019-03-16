@@ -173,10 +173,10 @@ javadoc {
       ]
 
       links = [
-        "http://docs.oracle.com/javase/6/docs/api/",
-        "http://docs.spring.io/spring/docs/current/javadoc-api/",
-        "http://gemfire.docs.pivotal.io/docs-gemfire/latest/javadocs/japi/",
-        "http://logging.apache.org/log4j/1.2/apidocs/",
+        "https://docs.oracle.com/javase/6/docs/api/",
+        "https://docs.spring.io/spring/docs/current/javadoc-api/",
+        "https://gemfire.docs.pivotal.io/docs-gemfire/latest/javadocs/japi/",
+        "https://logging.apache.org/log4j/1.2/apidocs/",
       ]
 
       exclude "org/springframework/data/gemfire/config/**"
