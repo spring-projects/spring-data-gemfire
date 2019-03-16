@@ -32,15 +32,15 @@ def customizePom(pom, gradleProject) {
         generatedPom.project {
             name = gradleProject.description
             description = gradleProject.description
-            url = 'http://github.com/spring-projects/spring-gemfire'
+            url = 'https://github.com/spring-projects/spring-gemfire'
             organization {
                 name = 'SpringSource'
-                url = 'http://projects.spring.io/spring-data-gemfire/'
+                url = 'https://projects.spring.io/spring-data-gemfire/'
             }
             licenses {
                 license {
                     name 'The Apache Software License, Version 2.0'
-                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    url 'https://www.apache.org/licenses/LICENSE-2.0.txt'
                     distribution 'repo'
                 }
             }
