@@ -62,7 +62,7 @@ import org.springframework.util.ObjectUtils;
  * @see org.apache.geode.cache.ExpirationAction
  * @see org.apache.geode.cache.ExpirationAttributes
  * @see org.apache.geode.cache.Region
- * @see <a href="http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/#bootstrap:region:expiration:annotation">Annotation-based Data Expiration</a>
+ * @see <a href="https://docs.spring.io/spring-data-gemfire/docs/current/reference/html/#bootstrap:region:expiration:annotation">Annotation-based Data Expiration</a>
  * @since 1.7.0
  */
 @SuppressWarnings("unused")

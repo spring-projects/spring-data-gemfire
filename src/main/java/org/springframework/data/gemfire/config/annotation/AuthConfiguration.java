@@ -34,7 +34,7 @@ import org.springframework.data.gemfire.util.PropertiesBuilder;
  * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar
  * @see org.springframework.data.gemfire.config.annotation.EnableAuth
  * @see org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport
- * @see <a href="Security">http://gemfire.docs.pivotal.io/docs-gemfire/managing/security/chapter_overview.html</a>
+ * @see <a href="Security">https://gemfire.docs.pivotal.io/docs-gemfire/managing/security/chapter_overview.html</a>
  * @since 1.9.0
  */
 public class AuthConfiguration extends EmbeddedServiceConfigurationSupport {

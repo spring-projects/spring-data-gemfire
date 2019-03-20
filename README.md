@@ -1,7 +1,7 @@
 Spring Data for Pivotal GemFire
 ===============================
 
-The primary goal of the [Spring Data for Pivotal GemFire](http://projects.spring.io/spring-data-gemfire) project
+The primary goal of the [Spring Data for Pivotal GemFire](https://projects.spring.io/spring-data-gemfire) project
 is to make it easier to build highly scalable, _Spring_ powered applications using [Pivotal GemFire](https://pivotal.io/pivotal-gemfire)
 as the underlying distributed, in-memory data management platform.
 
@@ -12,15 +12,15 @@ For examples on using the _Spring Data for Pivotal GemFire_, see the
 
 # Getting Help
 
-Read the main project [website](http://projects.spring.io/spring-data-gemfire/) along with
-the [User Guide](http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/).
+Read the main project [website](https://projects.spring.io/spring-data-gemfire/) along with
+the [User Guide](https://docs.spring.io/spring-data-gemfire/docs/current/reference/html/).
 
-Look at the source code and the [JavaDocs](http://docs.spring.io/spring-data-gemfire/docs/current/api/).
+Look at the source code and the [JavaDocs](https://docs.spring.io/spring-data-gemfire/docs/current/api/).
 
 For more detailed questions, visit [_StackOverflow_](https://stackoverflow.com/questions/tagged/spring-data-gemfire).
 
 If you are new to _Spring_ as well as _Spring Data for Pivotal GemFire_, look for information about
-[_Spring_ projects](http://spring.io/projects).
+[_Spring_ projects](https://spring.io/projects).
 
 Quick Start
 -----------
@@ -40,7 +40,7 @@ For developers in a hurry, you can download the JAR using:
 <repository>
   <id>spring-maven-snapshot</id>
   <name>Spring Maven SNAPSHOT Repository</name>
-  <url>http://repo.spring.io/snapshot</url>
+  <url>https://repo.spring.io/snapshot</url>
   <snapshots><enabled>true</enabled></snapshots>
 </repository>
 
@@ -48,7 +48,7 @@ For developers in a hurry, you can download the JAR using:
 <repository>
   <id>spring-maven-milestone</id>
   <name>Spring Maven Milestone Repository</name>
-  <url>http://repo.spring.io/milestone</url>
+  <url>https://repo.spring.io/milestone</url>
 </repository>
 ~~~~~
 
@@ -56,9 +56,9 @@ For developers in a hurry, you can download the JAR using:
 
 ~~~~~ groovy
 repositories {
-   mavenRepo name: "spring-snapshot", urls: "http://repo.spring.io/snapshot"
-   mavenRepo name: "spring-milestone", urls: "http://repo.spring.io/milestone"
-   mavenRepo name: "spring-plugins" , urls: "http://repo.spring.io/plugins-release"
+   mavenRepo name: "spring-snapshot", urls: "https://repo.spring.io/snapshot"
+   mavenRepo name: "spring-milestone", urls: "https://repo.spring.io/milestone"
+   mavenRepo name: "spring-plugins" , urls: "https://repo.spring.io/plugins-release"
 }
 
 dependencies {
@@ -73,8 +73,8 @@ dependencies {
   xmlns:gfe="http://www.springframework.org/schema/gemfire"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance
   xsi:schemaLocation="
-    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-    http://www.springframework.org/schema/gemfire http://www.springframework.org/schema/gemfire/spring-gemfire.xsd">
+    http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/gemfire https://www.springframework.org/schema/gemfire/spring-gemfire.xsd">
 
   <gfe:cache/>
 
@@ -114,9 +114,9 @@ by responding to questions and joining the debate.
 * Create [JIRA](https://jira.spring.io/browse/SGF) tickets for bugs and new features and comment and vote on the bugs
 you are interested in.
 * GitHub is for social coding. If you want to write code, we encourage contributions through pull requests
-from [forks of this repository](http://help.github.com/forking/). If you want to contribute code this way,
+from [forks of this repository](https://help.github.com/forking/). If you want to contribute code this way,
 please reference a JIRA ticket as well covering the specific issue you are addressing.
-* Watch for upcoming articles on _Spring_ by [subscribing](http://spring.io/blog) to spring.io.
+* Watch for upcoming articles on _Spring_ by [subscribing](https://spring.io/blog) to spring.io.
 
 Before we accept a non-trivial patch or pull request we will need you to
 [sign the Contributor License Agreement](https://cla.pivotal.io/sign/spring). Signing the contributor’s agreement

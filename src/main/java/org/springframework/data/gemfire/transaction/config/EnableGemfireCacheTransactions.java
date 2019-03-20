@@ -35,10 +35,10 @@ import org.springframework.context.annotation.Import;
  * @see java.lang.annotation.Retention
  * @see java.lang.annotation.Target
  * @see org.springframework.context.annotation.Import
- * @see <a href="http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction">Spring Transaction Management</a>
- * @see <a href="http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/#apis:transaction-management">SDG Transaction Management</a>
- * @see <a href="http://gemfire.docs.pivotal.io/geode/developing/transactions/cache_transactions.html">Pivotal GemFire Cache Transactions</a>
- * @see <a href="http://geode.apache.org/docs/guide/12/developing/transactions/cache_transactions.html">Apache Geode Cache Transactions</a>
+ * @see <a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction">Spring Transaction Management</a>
+ * @see <a href="https://docs.spring.io/spring-data-gemfire/docs/current/reference/html/#apis:transaction-management">SDG Transaction Management</a>
+ * @see <a href="https://gemfire.docs.pivotal.io/geode/developing/transactions/cache_transactions.html">Pivotal GemFire Cache Transactions</a>
+ * @see <a href="https://geode.apache.org/docs/guide/12/developing/transactions/cache_transactions.html">Apache Geode Cache Transactions</a>
  * @since 2.0.0
  */
 @Target(ElementType.TYPE)

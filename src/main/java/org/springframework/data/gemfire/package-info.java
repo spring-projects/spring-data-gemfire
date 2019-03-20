@@ -1,7 +1,7 @@
 
 /**
  * Package providing integration of
- * <a href="http://www.gemstone.com/products/gemfire">GemFire</a>
+ * <a href="https://www.gemstone.com/products/gemfire">GemFire</a>
  * with Spring concepts.
  *
  * Contains helper classes, a template plus callback for GemFire

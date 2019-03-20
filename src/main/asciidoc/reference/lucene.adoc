@@ -1,7 +1,7 @@
 [[bootstrap:lucene]]
 = Apache Lucene Integration
 
-{x-data-store-website}[{data-store-name}] integrates with http://lucene.apache.org/[Apache Lucene] to let you
+{x-data-store-website}[{data-store-name}] integrates with https://lucene.apache.org/[Apache Lucene] to let you
 index and search on data stored in {data-store-name} by using Lucene queries. Search-based queries also include
 the ability to page through query results.
 
@@ -17,7 +17,7 @@ can be created in Spring (Data for {data-store-name}) XML config as follows:
 ----
 
 Additionally, Apache Lucene allows the specification of
-http://lucene.apache.org/core/6_5_0/core/org/apache/lucene/analysis/Analyzer.html[analyzers]
+https://lucene.apache.org/core/6_5_0/core/org/apache/lucene/analysis/Analyzer.html[analyzers]
 per field and can be configured as shown in the following example:
 
 [source,xml]
@@ -175,7 +175,7 @@ The operations in the `LuceneOperations` interface match the operations provided
 {x-data-store-javadoc}/org/apache/geode/cache/lucene/LuceneQuery.html[LuceneQuery] interface.
 However, {sdg-acronym} has the added value of translating proprietary {data-store-name} or Apache Lucene `Exceptions`
 into Spring's highly consistent and expressive DAO
-http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#dao-exceptions[exception hierarchy],
+https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#dao-exceptions[exception hierarchy],
 particularly as many modern data access operations involve more than one store or repository.
 
 Additionally, {sdg-acronym}'s `LuceneOperations` interface can shield your application from interface-breaking changes
@@ -285,7 +285,7 @@ to iterate over the contents.
 
 The only restriction to the Spring Data Commons Projection infrastructure is that the projection type must be
 an interface. However, it is possible to extend the provided SDC Projection infrastructure and provide a custom
-http://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/projection/ProjectionFactory.html[`ProjectionFactory`]
+https://docs.spring.io/spring-data/commons/docs/current/api/org/springframework/data/projection/ProjectionFactory.html[`ProjectionFactory`]
 that uses https://github.com/cglib/cglib[CGLIB] to generate proxy classes as the projected entity.
 
 You can use `setProjectionFactory(:ProjectionFactory)` to set a custom `ProjectionFactory` on a Lucene template.

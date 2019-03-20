@@ -276,7 +276,7 @@ when the `PdxSerializer.toData(..)` method is called during serialization.
 What happens when your entity defines a read-only property?
 
 First, it is important to understand what a "`read-only`" property is.  If you define a POJO by following the
-http://www.oracle.com/technetwork/java/javase/documentation/spec-136004.html[JavaBeans] specification (as Spring does),
+https://www.oracle.com/technetwork/java/javase/documentation/spec-136004.html[JavaBeans] specification (as Spring does),
 you might define a POJO with a read-only property, as follows:
 
 [source,java]

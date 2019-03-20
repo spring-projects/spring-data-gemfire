@@ -102,9 +102,9 @@ are shutdown, the grid data is completely destroyed.
 The "`Hello World`" sample uses both Spring XML and annotations for its configuration. The initial bootstrapping configuration is
 `app-context.xml`, which includes the cache configuration defined in the `cache-context.xml` file
 and performs classpath
-http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-classpath-scanning[component scanning]
+https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-classpath-scanning[component scanning]
 for Spring
-http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-annotation-config[components].
+https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-annotation-config[components].
 
 The cache configuration defines the {data-store-name} cache, a region, and for illustrative purposes, a `CacheListener`
 that acts as a logger.

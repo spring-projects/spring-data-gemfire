@@ -144,7 +144,7 @@ public class GemfireQueryMethodUnitTests {
 	}
 
 	/**
-	 * @link http://jira.spring.io/browse/SGF-112
+	 * @link https://jira.spring.io/browse/SGF-112
 	 */
 	@Test
 	public void rejectsQueryMethodWithPageableParameter() throws Exception {

@@ -69,7 +69,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @see GemfireCache#evict(Object)
  * @see GemfireCache#put(Object, Object)
- * @see <a href="http://stackoverflow.com/questions/39830488/gemfire-entrynotfoundexception-for-cacheevict">Gemfire EntryNotFoundException on @CacheEvict</a>
+ * @see <a href="https://stackoverflow.com/questions/39830488/gemfire-entrynotfoundexception-for-cacheevict">Gemfire EntryNotFoundException on @CacheEvict</a>
  * @see <a href="https://jira.spring.io/browse/SGF-539">Change GemfireCache.evict(key) to call Region.remove(key)</a>
  * @since 1.9.0
  */

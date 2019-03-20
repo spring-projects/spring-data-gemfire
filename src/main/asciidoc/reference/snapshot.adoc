@@ -12,7 +12,7 @@ As the {x-data-store-docs}/managing/cache_snapshots/chapter_overview.html[{data-
 snapshots let you save and subsequently reload the cached data later, which can be useful for moving data between
 environments, such as from production to a staging or test environment in order to reproduce data-related issues
 in a controlled context. You can combine {sdg-name}'s Snapshot Service support
-with http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-definition-profiles[Spring's bean definition profiles]
+with https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-definition-profiles[Spring's bean definition profiles]
 to load snapshot data specific to the environment as necessary.
 
 {sdg-name}'s support for {data-store-name}'s Snapshot Service begins with the `<gfe-data:snapshot-service>` element
@@ -187,7 +187,7 @@ to export data. However, you may want to trigger periodic, event-based snapshots
 from within your Spring application.
 
 For this purpose, {sdg-name} defines two additional Spring application events, extending Spring's
-http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/context/ApplicationEvent.html[`ApplicationEvent`]
+https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/context/ApplicationEvent.html[`ApplicationEvent`]
 class for imports and exports, respectively: `ImportSnapshotApplicationEvent` and `ExportSnapshotApplicationEvent`.
 
 The two application events can be targeted for the entire {data-store-name} cache or for individual {data-store-name}
