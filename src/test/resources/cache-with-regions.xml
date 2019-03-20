@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!DOCTYPE cache PUBLIC  "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN"
-	"http://www.gemstone.com/dtd/cache7_0.dtd">
+	"https://www.gemstone.com/dtd/cache7_0.dtd">
 <cache>
 	<region name="NativeLocalRegion" refid="LOCAL">
 		<region-attributes cloning-enabled="false"

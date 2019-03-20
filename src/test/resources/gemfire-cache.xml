@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!DOCTYPE cache PUBLIC "-//GemStone Systems, Inc.//GemFire Declarative Caching 5.7//EN" "http://www.gemstone.com/dtd/cache5_7.dtd">
+<!DOCTYPE cache PUBLIC "-//GemStone Systems, Inc.//GemFire Declarative Caching 5.7//EN" "https://www.gemstone.com/dtd/cache5_7.dtd">
 <cache lock-lease="120" lock-timeout="60" search-timeout="300">
   <region-attributes id="attTemplate" scope="local" data-policy="normal" initial-capacity="16" load-factor="0.75" concurrency-level="16" statistics-enabled="true">
     <key-constraint>java.lang.String</key-constraint>

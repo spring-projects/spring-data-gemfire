@@ -5,10 +5,10 @@
 	   xmlns:repo="http://www.springframework.org/schema/data/repository"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="
-	   	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-	   	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
-		http://www.springframework.org/schema/data/gemfire http://www.springframework.org/schema/data/gemfire/spring-data-gemfire.xsd
-		http://www.springframework.org/schema/data/repository http://www.springframework.org/schema/data/repository/spring-repository.xsd
+	   	http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+	   	http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/data/gemfire https://www.springframework.org/schema/data/gemfire/spring-data-gemfire.xsd
+		http://www.springframework.org/schema/data/repository https://www.springframework.org/schema/data/repository/spring-repository.xsd
 " default-lazy-init="true">
 
 	<context:property-placeholder/>

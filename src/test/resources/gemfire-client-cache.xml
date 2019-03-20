@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
   <!DOCTYPE client-cache PUBLIC
     "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN"
-    "http://www.gemstone.com/dtd/cache6_5.dtd">
+    "https://www.gemstone.com/dtd/cache6_5.dtd">
 
 <client-cache>      
    <pool name="DEFAULT">
