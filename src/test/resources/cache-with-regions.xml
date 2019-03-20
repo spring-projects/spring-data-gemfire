@@ -1,44 +1,50 @@
-<?xml version="1.0"?>
-<!DOCTYPE cache PUBLIC  "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN"
-	"http://www.gemstone.com/dtd/cache7_0.dtd">
-<cache>
+<?xml version="1.0" encoding="UTF-8"?>
+<cache xmlns="http://geode.apache.org/schema/cache"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://geode.apache.org/schema/cache https://geode.apache.org/schema/cache/cache-1.0.xsd"
+	   version="1.0">
+
 	<region name="NativeLocalRegion" refid="LOCAL">
 		<region-attributes cloning-enabled="false"
-			concurrency-checks-enabled="false"
-			concurrency-level="80"
-			initial-capacity="101"
-			load-factor="0.95">
+						   concurrency-checks-enabled="false"
+						   concurrency-level="80"
+						   initial-capacity="101"
+						   load-factor="0.95">
 			<key-constraint>java.lang.Integer</key-constraint>
 			<value-constraint>java.lang.String</value-constraint>
 		</region-attributes>
 	</region>
+
 	<region name="NativePartitionRegion">
 		<region-attributes data-policy="persistent-partition"
-			cloning-enabled="true"
-			concurrency-checks-enabled="true"
-			concurrency-level="40"
-			initial-capacity="51"
-			load-factor="0.85"
-			multicast-enabled="false">
+						   cloning-enabled="true"
+						   concurrency-checks-enabled="true"
+						   concurrency-level="40"
+						   initial-capacity="51"
+						   load-factor="0.85"
+						   multicast-enabled="false">
 			<key-constraint>java.lang.Integer</key-constraint>
 			<value-constraint>java.lang.String</value-constraint>
 		</region-attributes>
 	</region>
+
 	<region name="NativeReplicateRegion">
 		<region-attributes data-policy="persistent-replicate"
-			cloning-enabled="false"
-			concurrency-checks-enabled="true"
-			concurrency-level="20"
-			initial-capacity="23"
-			load-factor="0.75"
-			multicast-enabled="false"
-			scope="distributed-no-ack">
+						   cloning-enabled="false"
+						   concurrency-checks-enabled="true"
+						   concurrency-level="20"
+						   initial-capacity="23"
+						   load-factor="0.75"
+						   multicast-enabled="false"
+						   scope="distributed-no-ack">
 			<key-constraint>java.lang.Integer</key-constraint>
 			<value-constraint>java.lang.String</value-constraint>
 		</region-attributes>
 	</region>
+
 	<region name="NativeParentRegion" refid="REPLICATE">
 		<region name="NativeChildRegion" refid="REPLICATE">
 		</region>
 	</region>
+
 </cache>

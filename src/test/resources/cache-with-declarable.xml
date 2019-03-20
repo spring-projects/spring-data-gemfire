@@ -1,11 +1,17 @@
-<?xml version="1.0"?>
-<!DOCTYPE cache PUBLIC "-//GemStone Systems, Inc.//GemFire Declarative Caching 8.0//EN" "http://www.gemstone.com/dtd/cache8_0.dtd">
-<cache>
-  <region name="Example">
-    <region-attributes data-policy="normal">
-      <cache-loader>
-        <class-name>org.springframework.data.gemfire.support.WiringDeclarableSupportIntegrationTests$TestCacheLoader</class-name>
-      </cache-loader>
-    </region-attributes>
-  </region>
+<?xml version="1.0" encoding="UTF-8"?>
+<cache xmlns="http://geode.apache.org/schema/cache"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://geode.apache.org/schema/cache https://geode.apache.org/schema/cache/cache-1.0.xsd"
+	   version="1.0">
+
+	<region name="Example">
+		<region-attributes data-policy="normal">
+			<cache-loader>
+				<class-name>
+					org.springframework.data.gemfire.support.WiringDeclarableSupportIntegrationTests$TestCacheLoader
+				</class-name>
+			</cache-loader>
+		</region-attributes>
+	</region>
+
 </cache>

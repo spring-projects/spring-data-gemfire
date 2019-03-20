@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <cache xmlns="http://geode.apache.org/schema/cache"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	   xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+	   xsi:schemaLocation="http://geode.apache.org/schema/cache https://geode.apache.org/schema/cache/cache-1.0.xsd"
 	   version="1.0">
 
 	<region name="NativeLocalRegion" refid="LOCAL">
@@ -10,12 +10,14 @@
 			<value-constraint>java.lang.String</value-constraint>
 		</region-attributes>
 	</region>
+
 	<region name="NativePartitionRegion">
 		<region-attributes data-policy="partition" initial-capacity="1" load-factor="0.85">
 			<key-constraint>java.lang.Long</key-constraint>
 			<value-constraint>java.lang.String</value-constraint>
 		</region-attributes>
 	</region>
+
 	<region name="NativeReplicateRegion">
 		<region-attributes data-policy="replicate" initial-capacity="1" load-factor="0.75" scope="distributed-ack">
 			<key-constraint>java.lang.Integer</key-constraint>
