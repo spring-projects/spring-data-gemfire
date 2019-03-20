@@ -122,7 +122,7 @@ Note that the class itself must be registered as a Spring bean and each {data-st
 `@GemfireFunction`. In the preceding example, Spring's `@Component` annotation was used, but you can register the bean
 by using any method supported by Spring (such as XML configuration or with a Java configuration class when using
 Spring Boot). This lets the Spring container create an instance of this class and wrap it in a
-http://docs.spring.io/spring-data-gemfire/docs/current/api/org/springframework/data/gemfire/function/PojoFunctionWrapper.html[`PojoFunctionWrapper`].
+https://docs.spring.io/spring-data-gemfire/docs/current/api/org/springframework/data/gemfire/function/PojoFunctionWrapper.html[`PojoFunctionWrapper`].
 Spring creates a wrapper instance for each method annotated with `@GemfireFunction`. Each wrapper instance shares
 the same target object instance to invoke the corresponding method.
 
@@ -248,7 +248,7 @@ Function execution annotation processing in XML, insert the following element in
 
 The `function-executions` element is provided in the `gfe-data` XML namespace. The `base-package` attribute is required
 to avoid scanning the entire classpath. Additional filters can be provided as described in the Spring
-http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-scanning-filters[reference documentation].
+https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-scanning-filters[reference documentation].
 
 Optionally, you can annotate your Java configuration class as follows:
 
@@ -305,7 +305,7 @@ there are a few logistical things to keep in mind.
 
 As explained earlier in this section, and by way of example, you should typically define {data-store-name} Functions
 by using POJO classes annotated with {sdg-name}
-http://docs.spring.io/spring-data-gemfire/docs/current/api/org/springframework/data/gemfire/function/annotation/package-summary.html[Function annotations],
+https://docs.spring.io/spring-data-gemfire/docs/current/api/org/springframework/data/gemfire/function/annotation/package-summary.html[Function annotations],
 as follows:
 
 [source,java]

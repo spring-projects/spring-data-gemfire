@@ -24,7 +24,7 @@ import org.springframework.util.StringUtils;
  * in Pivotal GemFire's Object Query Language (OQL).
  *
  * @author John Blum
- * @see <a href="http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/query_additional/supported_keywords.html">Supported Keywords</a>
+ * @see <a href="https://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/query_additional/supported_keywords.html">Supported Keywords</a>
  * @since 1.0.0
  */
 public enum OqlKeyword {

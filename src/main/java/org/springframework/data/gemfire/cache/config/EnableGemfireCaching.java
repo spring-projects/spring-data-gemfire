@@ -35,9 +35,9 @@ import org.springframework.context.annotation.Import;
  * @see java.lang.annotation.Retention
  * @see java.lang.annotation.Target
  * @see org.springframework.context.annotation.Import
- * @see <a href="http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#cache">Cache Abstraction</a>
- * @see <a href="http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#cache-store-configuration-gemfire">GemFire-based Cache</a>
- * @see <a href="http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/#apis:spring-cache-abstraction">Support for Spring Cache Abstraction</a>
+ * @see <a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#cache">Cache Abstraction</a>
+ * @see <a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#cache-store-configuration-gemfire">GemFire-based Cache</a>
+ * @see <a href="https://docs.spring.io/spring-data-gemfire/docs/current/reference/html/#apis:spring-cache-abstraction">Support for Spring Cache Abstraction</a>
  * @since 2.0.0
  */
 @Target(ElementType.TYPE)

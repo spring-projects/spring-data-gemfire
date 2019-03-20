@@ -85,7 +85,7 @@ is invoked to create a `KEY` `Index`.
 The default is `FUNCTIONAL` and results in one of the `QueryService.createIndex(..)` methods being invoked.  See the
 {sdg-name} XML schema for a full set of options.
 
-For more information on indexing in {data-store-name}, see "`http://gemfire90.docs.pivotal.io/geode/developing/query_index/query_index.html[Working with Indexes]`"
+For more information on indexing in {data-store-name}, see "`https://gemfire90.docs.pivotal.io/geode/developing/query_index/query_index.html[Working with Indexes]`"
 in {data-store-name}'s User Guide.
 
 == Defining Indexes
@@ -107,7 +107,7 @@ an `ApplicationListener` listening for the `ContextRefreshedEvent`. When fired, 
 
 Defining indexes and creating them all at once boosts speed and efficiency when creating indexes.
 
-See "`http://gemfire90.docs.pivotal.io/geode/developing/query_index/create_multiple_indexes.html[Creating Multiple Indexes at Once]`"
+See "`https://gemfire90.docs.pivotal.io/geode/developing/query_index/create_multiple_indexes.html[Creating Multiple Indexes at Once]`"
 for more details.
 
 == `IgnoreIfExists` and `Override`

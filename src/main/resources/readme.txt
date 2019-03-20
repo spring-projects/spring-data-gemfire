@@ -1,6 +1,6 @@
 SPRING DATA GEMFIRE
 -------------------
-http://www.springsource.org/spring-gemfire
+https://www.springsource.org/spring-gemfire
 
 1. INTRODUCTION
 
@@ -15,10 +15,10 @@ details, consult the provided javadoc for specific packages and classes.
 
 3. GETTING STARTED
 
-Please see the reference documentation at http://www.springsource.org/spring-gemfire/
+Please see the reference documentation at https://www.springsource.org/spring-gemfire/
 and the Spring GemFire Examples at https://github.com/SpringSource/spring-gemfire-examples
 
 ADDITIONAL RESOURCES
-Spring Data GemFire Homepage  : http://www.springsource.org/spring-gemfire
-VMware vFabric GemFire Documentation: http://www.vmware.com/products/application-platform/vfabric-gemfire/overview.html
-VMware vFabric GemFire product page: http://www.vmware.com/products/application-platform/vfabric-gemfire
+Spring Data GemFire Homepage  : https://www.springsource.org/spring-gemfire
+VMware vFabric GemFire Documentation: https://www.vmware.com/products/application-platform/vfabric-gemfire/overview.html
+VMware vFabric GemFire product page: https://www.vmware.com/products/application-platform/vfabric-gemfire

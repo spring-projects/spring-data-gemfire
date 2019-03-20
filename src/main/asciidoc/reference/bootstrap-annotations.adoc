@@ -1462,7 +1462,7 @@ with compression to reduce memory consumption.
 
 {data-store-name} lets you compress in memory Region values by using pluggable
 {x-data-store-javadoc}/org/apache/geode/compression/Compressor.html[`Compressors`], or different compression codecs.
-{data-store-name} uses Google's http://google.github.io/snappy/[Snappy] compression library by default.
+{data-store-name} uses Google's https://google.github.io/snappy/[Snappy] compression library by default.
 
 To enable compression, annotate the application class with `@EnableCompression`, as follows:
 
@@ -1501,7 +1501,7 @@ See the https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springfr
 for more details.
 
 More details on {data-store-name} compression can be found
-http://gemfire91.docs.pivotal.io/geode/managing/region_compression.html[here].
+https://gemfire91.docs.pivotal.io/geode/managing/region_compression.html[here].
 
 [[bootstrap-annotation-config-region-off-heap]]
 === Configuring Off-Heap Memory

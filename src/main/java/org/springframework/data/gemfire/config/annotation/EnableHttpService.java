@@ -44,7 +44,7 @@ import org.springframework.context.annotation.Import;
  * @see java.lang.annotation.Annotation
  * @see org.springframework.context.annotation.Import
  * @see org.springframework.data.gemfire.config.annotation.HttpServiceConfiguration
- * @see <a href="http://geode.docs.pivotal.io/docs/rest_apps/book_intro.html">Developing REST Applications for Apache Geode</a>
+ * @see <a href="https://geode.docs.pivotal.io/docs/rest_apps/book_intro.html">Developing REST Applications for Apache Geode</a>
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)

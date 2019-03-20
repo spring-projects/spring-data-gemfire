@@ -45,7 +45,7 @@ as follows:
 In this example, if a cache needs to be created, it uses a file named `cache.xml` located in the classpath root
 to configure it.
 
-NOTE: The configuration makes use of Spring's http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#resources[`Resource`]
+NOTE: The configuration makes use of Spring's https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#resources[`Resource`]
 abstraction to locate the file. The `Resource` abstraction lets various search patterns be used, depending on the runtime environment
 or the prefix specified (if any) in the resource location.
 
@@ -65,9 +65,9 @@ or load properties from a properties file, as follows:
        xmlns:util="http://www.springframework.org/schema/util"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="
-    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
     {spring-data-schema-namespace} {spring-data-schema-location}
-    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+    http://www.springframework.org/schema/util https://www.springframework.org/schema/util/spring-util.xsd
 ">
 
   <util:properties id="gemfireProperties" location="file:/path/to/gemfire.properties"/>
@@ -129,7 +129,7 @@ or child elements, as the following listing shows:
 ----
 
 <1> Attributes support various cache options. For further information regarding anything shown in this example,
-see the {data-store-name} http://docs.pivotal.io/gemfire[product documentation].
+see the {data-store-name} https://docs.pivotal.io/gemfire[product documentation].
 The `close` attribute determines whether the cache should be closed when the Spring application context is closed.
 The default is `true`. However, for use cases in which multiple application contexts use the cache
 (common in web applications), set this value to `false`.
@@ -260,8 +260,8 @@ allowing complete configuration through the Spring container, as the following e
        xmlns:gfe="{spring-data-schema-namespace}"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="
-    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+    http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd
     {spring-data-schema-namespace} {spring-data-schema-location}
 ">
 
@@ -285,13 +285,13 @@ allowing complete configuration through the Spring container, as the following e
 The preceding configuration shows the `cache-server` element and the many available options.
 
 NOTE: Rather than hard-coding the port, this configuration uses Spring's
-http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#xsd-config-body-schemas-context[context]
+https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#xsd-config-body-schemas-context[context]
 namespace to declare a `property-placeholder`. A
-http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-factory-placeholderconfigurer[property placeholder]
+https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-factory-placeholderconfigurer[property placeholder]
 reads one or more properties files and then replaces property placeholders with values at runtime. Doing so lets administrators
 change values without having to touch the main application configuration. Spring also provides
-http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#expressions[SpEL]
-and an http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-environment[environment abstraction]
+https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#expressions[SpEL]
+and an https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-environment[environment abstraction]
 to support externalization of environment-specific properties from the main codebase, easing deployment across multiple machines.
 
 NOTE: To avoid initialization problems, the `CacheServer` started by {sdg-name} starts *after* the Spring container

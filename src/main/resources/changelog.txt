@@ -1,6 +1,6 @@
 SPRING DATA GEMFIRE CHANGELOG
 -----------------------------
-http://www.springsource.org/spring-gemfire
+https://www.springsource.org/spring-gemfire
 =============================
 
 Changes in version 2.2.0.M2 (2019-03-07)

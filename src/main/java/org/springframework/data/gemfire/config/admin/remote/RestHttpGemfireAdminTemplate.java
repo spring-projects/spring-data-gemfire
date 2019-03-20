@@ -58,7 +58,7 @@ public class RestHttpGemfireAdminTemplate extends FunctionGemfireAdminTemplate {
 
 	protected static final String DEFAULT_HOST = "localhost";
 
-	protected static final String MANAGEMENT_REST_API_URL_TEMPLATE = "http://%1$s:%2$d/gemfire/v1/";
+	protected static final String MANAGEMENT_REST_API_URL_TEMPLATE = "https://%1$s:%2$d/gemfire/v1/";
 
 	private final RestOperations restTemplate;
 
