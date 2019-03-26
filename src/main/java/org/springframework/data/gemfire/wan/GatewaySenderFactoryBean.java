@@ -13,20 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.wan;
 
+import static java.util.stream.StreamSupport.stream;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeIterable;
+
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
+
 import org.apache.shiro.util.StringUtils;
 
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.data.gemfire.config.annotation.GatewaySenderConfigurer;
 import org.springframework.data.gemfire.util.CollectionUtils;
 
 /**
@@ -34,6 +43,7 @@ import org.springframework.data.gemfire.util.CollectionUtils;
  *
  * @author David Turanski
  * @author John Blum
+ * @author Udo Kohlmeyer
  * @see org.springframework.data.gemfire.wan.AbstractWANComponentFactoryBean
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.util.Gateway
@@ -73,6 +83,10 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 
 	private String diskStoreReference;
 
+	private List<GatewaySenderConfigurer> gatewaySenderConfigurers = Collections.emptyList();
+
+	private List<String> regions;
+
 	/**
 	 * Constructs an instance of the {@link GatewaySenderFactoryBean} class initialized with a reference to
 	 * the Pivotal GemFire {@link Cache} used to configured and initialized a Pivotal GemFire {@link GatewaySender}.
@@ -80,8 +94,12 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 	 * @param cache reference to the Pivotal GemFire {@link Cache} used to create the Pivotal GemFire {@link GatewaySender}.
 	 * @see org.apache.geode.cache.Cache
 	 */
-	public GatewaySenderFactoryBean(Cache cache) {
+	public GatewaySenderFactoryBean(GemFireCache cache) {
 		super(cache);
+		this.regions = Arrays.asList(new String[] {});
+	}
+
+	public GatewaySenderFactoryBean() {
 	}
 
 	/**
@@ -91,6 +109,9 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 	protected void doInit() {
 
 		GatewaySenderFactory gatewaySenderFactory = resolveGatewaySenderFactory();
+
+		stream(nullSafeIterable(gatewaySenderConfigurers).spliterator(), false)
+			.forEach(gatewaySenderConfigurer1 -> gatewaySenderConfigurer1.configure(getName(), this));
 
 		Optional.ofNullable(this.alertThreshold).ifPresent(gatewaySenderFactory::setAlertThreshold);
 		Optional.ofNullable(this.batchConflationEnabled).ifPresent(gatewaySenderFactory::setBatchConflationEnabled);
@@ -149,64 +170,60 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 			: GatewaySender.class;
 	}
 
-	public void setAlertThreshold(Integer alertThreshold) {
-		this.alertThreshold = alertThreshold;
+	public boolean isManualStart() {
+		return manualStart;
 	}
 
-	public void setBatchConflationEnabled(Boolean batchConflationEnabled) {
-		this.batchConflationEnabled = batchConflationEnabled;
+	public void setManualStart(boolean manualStart) {
+		this.manualStart = manualStart;
 	}
 
-	/**
-	 * Boolean value that determines whether Pivotal GemFire should conflate messages.
-	 *
-	 * @param enableBatchConflation a boolean value indicating whether Pivotal GemFire should conflate messages in the Queue.
-	 * @see #setBatchConflationEnabled(Boolean)
-	 * @deprecated use setBatchConflationEnabled(Boolean)
-	 */
-	@Deprecated
-	public void setEnableBatchConflation(Boolean enableBatchConflation) {
-		this.batchConflationEnabled = enableBatchConflation;
+	public int getRemoteDistributedSystemId() {
+		return remoteDistributedSystemId;
 	}
 
-	public void setBatchSize(Integer batchSize) {
-		this.batchSize = batchSize;
+	public void setRemoteDistributedSystemId(int remoteDistributedSystemId) {
+		this.remoteDistributedSystemId = remoteDistributedSystemId;
 	}
 
-	public void setBatchTimeInterval(Integer batchTimeInterval) {
-		this.batchTimeInterval = batchTimeInterval;
+	public GatewaySender getGatewaySender() {
+		return gatewaySender;
 	}
 
-	public void setDiskStoreRef(String diskStoreRef) {
-		this.diskStoreReference = diskStoreRef;
+	public void setGatewaySender(GatewaySender gatewaySender) {
+		this.gatewaySender = gatewaySender;
+	}
+
+	public List<GatewayEventFilter> getEventFilters() {
+		return eventFilters;
+	}
+
+	public void setEventFilters(List<GatewayEventFilter> eventFilters) {
+		this.eventFilters = eventFilters;
+	}
+
+	public List<GatewayTransportFilter> getTransportFilters() {
+		return transportFilters;
+	}
+
+	public void setTransportFilters(List<GatewayTransportFilter> transportFilters) {
+		this.transportFilters = transportFilters;
+	}
+
+	public Boolean getDiskSynchronous() {
+		return diskSynchronous;
 	}
 
 	public void setDiskSynchronous(Boolean diskSynchronous) {
 		this.diskSynchronous = diskSynchronous;
 	}
 
-	public void setDispatcherThreads(Integer dispatcherThreads) {
-		this.dispatcherThreads = dispatcherThreads;
-	}
-
-	public void setEventFilters(List<GatewayEventFilter> gatewayEventFilters) {
-		this.eventFilters = gatewayEventFilters;
-	}
-
-	public void setEventSubstitutionFilter(GatewayEventSubstitutionFilter eventSubstitutionFilter) {
-		this.eventSubstitutionFilter = eventSubstitutionFilter;
-	}
-
 	public void setManualStart(Boolean manualStart) {
 		this.manualStart = Boolean.TRUE.equals(manualStart);
 	}
 
-	public void setMaximumQueueMemory(Integer maximumQueueMemory) {
-		this.maximumQueueMemory = maximumQueueMemory;
-	}
-
-	public void setOrderPolicy(GatewaySender.OrderPolicy orderPolicy) {
-		this.orderPolicy = orderPolicy;
+	public void setBatchConflationEnabled(Boolean batchConflationEnabled) {
+		this.batchConflationEnabled = batchConflationEnabled;
 	}
 
 	public void setParallel(Boolean parallel) {
@@ -221,10 +238,6 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 		return Boolean.TRUE.equals(this.parallel);
 	}
 
-	public void setPersistent(Boolean persistent) {
-		this.persistent = persistent;
-	}
-
 	public boolean isNotPersistent() {
 		return !isPersistent();
 	}
@@ -233,19 +246,107 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 		return Boolean.TRUE.equals(this.persistent);
 	}
 
-	public void setRemoteDistributedSystemId(int remoteDistributedSystemId) {
-		this.remoteDistributedSystemId = remoteDistributedSystemId;
+	public void setPersistent(Boolean persistent) {
+		this.persistent = persistent;
+	}
+
+	public GatewaySender.OrderPolicy getOrderPolicy() {
+		return orderPolicy;
+	}
+
+	public void setOrderPolicy(GatewaySender.OrderPolicy orderPolicy) {
+		this.orderPolicy = orderPolicy;
+	}
+
+	public GatewayEventSubstitutionFilter getEventSubstitutionFilter() {
+		return eventSubstitutionFilter;
+	}
+
+	public void setEventSubstitutionFilter(GatewayEventSubstitutionFilter eventSubstitutionFilter) {
+		this.eventSubstitutionFilter = eventSubstitutionFilter;
+	}
+
+	public Integer getAlertThreshold() {
+		return alertThreshold;
+	}
+
+	public void setAlertThreshold(Integer alertThreshold) {
+		this.alertThreshold = alertThreshold;
+	}
+
+	public Integer getBatchSize() {
+		return batchSize;
+	}
+
+	public void setBatchSize(Integer batchSize) {
+		this.batchSize = batchSize;
+	}
+
+	public Integer getBatchTimeInterval() {
+		return batchTimeInterval;
+	}
+
+	public void setBatchTimeInterval(Integer batchTimeInterval) {
+		this.batchTimeInterval = batchTimeInterval;
+	}
+
+	public Integer getDispatcherThreads() {
+		return dispatcherThreads;
+	}
+
+	public void setDispatcherThreads(Integer dispatcherThreads) {
+		this.dispatcherThreads = dispatcherThreads;
+	}
+
+	public Integer getMaximumQueueMemory() {
+		return maximumQueueMemory;
+	}
+
+	public void setMaximumQueueMemory(Integer maximumQueueMemory) {
+		this.maximumQueueMemory = maximumQueueMemory;
+	}
+
+	public Integer getSocketBufferSize() {
+		return socketBufferSize;
 	}
 
 	public void setSocketBufferSize(Integer socketBufferSize) {
 		this.socketBufferSize = socketBufferSize;
 	}
 
+	public Integer getSocketReadTimeout() {
+		return socketReadTimeout;
+	}
+
 	public void setSocketReadTimeout(Integer socketReadTimeout) {
 		this.socketReadTimeout = socketReadTimeout;
 	}
 
-	public void setTransportFilters(List<GatewayTransportFilter> gatewayTransportFilters) {
-		this.transportFilters = gatewayTransportFilters;
+	public String getDiskStoreReference() {
+		return diskStoreReference;
+	}
+
+	public void setDiskStoreReference(String diskStoreReference) {
+		this.diskStoreReference = diskStoreReference;
+	}
+
+	public void setGatewaySenderConfigurers(List<GatewaySenderConfigurer> gatewaySenderConfigurers) {
+		this.gatewaySenderConfigurers = gatewaySenderConfigurers;
+	}
+
+	public void setDiskStoreRef(String diskStoreRef) {
+		this.diskStoreReference = diskStoreRef;
+	}
+
+	private List<String> getRegions() {
+		return regions;
+	}
+
+	public void setRegions(List<String> regions) {
+		this.regions = regions;
+	}
+
+	public void setRegions(String[] regions) {
+		this.regions = Arrays.asList(regions);
 	}
 }

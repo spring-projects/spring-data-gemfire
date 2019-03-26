@@ -16,6 +16,8 @@
 
 package org.springframework.data.gemfire.repository.sample;
 
+import java.util.Objects;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.gemfire.mapping.annotation.Region;
 import org.springframework.data.gemfire.mapping.annotation.ReplicateRegion;
@@ -58,8 +60,24 @@ public class Customer {
 		return String.format("%1$s %2$s", getFirstName(), getLastName());
 	}
 
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
 	protected static boolean equalsIgnoreNull(final Object obj1, final Object obj2) {
-		return (obj1 == null ? obj2 == null : obj1.equals(obj2));
+		return (Objects.equals(obj1, obj2));
 	}
 
 	@Override

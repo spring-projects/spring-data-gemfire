@@ -218,7 +218,7 @@ public class GatewaySenderFactoryBeanTest {
 		factoryBean.setName("g6");
 		factoryBean.setRemoteDistributedSystemId(51);
 		factoryBean.setPersistent(false);
-		factoryBean.setDiskStoreRef("queueOverflowDiskStore");
+		factoryBean.setDiskStoreReference("queueOverflowDiskStore");
 		factoryBean.doInit();
 
 		verifyExpectations(factoryBean, mockGatewaySenderFactory);

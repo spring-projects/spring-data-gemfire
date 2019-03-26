@@ -650,6 +650,55 @@ To enable a Gateway Receiver the application class needs to be annotated with `@
     }
 }
 ----
-NOTE: {data-store-name} is a server-side feature only and can only be configured on a CacheServer or PeerServer
+NOTE: {data-store-name} GatewayReceiver is a server-side feature only and can only be configured on a CacheServer or PeerServer
 
 See {sdg-javadoc}/org/springframework/data/gemfire/wan/annotation/EnableGatewayReceiver.html[`@EnableGatewayReceiver` Javadoc].
+
+[[bootstap-annotations-quickstart-gatewaysenders]]
+
+To enable Gateway Senders in the application class needs to be annotated with `@EnableGatewaySenders` and `@EnableGatewaySender` as follows:
+[source,java]
+----
+@Configuration
+@CacheServerApplication
+@EnableGatewaySenders(gatewaySenders = {
+		@EnableGatewaySender(name = "GatewaySender", manualStart = true,
+			remoteDistributedSystemId = 2, diskSynchronous = true, batchConflationEnabled = true,
+			parallel = true, persistent = false,diskStoreReference = "someDiskStore",
+			orderPolicy = OrderPolicyType.PARTITION, alertThreshold = 1234, batchSize = 100,
+			eventFilters = "SomeEventFilter", batchTimeInterval = 2000, dispatcherThreads = 22,
+			maximumQueueMemory = 400,socketBufferSize = 16384,
+			socketReadTimeout = 4000, regions = { "Region1"}),
+		@EnableGatewaySender(name = "GatewaySender2", manualStart = true,
+			remoteDistributedSystemId = 2, diskSynchronous = true, batchConflationEnabled = true,
+			parallel = true, persistent = false, diskStoreReference = "someDiskStore",
+			orderPolicy = OrderPolicyType.PARTITION, alertThreshold = 1234, batchSize = 100,
+			eventFilters = "SomeEventFilter", batchTimeInterval = 2000, dispatcherThreads = 22,
+			maximumQueueMemory = 400, socketBufferSize = 16384,socketReadTimeout = 4000,
+			regions = { "Region2" })
+}){
+....
+}
+----
+NOTE: {data-store-name} GatewaySender is a server-side feature only and can only be configured on a CacheServer or PeerServer
+
+In the above example, the application is configured with 2 Regions, `Region1` and `Region2`. In addition 2 GatewaySenders will be configured for service both Regions. `GatewaySender1` will be configured to replicate `Region1`'s data and `GatewaySender2` will be configured to replicate `Region2`'s data. As demonstrated each GatewaySender property can be configured on each `EnableGatewaySender` annotation.
+
+It is also possible to have a more generic, "defaulted" properties approach, where all properties are configured on the `EnableGatewaySenders` annotation. This way a set of generic, defaulted values can be set on the parent annotation and then overridden on the child if required, as demonstrated below:
+[source,java]
+----
+@EnableGatewaySenders(gatewaySenders = {
+		@EnableGatewaySender(name = "GatewaySender", transportFilters = "transportBean1", regions = "Region2"),
+		@EnableGatewaySender(name = "GatewaySender2")},
+		manualStart = true, remoteDistributedSystemId = 2,
+		diskSynchronous = false, batchConflationEnabled = true, parallel = true, persistent = true,
+		diskStoreReference = "someDiskStore", orderPolicy = OrderPolicyType.PARTITION, alertThreshold = 1234, batchSize = 1002,
+		eventFilters = "SomeEventFilter", batchTimeInterval = 2000, dispatcherThreads = 22, maximumQueueMemory = 400,
+		socketBufferSize = 16384, socketReadTimeout = 4000, regions = { "Region1", "Region2" },
+		transportFilters = { "transportBean2", "transportBean1" })
+----
+
+NOTE: When the `regions` property is left empty or not populated, the GatewaySender(s) will automatically attach itself to every
+configured Region within the application
+
+See {sdg-javadoc}/org/springframework/data/gemfire/wan/annotation/EnableGatewaySenders.html[`@EnableGatewaySenders` Javadoc] and {sdg-javadoc}/org/springframework/data/gemfire/wan/annotation/EnableGatewaySender.html[`@EnableGatewaySender` Javadoc].

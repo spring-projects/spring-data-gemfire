@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.wan;
 
-import org.apache.geode.cache.util.Gateway;
+import org.apache.geode.cache.wan.GatewaySender;
 
 /**
  * The OrderPolicyType class is an enumeration of Pivotal GemFire Gateway Order Policies.
@@ -28,11 +27,11 @@ import org.apache.geode.cache.util.Gateway;
 @SuppressWarnings({ "deprecation", "unused" })
 public enum OrderPolicyType {
 
-	KEY(Gateway.OrderPolicy.KEY),
-	PARTITION(Gateway.OrderPolicy.PARTITION),
-	THREAD(Gateway.OrderPolicy.THREAD);
+	KEY(GatewaySender.OrderPolicy.KEY),
+	PARTITION(GatewaySender.OrderPolicy.PARTITION),
+	THREAD(GatewaySender.OrderPolicy.THREAD);
 
-	private final Gateway.OrderPolicy orderPolicy;
+	private final GatewaySender.OrderPolicy orderPolicy;
 
 	/**
 	 * Constructs an instance of the OrderPolicyType enum initialized with the matching Pivotal GemFire Gateway.OrderPolicy
@@ -41,7 +40,7 @@ public enum OrderPolicyType {
 	 * @param orderPolicy the matching Pivotal GemFire Gateway.OrderPolicy enumerated value.
 	 * @see org.apache.geode.cache.util.Gateway.OrderPolicy
 	 */
-	OrderPolicyType(final Gateway.OrderPolicy orderPolicy) {
+	OrderPolicyType(GatewaySender.OrderPolicy orderPolicy) {
 		this.orderPolicy = orderPolicy;
 	}
 
@@ -55,8 +54,8 @@ public enum OrderPolicyType {
 	 * @see org.apache.geode.cache.util.Gateway.OrderPolicy
 	 * @see #getOrderPolicy()
 	 */
-	public static Gateway.OrderPolicy getOrderPolicy(final OrderPolicyType orderPolicyType) {
-		return (orderPolicyType != null ? orderPolicyType.getOrderPolicy() : null);
+	public static GatewaySender.OrderPolicy getOrderPolicy(final OrderPolicyType orderPolicyType) {
+		return orderPolicyType != null ? orderPolicyType.getOrderPolicy() : null;
 	}
 
 	/**
@@ -68,7 +67,8 @@ public enum OrderPolicyType {
 	 * @see org.apache.geode.cache.util.Gateway.OrderPolicy
 	 * @see #getOrderPolicy()
 	 */
-	public static OrderPolicyType valueOf(final Gateway.OrderPolicy orderPolicy) {
+	public static OrderPolicyType valueOf(GatewaySender.OrderPolicy orderPolicy) {
+
 		for (OrderPolicyType orderPolicyType : values()) {
 			if (orderPolicyType.getOrderPolicy().equals(orderPolicy)) {
 				return orderPolicyType;
@@ -87,6 +87,7 @@ public enum OrderPolicyType {
 	 * @see #name()
 	 */
 	public static OrderPolicyType valueOfIgnoreCase(final String name) {
+
 		for (OrderPolicyType orderPolicy : values()) {
 			if (orderPolicy.name().equalsIgnoreCase(name)) {
 				return orderPolicy;
@@ -102,7 +103,7 @@ public enum OrderPolicyType {
 	 * @return a Pivotal GemFire Gateway.OrderPolicy for this enum.
 	 * @see org.apache.geode.cache.util.Gateway.OrderPolicy
 	 */
-	public Gateway.OrderPolicy getOrderPolicy() {
+	public GatewaySender.OrderPolicy getOrderPolicy() {
 		return orderPolicy;
 	}
 }

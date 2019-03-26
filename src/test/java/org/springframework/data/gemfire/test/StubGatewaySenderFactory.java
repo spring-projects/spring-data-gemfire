@@ -111,11 +111,11 @@ public class StubGatewaySenderFactory implements GatewaySenderFactory {
 			}
 		});
 		doAnswer(new Answer<Void>() {
-            public Void answer(InvocationOnMock invocation) {
+			public Void answer(InvocationOnMock invocation) {
 				running = true;
 				return null;
-            }
-        }).when(gatewaySender).start();
+			}
+		}).when(gatewaySender).start();
 
 		return gatewaySender;
 	}
@@ -222,7 +222,8 @@ public class StubGatewaySenderFactory implements GatewaySenderFactory {
 	}
 
 	@Override
-	public GatewaySenderFactory setGatewayEventSubstitutionFilter(final GatewayEventSubstitutionFilter gatewayEventSubstitutionFilter) {
+	public GatewaySenderFactory setGatewayEventSubstitutionFilter(
+		final GatewayEventSubstitutionFilter gatewayEventSubstitutionFilter) {
 		this.gatewayEventSubstitutionFilter = gatewayEventSubstitutionFilter;
 		return this;
 	}

@@ -16,15 +16,15 @@
 package org.springframework.data.gemfire.wan;
 
 import org.apache.geode.cache.Cache;
-
+import org.apache.geode.cache.GemFireCache;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.gemfire.support.AbstractFactoryBeanSupport;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Abstract base class for WAN Gateway components.
@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractWANComponentFactoryBean<T> extends AbstractFactoryBeanSupport<T>
 		implements DisposableBean, InitializingBean {
 
+	@Autowired
 	protected Cache cache;
 
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
@@ -49,12 +50,11 @@ public abstract class AbstractWANComponentFactoryBean<T> extends AbstractFactory
 	private String beanName;
 	private String name;
 
-	protected AbstractWANComponentFactoryBean(Cache cache) {
-		this.cache = cache;
+	protected AbstractWANComponentFactoryBean() {
 	}
 
-	public void setCache(Cache cache) {
-		this.cache = cache;
+	protected AbstractWANComponentFactoryBean(GemFireCache cache) {
+		this.cache = (Cache) cache;
 	}
 
 	@Override
@@ -68,6 +68,10 @@ public abstract class AbstractWANComponentFactoryBean<T> extends AbstractFactory
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public void setCache(Cache cache) {
+		this.cache = cache;
 	}
 
 	public String getName() {

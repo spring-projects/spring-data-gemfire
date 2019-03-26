@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.wan;
 
-import org.apache.geode.cache.util.Gateway;
+import org.apache.geode.cache.wan.GatewaySender;
+
 import org.springframework.data.gemfire.support.AbstractPropertyEditorConverterSupport;
 
 /**
@@ -30,7 +30,7 @@ import org.springframework.data.gemfire.support.AbstractPropertyEditorConverterS
  * @since 1.7.0
  */
 @SuppressWarnings({ "deprecation", "unused" })
-public class OrderPolicyConverter extends AbstractPropertyEditorConverterSupport<Gateway.OrderPolicy> {
+public class OrderPolicyConverter extends AbstractPropertyEditorConverterSupport<GatewaySender.OrderPolicy> {
 
 	/**
 	 * Converts the given String into a Pivotal GemFire Gateway.OrderPolicy enum.
@@ -43,9 +43,8 @@ public class OrderPolicyConverter extends AbstractPropertyEditorConverterSupport
 	 * @see org.apache.geode.cache.util.Gateway.OrderPolicy
 	 */
 	@Override
-	public Gateway.OrderPolicy convert(final String source) {
+	public GatewaySender.OrderPolicy convert(String source) {
 		return assertConverted(source, OrderPolicyType.getOrderPolicy(OrderPolicyType.valueOfIgnoreCase(source)),
-			Gateway.OrderPolicy.class);
-	}
-
+			GatewaySender.OrderPolicy.class);
+		}
 }

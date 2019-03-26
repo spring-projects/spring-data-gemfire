@@ -342,7 +342,8 @@ configuration metadata at runtime, before the Spring managed beans that the anno
 * `PeerCacheConfigurer`
 * `PoolConfigurer`
 * `RegionConfigurer`
-* `EnableGatewayReceiverConfigurer`
+* `GatewayReceiverConfigurer`
+* `GatewaySenderConfigurer`
 
 For example, you can use the `CacheServerConfigurer` and `ClientCacheConfigurer` to customize the port numbers
 used by your Spring Boot `CacheServer` and `ClientCache` applications, respectively.
