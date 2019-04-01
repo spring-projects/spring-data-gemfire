@@ -3,6 +3,11 @@ SPRING DATA GEMFIRE CHANGELOG
 https://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 1.9.19.RELEASE (2019-04-01)
+----------------------------------------------
+* SGF-814 - Release 1.9.19 (Ingalls SR19).
+
+
 Changes in version 2.2.0.M2 (2019-03-07)
 ----------------------------------------
 * SGF-824 - Introduce Concourse CI.
