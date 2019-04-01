@@ -8,6 +8,11 @@ Changes in version 1.9.19.RELEASE (2019-04-01)
 * SGF-814 - Release 1.9.19 (Ingalls SR19).
 
 
+Changes in version 1.9.20.RELEASE (2019-04-01)
+----------------------------------------------
+* SGF-828 - Release 1.9.20 (Ingalls SR20).
+
+
 Changes in version 1.9.19.RELEASE (2019-04-01)
 ----------------------------------------------
 * SGF-814 - Release 1.9.19 (Ingalls SR19).
