@@ -3,9 +3,9 @@ SPRING DATA GEMFIRE CHANGELOG
 https://www.springsource.org/spring-gemfire
 =============================
 
-Changes in version 1.9.19.RELEASE (2019-04-01)
+Changes in version 2.0.14.RELEASE (2019-04-01)
 ----------------------------------------------
-* SGF-814 - Release 1.9.19 (Ingalls SR19).
+* SGF-815 - Release 2.0.14 (Kay SR14).
 
 
 Changes in version 1.9.20.RELEASE (2019-04-01)
