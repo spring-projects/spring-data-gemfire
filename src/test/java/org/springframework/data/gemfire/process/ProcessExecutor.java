@@ -72,12 +72,13 @@ public abstract class ProcessExecutor {
 
 		ProcessWrapper processWrapper = new ProcessWrapper(process, ProcessConfiguration.create(processBuilder));
 
-		processWrapper.register((input) -> System.err.printf("[FORK] - %s%n", input));
+		//processWrapper.register((input) -> System.err.printf("[FORK] - %s%n", input));
 
 		return processWrapper;
 	}
 
 	protected static String[] buildCommand(String classpath, Class<?> type, String... args) {
+
 		Assert.notNull(type, "The main Java class to launch must not be null");
 
 		List<String> command = new ArrayList<>();
@@ -102,10 +103,11 @@ public abstract class ProcessExecutor {
 		command.add(type.getName());
 		command.addAll(programArguments);
 
-		return command.toArray(new String[command.size()]);
+		return command.toArray(new String[0]);
 	}
 
 	protected static Collection<? extends String> getSpringGemFireSystemProperties() {
+
 		return System.getProperties().stringPropertyNames().stream()
 			.filter(property -> property.startsWith(SPRING_DATA_GEMFIRE_SYSTEM_PROPERTY_PREFIX)
 				|| property.startsWith(SPRING_GEMFIRE_SYSTEM_PROPERTY_PREFIX))
@@ -114,10 +116,11 @@ public abstract class ProcessExecutor {
 	}
 
 	protected static boolean isJvmOption(String option) {
-		return (StringUtils.hasText(option) && (option.startsWith("-D") || option.startsWith("-X")));
+		return StringUtils.hasText(option) && (option.startsWith("-D") || option.startsWith("-X"));
 	}
 
 	protected static File validateDirectory(File workingDirectory) {
+
 		Assert.isTrue(workingDirectory != null && (workingDirectory.isDirectory() || workingDirectory.mkdirs()),
 			String.format("Failed to create working directory [%s]", workingDirectory));
 

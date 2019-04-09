@@ -18,11 +18,11 @@ import java.util.Set;
 import org.springframework.data.gemfire.function.GemfireFunctionUtils;
 import org.springframework.data.gemfire.function.annotation.Filter;
 
-
-
 /**
- * @author David Turanski
  *
+ * @author David Turanski
+ * @author John Blum
+ * @see org.springframework.data.gemfire.function.execution.FunctionExecutionMethodMetadata
  */
 class OnRegionExecutionMethodMetadata extends FunctionExecutionMethodMetadata<OnRegionMethodMetadata>  {
 
@@ -33,9 +33,6 @@ class OnRegionExecutionMethodMetadata extends FunctionExecutionMethodMetadata<On
 		super(serviceInterface);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.springframework.data.gemfire.function.config.FunctionExecutionMethodMetadata#newMetadataInstance(java.lang.reflect.Method)
-	 */
 	@Override
 	protected OnRegionMethodMetadata newMetadataInstance(Method method) {
 		return new OnRegionMethodMetadata(method);
@@ -48,8 +45,11 @@ class OnRegionMethodMetadata extends MethodMetadata {
 	private final int filterArgPosition;
 
 	public OnRegionMethodMetadata(Method method) {
+
 		super(method);
-		this.filterArgPosition = GemfireFunctionUtils.getAnnotationParameterPosition(method, Filter.class, new Class<?>[]{Set.class});
+
+		this.filterArgPosition = GemfireFunctionUtils.getAnnotationParameterPosition(method, Filter.class,
+			new Class<?>[] { Set.class });
 	}
 
 	public int getFilterArgPosition() {

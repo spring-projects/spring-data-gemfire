@@ -353,11 +353,12 @@ public class GemfireTemplateIntegrationTests {
 	static class GemfireTemplateConfiguration {
 
 		Properties gemfireProperties() {
+
 			Properties gemfireProperties = new Properties();
 
 			gemfireProperties.setProperty("name", applicationName());
-			gemfireProperties.setProperty("mcast-port", "0");
 			gemfireProperties.setProperty("log-level", logLevel());
+
 			return gemfireProperties;
 		}
 

@@ -27,15 +27,10 @@ import org.apache.geode.cache.query.CqQuery;
  */
 public class GemfireMDP {
 
-	public void handleEvent(CqEvent event) {
-		System.out.println("Received event " + event);
-	}
+	public void handleEvent(CqEvent event) { }
 
-	public void handleQuery(CqQuery query) {
-		System.out.println("Received query " + query);
-	}
+	public void handleQuery(CqQuery query) { }
 
-	public void handleOperation(Operation op) {
-		System.out.println("Received operation " + op);
-	}
+	public void handleOperation(Operation op) { }
+
 }

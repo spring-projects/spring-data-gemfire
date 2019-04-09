@@ -42,24 +42,20 @@ public class GemfirePersistenceExceptionTranslationTest {
 
 	@Test
 	public void test() {
+
 		Map<String, BeanPostProcessor> bpps = ctx.getBeansOfType(BeanPostProcessor.class);
-		System.out.println(bpps.size());
-		for (BeanPostProcessor bpp: bpps.values()) {
-			System.out.println(bpp.getClass().getSimpleName());
-		}
+
 		try {
 			gemfireRepo1.doit(new QueryException());
 			fail("should throw a query exception");
-		} catch (GemfireQueryException e){
-
 		}
+		catch (GemfireQueryException ignore){ }
 
 		try {
 			gemfireRepo1.doit(new FunctionDomainException("test"));
 			fail("should throw a query exception");
-		} catch (GemfireQueryException e) {
-
 		}
+		catch (GemfireQueryException ignore) { }
 
 		try {
 			gemfireRepo1.doit(new QueryInvocationTargetException("test"));
@@ -71,8 +67,6 @@ public class GemfirePersistenceExceptionTranslationTest {
 
 	/**
 	 * Wraps GemfireCheckedExceptions in RuntimeException
-	 * @author David Turanski
-	 *
 	 */
 	@Repository
 	public static class GemFireRepo1 {

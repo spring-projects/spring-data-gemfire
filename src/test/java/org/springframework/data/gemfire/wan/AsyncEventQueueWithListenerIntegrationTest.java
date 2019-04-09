@@ -125,12 +125,13 @@ public class AsyncEventQueueWithListenerIntegrationTest {
 
 		public void init() {
 			getQueue();
-			System.out.printf("%1$s initialized!%n", this);
 		}
 
 		public AsyncEventQueue getQueue() {
-			Assert.state(queue != null, String.format("A reference to the Async Event Queue on which this listener"
-				+ " (%1$s) has been registered was not properly configured!", this));
+
+			Assert.state(queue != null, String.format("A reference to the AsyncEventQueue on which this listener"
+				+ " [%s] has been registered was not properly configured", this));
+
 			return queue;
 		}
 

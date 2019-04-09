@@ -97,8 +97,6 @@ public class ExceptionThrowingFunctionExecutionIntegrationTest {
 			arguments.toArray(new String[arguments.size()]));
 
 		waitForServerStart(TimeUnit.SECONDS.toMillis(20));
-
-		System.out.println("GemFire Cache Server Process for ClientCache Indexing should be running...");
 	}
 
 	private static void waitForServerStart(final long milliseconds) {

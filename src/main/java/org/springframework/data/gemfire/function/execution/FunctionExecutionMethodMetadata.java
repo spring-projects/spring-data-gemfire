@@ -10,85 +10,71 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
+
 package org.springframework.data.gemfire.function.execution;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.Function;
 import org.springframework.data.gemfire.function.annotation.FunctionId;
-import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
 /**
- * Base class for method level metadata for a function execution interface. This is used at runtime by the
- * function execution proxy to create the corresponding Gemfire function {@link Execution}
+ * Base class for method-level metadata for a {@link Function} {@link Execution} interface.
+ *
+ * This is used at runtime by the {@link Function} {@link Execution} proxy to create
+ * the corresponding {@link Function} {@link Execution}.
  *
  * @author David Turanski
- *
+ * @author John Blum
+ * @see org.springframework.data.gemfire.function.execution.MethodMetadata
  */
-abstract class FunctionExecutionMethodMetadata<T extends MethodMetadata > {
+abstract class FunctionExecutionMethodMetadata<T extends MethodMetadata> {
 
-	protected final Map<Method, T> methodMetadata = new HashMap<Method, T>();
-	private final boolean singletonInterface;
+	protected final Map<Method, T> methodMetadata = new HashMap<>();
 
-	public FunctionExecutionMethodMetadata(final Class<?> serviceInterface) {
+	public FunctionExecutionMethodMetadata(Class<?> serviceInterface) {
 
-		this.singletonInterface = serviceInterface.getMethods().length == 1;
+		ReflectionUtils.doWithMethods(serviceInterface, method -> {
 
-		ReflectionUtils.doWithMethods(serviceInterface, new ReflectionUtils.MethodCallback() {
-			@Override
-			public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
-				T mmd = newMetadataInstance(method);
-				if (mmd.getFunctionId() == null) {
-					mmd.setFunctionId(method.getName());
-				}
+			T methodMetadata = newMetadataInstance(method);
 
-				methodMetadata.put(method, mmd);
+			if (methodMetadata.getFunctionId() == null) {
+				methodMetadata.setFunctionId(method.getName());
 			}
+
+			this.methodMetadata.put(method, methodMetadata);
 		});
 	}
 
 	protected abstract T newMetadataInstance(Method method);
 
 	T getMethodMetadata(Method method) {
-		return methodMetadata.get(method);
-	}
-
-	boolean isSingletonInterface() {
-		return this.singletonInterface;
-	}
-
-	T getSingletonMethodMetada() {
-		Assert.isTrue(isSingletonInterface(),"this is not a singleton interface.");
-		return methodMetadata.values().iterator().next();
+		return this.methodMetadata.get(method);
 	}
 }
-
 
 class MethodMetadata {
 
 	private String functionId;
 
 	public MethodMetadata(Method method) {
-		String annotatedFunctionId = annotatedFunctionId(method);
-		this.functionId = (annotatedFunctionId == null) ? null : annotatedFunctionId;
-	}
 
-	/**
-	 * @return the functionId
-	 */
-	public String getFunctionId() {
-		return functionId;
+		FunctionId functionIdAnnotation = method.getAnnotation(FunctionId.class);
+
+		if (functionIdAnnotation != null) {
+			this.functionId = functionIdAnnotation.value();
+		}
 	}
 
 	public void setFunctionId(String functionId) {
 		this.functionId = functionId;
 	}
 
-	private String annotatedFunctionId(Method method) {
-		FunctionId functionIdAnnotation = method.getAnnotation(FunctionId.class);
-		return (functionIdAnnotation == null) ? null : functionIdAnnotation.value();
+	public String getFunctionId() {
+		return this.functionId;
 	}
-
 }

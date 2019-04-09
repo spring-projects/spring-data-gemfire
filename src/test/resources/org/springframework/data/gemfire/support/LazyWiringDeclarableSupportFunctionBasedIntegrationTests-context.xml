@@ -22,8 +22,7 @@
 
 	<util:properties id="gemfireProperties">
 		<prop key="name">LazyWiringDeclarableSupportFunctionBasedIntegrationTest</prop>
-		<prop key="mcast-port">0</prop>
-		<prop key="log-level">warning</prop>
+		<prop key="log-level">error</prop>
 		<prop key="groups">HelloGroup</prop>
 	</util:properties>
 

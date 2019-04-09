@@ -270,8 +270,7 @@ public class IndexConflictsIntegrationTest {
 			Properties gemfireProperties = new Properties();
 
 			gemfireProperties.setProperty("name", IndexConflictsIntegrationTest.class.getSimpleName());
-			gemfireProperties.setProperty("mcast-port", "0");
-			gemfireProperties.setProperty("log-level", "warning");
+			gemfireProperties.setProperty("log-level", "error");
 
 			return gemfireProperties;
 		}

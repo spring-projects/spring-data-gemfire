@@ -123,8 +123,6 @@ public class JSONRegionAdviceIntegrationTests {
 
 		String json = String.valueOf(this.jsonRegion.get("dave"));
 
-		System.out.printf("JSON [%s]%n", json);
-
 		assertEquals(json, toJson(davidTuranski));
 
 		Object result = jsonRegion.put("dave", davidTuranski);

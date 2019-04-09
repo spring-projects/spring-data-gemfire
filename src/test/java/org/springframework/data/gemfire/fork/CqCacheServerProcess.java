@@ -41,7 +41,7 @@ public class CqCacheServerProcess {
 	private static Region<String, Integer> testCqRegion;
 
 	private static final String CACHE_SERVER_PORT_PROPERTY = "spring.data.gemfire.cache.server.port";
-	private static final String GEMFIRE_LOG_LEVEL = "warning";
+	private static final String GEMFIRE_LOG_LEVEL = "error";
 	private static final String GEMFIRE_NAME = "CqServer";
 
 	@SuppressWarnings("deprecation")
@@ -51,9 +51,9 @@ public class CqCacheServerProcess {
 	}
 
 	private static Cache newGemFireCache(String name, String logLevel) {
+
 		return new CacheFactory()
 			.set("name", name)
-			.set("mcast-port", "0")
 			.set("log-level", logLevel)
 			.create();
 	}

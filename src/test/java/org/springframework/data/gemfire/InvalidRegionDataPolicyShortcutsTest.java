@@ -40,7 +40,6 @@ public class InvalidRegionDataPolicyShortcutsTest {
 				"/org/springframework/data/gemfire/invalid-region-shortcut-with-persistent-attribute.xml");
 		}
 		catch (BeanCreationException expected) {
-			//expected.printStackTrace(System.err);
 			assertTrue(expected.getMessage().contains("Error creating bean with name 'InvalidReplicate'"));
 			throw expected;
 		}
@@ -53,7 +52,6 @@ public class InvalidRegionDataPolicyShortcutsTest {
 				"/org/springframework/data/gemfire/invalid-use-of-region-datapolicy-and-shortcut.xml");
 		}
 		catch (BeanDefinitionParsingException expected) {
-			//expected.printStackTrace(System.err);
 			assertTrue(expected.getMessage().contains(
 				"Only one of [data-policy, shortcut] may be specified with element 'gfe:partitioned-region'"));
 			throw expected;

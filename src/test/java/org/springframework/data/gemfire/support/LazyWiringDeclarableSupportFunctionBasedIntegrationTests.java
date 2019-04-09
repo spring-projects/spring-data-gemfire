@@ -59,10 +59,10 @@ public class LazyWiringDeclarableSupportFunctionBasedIntegrationTests {
 /*
 	@BeforeClass
 	public static void setupBeforeClass() {
+
 		Cache gemfireCache = new CacheFactory()
 			.set("name", LazyWiringDeclarableSupportFunctionBasedIntegrationTests.class.getSimpleName())
-			.set("mcast-port", "0")
-			.set("log-level", "config")
+			.set("log-level", "error")
 			.set("cache-xml-file", null)
 			.create();
 

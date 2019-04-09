@@ -69,6 +69,7 @@ public class ClientCacheVariableLocatorsTest {
 
 	@BeforeClass
 	public static void setup() throws IOException {
+
 		String serverName = ClientCacheVariableServersTest.class.getSimpleName().concat("Server");
 
 		File serverWorkingDirectory = new File(FileSystemUtils.WORKING_DIRECTORY, serverName.toLowerCase());

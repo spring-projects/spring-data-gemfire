@@ -59,12 +59,11 @@ public class GemfireCacheIntegrationTests extends AbstractNativeCacheTests<Regio
 
 	@Override
 	protected Region<Object, Object> newNativeCache() throws Exception {
+
 		Properties gemfireProperties = new Properties();
 
 		gemfireProperties.setProperty("name", GemfireCacheIntegrationTests.class.getName());
-		gemfireProperties.setProperty("mcast-port", "0");
-		gemfireProperties.setProperty("locators", "");
-		gemfireProperties.setProperty("log-level", "warning");
+		gemfireProperties.setProperty("log-level", "error");
 
 		org.apache.geode.cache.Cache cache = GemfireUtils.getCache();
 

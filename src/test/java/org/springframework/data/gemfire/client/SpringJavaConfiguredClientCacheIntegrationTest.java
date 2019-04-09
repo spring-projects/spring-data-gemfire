@@ -71,20 +71,22 @@ public class SpringJavaConfiguredClientCacheIntegrationTest {
 
 		@Bean
 		public Properties gemfireProperties() {
+
 			Properties gemfireProperties = new Properties();
 			gemfireProperties.setProperty("name", SpringJavaConfiguredClientCacheIntegrationTest.class.getSimpleName());
-			gemfireProperties.setProperty("mcast-port", "0");
-			gemfireProperties.setProperty("log-level", "warning");
+			gemfireProperties.setProperty("log-level", "error");
+
 			return gemfireProperties;
 		}
 
 		@Bean
 		public ClientCacheFactoryBean clientCache() {
+
 			ClientCacheFactoryBean clientCacheFactoryBean = new ClientCacheFactoryBean();
 			clientCacheFactoryBean.setUseBeanFactoryLocator(false);
 			clientCacheFactoryBean.setProperties(gemfireProperties());
+
 			return clientCacheFactoryBean;
 		}
 	}
-
 }

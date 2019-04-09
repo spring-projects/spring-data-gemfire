@@ -58,8 +58,7 @@ public class GenericRegionFactoryBeanTest {
 
 		Cache gemfireCache = new CacheFactory()
 			.set("name", GenericRegionFactoryBeanTest.class.getSimpleName())
-			.set("mcast-port", "0")
-			.set("log-level", "warning")
+			.set("log-level", "error")
 			.create();
 
 		PeerRegionFactoryBean<Object, Object> defaultRegionFactory = new GenericRegionFactoryBean<Object, Object>();

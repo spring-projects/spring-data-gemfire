@@ -119,16 +119,11 @@ public class EnableContinuousQueriesConfigurationIntegrationTests extends Client
 		assertThat(temperatureReading).isNotNull();
 		assertThat(temperatureReading.getTemperature()).isEqualTo(99);
 
-		//System.err.printf("Number of Temperature Readings [%d] on Server [%d]%n",
-		//	this.temperatureReadings.size(), this.temperatureReadings.sizeOnServer());
-
 		assertThat(this.temperatureReadings.sizeOnServer()).isEqualTo(10);
 
 		//waitOn(() -> totalTemperatureReadingsCounter.get() >= 5, 100L);
 
 		//assertThat(totalTemperatureReadingsCounter.get()).isNotZero();
-
-		//System.err.printf("Total Temperature Readings [%d]%n", totalTemperatureReadingsCounter.get());
 	}
 
 	@Test

@@ -27,7 +27,6 @@
 
 	<util:properties id="gemfireProperties">
 		<prop key="name">ClientCacheSecurityTestServer</prop>
-		<prop key="mcast-port">0</prop>
 		<prop key="log-level">error</prop>
 		<prop key="cluster-ssl-enabled">${gemfire.security.ssl.enabled}</prop>
 		<prop key="cluster-ssl-require-authentication">${gemfire.security.ssl.require-authentication}</prop>

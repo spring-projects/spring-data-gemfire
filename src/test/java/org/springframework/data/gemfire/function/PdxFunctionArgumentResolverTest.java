@@ -67,12 +67,12 @@ public class PdxFunctionArgumentResolverTest {
 
 	@BeforeClass
 	public static void setupGemFire() {
+
 		gemfireCache = new CacheFactory()
 			.setPdxSerializer(new PersonPdxSerializer())
 			.setPdxReadSerialized(true)
 			.set("name", PdxFunctionArgumentResolverTest.class.getSimpleName())
-			.set("mcast-port", "0")
-			.set("log-level", "warning")
+			.set("log-level", "error")
 			.create();
 	}
 

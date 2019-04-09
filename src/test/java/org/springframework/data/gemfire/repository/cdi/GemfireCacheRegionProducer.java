@@ -47,10 +47,10 @@ public class GemfireCacheRegionProducer {
 	@Produces
 	@ApplicationScoped
 	public Region<Long, Person> createPeopleRegion() {
+
 		Cache gemfireCache = new CacheFactory()
 			.set("name", "SpringDataGemFireCdiTest")
-			.set("mcast-port", "0")
-			.set("log-level", "warning")
+			.set("log-level", "error")
 			.create();
 
 		RegionFactory<Long, Person> peopleRegionFactory = gemfireCache.createRegionFactory(RegionShortcut.REPLICATE);

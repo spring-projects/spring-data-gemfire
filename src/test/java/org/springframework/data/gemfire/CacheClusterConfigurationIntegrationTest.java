@@ -103,7 +103,7 @@ public class CacheClusterConfigurationIntegrationTest extends ClientServerIntegr
 							getLocatorProcessOutput(description));
 				}
 				catch (IOException cause) {
-					throw newRuntimeException(cause, "Failed the write the contents of the Locator process log to a file");
+					throw newRuntimeException(cause, "Failed to write the contents of the Locator process log to a file");
 				}
 			}
 		}

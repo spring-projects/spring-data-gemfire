@@ -84,8 +84,6 @@ public class ClientCacheSecurityTest {
 			arguments.toArray(new String[arguments.size()]));
 
 		waitForServerStart(TimeUnit.SECONDS.toMillis(20));
-
-		System.out.println("GemFire Cache Server Process for ClientCache Security should be running...");
 	}
 
 	private static void waitForServerStart(final long milliseconds) {

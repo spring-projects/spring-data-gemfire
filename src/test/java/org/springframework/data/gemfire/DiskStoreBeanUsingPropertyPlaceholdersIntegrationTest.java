@@ -29,7 +29,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * The DiskStoreBeanUsingPropertyPlaceholdersIntegrationTest class is a test suite of integration tests testing the use
@@ -46,9 +46,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @link https://jira.springsource.org/browse/SGF-249
  * @since 1.3.4
  */
+@RunWith(SpringRunner.class)
 @ContextConfiguration(locations = "diskstore-using-propertyplaceholders-config.xml",
 	initializers = GemfireTestApplicationContextInitializer.class)
-@RunWith(SpringJUnit4ClassRunner.class)
 @SuppressWarnings("unused")
 public class DiskStoreBeanUsingPropertyPlaceholdersIntegrationTest {
 
@@ -65,7 +65,6 @@ public class DiskStoreBeanUsingPropertyPlaceholdersIntegrationTest {
 
 	@Test
 	public void testDiskStoreBeanWithPropertyPlaceholderConfiguration() {
-		System.out.printf("Disk Store Configuration: %1$s%n", diskStoreConfiguration);
 		assertNotNull("The Disk Store was not configured and initialized!", testDataStore);
 		assertEquals(getExpectedValue("allowForceCompaction"), testDataStore.getAllowForceCompaction());
 		assertEquals(getExpectedValue("autoCompact"), testDataStore.getAutoCompact());
@@ -76,5 +75,4 @@ public class DiskStoreBeanUsingPropertyPlaceholdersIntegrationTest {
 		assertEquals(getExpectedValue("timeInterval"), testDataStore.getTimeInterval());
 		assertEquals(getExpectedValue("writeBufferSize"), testDataStore.getWriteBufferSize());
 	}
-
 }
