@@ -34,7 +34,6 @@ import java.util.function.Supplier;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.ObjectSizer;
-import org.apache.shiro.util.Assert;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationContext;
@@ -52,6 +51,8 @@ import org.springframework.data.gemfire.eviction.EvictingRegionFactoryBean;
 import org.springframework.data.gemfire.eviction.EvictionActionType;
 import org.springframework.data.gemfire.eviction.EvictionAttributesFactoryBean;
 import org.springframework.data.gemfire.eviction.EvictionPolicyType;
+import org.springframework.lang.NonNull;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
@@ -123,8 +124,8 @@ public class EvictionConfiguration extends AbstractAnnotationConfigSupport
 			AnnotationAttributes[] policies = enableEvictionAttributes.getAnnotationArray("policies");
 
 			for (AnnotationAttributes evictionPolicyAttributes : nullSafeArray(policies, AnnotationAttributes.class)) {
-				this.evictionPolicyConfigurer = ComposableEvictionPolicyConfigurer
-					.compose(this.evictionPolicyConfigurer,
+				this.evictionPolicyConfigurer =
+					ComposableEvictionPolicyConfigurer.compose(this.evictionPolicyConfigurer,
 						EvictionPolicyMetaData.from(evictionPolicyAttributes, this.applicationContext));
 			}
 
@@ -154,6 +155,7 @@ public class EvictionConfiguration extends AbstractAnnotationConfigSupport
 	 * @see org.springframework.data.gemfire.config.annotation.EvictionConfiguration.EvictionPolicyConfigurer
 	 */
 	protected EvictionPolicyConfigurer getEvictionPolicyConfigurer() {
+
 		return Optional.ofNullable(this.evictionPolicyConfigurer).orElseThrow(() ->
 			newIllegalStateException("EvictionPolicyConfigurer was not properly configured and initialized"));
 	}
@@ -248,7 +250,10 @@ public class EvictionConfiguration extends AbstractAnnotationConfigSupport
 		 * multiple {@link EvictionPolicyConfigurer} objects using the Composite Software Design Pattern.
 		 */
 		protected static EvictionPolicyConfigurer compose(EvictionPolicyConfigurer one, EvictionPolicyConfigurer two) {
-			return one == null ? two : (two == null ? one : new ComposableEvictionPolicyConfigurer(one, two));
+
+			return one == null ? two
+				: (two == null ? one
+				: new ComposableEvictionPolicyConfigurer(one, two));
 		}
 
 		/**
@@ -259,6 +264,7 @@ public class EvictionConfiguration extends AbstractAnnotationConfigSupport
 		 * @param two second {@link EvictionPolicyConfigurer} object to compose.
 		 */
 		private ComposableEvictionPolicyConfigurer(EvictionPolicyConfigurer one, EvictionPolicyConfigurer two) {
+
 			this.one = one;
 			this.two = two;
 		}
@@ -280,8 +286,8 @@ public class EvictionConfiguration extends AbstractAnnotationConfigSupport
 
 		private final Set<String> regionNames = new HashSet<>();
 
-		protected static EvictionPolicyMetaData from(AnnotationAttributes evictionPolicyAttributes,
-				ApplicationContext applicationContext) {
+		protected static EvictionPolicyMetaData from(@NonNull AnnotationAttributes evictionPolicyAttributes,
+				@NonNull ApplicationContext applicationContext) {
 
 			Assert.isAssignable(EvictionPolicy.class, evictionPolicyAttributes.annotationType());
 
@@ -322,7 +328,7 @@ public class EvictionConfiguration extends AbstractAnnotationConfigSupport
 			boolean resolvable = StringUtils.hasText(objectSizerName)
 				&& applicationContext.containsBean(objectSizerName);
 
-			return (resolvable ? applicationContext.getBean(objectSizerName, ObjectSizer.class) : null);
+			return resolvable ? applicationContext.getBean(objectSizerName, ObjectSizer.class) : null;
 		}
 
 		/**
@@ -338,7 +344,7 @@ public class EvictionConfiguration extends AbstractAnnotationConfigSupport
 		 * @see org.springframework.data.gemfire.eviction.EvictionPolicyType
 		 */
 		protected static Integer resolveThreshold(int maximum, EvictionPolicyType type) {
-			return (EvictionPolicyType.HEAP_PERCENTAGE.equals(type) ? null : maximum);
+			return EvictionPolicyType.HEAP_PERCENTAGE.equals(type) ? null : maximum;
 		}
 
 		/**
@@ -365,8 +371,8 @@ public class EvictionConfiguration extends AbstractAnnotationConfigSupport
 		 */
 		protected EvictionPolicyMetaData(EvictionAttributes evictionAttributes, String[] regionNames) {
 
-			this.evictionAttributes = Optional.ofNullable(evictionAttributes)
-				.orElseThrow(() -> newIllegalArgumentException("EvictionAttributes are required"));
+			this.evictionAttributes = Optional.ofNullable(evictionAttributes).orElseThrow(() ->
+				newIllegalArgumentException("EvictionAttributes are required"));
 
 			Collections.addAll(this.regionNames, nullSafeArray(regionNames, String.class));
 		}
@@ -381,6 +387,7 @@ public class EvictionConfiguration extends AbstractAnnotationConfigSupport
 		 * @see org.apache.geode.cache.EvictionAttributes
 		 */
 		protected EvictionAttributes getEvictionAttributes() {
+
 			return Optional.ofNullable(this.evictionAttributes).orElseThrow(() ->
 				newIllegalStateException("EvictionAttributes was not properly configured and initialized"));
 		}

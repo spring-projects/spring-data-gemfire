@@ -102,8 +102,9 @@ public class ExpirationConfiguration extends AbstractAnnotationConfigSupport imp
 			for (AnnotationAttributes expirationPolicyAttributes :
 					nullSafeArray(policies, AnnotationAttributes.class)) {
 
-				this.expirationPolicyConfigurer = ComposableExpirationPolicyConfigurer
-					.compose(this.expirationPolicyConfigurer, ExpirationPolicyMetaData.from(expirationPolicyAttributes));
+				this.expirationPolicyConfigurer =
+					ComposableExpirationPolicyConfigurer.compose(this.expirationPolicyConfigurer,
+						ExpirationPolicyMetaData.from(expirationPolicyAttributes));
 			}
 
 			this.expirationPolicyConfigurer = Optional.ofNullable(this.expirationPolicyConfigurer)
@@ -126,9 +127,8 @@ public class ExpirationConfiguration extends AbstractAnnotationConfigSupport imp
 
 	protected ExpirationPolicyConfigurer getExpirationPolicyConfigurer() {
 
-		return Optional.ofNullable(this.expirationPolicyConfigurer)
-			.orElseThrow(() ->
-				newIllegalStateException("ExpirationPolicyConfigurer was not properly configured and initialized"));
+		return Optional.ofNullable(this.expirationPolicyConfigurer).orElseThrow(() ->
+			newIllegalStateException("ExpirationPolicyConfigurer was not properly configured and initialized"));
 	}
 
 	@Bean
@@ -217,7 +217,9 @@ public class ExpirationConfiguration extends AbstractAnnotationConfigSupport imp
 		protected static ExpirationPolicyConfigurer compose(ExpirationPolicyConfigurer one,
 				ExpirationPolicyConfigurer two) {
 
-			return one == null ? two : (two == null ? one : new ComposableExpirationPolicyConfigurer(one, two));
+			return one == null ? two
+				: (two == null ? one
+				: new ComposableExpirationPolicyConfigurer(one, two));
 		}
 
 		/**
@@ -229,6 +231,7 @@ public class ExpirationConfiguration extends AbstractAnnotationConfigSupport imp
 		 * @see org.springframework.data.gemfire.config.annotation.ExpirationConfiguration.ExpirationPolicyConfigurer
 		 */
 		private ComposableExpirationPolicyConfigurer(ExpirationPolicyConfigurer one, ExpirationPolicyConfigurer two) {
+
 			this.one = one;
 			this.two = two;
 		}
@@ -298,6 +301,7 @@ public class ExpirationConfiguration extends AbstractAnnotationConfigSupport imp
 		 * @see #newExpirationPolicyMetaData(int, ExpirationActionType, String[], ExpirationType[])
 		 */
 		protected static ExpirationPolicyMetaData from(ExpirationPolicy expirationPolicy) {
+
 			return newExpirationPolicyMetaData(expirationPolicy.timeout(), expirationPolicy.action(),
 				expirationPolicy.regionNames(), expirationPolicy.types());
 		}
@@ -485,8 +489,10 @@ public class ExpirationConfiguration extends AbstractAnnotationConfigSupport imp
 		 * @see org.springframework.data.gemfire.ResolvableRegionFactoryBean#resolveRegionName()
 		 */
 		protected String resolveRegionName(Object regionFactoryBean) {
+
 			return regionFactoryBean instanceof ResolvableRegionFactoryBean
-				? ((ResolvableRegionFactoryBean) regionFactoryBean).resolveRegionName() : null;
+				? ((ResolvableRegionFactoryBean) regionFactoryBean).resolveRegionName()
+				: null;
 		}
 
 		/**

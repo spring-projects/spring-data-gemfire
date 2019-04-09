@@ -34,7 +34,6 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.junit.After;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -66,12 +65,15 @@ public class EnableEvictionConfigurationUnitTests {
 
 	@After
 	public void tearDown() {
+
 		if (applicationContext != null) {
 			applicationContext.close();
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	protected void assertEvictionAttributes(Region region, EvictionAttributes expectedEvictionAttributes) {
+
 		assertThat(region).isNotNull();
 		assertThat(region.getAttributes()).isNotNull();
 		assertEvictionAttributes(region.getAttributes().getEvictionAttributes(), expectedEvictionAttributes);
@@ -177,28 +179,25 @@ public class EnableEvictionConfigurationUnitTests {
 		@Bean("mockCache")
 		@SuppressWarnings("unchecked")
 		Cache mockCache() {
+
 			Cache mockCache = mock(Cache.class);
 
 			RegionFactory mockRegionFactory = mock(RegionFactory.class);
 
-			final AtomicReference<EvictionAttributes> evictionAttributes =
-				new AtomicReference<EvictionAttributes>(null);
+			AtomicReference<EvictionAttributes> evictionAttributes = new AtomicReference<>(null);
 
 			when(mockCache.createRegionFactory()).thenReturn(mockRegionFactory);
 
-			when(mockRegionFactory.setEvictionAttributes(any(EvictionAttributes.class))).thenAnswer(
-				new Answer<RegionFactory>() {
-					@Override
-					public RegionFactory answer(InvocationOnMock invocation) throws Throwable {
-						evictionAttributes.set(invocation.getArgument(0));
-						return (RegionFactory) invocation.getMock();
-					}
+			when(mockRegionFactory.setEvictionAttributes(any(EvictionAttributes.class)))
+				.thenAnswer((Answer<RegionFactory>) invocation -> {
+					evictionAttributes.set(invocation.getArgument(0));
+					return (RegionFactory) invocation.getMock();
 				}
 			);
 
-			when(mockRegionFactory.create(anyString())).thenAnswer(new Answer<Region>() {
-				@Override
-				public Region answer(InvocationOnMock invocation) throws Throwable {
+			when(mockRegionFactory.create(anyString()))
+				.thenAnswer((Answer<Region>) invocation -> {
+
 					String regionName = invocation.getArgument(0);
 
 					Region mockRegion = mock(Region.class, regionName);
@@ -212,16 +211,16 @@ public class EnableEvictionConfigurationUnitTests {
 					when(mockRegionAttributes.getEvictionAttributes()).thenReturn(evictionAttributes.get());
 
 					return mockRegion;
-				}
-			});
+				});
 
 			return mockCache;
 		}
 
 		@Bean("PartitionRegion")
 		PartitionedRegionFactoryBean<Object, Object> mockPartitionRegion(Cache gemfireCache) {
+
 			PartitionedRegionFactoryBean<Object, Object> partitionRegion =
-				new PartitionedRegionFactoryBean<Object, Object>();
+				new PartitionedRegionFactoryBean<>();
 
 			partitionRegion.setCache(gemfireCache);
 			partitionRegion.setClose(false);
@@ -232,8 +231,9 @@ public class EnableEvictionConfigurationUnitTests {
 
 		@Bean("ReplicateRegion")
 		ReplicatedRegionFactoryBean<Object, Object> mockReplicateRegion(Cache gemfireCache) {
+
 			ReplicatedRegionFactoryBean<Object, Object> replicateRegion =
-				new ReplicatedRegionFactoryBean<Object, Object>();
+				new ReplicatedRegionFactoryBean<>();
 
 			replicateRegion.setCache(gemfireCache);
 			replicateRegion.setClose(false);
@@ -249,13 +249,11 @@ public class EnableEvictionConfigurationUnitTests {
 	}
 
 	@EnableEviction
-	static class DefaultEvictionPolicyConfiguration extends CacheRegionConfiguration {
-	}
+	static class DefaultEvictionPolicyConfiguration extends CacheRegionConfiguration { }
 
 	@EnableEviction(policies = @EvictionPolicy(maximum = 65536, type = EvictionPolicyType.MEMORY_SIZE,
 		action = EvictionActionType.OVERFLOW_TO_DISK, objectSizerName = "mockObjectSizer"))
-	static class CustomEvictionPolicyConfiguration extends CacheRegionConfiguration {
-	}
+	static class CustomEvictionPolicyConfiguration extends CacheRegionConfiguration { }
 
 	@EnableEviction(policies = {
 		@EvictionPolicy(maximum = 85, type = EvictionPolicyType.HEAP_PERCENTAGE, action = EvictionActionType.OVERFLOW_TO_DISK,
@@ -263,14 +261,13 @@ public class EnableEvictionConfigurationUnitTests {
 		@EvictionPolicy(maximum = 10000, type = EvictionPolicyType.ENTRY_COUNT, action = EvictionActionType.LOCAL_DESTROY,
 			regionNames = "ReplicateRegion")
 	})
-	static class RegionSpecificEvictionPolicyConfiguration extends CacheRegionConfiguration {
-	}
+	static class RegionSpecificEvictionPolicyConfiguration extends CacheRegionConfiguration { }
 
 	@EnableEviction(policies = {
 		@EvictionPolicy(maximum = 1, type = EvictionPolicyType.ENTRY_COUNT, action = EvictionActionType.LOCAL_DESTROY,
 			objectSizerName = "mockObjectSizer", regionNames = "ReplicateRegion"),
 		@EvictionPolicy(maximum = 99, type = EvictionPolicyType.ENTRY_COUNT, action = EvictionActionType.OVERFLOW_TO_DISK)
 	})
-	static class LastMatchingWinsEvictionPolicyConfiguration extends CacheRegionConfiguration {
-	}
+	static class LastMatchingWinsEvictionPolicyConfiguration extends CacheRegionConfiguration { }
+
 }
