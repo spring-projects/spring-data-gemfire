@@ -16,11 +16,11 @@
 
 package org.springframework.data.gemfire;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.geode.GemFireCheckedException;
 import org.apache.geode.GemFireException;
 import org.apache.geode.cache.Region;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.DataAccessException;
 import org.springframework.util.Assert;
@@ -38,7 +38,7 @@ import org.springframework.util.Assert;
  */
 public class GemfireAccessor implements InitializingBean {
 
-	protected final Log log = LogFactory.getLog(getClass());
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private Region region;
 

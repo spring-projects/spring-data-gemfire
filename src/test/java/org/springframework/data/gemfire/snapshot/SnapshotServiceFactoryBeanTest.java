@@ -27,9 +27,9 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -49,7 +49,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.apache.commons.logging.Log;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.snapshot.CacheSnapshotService;
@@ -62,6 +61,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentMatchers;
+import org.slf4j.Logger;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.gemfire.snapshot.event.ExportSnapshotApplicationEvent;
 import org.springframework.data.gemfire.snapshot.event.ImportSnapshotApplicationEvent;
@@ -155,6 +155,7 @@ public class SnapshotServiceFactoryBeanTest {
 
 	@After
 	public void tearDown() {
+
 		factoryBean.setExports(null);
 		factoryBean.setImports(null);
 		factoryBean.setRegion(null);
@@ -425,7 +426,7 @@ public class SnapshotServiceFactoryBeanTest {
 			"MockSnapshotServiceAdapter");
 
 		SnapshotServiceFactoryBean factoryBean = new SnapshotServiceFactoryBean() {
-			@Override public SnapshotServiceAdapter getObject() throws Exception {
+			@Override public SnapshotServiceAdapter getObject() {
 				return mockSnapshotService;
 			}
 		};
@@ -439,7 +440,7 @@ public class SnapshotServiceFactoryBeanTest {
 	}
 
 	@Test
-	public void onApplicationEventWhenMatchUsingEventSnapshotMetadataPerformsExport() throws Exception {
+	public void onApplicationEventWhenMatchUsingEventSnapshotMetadataPerformsExport() {
 
 		Region mockRegion = mock(Region.class, "MockRegion");
 
@@ -456,7 +457,7 @@ public class SnapshotServiceFactoryBeanTest {
 		when(mockSnapshotEvent.getSnapshotMetadata()).thenReturn(toArray(eventSnapshotMetadata));
 
 		SnapshotServiceFactoryBean factoryBean = new SnapshotServiceFactoryBean() {
-			@Override public SnapshotServiceAdapter getObject() throws Exception {
+			@Override public SnapshotServiceAdapter getObject() {
 				return mockSnapshotService;
 			}
 		};
@@ -476,7 +477,7 @@ public class SnapshotServiceFactoryBeanTest {
 	}
 
 	@Test
-	public void onApplicationEventWhenMatchUsingFactorySnapshotMetadataPerformsImport() throws Exception {
+	public void onApplicationEventWhenMatchUsingFactorySnapshotMetadataPerformsImport() {
 
 		SnapshotApplicationEvent mockSnapshotEvent = mock(ImportSnapshotApplicationEvent.class,
 			"MockImportSnapshotApplicationEvent");
@@ -491,7 +492,7 @@ public class SnapshotServiceFactoryBeanTest {
 		when(mockSnapshotEvent.getSnapshotMetadata()).thenReturn(null);
 
 		SnapshotServiceFactoryBean factoryBean = new SnapshotServiceFactoryBean() {
-			@Override public SnapshotServiceAdapter getObject() throws Exception {
+			@Override public SnapshotServiceAdapter getObject() {
 				return mockSnapshotService;
 			}
 		};
@@ -510,7 +511,7 @@ public class SnapshotServiceFactoryBeanTest {
 	}
 
 	@Test
-	public void onApplicationEventWhenNoMatchDoesNotPerformExport() throws Exception {
+	public void onApplicationEventWhenNoMatchDoesNotPerformExport() {
 
 		SnapshotApplicationEvent mockSnapshotEvent = mock(ExportSnapshotApplicationEvent.class,
 			"MockExportSnapshotApplicationEvent");
@@ -523,7 +524,7 @@ public class SnapshotServiceFactoryBeanTest {
 			mock(SnapshotServiceAdapter.class, "MockSnapshotServiceAdapter");
 
 		SnapshotServiceFactoryBean factoryBean = new SnapshotServiceFactoryBean() {
-			@Override public SnapshotServiceAdapter getObject() throws Exception {
+			@Override public SnapshotServiceAdapter getObject() {
 				return mockSnapshotService;
 			}
 		};
@@ -542,7 +543,7 @@ public class SnapshotServiceFactoryBeanTest {
 	}
 
 	@Test
-	public void onApplicationEventWhenNoMatchDoesNotPerformImport() throws Exception {
+	public void onApplicationEventWhenNoMatchDoesNotPerformImport() {
 
 		Region mockRegion = mock(Region.class, "MockRegion");
 
@@ -557,7 +558,7 @@ public class SnapshotServiceFactoryBeanTest {
 		when(mockSnapshotEvent.getSnapshotMetadata()).thenReturn(null);
 
 		SnapshotServiceFactoryBean factoryBean = new SnapshotServiceFactoryBean() {
-			@Override public SnapshotServiceAdapter getObject() throws Exception {
+			@Override public SnapshotServiceAdapter getObject() {
 				return mockSnapshotService;
 			}
 		};
@@ -1005,12 +1006,12 @@ public class SnapshotServiceFactoryBeanTest {
 	@Test
 	public void logDebugWhenDebugging() {
 
-		Log mockLog = mock(Log.class, "MockLog");
+		Logger mockLog = mock(Logger.class, "MockLog");
 
 		when(mockLog.isDebugEnabled()).thenReturn(true);
 
 		TestSnapshotServiceAdapter snapshotService = new TestSnapshotServiceAdapter() {
-			@Override Log createLog() {
+			@Override Logger createLog() {
 				return mockLog;
 			}
 		};
@@ -1026,12 +1027,12 @@ public class SnapshotServiceFactoryBeanTest {
 	@Test
 	public void logDebugWhenNotDebugging() {
 
-		Log mockLog = mock(Log.class, "MockLog");
+		Logger mockLog = mock(Logger.class, "MockLog");
 
 		when(mockLog.isDebugEnabled()).thenReturn(false);
 
 		TestSnapshotServiceAdapter snapshotService = new TestSnapshotServiceAdapter() {
-			@Override Log createLog() {
+			@Override Logger createLog() {
 				return mockLog;
 			}
 		};
@@ -1313,7 +1314,7 @@ public class SnapshotServiceFactoryBeanTest {
 	}
 
 	@Test
-	public void createSnapshotMetadataWithFileGemFireFormatAndNullFilter() throws Exception {
+	public void createSnapshotMetadataWithFileGemFireFormatAndNullFilter() {
 
 		SnapshotMetadata snapshotMetadata = new SnapshotMetadata(snapshotDat, SnapshotFormat.GEMFIRE, null);
 

@@ -19,8 +19,8 @@ package org.springframework.data.gemfire.config.support;
 import java.io.File;
 import java.lang.reflect.Field;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.data.gemfire.DiskStoreFactoryBean.DiskDir;
@@ -40,7 +40,7 @@ import org.springframework.util.ObjectUtils;
 @SuppressWarnings("unused")
 public class DiskStoreDirectoryBeanPostProcessor implements BeanPostProcessor {
 
-	protected final Log log = LogFactory.getLog(getClass());
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 	/**
 	 * {@inheritDoc}
@@ -48,9 +48,9 @@ public class DiskStoreDirectoryBeanPostProcessor implements BeanPostProcessor {
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 
-		if (log.isDebugEnabled()) {
-			log.debug(String.format("Processing Bean [%1$s] of Type [%2$s] with Name [%3$s] before initialization%n",
-				bean, ObjectUtils.nullSafeClassName(bean), beanName));
+		if (logger.isDebugEnabled()) {
+			logger.debug("Processing Bean [{}] of Type [{}] with Name [{}] before initialization%n",
+				bean, ObjectUtils.nullSafeClassName(bean), beanName);
 		}
 
 		if (bean instanceof DiskDir) {
@@ -70,8 +70,8 @@ public class DiskStoreDirectoryBeanPostProcessor implements BeanPostProcessor {
 		Assert.isTrue(diskDirectoryFile.isDirectory() || diskDirectoryFile.mkdirs(),
 			String.format("Failed to create Disk Directory [%s]%n", location));
 
-		if (log.isInfoEnabled()) {
-			log.info(String.format("Disk Directory is @ Location [%s].%n", location));
+		if (logger.isInfoEnabled()) {
+			logger.info("Disk Directory is @ Location [{}].%n", location);
 		}
 	}
 

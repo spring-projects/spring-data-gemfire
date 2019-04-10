@@ -36,14 +36,14 @@ import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.snapshot.CacheSnapshotService;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
 import org.apache.geode.cache.snapshot.SnapshotFilter;
 import org.apache.geode.cache.snapshot.SnapshotOptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationListener;
@@ -88,20 +88,17 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 
 	private SnapshotServiceAdapter<K, V> snapshotServiceAdapter;
 
-	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
 	static <K, V> SnapshotMetadata<K, V>[] nullSafeArray(SnapshotMetadata<K, V>[] configurations) {
-		return (configurations != null ? configurations : EMPTY_ARRAY);
+		return configurations != null ? configurations : EMPTY_ARRAY;
 	}
 
-	/* (non-Javadoc) */
 	static boolean nullSafeIsDirectory(File file) {
-		return (file != null && file.isDirectory());
+		return file != null && file.isDirectory();
 	}
 
-	/* (non-Javadoc) */
 	static boolean nullSafeIsFile(File file) {
-		return (file != null && file.isFile());
+		return file != null && file.isFile();
 	}
 
 	/**
@@ -435,10 +432,10 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 
 		protected static final File TEMPORARY_DIRECTORY = new File(System.getProperty("java.io.tmpdir"));
 
-		protected final Log log = createLog();
+		protected final Logger logger = createLog();
 
-		Log createLog() {
-			return LogFactory.getLog(getClass());
+		Logger createLog() {
+			return LoggerFactory.getLogger(getClass());
 		}
 
 		@Override
@@ -527,16 +524,16 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 				closeable.close();
 				return true;
 			}
-			catch (IOException ignore) {
-				logDebug(ignore, "Failed to close [%s]", closeable);
+			catch (IOException cause) {
+				logDebug(cause, "Failed to close [%s]", closeable);
 				return false;
 			}
 		}
 
 		protected void logDebug(Throwable cause, String message, Object... arguments) {
 
-			if (log.isDebugEnabled()) {
-				log.debug(String.format(message, arguments), cause);
+			if (logger.isDebugEnabled()) {
+				logger.debug(String.format(message, arguments), cause);
 			}
 		}
 

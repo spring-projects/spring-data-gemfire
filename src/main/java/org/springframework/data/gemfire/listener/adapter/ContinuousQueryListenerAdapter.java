@@ -23,11 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.query.CqEvent;
 import org.apache.geode.cache.query.CqQuery;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.gemfire.listener.ContinuousQueryListener;
@@ -79,7 +79,7 @@ public class ContinuousQueryListenerAdapter implements ContinuousQueryListener {
 	// Out-of-the-box value for the default listener handler method "handleEvent".
 	public static final String DEFAULT_LISTENER_METHOD_NAME = "handleEvent";
 
-	protected final Log logger = LogFactory.getLog(getClass());
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private MethodInvoker invoker;
 

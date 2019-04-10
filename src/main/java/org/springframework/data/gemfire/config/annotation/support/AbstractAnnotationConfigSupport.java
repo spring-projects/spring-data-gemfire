@@ -31,8 +31,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
@@ -98,7 +98,7 @@ public abstract class AbstractAnnotationConfigSupport
 
 	private final EvaluationContext evaluationContext;
 
-	private final Log log;
+	private final Logger log;
 
 	/**
 	 * Determines whether the given {@link Number} has value.  The {@link Number} is valuable
@@ -192,14 +192,14 @@ public abstract class AbstractAnnotationConfigSupport
 	}
 
 	/**
-	 * Constructs a new instance of {@link Log} to log statements printed by SDG.
+	 * Constructs a new instance of {@link Logger} to log statements printed by Spring Data GemFire/Geode.
 	 *
-	 * @return a new instance of {@link Log}.
+	 * @return a new instance of {@link Logger}.
 	 * @see org.apache.commons.logging.LogFactory#getLog(Class)
 	 * @see org.apache.commons.logging.Log
 	 */
-	protected Log newLog() {
-		return LogFactory.getLog(getClass());
+	protected Logger newLog() {
+		return LoggerFactory.getLogger(getClass());
 	}
 
 	/**
@@ -491,12 +491,12 @@ public abstract class AbstractAnnotationConfigSupport
 	}
 
 	/**
-	 * Returns a reference to the {@link Log} used by this class to log {@link String messages}.
+	 * Returns a reference to the {@link Logger} used by this class to log {@link String messages}.
 	 *
-	 * @return a reference to the {@link Log} used by this class to log {@link String messages}.
+	 * @return a reference to the {@link Logger} used by this class to log {@link String messages}.
 	 * @see org.apache.commons.logging.Log
 	 */
-	protected Log getLog() {
+	protected Logger getLog() {
 		return this.log;
 	}
 
@@ -521,7 +521,7 @@ public abstract class AbstractAnnotationConfigSupport
 	 */
 	protected void logDebug(Supplier<String> message) {
 		Optional.ofNullable(getLog())
-			.filter(Log::isDebugEnabled)
+			.filter(Logger::isDebugEnabled)
 			.ifPresent(log -> log.debug(message.get()));
 	}
 
@@ -546,7 +546,7 @@ public abstract class AbstractAnnotationConfigSupport
 	 */
 	protected void logInfo(Supplier<String> message) {
 		Optional.ofNullable(getLog())
-			.filter(Log::isInfoEnabled)
+			.filter(Logger::isInfoEnabled)
 			.ifPresent(log -> log.info(message.get()));
 	}
 
@@ -571,7 +571,7 @@ public abstract class AbstractAnnotationConfigSupport
 	 */
 	protected void logWarning(Supplier<String> message) {
 		Optional.ofNullable(getLog())
-			.filter(Log::isWarnEnabled)
+			.filter(Logger::isWarnEnabled)
 			.ifPresent(log -> log.info(message.get()));
 	}
 
@@ -596,7 +596,7 @@ public abstract class AbstractAnnotationConfigSupport
 	 */
 	protected void logError(Supplier<String> message) {
 		Optional.ofNullable(getLog())
-			.filter(Log::isWarnEnabled)
+			.filter(Logger::isWarnEnabled)
 			.ifPresent(log -> log.info(message.get()));
 	}
 
@@ -796,6 +796,7 @@ public abstract class AbstractAnnotationConfigSupport
 	 * For non-{@link String} values, this means the value must not be {@literal null}.
 	 * @see #resolveProperty(String, Class, Object)
 	 */
+	@SuppressWarnings("all")
 	protected <T> T requireProperty(String propertyName, Class<T> type) {
 
 		return Optional.of(propertyName)

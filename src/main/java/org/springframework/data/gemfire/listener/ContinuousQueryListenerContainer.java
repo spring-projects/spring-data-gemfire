@@ -34,8 +34,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
@@ -46,6 +44,8 @@ import org.apache.geode.cache.query.CqListener;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.QueryService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -120,7 +120,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 		(beanName, container) -> nullSafeList(this.cqListenerContainerConfigurers).forEach(configurer ->
 			configurer.configure(beanName, container));
 
-	protected final Log logger = LogFactory.getLog(getClass());
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private Queue<CqQuery> continuousQueries = new ConcurrentLinkedQueue<>();
 
@@ -734,8 +734,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 				boolean active = this.isActive();
 
 				if (!active && logger.isDebugEnabled()) {
-					logger.debug("A CQ listener exception occurred after container shutdown;"
-						+ " ErrorHandler will not be invoked", cause);
+					logger.debug("A CQ listener exception occurred after container shutdown; ErrorHandler will not be invoked", cause);
 				}
 
 				return active;
@@ -818,11 +817,11 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 					((DisposableBean) it).destroy();
 
 					if (logger.isDebugEnabled()) {
-						logger.debug(String.format("Stopped internally-managed TaskExecutor [%s]", it));
+						logger.debug("Stopped internally-managed TaskExecutor {}", it);
 					}
 				}
 				catch (Exception ignore) {
-					logger.warn(String.format("Failed to properly destroy the managed TaskExecutor [%s]", it));
+					logger.warn("Failed to properly destroy the managed TaskExecutor {}", it);
 				}
 			});
 	}

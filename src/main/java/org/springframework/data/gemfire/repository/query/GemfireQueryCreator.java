@@ -18,8 +18,8 @@ package org.springframework.data.gemfire.repository.query;
 
 import java.util.Iterator;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.gemfire.mapping.GemfirePersistentEntity;
 import org.springframework.data.repository.query.parser.AbstractQueryCreator;
@@ -38,7 +38,7 @@ import org.springframework.data.repository.query.parser.PartTree;
  */
 class GemfireQueryCreator extends AbstractQueryCreator<QueryString, Predicates> {
 
-	private static final Log LOG = LogFactory.getLog(GemfireQueryCreator.class);
+	private static final Logger logger = LoggerFactory.getLogger(GemfireQueryCreator.class);
 
 	private Iterator<Integer> indexes;
 
@@ -106,8 +106,8 @@ class GemfireQueryCreator extends AbstractQueryCreator<QueryString, Predicates> 
 
 		QueryString query = this.queryBuilder.create(criteria).orderBy(sort);
 
-		if (LOG.isDebugEnabled()) {
-			LOG.debug(String.format("Created Query [%s]", query.toString()));
+		if (logger.isDebugEnabled()) {
+			logger.debug("Created Query [{}]", query.toString());
 		}
 
 		return query;
@@ -128,29 +128,17 @@ class GemfireQueryCreator extends AbstractQueryCreator<QueryString, Predicates> 
 			this.index = 1;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.util.Iterator#hasNext()
-		 */
 		@Override
 		@SuppressWarnings("all")
 		public boolean hasNext() {
 			return (index <= Integer.MAX_VALUE);
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.util.Iterator#next()
-		 */
 		@Override
 		public Integer next() {
 			return index++;
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * @see java.util.Iterator#remove()
-		 */
 		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();

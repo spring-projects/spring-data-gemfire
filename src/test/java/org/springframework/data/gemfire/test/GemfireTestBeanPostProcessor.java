@@ -12,8 +12,8 @@
  */
 package org.springframework.data.gemfire.test;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.data.gemfire.CacheFactoryBean;
@@ -26,7 +26,7 @@ import org.springframework.data.gemfire.server.CacheServerFactoryBean;
  */
 public class GemfireTestBeanPostProcessor implements BeanPostProcessor {
 
-	private static Log logger = LogFactory.getLog(GemfireTestBeanPostProcessor.class);
+	private static Logger logger = LoggerFactory.getLogger(GemfireTestBeanPostProcessor.class);
 
 	/*
 	 * (non-Javadoc)
@@ -34,15 +34,17 @@ public class GemfireTestBeanPostProcessor implements BeanPostProcessor {
 	 */
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+
 		if (bean instanceof CacheFactoryBean) {
+
 			String beanTypeName = bean.getClass().getName();
 
 			bean = (bean instanceof ClientCacheFactoryBean
 				? new MockClientCacheFactoryBean((ClientCacheFactoryBean) bean)
 				: new MockCacheFactoryBean((CacheFactoryBean) bean));
 
-			logger.info(String.format("Replacing the [%1$s] bean definition having type [%2$s] with mock [%3$s]...",
-				beanName, beanTypeName, bean.getClass().getName()));
+			logger.info("Replacing the [{}] bean definition having type [{}] with mock [{}]...",
+				beanName, beanTypeName, bean.getClass().getName());
 		}
 		else if (bean instanceof CacheServerFactoryBean) {
 			((CacheServerFactoryBean) bean).setCache(new StubCache());
@@ -59,5 +61,4 @@ public class GemfireTestBeanPostProcessor implements BeanPostProcessor {
 	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 		return bean;
 	}
-
 }

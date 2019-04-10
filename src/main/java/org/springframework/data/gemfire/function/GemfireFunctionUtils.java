@@ -26,11 +26,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.security.ResourcePermission;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -54,7 +54,7 @@ public abstract class GemfireFunctionUtils {
 
 	private static final String DEFAULT_FUNCTION_ID = null;
 
-	private static Log log = LogFactory.getLog(GemfireFunctionUtils.class);
+	private static Logger logger = LoggerFactory.getLogger(GemfireFunctionUtils.class);
 
 	/**
 	 * Determines whether the given {@link Method} is a POJO, {@link GemfireFunction} annotated {@link Method}.
@@ -366,8 +366,8 @@ public abstract class GemfireFunctionUtils {
 		if (FunctionService.isRegistered(function.getId())) {
 			if (overwrite) {
 
-				if (log.isDebugEnabled()) {
-					log.debug(String.format("Overwrite enabled; Unregistering Function [%s]", function.getId()));
+				if (logger.isDebugEnabled()) {
+					logger.debug("Overwrite enabled; Unregistering Function [{}]", function.getId());
 				}
 
 				FunctionService.unregisterFunction(function.getId());
@@ -375,16 +375,16 @@ public abstract class GemfireFunctionUtils {
 		}
 
 		if (FunctionService.isRegistered(function.getId())) {
-			if (log.isDebugEnabled()) {
-				log.debug(String.format("Function [%s] is already registered", function.getId()));
+			if (logger.isDebugEnabled()) {
+				logger.debug("Function [{}] is already registered", function.getId());
 			}
 		}
 		else {
 
 			FunctionService.registerFunction(function);
 
-			if (log.isDebugEnabled()) {
-				log.debug(String.format("Registered Function [%s]", function.getId()));
+			if (logger.isDebugEnabled()) {
+				logger.debug("Registered Function [{}]", function.getId());
 			}
 		}
 	}

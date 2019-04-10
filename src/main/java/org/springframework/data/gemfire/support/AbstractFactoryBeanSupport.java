@@ -19,8 +19,8 @@ package org.springframework.data.gemfire.support;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
@@ -52,7 +52,7 @@ public abstract class AbstractFactoryBeanSupport<T>
 
 	private BeanFactory beanFactory;
 
-	private final Log log;
+	private final Logger log;
 
 	private String beanName;
 
@@ -66,14 +66,14 @@ public abstract class AbstractFactoryBeanSupport<T>
 	}
 
 	/**
-	 * Constructs a new instance of {@link Log} to log statements printed by SDG.
+	 * Constructs a new instance of {@link Logger} to log statements printed by Spring Data GemFire/Geode.
 	 *
-	 * @return a new instance of {@link Log}.
+	 * @return a new instance of {@link Logger}.
 	 * @see org.apache.commons.logging.LogFactory#getLog(Class)
 	 * @see org.apache.commons.logging.Log
 	 */
-	protected Log newLog() {
-		return LogFactory.getLog(getClass());
+	protected Logger newLog() {
+		return LoggerFactory.getLogger(getClass());
 	}
 
 	/**
@@ -146,12 +146,12 @@ public abstract class AbstractFactoryBeanSupport<T>
 	}
 
 	/**
-	 * Returns a reference to the {@link Log} used by this {@link FactoryBean} to log {@link String messages}.
+	 * Returns a reference to the {@link Logger} used by this {@link FactoryBean} to log {@link String messages}.
 	 *
-	 * @return a reference to the {@link Log} used by this {@link FactoryBean} to log {@link String messages}.
+	 * @return a reference to the {@link Logger} used by this {@link FactoryBean} to log {@link String messages}.
 	 * @see org.apache.commons.logging.Log
 	 */
-	protected Log getLog() {
+	protected Logger getLog() {
 		return this.log;
 	}
 
@@ -187,7 +187,7 @@ public abstract class AbstractFactoryBeanSupport<T>
 	 */
 	protected void logDebug(Supplier<String> message) {
 		Optional.ofNullable(getLog())
-			.filter(Log::isDebugEnabled)
+			.filter(Logger::isDebugEnabled)
 			.ifPresent(log -> log.debug(message.get()));
 	}
 
@@ -212,7 +212,7 @@ public abstract class AbstractFactoryBeanSupport<T>
 	 */
 	protected void logInfo(Supplier<String> message) {
 		Optional.ofNullable(getLog())
-			.filter(Log::isInfoEnabled)
+			.filter(Logger::isInfoEnabled)
 			.ifPresent(log -> log.info(message.get()));
 	}
 
@@ -237,7 +237,7 @@ public abstract class AbstractFactoryBeanSupport<T>
 	 */
 	protected void logWarning(Supplier<String> message) {
 		Optional.ofNullable(getLog())
-			.filter(Log::isWarnEnabled)
+			.filter(Logger::isWarnEnabled)
 			.ifPresent(log -> log.warn(message.get()));
 	}
 
@@ -262,7 +262,7 @@ public abstract class AbstractFactoryBeanSupport<T>
 	 */
 	protected void logError(Supplier<String> message) {
 		Optional.ofNullable(getLog())
-			.filter(Log::isErrorEnabled)
+			.filter(Logger::isErrorEnabled)
 			.ifPresent(log -> log.error(message.get()));
 	}
 }

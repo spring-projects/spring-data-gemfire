@@ -17,13 +17,13 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 /**
@@ -42,7 +42,7 @@ abstract class AbstractFunctionExecution {
 
 	private Function function;
 
-	protected final Log logger = LogFactory.getLog(this.getClass());
+	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	private Object[] args;
 

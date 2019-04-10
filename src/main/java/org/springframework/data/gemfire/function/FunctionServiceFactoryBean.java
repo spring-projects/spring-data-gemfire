@@ -17,10 +17,10 @@ package org.springframework.data.gemfire.function;
 
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.CollectionUtils;
@@ -37,16 +37,17 @@ import org.springframework.util.CollectionUtils;
  */
 public class FunctionServiceFactoryBean implements FactoryBean<FunctionService>, InitializingBean {
 
-	private static Log logger = LogFactory.getLog(FunctionServiceFactoryBean.class);
+	private static Logger logger = LoggerFactory.getLogger(FunctionServiceFactoryBean.class);
 
 	private List<Function> functions;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		if (!CollectionUtils.isEmpty(functions)) {
-			for (Function function : functions) {
+
+		if (!CollectionUtils.isEmpty(this.functions)) {
+			for (Function function : this.functions) {
 				if (logger.isInfoEnabled()) {
-					logger.info(String.format("registering Function with ID (%1$s)", function.getId()));
+					logger.info("registering Function with ID [{}]", function.getId());
 				}
 				FunctionService.registerFunction(function);
 			}

@@ -20,9 +20,9 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.geode.cache.InterestResultPolicy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.Constants;
 import org.springframework.util.Assert;
@@ -48,7 +48,7 @@ public class Interest<K> implements InitializingBean {
 
 	private static final Constants constants = new Constants(InterestResultPolicy.class);
 
-	protected final Log logger = LogFactory.getLog(getClass());
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private boolean durable = false;
 	private boolean receiveValues = true;
@@ -121,6 +121,7 @@ public class Interest<K> implements InitializingBean {
 	 * @see #afterPropertiesSet()
 	 */
 	public Interest(K key, InterestResultPolicy policy, boolean durable, boolean receiveValues) {
+
 		this.key = key;
 		this.policy = policy;
 		this.durable = durable;
@@ -133,7 +134,9 @@ public class Interest<K> implements InitializingBean {
 	 * @inheritDoc
 	 */
 	public void afterPropertiesSet() {
-		Assert.notNull(key, "Key is required");
+
+		Assert.notNull(this.key, "Key is required");
+
 		setType(resolveType(getType()));
 	}
 
@@ -287,6 +290,7 @@ public class Interest<K> implements InitializingBean {
 	 * @see org.apache.geode.cache.InterestResultPolicy
 	 */
 	public void setPolicy(Object policy) {
+
 		if (policy instanceof InterestResultPolicy) {
 			this.policy = (InterestResultPolicy) policy;
 		}
@@ -294,8 +298,7 @@ public class Interest<K> implements InitializingBean {
 			this.policy = (InterestResultPolicy) constants.asObject(String.valueOf(policy));
 		}
 		else {
-			throw new IllegalArgumentException(String.format(
-				"Unknown argument type [%s] for property 'policy'", policy));
+			throw new IllegalArgumentException(String.format("Unknown argument type [%s] for property policy", policy));
 		}
 	}
 

@@ -18,14 +18,14 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.ResourcePermission;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
@@ -50,7 +50,7 @@ import org.springframework.util.StringUtils;
 @SuppressWarnings("serial")
 public class PojoFunctionWrapper implements Function {
 
-	private static transient Log logger = LogFactory.getLog(PojoFunctionWrapper.class);
+	private static transient Logger logger = LoggerFactory.getLogger(PojoFunctionWrapper.class);
 
 	private volatile boolean HA;
 	private volatile boolean hasResult;
@@ -162,12 +162,12 @@ public class PojoFunctionWrapper implements Function {
 		if (logger.isDebugEnabled()) {
 
 			if (logger.isDebugEnabled()) {
-				logger.debug(String.format("About to invoke method [%s] on class [%s] as Function [%s]",
-					this.method.getName(), this.target.getClass().getName(), getId()));
+				logger.debug("About to invoke method [{}] on class [{}] as Function [{}]",
+					this.method.getName(), this.target.getClass().getName(), getId());
 			}
 
 			for (Object arg : args) {
-				logger.debug(String.format("Argument of type [%s] is [%s]", arg.getClass().getName(), arg.toString()));
+				logger.debug("Argument of type [{}] is [{}]", arg.getClass().getName(), arg.toString());
 			}
 		}
 

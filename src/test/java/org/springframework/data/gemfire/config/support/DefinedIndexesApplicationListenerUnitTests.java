@@ -16,11 +16,11 @@
 
 package org.springframework.data.gemfire.config.support;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Matchers.startsWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -30,7 +30,6 @@ import static org.mockito.Mockito.when;
 import java.util.Collections;
 import java.util.HashMap;
 
-import org.apache.commons.logging.Log;
 import org.apache.geode.cache.query.MultiIndexCreationException;
 import org.apache.geode.cache.query.QueryService;
 import org.junit.Before;
@@ -38,6 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
@@ -75,7 +75,7 @@ public class DefinedIndexesApplicationListenerUnitTests {
 	}
 
 	protected <K, V> HashMap<K, V> newHashMap(K key, V value) {
-		return new HashMap<K, V>(Collections.singletonMap(key, value));
+		return new HashMap<>(Collections.singletonMap(key, value));
 	}
 
 	protected MultiIndexCreationException newMultiIndexCreationException(String key, Exception cause) {
@@ -84,6 +84,7 @@ public class DefinedIndexesApplicationListenerUnitTests {
 
 	@Test
 	public void createDefinedIndexesCalledOnContextRefreshedEvent() throws Exception {
+
 		when(mockApplicationContext.containsBean(eq(QUERY_SERVICE_BEAN_NAME))).thenReturn(true);
 		when(mockApplicationContext.getBean(eq(QUERY_SERVICE_BEAN_NAME), eq(QueryService.class)))
 			.thenReturn(mockQueryService);
@@ -98,6 +99,7 @@ public class DefinedIndexesApplicationListenerUnitTests {
 
 	@Test
 	public void createDefinedIndexesNotCalledOnContextRefreshedEvent() throws Exception {
+
 		when(mockApplicationContext.containsBean(eq(QUERY_SERVICE_BEAN_NAME))).thenReturn(false);
 
 		listener.onApplicationEvent(mockEvent);
@@ -110,16 +112,17 @@ public class DefinedIndexesApplicationListenerUnitTests {
 
 	@Test
 	public void createDefinedIndexesThrowingAnExceptionIsLogged() throws Exception {
+
 		when(mockApplicationContext.containsBean(eq(QUERY_SERVICE_BEAN_NAME))).thenReturn(true);
 		when(mockApplicationContext.getBean(eq(QUERY_SERVICE_BEAN_NAME), eq(QueryService.class)))
 			.thenReturn(mockQueryService);
 		when(mockQueryService.createDefinedIndexes())
 			.thenThrow(newMultiIndexCreationException("TestKey", new RuntimeException("TEST")));
 
-		final Log mockLog = mock(Log.class);
+		Logger mockLog = mock(Logger.class);
 
 		DefinedIndexesApplicationListener listener = new DefinedIndexesApplicationListener() {
-			@Override Log initLogger() {
+			@Override Logger initLogger() {
 				return mockLog;
 			}
 		};

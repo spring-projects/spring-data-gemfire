@@ -18,10 +18,10 @@ package org.springframework.data.gemfire.config.support;
 
 import java.util.Optional;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.geode.cache.query.MultiIndexCreationException;
 import org.apache.geode.cache.query.QueryService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -41,7 +41,7 @@ import org.springframework.data.gemfire.config.xml.GemfireConstants;
  */
 public class DefinedIndexesApplicationListener implements ApplicationListener<ContextRefreshedEvent> {
 
-	protected final Log logger = initLogger();
+	protected final Logger logger = initLogger();
 
 	/**
 	 * Attempts to create all defined {@link org.apache.geode.cache.query.Index Indexes} using
@@ -63,18 +63,16 @@ public class DefinedIndexesApplicationListener implements ApplicationListener<Co
 					queryService.createDefinedIndexes();
 				}
 				catch (MultiIndexCreationException cause) {
-					logger.warn(String.format("Failed to create pre-defined Indexes: %s", cause.getMessage()), cause);
+					logger.warn("Failed to create pre-defined Indexes: {}", cause.getMessage(), cause);
 
 				}
 			});
 	}
 
-	/* (non-Javadoc) */
-	Log initLogger() {
-		return LogFactory.getLog(getClass());
+	Logger initLogger() {
+		return LoggerFactory.getLogger(getClass());
 	}
 
-	/* (non-Javadoc) */
 	private QueryService getQueryService(ContextRefreshedEvent event) {
 
 		ApplicationContext applicationContext = event.getApplicationContext();
@@ -85,7 +83,6 @@ public class DefinedIndexesApplicationListener implements ApplicationListener<Co
 			? applicationContext.getBean(queryServiceBeanName, QueryService.class) : null);
 	}
 
-	/* (non-Javadoc) */
 	private String getQueryServiceBeanName() {
 		return GemfireConstants.DEFAULT_GEMFIRE_INDEX_DEFINITION_QUERY_SERVICE;
 	}

@@ -45,10 +45,10 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
 import org.apache.geode.cache.Cache;
 import org.junit.After;
 import org.junit.Test;
+import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.context.ApplicationListener;
@@ -746,12 +746,12 @@ public class SpringContextBootstrappingInitializerTest {
 	@Test(expected = IllegalStateException.class)
 	public void testInitLogsErrors() throws Throwable {
 
-		Log mockLog = mock(Log.class, "testInitLogsErrors.MockLog");
+		Logger mockLog = mock(Logger.class, "testInitLogsErrors.MockLog");
 
 		SpringContextBootstrappingInitializer initializer = new SpringContextBootstrappingInitializer() {
 
 			@Override
-			protected Log initLogger() {
+			protected Logger initLogger() {
 				return mockLog;
 			}
 
@@ -829,8 +829,9 @@ public class SpringContextBootstrappingInitializerTest {
 
 	@Test
 	public void onContextRefreshedApplicationEvent() {
-		TestApplicationListener testApplicationListener = new TestApplicationListener(
-			"testOnContextRefreshedApplicationEvent");
+
+		TestApplicationListener testApplicationListener =
+			new TestApplicationListener("testOnContextRefreshedApplicationEvent");
 
 		try {
 			testApplicationListener = SpringContextBootstrappingInitializer.register(testApplicationListener);
@@ -853,8 +854,9 @@ public class SpringContextBootstrappingInitializerTest {
 
 	@Test
 	public void onContextStartedApplicationEvent() {
-		TestApplicationListener testApplicationListener = new TestApplicationListener(
-			"testOnContextStartedApplicationEvent");
+
+		TestApplicationListener testApplicationListener =
+			new TestApplicationListener("testOnContextStartedApplicationEvent");
 
 		try {
 			testApplicationListener = SpringContextBootstrappingInitializer.register(testApplicationListener);
@@ -875,8 +877,9 @@ public class SpringContextBootstrappingInitializerTest {
 
 	@Test
 	public void onContextStoppedApplicationEvent() {
-		TestApplicationListener testApplicationListener = new TestApplicationListener(
-			"testOnContextStartedApplicationEvent");
+
+		TestApplicationListener testApplicationListener =
+			new TestApplicationListener("testOnContextStartedApplicationEvent");
 
 		try {
 			testApplicationListener = SpringContextBootstrappingInitializer.register(testApplicationListener);
@@ -904,6 +907,7 @@ public class SpringContextBootstrappingInitializerTest {
 
 	@Test
 	public void onApplicationEventWithMultipleRegisteredApplicationListeners() {
+
 		TestApplicationListener testApplicationListenerOne = new TestApplicationListener("TestApplicationListener.1");
 
 		TestApplicationListener testApplicationListenerTwo = new TestApplicationListener("TestApplicationListener.2");
@@ -940,6 +944,7 @@ public class SpringContextBootstrappingInitializerTest {
 
 	@Test
 	public void onApplicationEventWithNoRegisteredApplicationListener() {
+
 		TestApplicationListener testApplicationListener = new TestApplicationListener("TestApplicationListener");
 
 		try {
@@ -960,6 +965,7 @@ public class SpringContextBootstrappingInitializerTest {
 
 	@Test
 	public void testNotifyOnExistingContextRefreshedEventBeforeApplicationContextExists() {
+
 		assertNull(SpringContextBootstrappingInitializer.contextRefreshedEvent);
 
 		TestApplicationListener testApplicationListener = new TestApplicationListener(
@@ -976,6 +982,7 @@ public class SpringContextBootstrappingInitializerTest {
 
 	@Test
 	public void testNotifyOnExistingContextRefreshedEventAfterContextRefreshed() {
+
 		ContextRefreshedEvent testContextRefreshedEvent = new ContextRefreshedEvent(mock(ApplicationContext.class));
 
 		new SpringContextBootstrappingInitializer().onApplicationEvent(testContextRefreshedEvent);
@@ -994,6 +1001,7 @@ public class SpringContextBootstrappingInitializerTest {
 
 	@Test
 	public void testOnApplicationEventAndNotifyOnExistingContextRefreshedEvent() {
+
 		ConfigurableApplicationContext mockApplicationContext = mock(ConfigurableApplicationContext.class,
 			"testOnApplicationEventAndNotifyOnExistingContextRefreshedEvent");
 
@@ -1065,12 +1073,10 @@ public class SpringContextBootstrappingInitializerTest {
 	}
 
 	@Configuration
-	protected static class TestAppConfigOne {
-	}
+	protected static class TestAppConfigOne { }
 
 	@Configuration
-	protected static class TestAppConfigTwo {
-	}
+	protected static class TestAppConfigTwo { }
 
 	// TODO add additional multi-threaded test cases once MultithreadedTC test framework is added to the SDP project
 	// in order to properly test concurrency of notification and registration during Spring ApplicationContext creation.

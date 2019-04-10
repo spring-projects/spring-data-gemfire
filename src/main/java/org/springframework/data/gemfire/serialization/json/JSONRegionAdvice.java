@@ -33,8 +33,6 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.internal.ResultsBag;
@@ -43,6 +41,8 @@ import org.apache.geode.pdx.PdxInstance;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.util.CollectionUtils;
 
@@ -66,7 +66,7 @@ public class JSONRegionAdvice {
 
 	private List<String> includedRegions = new ArrayList<>();
 
-	protected final Log log = LogFactory.getLog(JSONRegionAdvice.class);
+	protected final Logger logger = LoggerFactory.getLogger(JSONRegionAdvice.class);
 
 	/**
 	 * Flag to convert collections returned from cache from @{link PdxInstance} to JSON String. If the returned
@@ -116,7 +116,7 @@ public class JSONRegionAdvice {
 		try {
 			if (isIncludedJsonRegion(pjp.getTarget())) {
 				returnValue = pjp.proceed();
-				log.debug("converting " + returnValue + " to JSON string");
+				logger.debug("converting {} to JSON string", returnValue);
 				returnValue = convertToJson(returnValue);
 			}
 			else {
@@ -173,7 +173,7 @@ public class JSONRegionAdvice {
 
 				newArgs[1] = convertToPdx(val);
 				returnValue = pjp.proceed(newArgs);
-				log.debug(String.format("Converting [%s] to JSON", returnValue));
+				logger.debug("Converting [{}] to JSON", returnValue);
 				returnValue = convertToJson(returnValue);
 			}
 			else {
@@ -295,8 +295,8 @@ public class JSONRegionAdvice {
 
 		if (isIncludedJsonRegion(toRegionName(region), toRegionPath(region))) {
 
-			if (log.isDebugEnabled()) {
-				log.debug(String.format("Region [%s] is included for JSON conversion", region.getName()));
+			if (logger.isDebugEnabled()) {
+				logger.debug("Region [{}] is included for JSON conversion", region.getName());
 			}
 
 			result = true;

@@ -22,10 +22,10 @@ import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Declarable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.context.ApplicationListener;
@@ -85,7 +85,7 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 
 	private static final List<Class<?>> registeredAnnotatedClasses = new CopyOnWriteArrayList<>();
 
-	protected final Log logger = initLogger();
+	protected final Logger logger = initLogger();
 
 	/**
 	 * Gets a reference to the Spring ApplicationContext constructed, configured and initialized inside the GemFire
@@ -225,8 +225,8 @@ public class SpringContextBootstrappingInitializer implements Declarable, Applic
 	 * @see org.apache.commons.logging.LogFactory#getLog(Class)
 	 * @see org.apache.commons.logging.Log
 	 */
-	protected Log initLogger() {
-		return LogFactory.getLog(getClass());
+	protected Logger initLogger() {
+		return LoggerFactory.getLogger(getClass());
 	}
 
 	private boolean isConfigurable(Collection<Class<?>> annotatedClasses, String[] basePackages,

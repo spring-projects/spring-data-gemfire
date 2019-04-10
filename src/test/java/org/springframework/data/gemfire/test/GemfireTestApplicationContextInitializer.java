@@ -13,8 +13,8 @@
 
 package org.springframework.data.gemfire.test;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.util.StringUtils;
@@ -33,7 +33,7 @@ public class GemfireTestApplicationContextInitializer implements ApplicationCont
 	public static final String GEMFIRE_TEST_RUNNER_DISABLED =
 		"org.springframework.data.gemfire.test.GemfireTestRunner.nomock";
 
-	protected final Log log = LogFactory.getLog(getClass());
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 	/**
 	 * {@inheritDoc}
@@ -44,8 +44,8 @@ public class GemfireTestApplicationContextInitializer implements ApplicationCont
 		String gemfireTestRunnerDisabled = System.getProperty(GEMFIRE_TEST_RUNNER_DISABLED, Boolean.FALSE.toString());
 
 		if (isGemFireTestRunnerDisabled(gemfireTestRunnerDisabled)) {
-			log.warn(String.format("WARNING - Mocks disabled; Using real Pivotal GemFire objects [%1$s = %2$s]",
-				GEMFIRE_TEST_RUNNER_DISABLED, gemfireTestRunnerDisabled));
+			logger.warn("WARNING - Mocks disabled; Using real GemFire components [{} = {}]",
+				GEMFIRE_TEST_RUNNER_DISABLED, gemfireTestRunnerDisabled);
 		}
 		else {
 			applicationContext.getBeanFactory().addBeanPostProcessor(new GemfireTestBeanPostProcessor());

@@ -25,13 +25,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.apache.commons.logging.Log;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.BeanFactory;
 
 /**
@@ -49,7 +49,7 @@ import org.springframework.beans.factory.BeanFactory;
 public class AbstractFactoryBeanSupportUnitTests {
 
 	@Mock
-	private Log mockLog;
+	private Logger mockLog;
 
 	@Spy
 	private TestFactoryBeanSupport<?> factoryBeanSupport;
@@ -61,6 +61,7 @@ public class AbstractFactoryBeanSupportUnitTests {
 
 	@Test
 	public void setAndGetBeanClassLoader() {
+
 		assertThat(factoryBeanSupport.getBeanClassLoader()).isNull();
 
 		ClassLoader mockClassLoader = mock(ClassLoader.class);
@@ -82,6 +83,7 @@ public class AbstractFactoryBeanSupportUnitTests {
 
 	@Test
 	public void setAndGetBeanFactory() {
+
 		assertThat(factoryBeanSupport.getBeanFactory()).isNull();
 
 		BeanFactory mockBeanFactory = mock(BeanFactory.class);
@@ -97,6 +99,7 @@ public class AbstractFactoryBeanSupportUnitTests {
 
 	@Test
 	public void setAndGetBeanName() {
+
 		assertThat(factoryBeanSupport.getBeanName()).isNullOrEmpty();
 
 		factoryBeanSupport.setBeanName("test");
@@ -115,6 +118,7 @@ public class AbstractFactoryBeanSupportUnitTests {
 
 	@Test
 	public void logsDebugWhenDebugIsEnabled() {
+
 		when(mockLog.isDebugEnabled()).thenReturn(true);
 
 		factoryBeanSupport.logDebug("%s log test", "debug");
@@ -125,6 +129,7 @@ public class AbstractFactoryBeanSupportUnitTests {
 
 	@Test
 	public void logsInfoWhenInfoIsEnabled() {
+
 		when(mockLog.isInfoEnabled()).thenReturn(true);
 
 		factoryBeanSupport.logInfo("%s log test", "info");
@@ -135,6 +140,7 @@ public class AbstractFactoryBeanSupportUnitTests {
 
 	@Test
 	public void logsWarningWhenWarnIsEnabled() {
+
 		when(mockLog.isWarnEnabled()).thenReturn(true);
 
 		factoryBeanSupport.logWarning("%s log test", "warn");
@@ -145,6 +151,7 @@ public class AbstractFactoryBeanSupportUnitTests {
 
 	@Test
 	public void logsWarningWhenErrorIsEnabled() {
+
 		when(mockLog.isErrorEnabled()).thenReturn(true);
 
 		factoryBeanSupport.logError("%s log test", "error");
@@ -155,6 +162,7 @@ public class AbstractFactoryBeanSupportUnitTests {
 
 	@Test
 	public void suppressesDebugLoggingWhenDebugIsDisabled() {
+
 		when(mockLog.isDebugEnabled()).thenReturn(false);
 
 		factoryBeanSupport.logDebug(() -> "test");
@@ -165,6 +173,7 @@ public class AbstractFactoryBeanSupportUnitTests {
 
 	@Test
 	public void suppressesInfoLoggingWhenInfoIsDisabled() {
+
 		when(mockLog.isInfoEnabled()).thenReturn(false);
 
 		factoryBeanSupport.logInfo(() -> "test");
@@ -175,6 +184,7 @@ public class AbstractFactoryBeanSupportUnitTests {
 
 	@Test
 	public void suppressesWarnLoggingWhenWarnIsDisabled() {
+
 		when(mockLog.isWarnEnabled()).thenReturn(false);
 
 		factoryBeanSupport.logWarning(() -> "test");
@@ -185,6 +195,7 @@ public class AbstractFactoryBeanSupportUnitTests {
 
 	@Test
 	public void suppressesErrorLoggingWhenInfoIsDisabled() {
+
 		when(mockLog.isErrorEnabled()).thenReturn(false);
 
 		factoryBeanSupport.logError(() -> "test");
@@ -196,7 +207,7 @@ public class AbstractFactoryBeanSupportUnitTests {
 	private static class TestFactoryBeanSupport<T> extends AbstractFactoryBeanSupport<T> {
 
 		@Override
-		public T getObject() throws Exception {
+		public T getObject() {
 			return null;
 		}
 

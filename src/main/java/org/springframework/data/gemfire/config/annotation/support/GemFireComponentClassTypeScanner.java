@@ -30,8 +30,8 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Collectors;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.env.Environment;
@@ -90,7 +90,7 @@ public class GemFireComponentClassTypeScanner implements Iterable<String> {
 	private Set<TypeFilter> excludes = new HashSet<>();
 	private Set<TypeFilter> includes = new HashSet<>();
 
-	protected final Log log = LogFactory.getLog(getClass());
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private final Set<String> basePackages;
 
@@ -210,7 +210,7 @@ public class GemFireComponentClassTypeScanner implements Iterable<String> {
 
 		stream(this.spliterator(), true)
 			.flatMap(packageName -> componentProvider.findCandidateComponents(packageName).stream())
-			.forEach(beanDefinition -> {
+			.forEach(beanDefinition ->
 				Optional.ofNullable(beanDefinition.getBeanClassName())
 					.filter(StringUtils::hasText)
 					.ifPresent(beanClassName -> {
@@ -218,11 +218,11 @@ public class GemFireComponentClassTypeScanner implements Iterable<String> {
 							componentClasses.add(ClassUtils.forName(beanClassName, entityClassLoader));
 						}
 						catch (ClassNotFoundException ignore) {
-							log.warn(String.format("Class for component type [%s] not found",
+							logger.warn(String.format("Class for component type [%s] not found",
 								beanDefinition.getBeanClassName()));
 						}
-					});
-			});
+					})
+			);
 
 		return componentClasses;
 	}
@@ -261,35 +261,29 @@ public class GemFireComponentClassTypeScanner implements Iterable<String> {
 		return componentProvider;
 	}
 
-	/* (non-Javadoc) */
 	public GemFireComponentClassTypeScanner with(ClassLoader entityClassLoader) {
 		this.entityClassLoader = entityClassLoader;
 		return this;
 	}
 
-	/* (non-Javadoc) */
 	public GemFireComponentClassTypeScanner with(ConfigurableApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
 		return this;
 	}
 
-	/* (non-Javadoc) */
 	public GemFireComponentClassTypeScanner withExcludes(TypeFilter... excludes) {
 		return withExcludes(asSet(nullSafeArray(excludes, TypeFilter.class)));
 	}
 
-	/* (non-Javadoc) */
 	public GemFireComponentClassTypeScanner withExcludes(Iterable<TypeFilter> excludes) {
 		stream(nullSafeIterable(excludes).spliterator(), false).forEach(this.excludes::add);
 		return this;
 	}
 
-	/* (non-Javadoc) */
 	public GemFireComponentClassTypeScanner withIncludes(TypeFilter... includes) {
 		return withIncludes(asSet(nullSafeArray(includes, TypeFilter.class)));
 	}
 
-	/* (non-Javadoc) */
 	public GemFireComponentClassTypeScanner withIncludes(Iterable<TypeFilter> includes) {
 		stream(nullSafeIterable(includes).spliterator(), false).forEach(this.includes::add);
 		return this;
