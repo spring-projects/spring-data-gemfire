@@ -28,7 +28,6 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings("unused")
 public abstract class ThreadUtils {
 
-	/* (non-Javadoc) */
 	public static boolean sleep(long milliseconds) {
 		try {
 			Thread.sleep(milliseconds);
@@ -54,18 +53,19 @@ public abstract class ThreadUtils {
 
 	@SuppressWarnings("all")
 	public static boolean timedWait(long duration, long interval, WaitCondition waitCondition) {
-		final long timeout = (System.currentTimeMillis() + duration);
+
+		final long timeout = System.currentTimeMillis() + duration;
 
 		interval = Math.min(interval, duration);
 
 		try {
-			while (waitCondition.waiting() && (System.currentTimeMillis() < timeout)) {
+			while (waitCondition.waiting() && System.currentTimeMillis() < timeout) {
 				synchronized (waitCondition) {
 					TimeUnit.MILLISECONDS.timedWait(waitCondition, interval);
 				}
 			}
 		}
-		catch (InterruptedException e) {
+		catch (InterruptedException cause) {
 			Thread.currentThread().interrupt();
 		}
 

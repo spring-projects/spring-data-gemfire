@@ -9,6 +9,8 @@
         </encoder>
     </appender>
 
+    <appender name="nop" class="ch.qos.logback.core.helpers.NOPAppender"/>
+
     <appender name="testAppender" class="org.springframework.data.gemfire.test.logging.slf4j.logback.TestAppender">
         <encoder>
             <pattern>TEST - %m%n</pattern>
@@ -21,6 +23,10 @@
 
     <logger name="org.springframework.data.gemfire.config.annotation.support.RegionDataAccessTracingAspect" level="trace">
         <appender-ref ref="testAppender"/>
+    </logger>
+
+    <logger name="org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer" level="off">
+        <appender-ref ref="nop"/>
     </logger>
 
     <root level="${logback.log.level:-ERROR}">

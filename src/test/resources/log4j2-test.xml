@@ -6,11 +6,14 @@
 		<File name="File" fileName="build/logs/spring-test.log">
 			<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{1.} - %msg%n"/>
 		</File>
+		<Null name="nop"/>
 	</Appenders>
 	<Loggers>
 		<Logger name="org.apache.geode" level="error"/>
 		<Logger name="org.springframework" level="error"/>
-		<Logger name="org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer" level="off"/>
+		<Logger name="org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer" level="off">
+			<AppenderRef ref="nop"/>
+		</Logger>
 		<Root level="error">
 			<AppenderRef ref="Console"/>
 			<!--AppenderRef ref="File" /-->

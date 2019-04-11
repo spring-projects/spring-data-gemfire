@@ -54,7 +54,6 @@ public abstract class ProcessUtils {
 
 	protected static final String TERM_TOKEN = "<TERM/>";
 
-	/* (non-Javadoc) */
 	public static int currentPid() {
 		RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
 		String runtimeMXBeanName = runtimeMXBean.getName();
@@ -78,13 +77,12 @@ public abstract class ProcessUtils {
 			cause);
 	}
 
-	/* (non-Javadoc) */
 	public static boolean isAlive(Process process) {
-		return (process != null && process.isAlive());
+		return process != null && process.isAlive();
 	}
 
-	/* (non-Javadoc) */
 	public static boolean isRunning(int processId) {
+
 		/*
 		for (VirtualMachineDescriptor vmDescriptor : VirtualMachine.list()) {
 			if (String.valueOf(processId).equals(vmDescriptor.id())) {
@@ -98,8 +96,8 @@ public abstract class ProcessUtils {
 		throw new UnsupportedOperationException("operation not supported");
 	}
 
-	/* (non-Javadoc) */
 	public static boolean isRunning(Process process) {
+
 		try {
 			process.exitValue();
 			return false;
@@ -109,8 +107,8 @@ public abstract class ProcessUtils {
 		}
 	}
 
-	/* (non-Javadoc) */
 	public static void signalStop(Process process) throws IOException {
+
 		if (isRunning(process)) {
 			OutputStream processOutputStream = process.getOutputStream();
 			processOutputStream.write(TERM_TOKEN.concat("\n").getBytes());
@@ -118,14 +116,12 @@ public abstract class ProcessUtils {
 		}
 	}
 
-	/* (non-Javadoc) */
 	@SuppressWarnings("all")
 	public static void waitForStopSignal() {
 		Scanner in = new Scanner(System.in);
 		while (!TERM_TOKEN.equals(in.next()));
 	}
 
-	/* (non-Javadoc) */
 	public static int findAndReadPid(File workingDirectory) {
 		File pidFile = findPidFile(workingDirectory);
 
@@ -138,9 +134,9 @@ public abstract class ProcessUtils {
 		return readPid(pidFile);
 	}
 
-	/* (non-Javadoc) */
 	@SuppressWarnings("all")
 	protected static File findPidFile(File workingDirectory) {
+
 		Assert.isTrue(FileSystemUtils.isDirectory(workingDirectory), String.format(
 			"File [%s] is not a valid directory", workingDirectory));
 
@@ -157,9 +153,9 @@ public abstract class ProcessUtils {
 		return null;
 	}
 
-	/* (non-Javadoc) */
 	@SuppressWarnings("all")
 	public static int readPid(File pidFile) {
+
 		Assert.isTrue(pidFile != null && pidFile.isFile(), String.format(
 			"File [%s] is not a valid file", pidFile));
 
@@ -187,9 +183,9 @@ public abstract class ProcessUtils {
 		}
 	}
 
-	/* (non-Javadoc) */
 	@SuppressWarnings("all")
 	public static void writePid(File pidFile, int pid) throws IOException {
+
 		Assert.isTrue(pidFile != null && (pidFile.isFile() || pidFile.createNewFile()), String.format(
 			"File [%s] is not a valid file", pidFile));
 
@@ -206,7 +202,6 @@ public abstract class ProcessUtils {
 		}
 	}
 
-	/* (non-Javadoc) */
 	protected static class DirectoryPidFileFilter extends PidFileFilter {
 
 		protected static final DirectoryPidFileFilter INSTANCE = new DirectoryPidFileFilter();
@@ -216,11 +211,10 @@ public abstract class ProcessUtils {
 		 */
 		@Override
 		public boolean accept(File path) {
-			return (path != null && (path.isDirectory() || super.accept(path)));
+			return path != null && (path.isDirectory() || super.accept(path));
 		}
 	}
 
-	/* (non-Javadoc) */
 	protected static class PidFileFilter implements FileFilter {
 
 		protected static final PidFileFilter INSTANCE = new PidFileFilter();
@@ -230,7 +224,7 @@ public abstract class ProcessUtils {
 		 */
 		@Override
 		public boolean accept(File path) {
-			return (path != null && path.isFile() && path.getName().toLowerCase().endsWith(".pid"));
+			return path != null && path.isFile() && path.getName().toLowerCase().endsWith(".pid");
 		}
 	}
 }

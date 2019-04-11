@@ -58,7 +58,7 @@ public class ProcessWrapper {
 
 	protected static final boolean DEFAULT_DAEMON_THREAD = true;
 
-	protected static final long DEFAULT_WAIT_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(15);
+	protected static final long DEFAULT_WAIT_TIME_MILLISECONDS = TimeUnit.SECONDS.toMillis(5);
 
 	private final List<ProcessInputStreamListener> listeners = new CopyOnWriteArrayList<>();
 
@@ -67,8 +67,8 @@ public class ProcessWrapper {
 	private final Process process;
 	private final ProcessConfiguration processConfiguration;
 
-	/* (non-Javadoc) */
 	public ProcessWrapper(Process process, ProcessConfiguration processConfiguration) {
+
 		Assert.notNull(process, "Process must not be null");
 
 		Assert.notNull(processConfiguration, "The context and configuration meta-data providing details"
@@ -81,8 +81,8 @@ public class ProcessWrapper {
 		init();
 	}
 
-	/* (non-Javadoc) */
 	private void init() {
+
 		newThread("Process OUT Stream Reader Thread",
 			newProcessInputStreamReaderRunnable(process.getInputStream())).start();
 
@@ -92,9 +92,10 @@ public class ProcessWrapper {
 		}
 	}
 
-	/* (non-Javadoc) */
 	protected Runnable newProcessInputStreamReaderRunnable(InputStream in) {
+
 		return () -> {
+
 			if (isRunning()) {
 				BufferedReader inputReader = new BufferedReader(new InputStreamReader(in));
 
@@ -116,8 +117,8 @@ public class ProcessWrapper {
 		};
 	}
 
-	/* (non-Javadoc) */
 	protected Thread newThread(String name, Runnable task) {
+
 		Assert.hasText(name, "Thread name must be specified");
 		Assert.notNull(task, "Thread task must not be null");
 
@@ -129,38 +130,32 @@ public class ProcessWrapper {
 		return thread;
 	}
 
-	/* (non-Javadoc) */
 	public boolean isAlive() {
 		return ProcessUtils.isAlive(process);
 	}
 
-	/* (non-Javadoc) */
 	public boolean isNotAlive() {
 		return !isAlive();
 	}
 
-	/* (non-Javadoc) */
 	public List<String> getCommand() {
 		return processConfiguration.getCommand();
 	}
 
-	/* (non-Javadoc) */
 	public String getCommandString() {
 		return processConfiguration.getCommandString();
 	}
 
-	/* (non-Javadoc) */
 	public Map<String, String> getEnvironment() {
 		return processConfiguration.getEnvironment();
 	}
 
-	/* (non-Javadoc) */
 	public int getPid() {
 		return ProcessUtils.findAndReadPid(getWorkingDirectory());
 	}
 
-	/* (non-Javadoc) */
 	public int safeGetPid() {
+
 		try {
 			return getPid();
 		}
@@ -169,33 +164,28 @@ public class ProcessWrapper {
 		}
 	}
 
-	/* (non-Javadoc) */
 	public boolean isRedirectingErrorStream() {
 		return processConfiguration.isRedirectingErrorStream();
 	}
 
-	/* (non-Javadoc) */
 	public boolean isNotRunning() {
 		return !isRunning();
 	}
 
-	/* (non-Javadoc) */
 	public boolean isRunning() {
 		return ProcessUtils.isRunning(process);
 	}
 
-	/* (non-Javadoc) */
 	public File getWorkingDirectory() {
 		return processConfiguration.getWorkingDirectory();
 	}
 
-	/* (non-Javadoc) */
 	public int exitValue() {
 		return process.exitValue();
 	}
 
-	/* (non-Javadoc) */
 	public int safeExitValue() {
+
 		try {
 			return exitValue();
 		}
@@ -204,10 +194,10 @@ public class ProcessWrapper {
 		}
 	}
 
-	/* (non-Javadoc) */
 	public String readLogFile() throws IOException {
+
 		File[] logFiles = FileSystemUtils.listFiles(getWorkingDirectory(),
-			(path) -> (path != null && (path.isDirectory() || path.getAbsolutePath().endsWith(".log"))));
+			(path) -> path != null && (path.isDirectory() || path.getAbsolutePath().endsWith(".log")));
 
 		if (logFiles.length > 0) {
 			return readLogFile(logFiles[0]);
@@ -219,63 +209,63 @@ public class ProcessWrapper {
 		}
 	}
 
-	/* (non-Javadoc) */
 	public String readLogFile(File log) throws IOException {
 		return FileUtils.read(log);
 	}
 
-	/* (non-Javadoc) */
 	public boolean register(ProcessInputStreamListener listener) {
 		return (listener != null && listeners.add(listener));
 	}
 
-	/* (non-Javadoc) */
 	public void registerShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
 	}
 
-	/* (non-Javadoc) */
 	public void signal() {
+
 		try {
 			OutputStream outputStream = process.getOutputStream();
 			outputStream.write("\n".getBytes());
 			outputStream.flush();
 		}
-		catch (IOException e) {
+		catch (IOException cause) {
+
 			log.warning("Failed to signal process");
 
 			if (log.isLoggable(Level.FINE)) {
-				log.fine(ThrowableUtils.toString(e));
+				log.fine(ThrowableUtils.toString(cause));
 			}
 		}
 	}
 
-	/* (non-Javadoc) */
 	public void signalStop() {
+
 		try {
 			ProcessUtils.signalStop(process);
 		}
-		catch (IOException e) {
+		catch (IOException cause) {
+
 			log.warning("Failed to signal the process to stop");
 
 			if (log.isLoggable(Level.FINE)) {
-				log.fine(ThrowableUtils.toString(e));
+				log.fine(ThrowableUtils.toString(cause));
 			}
 		}
 	}
 
-	/* (non-Javadoc) */
 	public int stop() {
 		return stop(DEFAULT_WAIT_TIME_MILLISECONDS);
 	}
 
-	/* (non-Javadoc) */
 	public int stop(long milliseconds) {
+
 		if (isRunning()) {
+
 			boolean interrupted = false;
 			int exitValue = -1;
 			int pid = safeGetPid();
-			long timeout = (System.currentTimeMillis() + milliseconds);
+			long timeout = System.currentTimeMillis() + milliseconds;
+
 			AtomicBoolean exited = new AtomicBoolean(false);
 
 			ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -307,6 +297,7 @@ public class ProcessWrapper {
 				// handles CancellationException, ExecutionException
 			}
 			finally {
+
 				executorService.shutdownNow();
 
 				if (interrupted) {
@@ -321,8 +312,8 @@ public class ProcessWrapper {
 		}
 	}
 
-	/* (non-Javadoc) */
 	public int shutdown() {
+
 		if (isRunning()) {
 			log.info(String.format("Stopping process [%d]...%n", safeGetPid()));
 			signalStop();
@@ -332,17 +323,14 @@ public class ProcessWrapper {
 		return stop();
 	}
 
-	/* (non-Javadoc) */
 	public boolean unregister(ProcessInputStreamListener listener) {
 		return listeners.remove(listener);
 	}
 
-	/* (non-Javadoc) */
 	public void waitFor() {
 		waitFor(DEFAULT_WAIT_TIME_MILLISECONDS);
 	}
 
-	/* (non-Javadoc) */
 	public void waitFor(long milliseconds) {
 		ThreadUtils.timedWait(milliseconds, 500, this::isRunning);
 	}

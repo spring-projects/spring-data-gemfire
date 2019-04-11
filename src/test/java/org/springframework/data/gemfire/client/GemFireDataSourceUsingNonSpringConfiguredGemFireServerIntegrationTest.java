@@ -93,26 +93,29 @@ public class GemFireDataSourceUsingNonSpringConfiguredGemFireServerIntegrationTe
 
 		File serverWorkingDirectory = new File(FileSystemUtils.WORKING_DIRECTORY, serverName.toLowerCase());
 
-		Assert.isTrue(serverWorkingDirectory.isDirectory() || serverWorkingDirectory.mkdirs());
+		Assert.isTrue(serverWorkingDirectory.isDirectory() || serverWorkingDirectory.mkdirs(),
+			String.format("Server working directory [%s] does not exist and could not be created", serverWorkingDirectory));
 
 		writeAsCacheXmlFileToDirectory("gemfire-datasource-integration-test-cache.xml", serverWorkingDirectory);
 
-		Assert.isTrue(new File(serverWorkingDirectory, "cache.xml").isFile(), String.format(
-			"Expected a cache.xml file to exist in directory (%1$s)!", serverWorkingDirectory));
+		Assert.isTrue(new File(serverWorkingDirectory, "cache.xml").isFile(),
+			String.format("Expected a cache.xml file to exist in directory [%s]", serverWorkingDirectory));
 
 		List<String> arguments = new ArrayList<>(5);
 
 		arguments.add(ServerLauncher.Command.START.getName());
-		arguments.add(String.format("-Dgemfire.name=%1$s", serverName));
-		arguments.add(String.format("-Dgemfire.log-level=%1$s", "error"));
+		arguments.add(String.format("-Dgemfire.name=%s", serverName));
+		arguments.add(String.format("-Dgemfire.log-level=%s", GEMFIRE_LOG_LEVEL));
 
-		gemfireServer = ProcessExecutor.launch(serverWorkingDirectory, customClasspath(), ServerLauncher.class,
-			arguments.toArray(new String[arguments.size()]));
+		gemfireServer = ProcessExecutor.launch(serverWorkingDirectory, customClasspath(),
+			GemFireBasedServerProcess.class, arguments.toArray(new String[0]));
 
-		waitForProcessStart(TimeUnit.SECONDS.toMillis(20), gemfireServer, GemFireBasedServerProcess.getServerProcessControlFilename());
+		waitForProcessStart(TimeUnit.SECONDS.toMillis(20), gemfireServer,
+			GemFireBasedServerProcess.getServerProcessControlFilename());
 	}
 
 	private static void writeAsCacheXmlFileToDirectory(String classpathResource, File serverWorkingDirectory) throws IOException {
+
 		FileCopyUtils.copy(new ClassPathResource(classpathResource).getInputStream(),
 			new FileOutputStream(new File(serverWorkingDirectory, "cache.xml")));
 	}
@@ -121,7 +124,7 @@ public class GemFireDataSourceUsingNonSpringConfiguredGemFireServerIntegrationTe
 
 		String[] classpathElements = ProcessExecutor.JAVA_CLASSPATH.split(File.pathSeparator);
 
-		List<String> customClasspath = new ArrayList<String>(classpathElements.length);
+		List<String> customClasspath = new ArrayList<>(classpathElements.length);
 
 		for (String classpathElement : classpathElements) {
 			if (!classpathElement.contains("spring-data-gemfire")) {
@@ -132,12 +135,14 @@ public class GemFireDataSourceUsingNonSpringConfiguredGemFireServerIntegrationTe
 		return StringUtils.collectionToDelimitedString(customClasspath, File.pathSeparator);
 	}
 
-	private static void waitForProcessStart(final long milliseconds, final ProcessWrapper process, final String processControlFilename) {
+	private static void waitForProcessStart(long milliseconds, ProcessWrapper process, String processControlFilename) {
 
 		ThreadUtils.timedWait(milliseconds, TimeUnit.MILLISECONDS.toMillis(500), new ThreadUtils.WaitCondition() {
+
 			private File processControlFile = new File(process.getWorkingDirectory(), processControlFilename);
 
-			@Override public boolean waiting() {
+			@Override
+			public boolean waiting() {
 				return !processControlFile.isFile();
 			}
 		});
@@ -148,7 +153,7 @@ public class GemFireDataSourceUsingNonSpringConfiguredGemFireServerIntegrationTe
 
 		gemfireServer.shutdown();
 
-		if (Boolean.valueOf(System.getProperty("spring.gemfire.fork.clean", Boolean.TRUE.toString()))) {
+		if (Boolean.valueOf(System.getProperty("spring.gemfire.fork.clean", String.valueOf(true)))) {
 			org.springframework.util.FileSystemUtils.deleteRecursively(gemfireServer.getWorkingDirectory());
 		}
 	}

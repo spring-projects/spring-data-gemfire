@@ -34,11 +34,12 @@ import org.springframework.data.gemfire.test.support.FileSystemUtils;
 public class GemFireBasedServerProcess {
 
 	private static final String GEMFIRE_HTTP_SERVICE_PORT = "0";
-	private static final String GEMFIRE_LOG_LEVEL = "warning";
+	private static final String GEMFIRE_LOG_LEVEL = "error";
 	private static final String GEMIRE_NAME = "SpringDataGemFireServer";
 	private static final String GEMFIRE_USE_CLUSTER_CONFIGURATION = "false";
 
 	public static void main(String[] args) throws Throwable {
+
 		runServer(args);
 
 		registerShutdownHook();
@@ -50,6 +51,7 @@ public class GemFireBasedServerProcess {
 	}
 
 	private static ServerLauncher runServer(String[] args) {
+
 		ServerLauncher serverLauncher = buildServerLauncher(args);
 
 		// start the Pivotal GemFireServer process...
@@ -59,6 +61,7 @@ public class GemFireBasedServerProcess {
 	}
 
 	private static ServerLauncher buildServerLauncher(String[] args) {
+
 		return new ServerLauncher.Builder(args)
 			.setMemberName(getProperty("gemfire.name", GEMIRE_NAME))
 			.setCommand(ServerLauncher.Command.START)
@@ -80,7 +83,9 @@ public class GemFireBasedServerProcess {
 	}
 
 	private static void registerShutdownHook() {
+
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+
 			ServerLauncher serverLauncher = ServerLauncher.getInstance();
 
 			if (serverLauncher != null) {
