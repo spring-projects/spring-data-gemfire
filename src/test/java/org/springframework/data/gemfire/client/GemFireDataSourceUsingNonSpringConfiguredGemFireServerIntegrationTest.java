@@ -108,7 +108,7 @@ public class GemFireDataSourceUsingNonSpringConfiguredGemFireServerIntegrationTe
 		arguments.add(String.format("-Dgemfire.log-level=%s", GEMFIRE_LOG_LEVEL));
 
 		gemfireServer = ProcessExecutor.launch(serverWorkingDirectory, customClasspath(),
-			GemFireBasedServerProcess.class, arguments.toArray(new String[0]));
+			ServerLauncher.class, arguments.toArray(new String[0]));
 
 		waitForProcessStart(TimeUnit.SECONDS.toMillis(20), gemfireServer,
 			GemFireBasedServerProcess.getServerProcessControlFilename());
