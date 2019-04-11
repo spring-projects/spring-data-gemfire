@@ -63,8 +63,7 @@ public class DefinedIndexesApplicationListener implements ApplicationListener<Co
 					queryService.createDefinedIndexes();
 				}
 				catch (MultiIndexCreationException cause) {
-					logger.warn("Failed to create pre-defined Indexes: {}", cause.getMessage(), cause);
-
+					logger.warn(String.format("Failed to create pre-defined Indexes: %s", cause.getMessage()), cause);
 				}
 			});
 	}

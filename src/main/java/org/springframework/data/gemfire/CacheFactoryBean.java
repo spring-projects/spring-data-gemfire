@@ -795,7 +795,9 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 	@Override
 	@SuppressWarnings("all")
 	public GemFireCache getObject() throws Exception {
-		return Optional.<GemFireCache>ofNullable(getCache()).orElseGet(this::init);
+
+		return Optional.<GemFireCache>ofNullable(getCache())
+			.orElseGet(this::init);
 	}
 
 	/**

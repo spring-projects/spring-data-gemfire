@@ -29,10 +29,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.same;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
@@ -43,6 +43,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 import java.io.InputStream;
 import java.util.Collections;
@@ -74,7 +75,8 @@ import org.springframework.data.gemfire.support.GemfireBeanFactoryLocator;
  * Unit tests for {@link CacheFactoryBean}.
  *
  * @author John Blum
- * @see org.junit.Rule
+ * @see java.io.InputStream
+ * @see java.util.Properties
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
  * @see org.mockito.Mock
@@ -84,10 +86,13 @@ import org.springframework.data.gemfire.support.GemfireBeanFactoryLocator;
  * @see org.apache.geode.cache.CacheFactory
  * @see org.apache.geode.cache.CacheTransactionManager
  * @see org.apache.geode.cache.GemFireCache
+ * @see org.apache.geode.cache.control.ResourceManager
+ * @see org.apache.geode.cache.util.GatewayConflictResolver
  * @see org.apache.geode.distributed.DistributedMember
  * @see org.apache.geode.distributed.DistributedSystem
  * @see org.apache.geode.pdx.PdxSerializer
  * @see org.springframework.beans.factory.BeanFactory
+ * @see org.springframework.core.io.Resource
  * @see org.springframework.data.gemfire.CacheFactoryBean
  * @since 1.7.0
  */
@@ -237,15 +242,25 @@ public class CacheFactoryBeanTest {
 	public void init() throws Exception {
 
 		BeanFactory mockBeanFactory = mock(BeanFactory.class);
+
 		Cache mockCache = mock(Cache.class);
+
 		CacheTransactionManager mockCacheTransactionManager = mock(CacheTransactionManager.class);
-		DistributedMember mockDistributedMember = mock(DistributedMember.class);
-		DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
+
+		DistributedMember mockDistributedMember = mock(DistributedMember.class, withSettings().lenient());
+
+		DistributedSystem mockDistributedSystem = mock(DistributedSystem.class, withSettings().lenient());
+
 		GatewayConflictResolver mockGatewayConflictResolver = mock(GatewayConflictResolver.class);
+
 		PdxSerializer mockPdxSerializer = mock(PdxSerializer.class);
+
 		Resource mockCacheXml = mock(Resource.class);
+
 		ResourceManager mockResourceManager = mock(ResourceManager.class);
+
 		TransactionListener mockTransactionLister = mock(TransactionListener.class);
+
 		TransactionWriter mockTransactionWriter = mock(TransactionWriter.class);
 
 		CacheFactory mockCacheFactory = mock(CacheFactory.class);
@@ -264,14 +279,14 @@ public class CacheFactoryBeanTest {
 		when(mockDistributedMember.getHost()).thenReturn("skullbox");
 		when(mockDistributedMember.getProcessId()).thenReturn(12345);
 
-		final ClassLoader expectedThreadContextClassLoader = Thread.currentThread().getContextClassLoader();
+		ClassLoader expectedThreadContextClassLoader = Thread.currentThread().getContextClassLoader();
 
-		final Properties gemfireProperties = new Properties();
+		Properties gemfireProperties = new Properties();
 
 		CacheFactoryBean cacheFactoryBean = new CacheFactoryBean() {
 
 			@Override
-			protected Object createFactory(final Properties actualGemfireProperties) {
+			protected Object createFactory(Properties actualGemfireProperties) {
 
 				assertThat(actualGemfireProperties, is(equalTo(gemfireProperties)));
 				assertThat(getBeanClassLoader(), is(equalTo(ClassLoader.getSystemClassLoader())));
@@ -336,12 +351,12 @@ public class CacheFactoryBeanTest {
 		verify(mockCache, times(1)).setMessageSyncInterval(eq(20000));
 		verify(mockCache, times(4)).getResourceManager();
 		verify(mockCache, times(1)).setSearchTimeout(eq(45000));
+		verify(mockCacheTransactionManager, times(1)).addListener(same(mockTransactionLister));
+		verify(mockCacheTransactionManager, times(1)).setWriter(same(mockTransactionWriter));
 		verify(mockResourceManager, times(1)).setCriticalHeapPercentage(eq(0.90f));
 		verify(mockResourceManager, times(1)).setCriticalOffHeapPercentage(eq(0.95f));
 		verify(mockResourceManager, times(1)).setEvictionHeapPercentage(eq(0.75f));
 		verify(mockResourceManager, times(1)).setEvictionOffHeapPercentage(eq(0.90f));
-		verify(mockCacheTransactionManager, times(1)).addListener(same(mockTransactionLister));
-		verify(mockCacheTransactionManager, times(1)).setWriter(same(mockTransactionWriter));
 	}
 
 	@Test
@@ -390,7 +405,7 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test
-	public void fetchExistingCache() throws Exception {
+	public void fetchExistingCache() {
 
 		Cache mockCache = mock(Cache.class);
 
@@ -575,7 +590,7 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void postProcessCacheWithInvalidCriticalHeapPercentage() throws Exception {
+	public void postProcessCacheWithInvalidCriticalHeapPercentage() {
 
 		try {
 			CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
@@ -595,7 +610,7 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void postProcessCacheWithInvalidCriticalOffHeapPercentage() throws Exception {
+	public void postProcessCacheWithInvalidCriticalOffHeapPercentage() {
 
 		try {
 			CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
@@ -615,7 +630,7 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void postProcessCacheWithInvalidEvictionHeapPercentage() throws Exception {
+	public void postProcessCacheWithInvalidEvictionHeapPercentage() {
 
 		try {
 			CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
@@ -635,7 +650,7 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void postProcessCacheWithInvalidEvictionOffHeapPercentage() throws Exception {
+	public void postProcessCacheWithInvalidEvictionOffHeapPercentage() {
 
 		try {
 			CacheFactoryBean cacheFactoryBean = new CacheFactoryBean();
@@ -751,13 +766,19 @@ public class CacheFactoryBeanTest {
 	}
 
 	@Test
+	@SuppressWarnings("all")
 	public void setAndGetCacheFactoryBeanProperties() throws Exception {
 
 		BeanFactory mockBeanFactory = mock(BeanFactory.class, "SpringBeanFactory");
+
 		GatewayConflictResolver mockGatewayConflictResolver = mock(GatewayConflictResolver.class, "GemFireGatewayConflictResolver");
+
 		PdxSerializer mockPdxSerializer = mock(PdxSerializer.class, "GemFirePdxSerializer");
+
 		Resource mockCacheXml = mock(Resource.class, "GemFireCacheXml");
+
 		TransactionListener mockTransactionListener = mock(TransactionListener.class, "GemFireTransactionListener");
+
 		TransactionWriter mockTransactionWriter = mock(TransactionWriter.class, "GemFireTransactionWriter");
 
 		Properties gemfireProperties = new Properties();

@@ -119,11 +119,11 @@ public class DefinedIndexesApplicationListenerUnitTests {
 		when(mockQueryService.createDefinedIndexes())
 			.thenThrow(newMultiIndexCreationException("TestKey", new RuntimeException("TEST")));
 
-		Logger mockLog = mock(Logger.class);
+		Logger mockLogger = mock(Logger.class);
 
 		DefinedIndexesApplicationListener listener = new DefinedIndexesApplicationListener() {
 			@Override Logger initLogger() {
-				return mockLog;
+				return mockLogger;
 			}
 		};
 
@@ -133,7 +133,7 @@ public class DefinedIndexesApplicationListenerUnitTests {
 		verify(mockApplicationContext, times(1)).containsBean(eq(QUERY_SERVICE_BEAN_NAME));
 		verify(mockApplicationContext, times(1)).getBean(eq(QUERY_SERVICE_BEAN_NAME), eq(QueryService.class));
 		verify(mockQueryService, times(1)).createDefinedIndexes();
-		verify(mockLog, times(1)).warn(startsWith("Failed to create pre-defined Indexes:"),
+		verify(mockLogger, times(1)).warn(startsWith("Failed to create pre-defined Indexes:"),
 			isA(MultiIndexCreationException.class));
 	}
 }
