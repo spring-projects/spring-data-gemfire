@@ -11,9 +11,8 @@
 	<Loggers>
 		<Logger name="org.apache.geode" level="error"/>
 		<Logger name="org.springframework" level="error"/>
-		<Logger name="org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer" level="off">
-			<AppenderRef ref="nop"/>
-		</Logger>
+		<Logger name="org.springframework.data.gemfire.listener.adapter.ContinuousQueryListenerAdapter" level="off" additivity="false"/>
+		<Logger name="org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer" level="off" additivity="false"/>
 		<Root level="error">
 			<AppenderRef ref="Console"/>
 			<!--AppenderRef ref="File" /-->
