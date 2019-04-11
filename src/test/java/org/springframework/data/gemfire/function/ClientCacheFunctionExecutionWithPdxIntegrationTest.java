@@ -170,6 +170,7 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 		private Class[] getArgumentTypes(final Object... arguments) {
 
 			Class[] argumentTypes = new Class[arguments.length];
+
 			int index = 0;
 
 			for (Object argument : arguments) {
@@ -279,7 +280,7 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 		}
 	}
 
-	public static enum Gender {
+	public enum Gender {
 		FEMALE,
 		MALE
 	}
@@ -348,12 +349,16 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 		}
 
 		public static PdxSerializer compose(PdxSerializer... pdxSerializers) {
-			return (pdxSerializers == null ? null : (pdxSerializers.length == 1 ? pdxSerializers[0]
-				: new ComposablePdxSerializer(pdxSerializers)));
+
+			return pdxSerializers == null ? null
+				: (pdxSerializers.length == 1
+				? pdxSerializers[0]
+				: new ComposablePdxSerializer(pdxSerializers));
 		}
 
 		@Override
 		public boolean toData(Object obj, PdxWriter out) {
+
 			for (PdxSerializer pdxSerializer : this.pdxSerializers) {
 				if (pdxSerializer.toData(obj, out)) {
 					return true;
@@ -365,7 +370,9 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 
 		@Override
 		public Object fromData(Class<?> type, final PdxReader in) {
+
 			for (PdxSerializer pdxSerializer : this.pdxSerializers) {
+
 				Object obj = pdxSerializer.fromData(type, in);
 
 				if (obj != null) {
@@ -389,8 +396,7 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 
 		@Override
 		public void afterPropertiesSet() throws Exception {
-			pdxSerializer = ComposablePdxSerializer.compose(pdxSerializers.toArray(
-				new PdxSerializer[pdxSerializers.size()]));
+			pdxSerializer = ComposablePdxSerializer.compose(pdxSerializers.toArray(new PdxSerializer[0]));
 		}
 
 		@Override
@@ -400,7 +406,7 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 
 		@Override
 		public Class<?> getObjectType() {
-			return (pdxSerializer != null ? pdxSerializer.getClass() : PdxSerializer.class);
+			return pdxSerializer != null ? pdxSerializer.getClass() : PdxSerializer.class;
 		}
 
 		@Override
@@ -415,11 +421,14 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 		public boolean toData(Object obj, PdxWriter out) {
 
 			if (obj instanceof Address) {
+
 				Address address = (Address) obj;
+
 				out.writeString("street", address.getStreet());
 				out.writeString("city", address.getCity());
 				out.writeString("state", address.getState());
 				out.writeString("zipCode", address.getZipCode());
+
 				return true;
 			}
 
@@ -437,15 +446,19 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 			return null;
 		}
 	}
+
 	public static class PersonPdxSerializer implements PdxSerializer {
 
 		@Override
 		public boolean toData(Object obj, PdxWriter out) {
 
 			if (obj instanceof Person) {
+
 				Person person = (Person) obj;
+
 				out.writeString("firstName", person.getFirstName());
 				out.writeString("lastName", person.getLastName());
+
 				return true;
 			}
 
@@ -454,6 +467,7 @@ public class ClientCacheFunctionExecutionWithPdxIntegrationTest extends ClientSe
 
 		@Override
 		public Object fromData(Class<?> type, PdxReader in) {
+
 			if (Person.class.isAssignableFrom(type)) {
 				return new Person(in.readString("firstName"), in.readString("lastName"));
 			}

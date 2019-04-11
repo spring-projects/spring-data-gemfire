@@ -12,7 +12,7 @@
 
 	<util:properties id="gemfireProperties">
 		<prop key="name">LuceneNamespaceUnitTests</prop>
-		<prop key="log-level">warning</prop>
+		<prop key="log-level">error</prop>
 	</util:properties>
 
 	<bean class="org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor"/>

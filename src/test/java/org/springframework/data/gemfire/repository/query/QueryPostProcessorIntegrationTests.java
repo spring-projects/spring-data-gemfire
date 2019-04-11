@@ -51,6 +51,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration
+@SuppressWarnings("unused")
 public class QueryPostProcessorIntegrationTests {
 
 	private static final AtomicLong idSequence = new AtomicLong(0L);
@@ -132,7 +133,7 @@ public class QueryPostProcessorIntegrationTests {
 		);
 	}
 
-	@ClientCacheApplication
+	@ClientCacheApplication(logLevel = "error")
 	@SuppressWarnings("unused")
 	static class TestConfiguration {
 

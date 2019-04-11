@@ -18,6 +18,7 @@ package org.springframework.data.gemfire.serialization;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
@@ -26,7 +27,6 @@ import java.awt.Shape;
 import java.beans.Beans;
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.IOException;
 import java.util.List;
 
 import org.apache.geode.DataSerializable;
@@ -36,23 +36,26 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * @author Costin Leau
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration("simple-config.xml")
+@SuppressWarnings("unused")
 public class WiringInstantiatorTest {
 
 	@Autowired
-	private ApplicationContext ctx;
+	private ApplicationContext applicationContext;
+
 	@Autowired
 	private WiringInstantiator instantiator;
 
 
 	@SuppressWarnings("serial")
 	public static class AnnotatedBean implements DataSerializable {
+
 		@Autowired
 		Point point;
 		Shape shape;
@@ -62,69 +65,70 @@ public class WiringInstantiatorTest {
 			this.shape = shape;
 		}
 
-		public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-		}
+		public void fromData(DataInput in) { }
 
-		public void toData(DataOutput out) throws IOException {
-		}
+		public void toData(DataOutput out) { }
+
 	}
 
 	@SuppressWarnings("serial")
 	public static class TemplateWiringBean implements DataSerializable {
-		Point point;
+
 		Beans beans;
+		Point point;
 
 		public void setBeans(Beans bs) {
 			this.beans = bs;
 		}
 
-		public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-		}
+		public void fromData(DataInput in) { }
 
-		public void toData(DataOutput out) throws IOException {
-		}
+		public void toData(DataOutput out) { }
+
 	}
 
 	@SuppressWarnings("serial")
 	public static class TypeA implements DataSerializable {
 
-		public void fromData(DataInput arg0) throws IOException, ClassNotFoundException {
-		}
+		public void fromData(DataInput arg0) { }
 
-		public void toData(DataOutput arg0) throws IOException {
-		}
+		public void toData(DataOutput arg0) { }
+
 	}
 
 	@SuppressWarnings("serial")
 	public static class TypeB implements DataSerializable {
 
-		public void fromData(DataInput arg0) throws IOException, ClassNotFoundException {
-		}
+		public void fromData(DataInput arg0) { }
 
-		public void toData(DataOutput arg0) throws IOException {
-		}
+		public void toData(DataOutput arg0) { }
+
 	}
 
 	@Test
-	public void testAutowiredBean() throws Exception {
+	public void testAutowiredBean() {
+
 		Object instance = instantiator.newInstance();
+
 		assertNotNull(instance);
 		assertTrue(instance instanceof AnnotatedBean);
+
 		AnnotatedBean bean = (AnnotatedBean) instance;
 
 		assertNotNull(bean.point);
 		assertNotNull(bean.shape);
 
-		assertSame(bean.point, ctx.getBean("point"));
-		assertSame(bean.shape, ctx.getBean("area"));
+		assertSame(bean.point, applicationContext.getBean("point"));
+		assertSame(bean.shape, applicationContext.getBean("area"));
 	}
 
 	@Test
-	public void testTemplateBean() throws Exception {
-		WiringInstantiator instantiator2 = new WiringInstantiator(
-				new AsmInstantiatorGenerator().getInstantiator(
-				TemplateWiringBean.class, 99));
-		instantiator2.setBeanFactory(ctx.getAutowireCapableBeanFactory());
+	public void testTemplateBean() {
+
+		WiringInstantiator instantiator2 =
+			new WiringInstantiator(new AsmInstantiatorGenerator().getInstantiator(TemplateWiringBean.class, 99));
+
+		instantiator2.setBeanFactory(applicationContext.getAutowireCapableBeanFactory());
 		instantiator2.afterPropertiesSet();
 
 		Object instance = instantiator2.newInstance();
@@ -132,15 +136,15 @@ public class WiringInstantiatorTest {
 		assertTrue(instance instanceof TemplateWiringBean);
 		TemplateWiringBean bean = (TemplateWiringBean) instance;
 
-		assertTrue(bean.point == null);
+		assertNull(bean.point);
 		assertNotNull(bean.beans);
 
-		assertSame(bean.beans, ctx.getBean("beans"));
+		assertSame(bean.beans, applicationContext.getBean("beans"));
 	}
 
-	public void testInstantiatorFactoryBean() throws Exception {
+	public void testInstantiatorFactoryBean() {
 		@SuppressWarnings("unchecked")
-		List<Instantiator> list = (List<Instantiator>) ctx.getBean("instantiator-factory");
+		List<Instantiator> list = (List<Instantiator>) applicationContext.getBean("instantiator-factory");
 		assertNotNull(list);
 		assertEquals(2, list.size());
 	}

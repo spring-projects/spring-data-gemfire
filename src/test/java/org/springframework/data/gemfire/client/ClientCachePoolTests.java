@@ -34,16 +34,16 @@ import org.junit.runner.RunWith;
 import org.springframework.data.gemfire.process.ProcessWrapper;
 import org.springframework.data.gemfire.test.support.AbstractGemFireClientServerIntegrationTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.Assert;
 
 /**
- * The ClientCachePoolTests class...
+ * Integration tests for {@link ClientCache} {@link Pool Pools}.
  *
  * @author John Blum
  * @since 1.0.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @SuppressWarnings("all")
 public class ClientCachePoolTests extends AbstractGemFireClientServerIntegrationTest {
@@ -65,6 +65,7 @@ public class ClientCachePoolTests extends AbstractGemFireClientServerIntegration
 
 	@Test
 	public void computeFactorials() {
+
 		assertThat(factorials.get(0l), is(equalTo(1l)));
 		assertThat(factorials.get(1l), is(equalTo(1l)));
 		assertThat(factorials.get(2l), is(equalTo(2l)));
@@ -81,6 +82,7 @@ public class ClientCachePoolTests extends AbstractGemFireClientServerIntegration
 
 		@Override
 		public Long load(LoaderHelper<Long, Long> helper) throws CacheLoaderException {
+
 			Long number = helper.getKey();
 
 			Assert.notNull(number, "number must not be null");
@@ -100,7 +102,7 @@ public class ClientCachePoolTests extends AbstractGemFireClientServerIntegration
 		}
 
 		@Override
-		public void close() {
-		}
+		public void close() { }
+
 	}
 }

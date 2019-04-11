@@ -47,7 +47,7 @@ import org.springframework.data.gemfire.test.support.FileSystemUtils;
 import org.springframework.data.gemfire.test.support.ThreadUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -69,7 +69,7 @@ import org.springframework.util.StringUtils;
  * @see org.apache.geode.cache.Region
  * @since 1.7.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @SuppressWarnings("unused")
 public class SnapshotApplicationEventTriggeredImportsExportsIntegrationTest {

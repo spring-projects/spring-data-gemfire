@@ -48,6 +48,7 @@ public class ContainerXmlSetupIntegrationTests extends ClientServerIntegrationTe
 
 	@BeforeClass
 	public static void startGemFireServer() throws Exception {
+
 		int availablePort = findAvailablePort();
 
 		gemfireServer = run(CqCacheServerProcess.class,
@@ -69,7 +70,8 @@ public class ContainerXmlSetupIntegrationTests extends ClientServerIntegrationTe
 	private ApplicationContext applicationContext;
 
 	@Test
-	public void containerSetup() throws Exception {
+	public void containerSetup() {
+
 		ContinuousQueryListenerContainer container =
 			applicationContext.getBean(ContinuousQueryListenerContainer.class);
 

@@ -42,27 +42,31 @@ import org.springframework.data.gemfire.process.ProcessWrapper;
 import org.springframework.data.gemfire.test.support.FileSystemUtils;
 import org.springframework.data.gemfire.test.support.ThreadUtils;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.Assert;
 
 /**
+<<<<<<< HEAD
  * The ClientCacheIndexingTest class is a test suite of test cases testing the creation and application of indexes
  * on client Regions of a Pivotal GemFireClientCache using the &lt;gfe:index/&gt; tag element in the SDG
  * XML namespace and configuration meta-data, which is backed by the IndexFactoryBean.
+=======
+ * Integration tests for testing {@link ClientCache} {@link Index Indexes}.
+>>>>>>> 626076b0... DATAGEODE-180 - Polish log statements and log levels.
  *
  * @author John Blum
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
  * @see org.springframework.data.gemfire.IndexFactoryBean
  * @see org.springframework.test.context.ContextConfiguration
- * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
+ * @see org.springframework.test.context.junit4.SpringRunner
  * @see org.apache.geode.cache.GemFireCache
  * @see org.apache.geode.cache.client.ClientCache
  * @see org.apache.geode.cache.query.Index
  * @see org.apache.geode.cache.query.QueryService
  * @since 1.5.2
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @SuppressWarnings("unused")
 public class ClientCacheIndexingTest {
@@ -83,7 +87,7 @@ public class ClientCacheIndexingTest {
 		File serverWorkingDirectory = new File(FileSystemUtils.WORKING_DIRECTORY, serverName.toLowerCase());
 
 		Assert.isTrue(serverWorkingDirectory.isDirectory() || serverWorkingDirectory.mkdirs(),
-			String.format("Working directory [%s] could not be created", serverWorkingDirectory));
+			String.format("Server working directory [%s] does not exist and could not be created", serverWorkingDirectory));
 
 		List<String> arguments = new ArrayList<>();
 
@@ -91,7 +95,7 @@ public class ClientCacheIndexingTest {
 		arguments.add("/org/springframework/data/gemfire/client/ClientCacheIndexingTest-server-context.xml");
 
 		serverProcess = ProcessExecutor.launch(serverWorkingDirectory, ServerProcess.class,
-			arguments.toArray(new String[arguments.size()]));
+			arguments.toArray(new String[0]));
 
 		waitForServerStart(TimeUnit.SECONDS.toMillis(20));
 	}
@@ -99,10 +103,12 @@ public class ClientCacheIndexingTest {
 	private static void waitForServerStart(final long milliseconds) {
 
 		ThreadUtils.timedWait(milliseconds, TimeUnit.MILLISECONDS.toMillis(500), new ThreadUtils.WaitCondition() {
-			private File serverPidControlFile = new File(serverProcess.getWorkingDirectory(),
-				ServerProcess.getServerProcessControlFilename());
 
-			@Override public boolean waiting() {
+			private File serverPidControlFile =
+				new File(serverProcess.getWorkingDirectory(), ServerProcess.getServerProcessControlFilename());
+
+			@Override
+			public boolean waiting() {
 				return !serverPidControlFile.isFile();
 			}
 		});
@@ -118,10 +124,11 @@ public class ClientCacheIndexingTest {
 		}
 	}
 
-	private Index getIndex(GemFireCache gemfireCache, String indexName) {
+	protected Index getIndex(GemFireCache gemfireCache, String indexName) {
 
 		QueryService queryService = gemfireCache instanceof ClientCache
-			? ((ClientCache) gemfireCache).getLocalQueryService() : gemfireCache.getQueryService();
+			? ((ClientCache) gemfireCache).getLocalQueryService()
+			: gemfireCache.getQueryService();
 
 		for (Index index : queryService.getIndexes()) {
 			if (index.getName().equals(indexName)) {
@@ -136,7 +143,7 @@ public class ClientCacheIndexingTest {
 	@SuppressWarnings("deprecation")
 	public void testIndexByName() {
 
-		assertNotNull("ClientCache was not properly configured and initialized", clientCache);
+		assertNotNull("The GemFire ClientCache was not properly configured and initialized!", clientCache);
 
 		Index actualIndex = getIndex(clientCache, "ExampleIndex");
 

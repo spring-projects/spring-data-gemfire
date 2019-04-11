@@ -49,7 +49,7 @@ import org.springframework.data.gemfire.config.annotation.PeerCacheApplication;
 import org.springframework.data.gemfire.test.model.Gender;
 import org.springframework.data.gemfire.test.model.Person;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Integration tests for {@link DefinedIndexesApplicationListener}.
@@ -63,12 +63,12 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @see org.apache.geode.cache.query.QueryService
  * @since 1.7.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 @SuppressWarnings("unused")
 public class DefinedIndexesIntegrationTests {
 
-	private static final List<String> definedIndexNames = new ArrayList<String>(3);
+	private static final List<String> definedIndexNames = new ArrayList<>(3);
 
 	@Autowired
 	private Cache gemfireCache;
@@ -99,6 +99,7 @@ public class DefinedIndexesIntegrationTests {
 
 	@Before
 	public void setup() {
+
 		put(people, newPerson("Jon", "Doe", newBirthDate(1989, Calendar.NOVEMBER, 11), Gender.MALE));
 		put(people, newPerson("Jane", "Doe", newBirthDate(1991, Calendar.APRIL, 4), Gender.FEMALE));
 		put(people, newPerson("Pie", "Doe", newBirthDate(2008, Calendar.JUNE, 21), Gender.FEMALE));
@@ -107,6 +108,7 @@ public class DefinedIndexesIntegrationTests {
 
 	@Test
 	public void indexesCreated() {
+
 		QueryService queryService = gemfireCache.getQueryService();
 
 		List<String> expectedDefinedIndexNames = Arrays.asList(id.getName(), birthDate.getName(), name.getName());
@@ -118,7 +120,7 @@ public class DefinedIndexesIntegrationTests {
 		assertThat(name).isEqualTo(queryService.getIndex(people, name.getName()));
 	}
 
-	@PeerCacheApplication(logLevel = "warning")
+	@PeerCacheApplication(logLevel = "error")
 	static class DefinedIndexesConfiguration {
 
 		@Bean
@@ -129,15 +131,12 @@ public class DefinedIndexesIntegrationTests {
 
 		@Bean
 		BeanPostProcessor indexBeanPostProcessor() {
+
 			return new BeanPostProcessor() {
 
 				@Override
-				public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-					return bean;
-				}
-
-				@Override
 				public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+
 					if (bean instanceof Index) {
 						if ("LastNameIdx".equals(beanName)) {
 							assertThat(CacheFactory.getAnyInstance().getQueryService().getIndexes().contains(bean)).isTrue();
@@ -155,7 +154,8 @@ public class DefinedIndexesIntegrationTests {
 
 		@Bean(name = "People")
 		PartitionedRegionFactoryBean<Long, Person> peopleRegion(Cache gemfireCache) {
-			PartitionedRegionFactoryBean<Long, Person> peopleRegion = new PartitionedRegionFactoryBean<Long, Person>();
+
+			PartitionedRegionFactoryBean<Long, Person> peopleRegion = new PartitionedRegionFactoryBean<>();
 
 			peopleRegion.setCache(gemfireCache);
 			peopleRegion.setClose(false);
@@ -167,6 +167,7 @@ public class DefinedIndexesIntegrationTests {
 		@Bean(name = "IdIdx")
 		@DependsOn("People")
 		IndexFactoryBean idIndex(GemFireCache gemFireCache) {
+
 			IndexFactoryBean idIndex = new IndexFactoryBean();
 
 			idIndex.setCache(gemFireCache);
@@ -182,6 +183,7 @@ public class DefinedIndexesIntegrationTests {
 		@Bean(name = "BirthDateIdx")
 		@DependsOn("People")
 		IndexFactoryBean birthDateIndex(GemFireCache gemFireCache) {
+
 			IndexFactoryBean birthDateIndex = new IndexFactoryBean();
 
 			birthDateIndex.setCache(gemFireCache);
@@ -197,6 +199,7 @@ public class DefinedIndexesIntegrationTests {
 		@Bean(name = "LastNameIdx")
 		@DependsOn("People")
 		IndexFactoryBean lastNameIndex(GemFireCache gemFireCache) {
+
 			IndexFactoryBean lastNameIndex = new IndexFactoryBean();
 
 			lastNameIndex.setCache(gemFireCache);
@@ -211,6 +214,7 @@ public class DefinedIndexesIntegrationTests {
 		@Bean(name = "NameIdx")
 		@DependsOn("People")
 		IndexFactoryBean nameIndex(GemFireCache gemFireCache) {
+
 			IndexFactoryBean nameIndex = new IndexFactoryBean();
 
 			nameIndex.setCache(gemFireCache);

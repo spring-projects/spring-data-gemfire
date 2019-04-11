@@ -45,13 +45,24 @@ import org.springframework.test.context.junit4.SpringRunner;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration
-// TODO: merge with o.s.d.g.client.GemfireDataSoruceIntegrationTest
+@SuppressWarnings("unused")
+// TODO: merge with o.s.d.g.client.GemfireDataSourceIntegrationTest
 public class GemFireDataSourceIntegrationTests extends ClientServerIntegrationTestsSupport {
 
 	private static ProcessWrapper gemfireServer;
 
 	@Autowired
 	private ApplicationContext applicationContext;
+
+	@BeforeClass
+	public static void setGemFireLogLevel() {
+		System.setProperty("gemfire.log-level", "error");
+	}
+
+	@AfterClass
+	public static void unsetGemFireLogLevel() {
+		System.clearProperty("gemfire.log-level");
+	}
 
 	@BeforeClass
 	public static void startGemFireServer() throws Exception {

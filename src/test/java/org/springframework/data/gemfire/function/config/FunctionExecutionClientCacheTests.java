@@ -48,7 +48,7 @@ public class FunctionExecutionClientCacheTests {
 	ApplicationContext applicationContext;
 
 	@Test
-	public void contextCreated() throws Exception {
+	public void contextCreated() {
 
 		ClientCache cache = this.applicationContext.getBean("gemfireCache", ClientCache.class);
 
@@ -76,6 +76,7 @@ public class FunctionExecutionClientCacheTests {
 @Configuration
 @ImportResource("/org/springframework/data/gemfire/function/config/FunctionExecutionCacheClientTests-context.xml")
 @EnableGemfireFunctionExecutions(basePackages = "org.springframework.data.gemfire.function.config.three")
+@SuppressWarnings("unused")
 class TestClientCacheConfig {
 
 	@Bean
@@ -87,38 +88,20 @@ class TestClientCacheConfig {
 @SuppressWarnings("rawtypes")
 class MyResultCollector implements ResultCollector {
 
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.execute.ResultCollector#addResult(org.apache.geode.distributed.DistributedMember, java.lang.Object)
-	 */
 	@Override
-	public void addResult(DistributedMember arg0, Object arg1) {
-	}
+	public void addResult(DistributedMember arg0, Object arg1) { }
 
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.execute.ResultCollector#clearResults()
-	 */
 	@Override
-	public void clearResults() {
-	}
+	public void clearResults() { }
 
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.execute.ResultCollector#endResults()
-	 */
 	@Override
-	public void endResults() {
-	}
+	public void endResults() { }
 
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.execute.ResultCollector#getResult()
-	 */
 	@Override
 	public Object getResult() throws FunctionException {
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.geode.cache.execute.ResultCollector#getResult(long, java.util.concurrent.TimeUnit)
-	 */
 	@Override
 	public Object getResult(long arg0, TimeUnit arg1) throws FunctionException, InterruptedException {
 		return null;

@@ -80,9 +80,9 @@ public class LocalOnlyClientCacheIntegrationTests {
 		assertThat(this.people).hasSize(1);
 	}
 
-	@ClientCacheApplication
+	@ClientCacheApplication(logLevel = "error")
 	@EnableEntityDefinedRegions(basePackageClasses = Person.class,
 		clientRegionShortcut = ClientRegionShortcut.LOCAL, strict = true)
-	static class GemFireClientCacheConfiguration {
-	}
+	static class GemFireClientCacheConfiguration { }
+
 }
