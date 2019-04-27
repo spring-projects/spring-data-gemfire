@@ -59,6 +59,7 @@ import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.PdxSerializer;
@@ -654,6 +655,11 @@ public class StubCache implements Cache, ClientCache {
 	@Override
 	public void setIsServer(boolean server) {
 		this.server = server;
+	}
+
+	@Override
+	public JSONFormatter getJsonFormatter() {
+		return new JSONFormatter(this);
 	}
 
 	/* (non-Javadoc)
