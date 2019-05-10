@@ -408,7 +408,8 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 				this.<ClientCache>fetchCache().readyForEvents();
 			}
 			catch (IllegalStateException | CacheClosedException ignore) {
-				// Thrown when clientCache.readyForEvents() is called on a non-durable client
+				// Thrown when ClientCache.readyForEvents() is called on a non-durable client
+				// or the ClientCache is closing.
 			}
 		}
 	}

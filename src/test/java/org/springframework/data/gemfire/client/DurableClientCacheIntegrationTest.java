@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,9 +26,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Resource;
 
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
@@ -42,8 +43,10 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -78,9 +81,12 @@ import org.springframework.util.SocketUtils;
  * @since 1.6.3
  */
 @RunWith(SpringRunner.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @ContextConfiguration
 @SuppressWarnings("all")
 public class DurableClientCacheIntegrationTest extends AbstractGemFireClientServerIntegrationTest {
+
+	private static final boolean DEBUG = true;
 
 	private static int serverPort;
 
@@ -146,6 +152,8 @@ public class DurableClientCacheIntegrationTest extends AbstractGemFireClientServ
 
 		Properties distributedSystemProperties = this.clientCache.getDistributedSystem().getProperties();
 
+		assertThat(distributedSystemProperties).isNotNull();
+
 		assertThat(distributedSystemProperties.getProperty(DistributedSystemUtils.DURABLE_CLIENT_ID_PROPERTY_NAME))
 			.isEqualTo(DurableClientCacheIntegrationTest.class.getSimpleName());
 
@@ -159,7 +167,6 @@ public class DurableClientCacheIntegrationTest extends AbstractGemFireClientServ
 	public void tearDown() {
 
 		if (dirtiesContext()) {
-			//closeApplicationContext();
 			forceCloseClientCache(this.clientCache);
 			runClientCacheProducer();
 			setSystemProperties();
@@ -168,31 +175,26 @@ public class DurableClientCacheIntegrationTest extends AbstractGemFireClientServ
 		regionCacheListenerEventValues.clear();
 	}
 
-	private void closeApplicationContext() {
-
-		this.applicationContext.close();
-
-		assertThat(this.applicationContext.isRunning()).isFalse();
-		assertThat(this.applicationContext.isActive()).isFalse();
-	}
-
 	private void forceCloseClientCache(ClientCache clientCache) {
 
 		if (clientCache != null) {
 
 			long timeout = System.currentTimeMillis() + 5000L;
 
-			while (timeout > System.currentTimeMillis() && !clientCache.isClosed()) {
+			try {
+				while (timeout > System.currentTimeMillis() && !clientCache.isClosed()) {
 
-				clientCache.close(true);
+					clientCache.close(true);
 
-				try {
-					synchronized (clientCache) {
-						TimeUnit.MILLISECONDS.timedWait(clientCache, 1000L);
+					try {
+						synchronized (clientCache) {
+							TimeUnit.MILLISECONDS.timedWait(clientCache, 1000L);
+						}
 					}
+					catch (InterruptedException ignore) { }
 				}
-				catch (InterruptedException ignore) { }
 			}
+			catch (CacheClosedException ignore) { }
 		}
 	}
 
@@ -247,8 +249,31 @@ public class DurableClientCacheIntegrationTest extends AbstractGemFireClientServ
 		}
 	}
 
+	private void log(String message, Object... args) {
+
+		if (DEBUG) {
+			System.err.printf(message, args);
+			System.err.flush();
+		}
+	}
+
 	private void waitForRegionEntryEvents() {
-		ThreadUtils.timedWait(5000L, 500L, () -> regionCacheListenerEventValues.size() > 2);
+
+		AtomicInteger counter = new AtomicInteger(0);
+
+		ThreadUtils.timedWait(15000L, 500L, () -> {
+
+			// "Remind" the stupid, fucking GemFire Server we are still waiting!!!
+			if (counter.incrementAndGet() % 3 == 0) {
+				//log("NOTIFIED!%n");
+				this.clientCache.readyForEvents();
+			}
+
+
+			//log("WAITING...%n");
+
+			return regionCacheListenerEventValues.size() < 2;
+		});
 	}
 
 	@Test
@@ -288,7 +313,7 @@ public class DurableClientCacheIntegrationTest extends AbstractGemFireClientServ
 				}
 				else {
 					// NOTE: The pending event count could be 3 because it should minimally include the 2 puts
-					// from the ClientCAche producer and possibly a "marker" as well.
+					// from the ClientCache producer and possibly a "marker" as well.
 					assertThat(gemfireServerPool.getPendingEventCount()).isGreaterThanOrEqualTo(2);
 				}
 			}
@@ -304,7 +329,9 @@ public class DurableClientCacheIntegrationTest extends AbstractGemFireClientServ
 		private final String regionName;
 
 		public RegionDataLoadingBeanPostProcessor(String regionName) {
+
 			Assert.hasText(regionName, "Region name must be specified");
+
 			this.regionName = regionName;
 		}
 
@@ -313,7 +340,9 @@ public class DurableClientCacheIntegrationTest extends AbstractGemFireClientServ
 		}
 
 		protected Map<K, V> getRegionData() {
+
 			Assert.state(this.regionData != null, "Region data was not provided");
+
 			return this.regionData;
 		}
 
