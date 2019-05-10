@@ -3,6 +3,12 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.1.7.RELEASE (2019-05-10)
+---------------------------------------------
+* SGF-838 - Apply RegionConfigurers to Caching-defined Regions.
+* SGF-831 - Release 2.1.7 (Lovelace SR7).
+
+
 Changes in version 2.2.0.M3 (2019-04-11)
 ----------------------------------------
 * SGF-833 - Set Framework and Geode log level in tests to error.
