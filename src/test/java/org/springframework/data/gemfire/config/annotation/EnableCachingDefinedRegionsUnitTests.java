@@ -194,6 +194,8 @@ public class EnableCachingDefinedRegionsUnitTests {
 		when(mockBeanFactory.containsBean(anyString())).thenReturn(false);
 		when(mockBeanFactory.getBean(eq(GemFireCache.class))).thenReturn(mockGemFireCache);
 
+		this.configuration.setBeanFactory(mockBeanFactory);
+
 		BeanPostProcessor cachingAnnotationsRegionBeanRegistrar =
 			this.configuration.cachingAnnotationsRegionBeanRegistrar(mockBeanFactory);
 
@@ -225,6 +227,8 @@ public class EnableCachingDefinedRegionsUnitTests {
 		doAnswer(invocation -> registeredBeanNames.add(invocation.getArgument(0))).when(mockBeanFactory)
 			.registerSingleton(anyString(), any());
 
+		this.configuration.setBeanFactory(mockBeanFactory);
+
 		BeanPostProcessor cachingAnnotationsRegionBeanRegistrar =
 			this.configuration.cachingAnnotationsRegionBeanRegistrar(mockBeanFactory);
 
@@ -255,6 +259,8 @@ public class EnableCachingDefinedRegionsUnitTests {
 
 		doAnswer(invocation -> registeredBeanNames.add(invocation.getArgument(0))).when(mockBeanFactory)
 			.registerSingleton(anyString(), any());
+
+		this.configuration.setBeanFactory(mockBeanFactory);
 
 		BeanPostProcessor cachingAnnotationsRegionBeanRegistrar =
 			this.configuration.cachingAnnotationsRegionBeanRegistrar(mockBeanFactory);
@@ -292,6 +298,8 @@ public class EnableCachingDefinedRegionsUnitTests {
 		doAnswer(invocation -> registeredBeanNames.add(invocation.getArgument(0))).when(mockBeanFactory)
 			.registerSingleton(anyString(), any());
 
+		this.configuration.setBeanFactory(mockBeanFactory);
+
 		BeanPostProcessor cachingAnnotationsRegionBeanRegistrar =
 			this.configuration.cachingAnnotationsRegionBeanRegistrar(mockBeanFactory);
 
@@ -328,6 +336,8 @@ public class EnableCachingDefinedRegionsUnitTests {
 
 		doAnswer(invocation -> registeredBeanNames.add(invocation.getArgument(0))).when(mockBeanFactory)
 			.registerSingleton(anyString(), any());
+
+		this.configuration.setBeanFactory(mockBeanFactory);
 
 		BeanPostProcessor cachingAnnotationsRegionBeanRegistrar =
 			this.configuration.cachingAnnotationsRegionBeanRegistrar(mockBeanFactory);
@@ -375,6 +385,8 @@ public class EnableCachingDefinedRegionsUnitTests {
 		doAnswer(invocation -> registeredBeanNames.add(invocation.getArgument(0))).when(mockBeanFactory)
 			.registerSingleton(anyString(), any());
 
+		this.configuration.setBeanFactory(mockBeanFactory);
+
 		BeanPostProcessor cachingAnnotationsRegionBeanRegistrar =
 			this.configuration.cachingAnnotationsRegionBeanRegistrar(mockBeanFactory);
 
@@ -410,6 +422,8 @@ public class EnableCachingDefinedRegionsUnitTests {
 		doAnswer(invocation -> registeredBeanNames.add(invocation.getArgument(0))).when(mockBeanFactory)
 			.registerSingleton(anyString(), any());
 
+		this.configuration.setBeanFactory(mockBeanFactory);
+
 		BeanPostProcessor cachingAnnotationsRegionBeanRegistrar =
 			this.configuration.cachingAnnotationsRegionBeanRegistrar(mockBeanFactory);
 
@@ -443,6 +457,8 @@ public class EnableCachingDefinedRegionsUnitTests {
 
 		doAnswer(invocation -> registeredBeanNames.add(invocation.getArgument(0))).when(mockBeanFactory)
 			.registerSingleton(anyString(), any());
+
+		this.configuration.setBeanFactory(mockBeanFactory);
 
 		BeanPostProcessor cachingAnnotationsRegionBeanRegistrar =
 			this.configuration.cachingAnnotationsRegionBeanRegistrar(mockBeanFactory);

@@ -169,7 +169,6 @@ public class EntityDefinedRegionsConfiguration extends AbstractAnnotationConfigS
 		}
 	}
 
-	/* (non-Javadoc) */
 	protected GemFireComponentClassTypeScanner newGemFireComponentClassTypeScanner(
 			AnnotationMetadata importingClassMetadata, AnnotationAttributes enableEntityDefinedRegionsAttributes) {
 
@@ -182,7 +181,6 @@ public class EntityDefinedRegionsConfiguration extends AbstractAnnotationConfigS
 			.withIncludes(resolveRegionAnnotatedPersistentEntityTypeFilters());
 	}
 
-	/* (non-Javadoc) */
 	protected Set<String> resolveBasePackages(AnnotationMetadata importingClassMetaData,
 			AnnotationAttributes enableEntityDefinedRegionAttributes) {
 
@@ -205,17 +203,14 @@ public class EntityDefinedRegionsConfiguration extends AbstractAnnotationConfigS
 		return resolvedBasePackages;
 	}
 
-	/* (non-Javadoc) */
 	protected Iterable<TypeFilter> resolveExcludes(AnnotationAttributes enableEntityDefinedRegionsAttributes) {
 		return parseFilters(enableEntityDefinedRegionsAttributes.getAnnotationArray("excludeFilters"));
 	}
 
-	/* (non-Javadoc) */
 	protected Iterable<TypeFilter> resolveIncludes(AnnotationAttributes enableEntityDefinedRegionsAttributes) {
 		return parseFilters(enableEntityDefinedRegionsAttributes.getAnnotationArray("includeFilters"));
 	}
 
-	/* (non-Javadoc) */
 	@SuppressWarnings("unchecked")
 	protected Iterable<TypeFilter> resolveRegionAnnotatedPersistentEntityTypeFilters() {
 
@@ -353,7 +348,6 @@ public class EntityDefinedRegionsConfiguration extends AbstractAnnotationConfigS
 		registry.registerBeanDefinition(regionMetadata.getRegionName(), regionFactoryBeanBuilder.getBeanDefinition());
 	}
 
-	/* (non-Javadoc) */
 	protected List<RegionConfigurer> resolveRegionConfigurers() {
 
 		return Optional.ofNullable(this.regionConfigurers)
@@ -373,7 +367,6 @@ public class EntityDefinedRegionsConfiguration extends AbstractAnnotationConfigS
 			);
 	}
 
-	/* (non-Javadoc) */
 	protected BeanDefinitionBuilder setRegionAttributes(BeanDefinitionBuilder regionFactoryBeanBuilder,
 			RegionBeanDefinitionMetadata regionMetadata) {
 
@@ -464,7 +457,6 @@ public class EntityDefinedRegionsConfiguration extends AbstractAnnotationConfigS
 			: regionMetadata.resolveServerRegionShortcut(DEFAULT_SERVER_REGION_SHORTCUT);
 	}
 
-	/* (non-Javadoc) */
 	protected BeanDefinitionBuilder setClientRegionAttributes(RegionBeanDefinitionMetadata regionMetadata,
 			AnnotationAttributes regionAnnotationAttributes, BeanDefinitionBuilder regionFactoryBeanBuilder) {
 
@@ -478,7 +470,6 @@ public class EntityDefinedRegionsConfiguration extends AbstractAnnotationConfigS
 		return regionFactoryBeanBuilder;
 	}
 
-	/* (non-Javadoc) */
 	protected BeanDefinitionBuilder setPartitionRegionAttributes(RegionBeanDefinitionMetadata regionMetadata,
 			AnnotationAttributes regionAnnotationAttributes, BeanDefinitionBuilder regionFactoryBeanBuilder,
 			BeanDefinitionBuilder regionAttributesFactoryBeanBuilder) {
@@ -512,7 +503,6 @@ public class EntityDefinedRegionsConfiguration extends AbstractAnnotationConfigS
 		return regionAttributesFactoryBeanBuilder;
 	}
 
-	/* (non-Javadoc) */
 	protected BeanDefinitionBuilder setFixedPartitionRegionAttributes(AnnotationAttributes regionAnnotationAttributes,
 			BeanDefinitionBuilder partitionAttributesFactoryBeanBuilder) {
 
@@ -549,7 +539,6 @@ public class EntityDefinedRegionsConfiguration extends AbstractAnnotationConfigS
 		return partitionAttributesFactoryBeanBuilder;
 	}
 
-	/* (non-Javadoc) */
 	protected BeanDefinitionBuilder setReplicateRegionAttributes(RegionBeanDefinitionMetadata regionMetadata,
 			AnnotationAttributes regionAnnotationAttributes, BeanDefinitionBuilder regionFactoryBeanBuilder) {
 
@@ -562,7 +551,6 @@ public class EntityDefinedRegionsConfiguration extends AbstractAnnotationConfigS
 		return regionFactoryBeanBuilder;
 	}
 
-	/* (non-Javadoc) */
 	private <T> BeanDefinitionBuilder setPropertyReferenceIfSet(BeanDefinitionBuilder beanDefinitionBuilder,
 			String propertyName, String beanName) {
 
@@ -571,7 +559,6 @@ public class EntityDefinedRegionsConfiguration extends AbstractAnnotationConfigS
 			: beanDefinitionBuilder);
 	}
 
-	/* (non-Javadoc) */
 	private <T> BeanDefinitionBuilder setPropertyValueIfNotDefault(BeanDefinitionBuilder beanDefinitionBuilder,
 			String propertyName, T value, T defaultValue) {
 
