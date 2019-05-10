@@ -20,6 +20,7 @@ import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static org.springframework.data.gemfire.util.ArrayUtils.asArray;
 import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeMap;
 import static org.springframework.data.gemfire.util.StreamUtils.concat;
 
 import java.lang.annotation.Annotation;
@@ -30,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -47,6 +49,8 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.cache.annotation.CacheEvict;
@@ -112,6 +116,9 @@ public class CachingDefinedRegionsConfiguration extends AbstractAnnotationConfig
 			.collect(Collectors.toSet());
 
 	private ClientRegionShortcut clientRegionShortcut = ClientRegionShortcut.PROXY;
+
+	@Autowired(required = false)
+	private List<RegionConfigurer> regionConfigurers = Collections.emptyList();
 
 	private RegionShortcut serverRegionShortcut = RegionShortcut.PARTITION;
 
@@ -303,6 +310,7 @@ public class CachingDefinedRegionsConfiguration extends AbstractAnnotationConfig
 
 					regionFactoryBean.setCache(gemfireCache);
 					regionFactoryBean.setClientRegionShortcut(resolveClientRegionShortcut());
+					regionFactoryBean.setRegionConfigurers(resolveRegionConfigurers());
 					regionFactoryBean.setRegionName(cacheName);
 					regionFactoryBean.setServerRegionShortcut(resolveServerRegionShortcut());
 
@@ -325,6 +333,25 @@ public class CachingDefinedRegionsConfiguration extends AbstractAnnotationConfig
 		});
 
 		return beanFactory;
+	}
+
+	protected List<RegionConfigurer> resolveRegionConfigurers() {
+
+		return Optional.ofNullable(this.regionConfigurers)
+			.filter(regionConfigurers -> !regionConfigurers.isEmpty())
+			.orElseGet(() ->
+				Optional.of(getBeanFactory())
+					.filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
+					.map(beanFactory -> {
+
+						Map<String, RegionConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)
+							.getBeansOfType(RegionConfigurer.class, true, false);
+
+						return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
+
+					})
+					.orElseGet(Collections::emptyList)
+			);
 	}
 
 	/**
