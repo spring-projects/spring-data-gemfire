@@ -3,7 +3,7 @@ Costin Leau; David Turanski; John Blum; Oliver Gierke; Jay Bryant
 :revdate: {localdate}
 :revnumber: {version}
 :toclevels: 2
-:apache-geode-version: 16
+:apache-geode-version: 19
 :apache-geode-docs: https://geode.apache.org/docs/guide/{apache-geode-version}
 :apache-geode-javadoc: https://geode.apache.org/releases/latest/javadoc
 :apache-geode-website: https://geode.apache.org
@@ -11,8 +11,8 @@ Costin Leau; David Turanski; John Blum; Oliver Gierke; Jay Bryant
 :data-store-name-symbolic: gemfire
 :data-store-name-simple: GemFire
 :data-store-name: Pivotal {data-store-name-simple}
-:data-store-version: 9.5.1
-:pivotal-gemfire-version: 95
+:data-store-version: 9.8.0
+:pivotal-gemfire-version: 98
 :pivotal-gemfire-docs: https://gemfire.docs.pivotal.io/{pivotal-gemfire-version}
 :pivotal-gemfire-javadoc: https://gemfire-{pivotal-gemfire-version}-javadocs.docs.pivotal.io/
 :pivotal-gemfire-website: https://pivotal.io/pivotal-gemfire
