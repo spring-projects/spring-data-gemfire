@@ -248,6 +248,66 @@ promoted and deployed to different environments, such as from DEV to QA to STAGI
 
 The next section covers how to handle dynamic configuration determined at runtime.
 
+[[bootstrap-annotation-config-locator]]
+== Configuring and Bootstrapping Locators
+
+Besides {data-store-name} Cache applications, you may also create {data-store-name} Locator applications.
+
+A {data-store-name} Locator is a JVM process that allows nodes to join a {data-store-name} cluster as peer members.
+Locators also enable clients to discover servers in a cluster.  A Locator provides meta-data to the clients to uniformly
+balance the load across the members in the cluster, enables single-hop data access operations, along with other things.
+
+A complete discussion of Locators is beyond the scope of this document.  Readers are encouraged to read
+the {data-store-name} {apache-geode-docs}/topologies_and_comm/topology_concepts/how_member_discovery_works.html[User Guide]
+for more details on Locators and their role in the cluster.
+
+To configure and bootstrap a standalone Locator process, do the following:
+
+.Spring Boot, {data-store-name} Locator Application
+[source,java]
+----
+@SpringBootApplication
+@LocatorApplication(port = 12345)
+class LocatorApplication { ... }
+----
+
+You can start multiple Locators in your cluster.  The only requirement is that the member name must be unique
+in the cluster.  Use the `name` attribute of the `@LocatorApplication` annotation to name the member Locator
+in the cluster accordingly. Alternatively, you can set the `spring.data.gemfire.locator.name` property in Spring Boot's
+`application.properties`.
+
+Additionally, you must ensure that each Locator starts on a unique port if you fork multiple Locators on the same
+machine.  Set either the `port` annotation attribute or the `spring.data.gemfire.locator.port` property.
+
+You may then start 1 or more {data-store-name} peer cache members in the cluster joined by the Locator, or Locators,
+also configured and bootstrapped with Spring, like so:
+
+.Spring Boot, {data-store-name} `CacheServer` Application joined by the Locator on `localhost`, port `12345`
+[source,java]
+----
+@SpringBootApplication
+@CacheServerApplication(locators = "localhost[12345]")
+class ServerApplication { ... }
+----
+
+Again, you can start as many of the `ServerApplication` classes, joined by our Locator above, as you want.
+You just need to make sure the member is uniquely named.
+
+`@LocatorApplication` is for configuring and bootstrapping standalone, {data-store-name} Locator application processes.
+This process can only be a Locator and nothing else.  If you try to start a Locator with a cache instance, SDG will
+throw an error.
+
+If you want to simultaneously start a cache instance along with an embedded Locator, then you should use
+the `@EnableLocator` annotation instead.
+
+Starting an embedded Locator is convenient during development. However, it is highly recommended that you run standalone
+Locator processes in production for high availability.  If all your Locators in the cluster go down, then the cluster
+will remain intact, however, no new members will be able to join the cluster, which is important to scale-out linearly
+in order to satisfy demand.
+
+See the section on <<bootstrap-annotation-config-embedded-services-locator,Configuring an Embedded Locator>>
+for more details.
+
 [[bootstrap-annotation-config-configurers]]
 == Runtime configuration using `Configurers`
 
