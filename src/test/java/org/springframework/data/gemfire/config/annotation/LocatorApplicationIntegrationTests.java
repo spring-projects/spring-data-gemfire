@@ -82,6 +82,7 @@ public class LocatorApplicationIntegrationTests {
 				.set("jmx-manager", distributedSystemProperties.getProperty("jmx-manager"))
 				.set("locators", distributedSystemProperties.getProperty("locators"))
 				.set("log-file", distributedSystemProperties.getProperty("log-file"))
+				.set("log-level", distributedSystemProperties.getProperty("log-level"))
 				.create();
 
 			assertThat(peerCache).isNotNull();
