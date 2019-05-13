@@ -3,6 +3,16 @@ SPRING DATA GEMFIRE CHANGELOG
 https://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.2.0.M4 (2019-05-13)
+----------------------------------------
+* SGF-841 - Refactor and simplify codebase.
+* SGF-838 - Apply RegionConfigurers to Caching-defined Regions.
+* SGF-837 - Fix DurableClientCacheIntegrationTest.
+* SGF-836 - Upgrade to Pivotal GemFire 9.8.0.
+* SGF-835 - Release 2.2 M4 (Moore).
+* SGF-222 - Configure and start GemFire Locators with SDG config.
+
+
 Changes in version 1.9.21.RELEASE (2019-05-10)
 ----------------------------------------------
 * SGF-829 - Release 1.9.21 (Ingalls SR21).
