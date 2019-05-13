@@ -16,6 +16,8 @@
 
 package org.springframework.data.gemfire.snapshot.filter;
 
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+
 import java.util.Map;
 
 import org.apache.geode.cache.snapshot.SnapshotFilter;
@@ -69,15 +71,10 @@ public class ComposableSnapshotFilter<K, V> implements SnapshotFilter<K, V> {
 	 * @see org.apache.geode.cache.snapshot.SnapshotFilter
 	 */
 	private ComposableSnapshotFilter(SnapshotFilter<K, V> leftOperand, Operator operator, SnapshotFilter<K, V> rightOperand) {
+
 		this.leftOperand = leftOperand;
 		this.operator = operator;
 		this.rightOperand = rightOperand;
-	}
-
-	/* (non-Javadoc) */
-	@SuppressWarnings("unchecked")
-	static <K, V> SnapshotFilter<K, V>[] nullSafeArray(SnapshotFilter<K, V>... array) {
-		return (array != null ? array : new SnapshotFilter[0]);
 	}
 
 	/**
@@ -92,10 +89,12 @@ public class ComposableSnapshotFilter<K, V> implements SnapshotFilter<K, V> {
 	 * @see ComposableSnapshotFilter.Operator
 	 * @see org.apache.geode.cache.snapshot.SnapshotFilter
 	 */
+	@SuppressWarnings("unchecked")
 	protected static <K, V> SnapshotFilter<K, V> compose(Operator operator, SnapshotFilter<K, V>... snapshotFilters) {
+
 		SnapshotFilter<K, V> composedSnapshotFilter = null;
 
-		for (SnapshotFilter<K, V> snapshotFilter : nullSafeArray(snapshotFilters)) {
+		for (SnapshotFilter<K, V> snapshotFilter : nullSafeArray(snapshotFilters, SnapshotFilter.class)) {
 			composedSnapshotFilter = (composedSnapshotFilter == null ? snapshotFilter
 				: new ComposableSnapshotFilter<K, V>(snapshotFilter, operator, composedSnapshotFilter));
 		}
@@ -144,7 +143,7 @@ public class ComposableSnapshotFilter<K, V> implements SnapshotFilter<K, V> {
 	 */
 	@Override
 	public boolean accept(final Map.Entry<K, V> entry) {
-		return operator.operate(leftOperand.accept(entry), rightOperand.accept(entry));
+		return this.operator.operate(this.leftOperand.accept(entry), this.rightOperand.accept(entry));
 	}
 
 }

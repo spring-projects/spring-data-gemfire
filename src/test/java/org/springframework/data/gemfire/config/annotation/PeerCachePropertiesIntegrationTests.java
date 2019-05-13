@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,21 +39,30 @@ import org.springframework.mock.env.MockPropertySource;
  * Integration tests for {@link PeerCacheApplication}.
  *
  * @author John Blum
+ * @see java.util.Properties
  * @see org.junit.Test
+ * @see org.springframework.context.ConfigurableApplicationContext
+ * @see org.springframework.context.annotation.AnnotationConfigApplicationContext
+ * @see org.springframework.core.env.PropertySource
  * @see org.springframework.data.gemfire.config.annotation.PeerCacheApplication
+ * @see org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockObjects
+ * @see org.springframework.mock.env.MockPropertySource
  * @since 2.0.0
  */
+@SuppressWarnings("unused")
 public class PeerCachePropertiesIntegrationTests {
 
 	private ConfigurableApplicationContext applicationContext;
 
 	@After
 	public void tearDown() {
-		Optional.ofNullable(this.applicationContext).ifPresent(ConfigurableApplicationContext::close);
+
+		Optional.ofNullable(this.applicationContext)
+			.ifPresent(ConfigurableApplicationContext::close);
 	}
 
 	private ConfigurableApplicationContext newApplicationContext(PropertySource<?> testPropertySource,
-		Class<?>... annotatedClasses) {
+			Class<?>... annotatedClasses) {
 
 		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
 
@@ -62,8 +70,8 @@ public class PeerCachePropertiesIntegrationTests {
 
 		propertySources.addFirst(testPropertySource);
 
-		applicationContext.registerShutdownHook();
 		applicationContext.register(annotatedClasses);
+		applicationContext.registerShutdownHook();
 		applicationContext.refresh();
 
 		return applicationContext;
@@ -171,7 +179,6 @@ public class PeerCachePropertiesIntegrationTests {
 	@EnablePdx(ignoreUnreadFields = true, readSerialized = true, serializerBeanName = "mockPdxSerializer")
 	@PeerCacheApplication(name = "TestPeerCache", criticalHeapPercentage = 90.0f, evictionHeapPercentage = 75.0f,
 		lockLease = 300, lockTimeout = 120)
-	@SuppressWarnings("unused")
 	static class TestPeerCacheConfiguration {
 
 		@Bean
@@ -187,7 +194,6 @@ public class PeerCachePropertiesIntegrationTests {
 
 	@EnableGemFireMockObjects
 	@PeerCacheApplication(name = "TestPeerCache")
-	@SuppressWarnings("unused")
-	static class TestDynamicPeerCacheConfiguration {
-	}
+	static class TestDynamicPeerCacheConfiguration { }
+
 }

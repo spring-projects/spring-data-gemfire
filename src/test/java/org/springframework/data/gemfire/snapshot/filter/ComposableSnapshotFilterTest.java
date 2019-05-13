@@ -13,16 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.snapshot.filter;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.isA;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.geode.cache.snapshot.SnapshotFilter;
@@ -48,16 +50,18 @@ public class ComposableSnapshotFilterTest {
 
 	@SuppressWarnings("unchecked")
 	protected SnapshotFilter mockSnapshotFilter(boolean accept) {
-		SnapshotFilter mockSnapshotFilter = mock(SnapshotFilter.class, String.format(
-			"MockSnapshotFilter-%1$d", ID_SEQUENCE.incrementAndGet()));
 
-		when(mockSnapshotFilter.accept((Map.Entry) any())).thenReturn(accept);
+		SnapshotFilter mockSnapshotFilter = mock(SnapshotFilter.class,
+			String.format("MockSnapshotFilter-%1$d", ID_SEQUENCE.incrementAndGet()));
+
+		when(mockSnapshotFilter.accept(any())).thenReturn(accept);
 
 		return mockSnapshotFilter;
 	}
 
 	@Test
 	public void operatorIdentityIsSuccessful() {
+
 		assertThat(Operator.AND.isAnd(), is(true));
 		assertThat(Operator.AND.isOr(), is(false));
 		assertThat(Operator.OR.isAnd(), is(false));
@@ -66,6 +70,7 @@ public class ComposableSnapshotFilterTest {
 
 	@Test
 	public void andOperatorOperationIsValid() {
+
 		assertThat(Operator.AND.operate(true, true), is(true));
 		assertThat(Operator.AND.operate(true, false), is(false));
 		assertThat(Operator.AND.operate(false, true), is(false));
@@ -74,6 +79,7 @@ public class ComposableSnapshotFilterTest {
 
 	@Test
 	public void orOperatorOperationIsValid() {
+
 		assertThat(Operator.OR.operate(true, true), is(true));
 		assertThat(Operator.OR.operate(true, false), is(true));
 		assertThat(Operator.OR.operate(false, true), is(true));
@@ -81,22 +87,8 @@ public class ComposableSnapshotFilterTest {
 	}
 
 	@Test
-	public void nullSafeArrayWithNonNullArray() {
-		SnapshotFilter[] expectedArray = {};
-
-		assertThat(ComposableSnapshotFilter.nullSafeArray(expectedArray), is(sameInstance(expectedArray)));
-	}
-
-	@Test
-	public void nullSafeArrayWithNullArray() {
-		SnapshotFilter[] actualArray = ComposableSnapshotFilter.nullSafeArray((SnapshotFilter[]) null);
-
-		assertThat(actualArray, is(notNullValue()));
-		assertThat(actualArray.length, is(equalTo(0)));
-	}
-
-	@Test
 	public void composeSingle() {
+
 		SnapshotFilter mockSnapshotFilter = mockSnapshotFilter(false);
 		SnapshotFilter composedFilter = ComposableSnapshotFilter.compose(Operator.AND, mockSnapshotFilter);
 
@@ -105,6 +97,7 @@ public class ComposableSnapshotFilterTest {
 
 	@Test
 	public void composeMultiple() throws Exception {
+
 		SnapshotFilter mockSnapshotFilterOne = mockSnapshotFilter(false);
 		SnapshotFilter mockSnapshotFilterTwo = mockSnapshotFilter(true);
 
@@ -124,6 +117,7 @@ public class ComposableSnapshotFilterTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void composeAndThenAccept() {
+
 		SnapshotFilter falseFilter = mockSnapshotFilter(false);
 		SnapshotFilter trueFilter = mockSnapshotFilter(true);
 
@@ -146,6 +140,7 @@ public class ComposableSnapshotFilterTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void composeOrThenAccept() {
+
 		SnapshotFilter falseFilter = mockSnapshotFilter(false);
 		SnapshotFilter trueFilter = mockSnapshotFilter(true);
 
@@ -164,5 +159,4 @@ public class ComposableSnapshotFilterTest {
 		assertThat((ComposableSnapshotFilter) composedFilter, isA(ComposableSnapshotFilter.class));
 		assertThat(composedFilter.accept(null), is(false));
 	}
-
 }

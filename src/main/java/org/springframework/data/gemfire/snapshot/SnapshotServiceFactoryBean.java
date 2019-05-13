@@ -19,6 +19,7 @@ package org.springframework.data.gemfire.snapshot;
 import static java.util.Arrays.stream;
 import static org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import static org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotServiceAdapter;
+import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 
@@ -87,11 +88,6 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 	private SnapshotMetadata<K, V>[] imports;
 
 	private SnapshotServiceAdapter<K, V> snapshotServiceAdapter;
-
-	@SuppressWarnings("unchecked")
-	static <K, V> SnapshotMetadata<K, V>[] nullSafeArray(SnapshotMetadata<K, V>[] configurations) {
-		return configurations != null ? configurations : EMPTY_ARRAY;
-	}
 
 	static boolean nullSafeIsDirectory(File file) {
 		return file != null && file.isDirectory();
@@ -210,8 +206,9 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 	 * @return an array of snapshot meta-data used for each export.
 	 * @see SnapshotServiceFactoryBean.SnapshotMetadata
 	 */
+	@SuppressWarnings("unchecked")
 	protected SnapshotMetadata<K, V>[] getExports() {
-		return nullSafeArray(exports);
+		return nullSafeArray(exports, SnapshotMetadata.class);
 	}
 
 	/**
@@ -232,8 +229,9 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 	 * @return an array of snapshot meta-data used for each import.
 	 * @see SnapshotServiceFactoryBean.SnapshotMetadata
 	 */
+	@SuppressWarnings("unchecked")
 	protected SnapshotMetadata<K, V>[] getImports() {
-		return nullSafeArray(imports);
+		return nullSafeArray(imports, SnapshotMetadata.class);
 	}
 
 	/**
@@ -455,7 +453,7 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 		@SuppressWarnings("unchecked")
 		public void doExport(SnapshotMetadata<K, V>... configurations) {
 
-			stream(nullSafeArray(configurations)).forEach(configuration ->
+			stream(nullSafeArray(configurations, SnapshotMetadata.class)).forEach(configuration ->
 				save(configuration.getLocation(), configuration.getFormat(), createOptions(configuration)));
 		}
 
@@ -463,7 +461,7 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 		@SuppressWarnings("unchecked")
 		public void doImport(SnapshotMetadata<K, V>... configurations) {
 
-			stream(nullSafeArray(configurations)).forEach(configuration ->
+			stream(nullSafeArray(configurations, SnapshotMetadata.class)).forEach(configuration ->
 				load(configuration.getFormat(), createOptions(configuration), handleLocation(configuration)));
 		}
 

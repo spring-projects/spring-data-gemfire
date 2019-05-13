@@ -162,20 +162,6 @@ public class SnapshotServiceFactoryBeanTest {
 	}
 
 	@Test
-	public void nullSafeArrayWithNonNullArray() {
-
-		SnapshotMetadata[] expectedConfigurations = new SnapshotMetadata[0];
-
-		assertThat(SnapshotServiceFactoryBean.nullSafeArray(expectedConfigurations),
-			is(sameInstance(expectedConfigurations)));
-	}
-
-	@Test
-	public void nullSafeArrayWithNullArray() {
-		assertThat(SnapshotServiceFactoryBean.nullSafeArray(null), is(equalTo(SnapshotServiceFactoryBean.EMPTY_ARRAY)));
-	}
-
-	@Test
 	public void nullSafeIsDirectoryWithDirectory() {
 		assertThat(SnapshotServiceFactoryBean.nullSafeIsDirectory(new File(System.getProperty("user.dir"))), is(true));
 	}
