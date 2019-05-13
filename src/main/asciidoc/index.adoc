@@ -2,6 +2,7 @@
 Costin Leau; David Turanski; John Blum; Oliver Gierke; Jay Bryant
 :revdate: {localdate}
 :revnumber: {version}
+:toclevels: 2
 :apache-geode-version: 16
 :apache-geode-docs: https://geode.apache.org/docs/guide/{apache-geode-version}
 :apache-geode-javadoc: https://geode.apache.org/releases/latest/javadoc
