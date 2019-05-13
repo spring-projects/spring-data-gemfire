@@ -53,22 +53,24 @@ import org.springframework.context.annotation.Import;
 public @interface EnableLocator {
 
 	/**
-	 * Configures the host/IP address on which the embedded Locator service will bind to for accepting connections
-	 * from clients sending Locator requests.
+	 * Configures the host/IP address on which the embedded {@link Locator} service will bind to
+	 * for accepting connections from clients sending {@link Locator} requests.
 	 *
 	 * Defaults to {@literal localhost}.
 	 *
-	 * Use the {@literal spring.data.gemfire.locator.host} property in {@literal application.properties}.
+	 * Use the {@literal spring.data.gemfire.locator.host} property
+	 * in Spring Boot {@literal application.properties}.
 	 */
 	String host() default LocatorConfiguration.DEFAULT_HOST;
 
 	/**
-	 * Configures the port on which the embedded Locator service will bind to listening for client connections
-	 * sending Locator requests.
+	 * Configures the port on which the embedded {@link Locator} service will bind to
+	 * listening for client connections sending {@link Locator} requests.
 	 *
 	 * Defaults to {@literal 10334}.
 	 *
-	 * Use the {@literal spring.data.gemfire.locator.port} property in {@literal application.properties}.
+	 * Use the {@literal spring.data.gemfire.locator.port} property
+	 * in Spring Boot {@literal application.properties}.
 	 */
 	int port() default LocatorConfiguration.DEFAULT_LOCATOR_PORT;
 
