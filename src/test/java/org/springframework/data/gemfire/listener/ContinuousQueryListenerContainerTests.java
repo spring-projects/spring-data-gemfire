@@ -41,6 +41,7 @@ import java.util.concurrent.Executor;
 
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.query.CqAttributes;
 import org.apache.geode.cache.query.CqEvent;
 import org.apache.geode.cache.query.CqException;
@@ -100,7 +101,7 @@ public class ContinuousQueryListenerContainerTests {
 	@Test
 	public void afterPropertiesSetIsAutoStart() throws Exception {
 
-		Pool mockPool = mock(Pool.class);
+		Pool mockPool = mock(PoolImpl.class);
 
 		QueryService mockQueryService = mock(QueryService.class);
 
@@ -257,7 +258,7 @@ public class ContinuousQueryListenerContainerTests {
 	@Test
 	public void eagerlyInitializePoolFindsRegisteredPoolWithTheGivenName() {
 
-		Pool mockPool = mock(Pool.class);
+		Pool mockPool = mock(PoolImpl.class);
 
 		when(mockBeanFactory.containsBean(eq("TestPool"))).thenReturn(false);
 		when(mockPool.getName()).thenReturn("TestPool");
@@ -282,7 +283,7 @@ public class ContinuousQueryListenerContainerTests {
 	@Test
 	public void eagerlyInitializePoolFindsRegisteredPoolWithTheGivenNameWhenBeanFactoryGetBeanThrowsBeansException() {
 
-		Pool mockPool = mock(Pool.class);
+		Pool mockPool = mock(PoolImpl.class);
 
 		when(mockBeanFactory.containsBean(eq("TestPool"))).thenReturn(true);
 		when(mockBeanFactory.isTypeMatch(eq("TestPool"), eq(Pool.class))).thenReturn(true);
@@ -350,7 +351,7 @@ public class ContinuousQueryListenerContainerTests {
 	@Test
 	public void initializesQueryServiceFromPool() {
 
-		Pool mockPool = mock(Pool.class);
+		Pool mockPool = mock(PoolImpl.class);
 
 		QueryService mockQueryService = mock(QueryService.class);
 
@@ -375,7 +376,7 @@ public class ContinuousQueryListenerContainerTests {
 	@Test
 	public void initializesQueryServiceFromPoolIgnoresConfiguredQueryService() {
 
-		Pool mockPool = mock(Pool.class);
+		Pool mockPool = mock(PoolImpl.class);
 
 		QueryService mockQueryServiceOne = mock(QueryService.class);
 		QueryService mockQueryServiceTwo = mock(QueryService.class);
