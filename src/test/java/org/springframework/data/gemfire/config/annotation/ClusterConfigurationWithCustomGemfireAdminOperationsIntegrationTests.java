@@ -84,7 +84,8 @@ public class ClusterConfigurationWithCustomGemfireAdminOperationsIntegrationTest
 		SchemaObjectContext schemaObjectContext = this.initializer.getSchemaObjectContext();
 
 		assertThat(schemaObjectContext).isNotNull();
-		assertThat(schemaObjectContext.getGemfireAdminOperations()).isSameAs(this.gemfireAdminOperations);
+		assertThat(schemaObjectContext.<GemfireAdminOperations>getGemfireAdminOperations())
+			.isSameAs(this.gemfireAdminOperations);
 	}
 
 	@ClientCacheApplication

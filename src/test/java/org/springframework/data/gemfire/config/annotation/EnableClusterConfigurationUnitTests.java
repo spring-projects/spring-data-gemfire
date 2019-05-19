@@ -353,7 +353,7 @@ public class EnableClusterConfigurationUnitTests {
 		SchemaObjectContext schemaObjectContext = initializer.getSchemaObjectContext();
 
 		assertThat(schemaObjectContext).isNotNull();
-		assertThat(schemaObjectContext.getGemfireAdminOperations()).isEqualTo(mockGemfireAdminOperations);
+		assertThat(schemaObjectContext.<GemfireAdminOperations>getGemfireAdminOperations()).isEqualTo(mockGemfireAdminOperations);
 		assertThat(schemaObjectContext.getSchemaObjectCollector()).isInstanceOf(ComposableSchemaObjectCollector.class);
 		assertThat(schemaObjectContext.getSchemaObjectDefiner()).isInstanceOf(ComposableSchemaObjectDefiner.class);
 

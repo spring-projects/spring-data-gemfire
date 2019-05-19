@@ -441,12 +441,13 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 			this.gemfireCache = gemfireCache;
 		}
 
-		public GemfireAdminOperations getGemfireAdminOperations() {
+		@SuppressWarnings("unchecked")
+		public <T extends GemfireAdminOperations> T getGemfireAdminOperations() {
 
 			Assert.state(this.gemfireAdminOperations != null,
 				"GemfireAdminOperations was not initialized");
 
-			return this.gemfireAdminOperations;
+			return (T) this.gemfireAdminOperations;
 		}
 
 		public boolean isClientCache() {

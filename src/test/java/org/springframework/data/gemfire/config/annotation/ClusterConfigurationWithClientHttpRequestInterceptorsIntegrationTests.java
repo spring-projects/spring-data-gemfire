@@ -36,6 +36,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
+import org.springframework.data.gemfire.config.admin.GemfireAdminOperations;
 import org.springframework.data.gemfire.config.admin.remote.RestHttpGemfireAdminTemplate;
 import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockObjects;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -132,10 +133,10 @@ public class ClusterConfigurationWithClientHttpRequestInterceptorsIntegrationTes
 
 		assertThat(schemaObjectContext).isNotNull();
 		assertThat(schemaObjectContext.<ClientCache>getGemfireCache()).isSameAs(this.clientCache);
-		assertThat(schemaObjectContext.getGemfireAdminOperations()).isInstanceOf(RestHttpGemfireAdminTemplate.class);
+		assertThat(schemaObjectContext.<GemfireAdminOperations>getGemfireAdminOperations())
+			.isInstanceOf(RestHttpGemfireAdminTemplate.class);
 
-		RestHttpGemfireAdminTemplate template =
-			(RestHttpGemfireAdminTemplate) schemaObjectContext.getGemfireAdminOperations();
+		RestHttpGemfireAdminTemplate template = schemaObjectContext.getGemfireAdminOperations();
 
 		RestTemplate restTemplate = resolveFieldValue(template, "restTemplate");
 
@@ -184,5 +185,4 @@ public class ClusterConfigurationWithClientHttpRequestInterceptorsIntegrationTes
 			return mock(ClientHttpRequestInterceptor.class);
 		}
 	}
-
 }
