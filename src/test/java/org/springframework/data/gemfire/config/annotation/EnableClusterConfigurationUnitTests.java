@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,19 +21,45 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.data.gemfire.config.admin.remote.RestHttpGemfireAdminTemplate.FollowRedirectsSimpleClientHttpRequestFactory;
+import static org.springframework.data.gemfire.config.annotation.ClusterConfigurationConfiguration.ClusterSchemaObjectInitializer;
+import static org.springframework.data.gemfire.config.annotation.ClusterConfigurationConfiguration.SchemaObjectContext;
 
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.client.ClientCache;
+import org.junit.After;
 import org.junit.Test;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.core.env.Environment;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.data.gemfire.config.admin.GemfireAdminOperations;
+import org.springframework.data.gemfire.config.admin.remote.FunctionGemfireAdminTemplate;
+import org.springframework.data.gemfire.config.admin.remote.RestHttpGemfireAdminTemplate;
+import org.springframework.data.gemfire.config.schema.support.ComposableSchemaObjectCollector;
+import org.springframework.data.gemfire.config.schema.support.ComposableSchemaObjectDefiner;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.client.InterceptingClientHttpRequestFactory;
+import org.springframework.util.ReflectionUtils;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Unit tests for {@link EnableClusterConfiguration} annotation and the {@link ClusterConfigurationConfiguration} class.
@@ -51,6 +76,44 @@ import org.springframework.core.type.AnnotationMetadata;
  */
 public class EnableClusterConfigurationUnitTests {
 
+	@After
+	public void tearDown() {
+		System.clearProperty(ClusterConfigurationConfiguration.HTTP_FOLLOW_REDIRECTS_PROPERTY);
+	}
+
+	private <T> ClusterConfigurationConfiguration autowire(ClusterConfigurationConfiguration target,
+			String fieldName, T dependency) throws NoSuchFieldException {
+
+		return Optional.ofNullable(ReflectionUtils.findField(target.getClass(), fieldName))
+			.map(field -> {
+				ReflectionUtils.makeAccessible(field);
+				return field;
+			})
+			.map(field -> {
+				ReflectionUtils.setField(field, target, dependency);
+				return target;
+			})
+			.orElseThrow(() ->
+				new NoSuchFieldException(String.format("Field [%s] was not found on Object of type [%s]",
+					fieldName, target.getClass().getName())));
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> T resolveFieldValue(Object target, String fieldName) throws NoSuchFieldException {
+
+		Field field = ReflectionUtils.findField(target.getClass(), fieldName);
+
+		return Optional.ofNullable(field)
+			.map(it -> {
+				ReflectionUtils.makeAccessible(it);
+				return field;
+			})
+			.map(it -> (T) ReflectionUtils.getField(it, target))
+			.orElseThrow(() ->
+				new NoSuchFieldException(String.format("Field with name [%s] was not found on Object of type [%s]",
+					fieldName, target.getClass().getName())));
+	}
+
 	@Test
 	public void setImportMetadataFromAnnotationAttributes() {
 
@@ -60,6 +123,7 @@ public class EnableClusterConfigurationUnitTests {
 
 		annotationAttributes.put("host", "skullbox");
 		annotationAttributes.put("port", 12345);
+		annotationAttributes.put("requireHttps", false);
 		annotationAttributes.put("serverRegionShortcut", RegionShortcut.PARTITION_PERSISTENT);
 		annotationAttributes.put("useHttp", true);
 
@@ -74,6 +138,7 @@ public class EnableClusterConfigurationUnitTests {
 
 		assertThat(configuration.getManagementHttpHost().orElse(null)).isEqualTo("skullbox");
 		assertThat(configuration.getManagementHttpPort().orElse(0)).isEqualTo(12345);
+		assertThat(configuration.getManagementRequireHttps().orElse(true)).isFalse();
 		assertThat(configuration.getManagementUseHttp().orElse(false)).isTrue();
 		assertThat(configuration.getServerRegionShortcut().orElse(null)).isEqualTo(RegionShortcut.PARTITION_PERSISTENT);
 
@@ -93,6 +158,7 @@ public class EnableClusterConfigurationUnitTests {
 
 		annotationAttributes.put("host", "skullbox");
 		annotationAttributes.put("port", 12345);
+		annotationAttributes.put("requireHttps", true);
 		annotationAttributes.put("serverRegionShortcut", RegionShortcut.PARTITION_PERSISTENT);
 		annotationAttributes.put("useHttp", false);
 
@@ -106,6 +172,7 @@ public class EnableClusterConfigurationUnitTests {
 		when(mockEnvironment.containsProperty(eq("spring.data.gemfire.cluster.region.type"))).thenReturn(true);
 		when(mockEnvironment.containsProperty(eq("spring.data.gemfire.management.http.host"))).thenReturn(true);
 		when(mockEnvironment.containsProperty(eq("spring.data.gemfire.management.http.port"))).thenReturn(true);
+		when(mockEnvironment.containsProperty(eq("spring.data.gemfire.management.require-https"))).thenReturn(true);
 		when(mockEnvironment.containsProperty(eq("spring.data.gemfire.management.use-http"))).thenReturn(true);
 
 		when(mockEnvironment.getProperty(eq("spring.data.gemfire.cluster.region.type"), eq(RegionShortcut.class), any(RegionShortcut.class)))
@@ -116,6 +183,9 @@ public class EnableClusterConfigurationUnitTests {
 
 		when(mockEnvironment.getProperty(eq("spring.data.gemfire.management.http.port"), eq(Integer.class), any(Integer.class)))
 			.thenReturn(11235);
+
+		when(mockEnvironment.getProperty(eq("spring.data.gemfire.management.require-https"), eq(Boolean.class), any(Boolean.class)))
+			.thenReturn(false);
 
 		when(mockEnvironment.getProperty(eq("spring.data.gemfire.management.use-http"), eq(Boolean.class), any(Boolean.class)))
 			.thenReturn(true);
@@ -130,6 +200,7 @@ public class EnableClusterConfigurationUnitTests {
 
 		assertThat(configuration.getManagementHttpHost().orElse(null)).isEqualTo("cardboardBox");
 		assertThat(configuration.getManagementHttpPort().orElse(0)).isEqualTo(11235);
+		assertThat(configuration.getManagementRequireHttps().orElse(true)).isFalse();
 		assertThat(configuration.getManagementUseHttp().orElse(false)).isTrue();
 		assertThat(configuration.getServerRegionShortcut().orElse(null)).isEqualTo(RegionShortcut.LOCAL);
 
@@ -149,6 +220,9 @@ public class EnableClusterConfigurationUnitTests {
 			.containsProperty(eq("spring.data.gemfire.management.http.port"));
 
 		verify(mockEnvironment, times(1))
+			.containsProperty(eq("spring.data.gemfire.management.require-https"));
+
+		verify(mockEnvironment, times(1))
 			.containsProperty(eq("spring.data.gemfire.management.use-http"));
 
 		verify(mockEnvironment, times(1))
@@ -160,6 +234,9 @@ public class EnableClusterConfigurationUnitTests {
 
 		verify(mockEnvironment, times(1))
 			.getProperty(eq("spring.data.gemfire.management.http.port"), eq(Integer.class), anyInt());
+
+		verify(mockEnvironment, times(1))
+			.getProperty(eq("spring.data.gemfire.management.require-https"), eq(Boolean.class), eq(true));
 
 		verify(mockEnvironment, times(1))
 			.getProperty(eq("spring.data.gemfire.management.use-http"), eq(Boolean.class), eq(false));
@@ -174,6 +251,7 @@ public class EnableClusterConfigurationUnitTests {
 
 		annotationAttributes.put("host", "postOfficeBox");
 		annotationAttributes.put("port", 10101);
+		annotationAttributes.put("requireHttps", false);
 		annotationAttributes.put("serverRegionShortcut", RegionShortcut.REPLICATE);
 		annotationAttributes.put("useHttp", true);
 
@@ -187,10 +265,11 @@ public class EnableClusterConfigurationUnitTests {
 		when(mockEnvironment.containsProperty(eq("spring.data.gemfire.cluster.region.type"))).thenReturn(false);
 		when(mockEnvironment.containsProperty(eq("spring.data.gemfire.management.http.host"))).thenReturn(true);
 		when(mockEnvironment.containsProperty(eq("spring.data.gemfire.management.http.port"))).thenReturn(true);
+		when(mockEnvironment.containsProperty(eq("spring.data.gemfire.management.require-https"))).thenReturn(false);
 		when(mockEnvironment.containsProperty(eq("spring.data.gemfire.management.use-http"))).thenReturn(false);
 
 		when(mockEnvironment.getProperty(eq("spring.data.gemfire.management.http.host"), eq(String.class), any(String.class)))
-			.thenReturn("shoeBox");
+			.thenReturn("shoebox");
 
 		when(mockEnvironment.getProperty(eq("spring.data.gemfire.management.http.port"), eq(Integer.class), any(Integer.class)))
 			.thenReturn(12480);
@@ -203,8 +282,9 @@ public class EnableClusterConfigurationUnitTests {
 		configuration.setEnvironment(mockEnvironment);
 		configuration.setImportMetadata(mockImportMetadata);
 
-		assertThat(configuration.getManagementHttpHost().orElse(null)).isEqualTo("shoeBox");
+		assertThat(configuration.getManagementHttpHost().orElse(null)).isEqualTo("shoebox");
 		assertThat(configuration.getManagementHttpPort().orElse(0)).isEqualTo(12480);
+		assertThat(configuration.getManagementRequireHttps().orElse(true)).isFalse();
 		assertThat(configuration.getManagementUseHttp().orElse(false)).isTrue();
 		assertThat(configuration.getServerRegionShortcut().orElse(null)).isEqualTo(RegionShortcut.REPLICATE);
 
@@ -224,6 +304,9 @@ public class EnableClusterConfigurationUnitTests {
 			.containsProperty(eq("spring.data.gemfire.management.http.port"));
 
 		verify(mockEnvironment, times(1))
+			.containsProperty(eq("spring.data.gemfire.management.require-https"));
+
+		verify(mockEnvironment, times(1))
 			.containsProperty(eq("spring.data.gemfire.management.use-http"));
 
 		verify(mockEnvironment, never())
@@ -237,6 +320,308 @@ public class EnableClusterConfigurationUnitTests {
 			.getProperty(eq("spring.data.gemfire.management.http.port"), eq(Integer.class), anyInt());
 
 		verify(mockEnvironment, never())
+			.getProperty(eq("spring.data.gemfire.management.require-https"), eq(Boolean.class), anyBoolean());
+
+		verify(mockEnvironment, never())
 			.getProperty(eq("spring.data.gemfire.management.use-http"), eq(Boolean.class), anyBoolean());
+	}
+
+	@Test
+	public void gemfireClusterSchemaObjectInitializerBeanIsCorrect() {
+
+		BeanFactory mockBeanFactory = mock(BeanFactory.class);
+
+		ClientCache mockClientCache = mock(ClientCache.class);
+
+		Environment mockEnvironment = mock(Environment.class);
+
+		GemfireAdminOperations mockGemfireAdminOperations = mock(GemfireAdminOperations.class);
+
+		ClusterConfigurationConfiguration configuration = spy(new ClusterConfigurationConfiguration());
+
+		doReturn(mockGemfireAdminOperations).when(configuration)
+			.resolveGemfireAdminOperations(eq(mockEnvironment), eq(mockClientCache));
+
+		configuration.setBeanFactory(mockBeanFactory);
+
+		ClusterSchemaObjectInitializer initializer =
+			configuration.gemfireClusterSchemaObjectInitializer(mockEnvironment, mockClientCache);
+
+		assertThat(initializer).isNotNull();
+		assertThat(initializer.isAutoStartup()).isTrue();
+
+		SchemaObjectContext schemaObjectContext = initializer.getSchemaObjectContext();
+
+		assertThat(schemaObjectContext).isNotNull();
+		assertThat(schemaObjectContext.getGemfireAdminOperations()).isEqualTo(mockGemfireAdminOperations);
+		assertThat(schemaObjectContext.getSchemaObjectCollector()).isInstanceOf(ComposableSchemaObjectCollector.class);
+		assertThat(schemaObjectContext.getSchemaObjectDefiner()).isInstanceOf(ComposableSchemaObjectDefiner.class);
+
+		verify(configuration, never()).resolveClientHttpRequestInterceptors();
+		verify(configuration, times(1))
+			.resolveGemfireAdminOperations(eq(mockEnvironment), eq(mockClientCache));
+	}
+
+	@Test
+	public void gemfireClusterSchemaObjectInitializerBeanIsNullWhenGemFireCacheIsNull() {
+
+		ClusterConfigurationConfiguration configuration = new ClusterConfigurationConfiguration();
+
+		Environment mockEnvironment = mock(Environment.class);
+
+		assertThat(configuration.gemfireClusterSchemaObjectInitializer(mockEnvironment, null)).isNull();
+	}
+
+	@Test
+	public void gemfireClusterSchemaObjectInitializerBeanIsNullWhenGemFireCacheIsNotAClientCache() {
+
+		Cache mockPeerCache = mock(Cache.class);
+
+		ClusterConfigurationConfiguration configuration = new ClusterConfigurationConfiguration();
+
+		Environment mockEnvironment = mock(Environment.class);
+
+		assertThat(configuration.gemfireClusterSchemaObjectInitializer(mockEnvironment, mockPeerCache)).isNull();
+	}
+
+	@Test
+	public void resolvesAutowiredClientHttpRequestInterceptors() throws Exception {
+
+		BeanFactory mockBeanFactory = mock(BeanFactory.class);
+
+		ClientHttpRequestInterceptor mockInterceptorOne = mock(ClientHttpRequestInterceptor.class);
+		ClientHttpRequestInterceptor mockInterceptorTwo = mock(ClientHttpRequestInterceptor.class);
+
+		List<ClientHttpRequestInterceptor> clientHttpRequestInterceptors =
+			Arrays.asList(mockInterceptorOne, mockInterceptorTwo);
+
+		ClusterConfigurationConfiguration configuration = new ClusterConfigurationConfiguration();
+
+		configuration = autowire(configuration, "clientHttpRequestInterceptors", clientHttpRequestInterceptors);
+		configuration.setBeanFactory(mockBeanFactory);
+
+		assertThat(configuration.resolveClientHttpRequestInterceptors()).isEqualTo(clientHttpRequestInterceptors);
+
+		verifyZeroInteractions(mockBeanFactory);
+	}
+
+	@Test
+	public void resolvesClientHttpRequestInterceptorsFromBeanFactory() {
+
+		ListableBeanFactory mockBeanFactory = mock(ListableBeanFactory.class);
+
+		ClientHttpRequestInterceptor mockInterceptorOne = mock(ClientHttpRequestInterceptor.class);
+		ClientHttpRequestInterceptor mockInterceptorTwo = mock(ClientHttpRequestInterceptor.class);
+
+		Map<String, ClientHttpRequestInterceptor> expectedClientHttpRequestInterceptors = new HashMap<>();
+
+		expectedClientHttpRequestInterceptors.put("MockInterceptorOne", mockInterceptorOne);
+		expectedClientHttpRequestInterceptors.put("MockInterceptorTwo", mockInterceptorTwo);
+
+		when(mockBeanFactory.getBeansOfType(eq(ClientHttpRequestInterceptor.class), anyBoolean(), anyBoolean()))
+			.thenReturn(expectedClientHttpRequestInterceptors);
+
+		ClusterConfigurationConfiguration configuration = new ClusterConfigurationConfiguration();
+
+		configuration.setBeanFactory(mockBeanFactory);
+
+		List<ClientHttpRequestInterceptor> actualClientHttpRequestInterceptors =
+			configuration.resolveClientHttpRequestInterceptors();
+
+		assertThat(actualClientHttpRequestInterceptors).isNotNull();
+		assertThat(actualClientHttpRequestInterceptors).hasSize(expectedClientHttpRequestInterceptors.size());
+		assertThat(actualClientHttpRequestInterceptors)
+			.containsExactlyInAnyOrder(expectedClientHttpRequestInterceptors.values()
+				.toArray(new ClientHttpRequestInterceptor[0]));
+
+		verify(mockBeanFactory, times(1))
+			.getBeansOfType(eq(ClientHttpRequestInterceptor.class), eq(true), eq(false));
+	}
+
+	@Test
+	public void resolveClientHttpRequestInterceptorsReturnsNullWhenBeanFactoryIsNotAListableBeanFactory() {
+
+		BeanFactory mockBeanFactory = mock(BeanFactory.class);
+
+		ClusterConfigurationConfiguration configuration = new ClusterConfigurationConfiguration();
+
+		configuration.setBeanFactory(mockBeanFactory);
+
+		List<ClientHttpRequestInterceptor> clientHttpRequestInterceptors =
+			configuration.resolveClientHttpRequestInterceptors();
+
+		assertThat(clientHttpRequestInterceptors).isNotNull();
+		assertThat(clientHttpRequestInterceptors).isEmpty();
+
+		verifyZeroInteractions(mockBeanFactory);
+	}
+
+	@Test
+	public void resolvesAutowiredGemfireAdminOperations() throws Exception {
+
+		GemfireAdminOperations mockGemfireAdminOperations = mock(GemfireAdminOperations.class);
+
+		ClusterConfigurationConfiguration configuration = new ClusterConfigurationConfiguration();
+
+		configuration = autowire(configuration, "gemfireAdminOperations", mockGemfireAdminOperations);
+
+		assertThat(configuration.resolveGemfireAdminOperations(null, null))
+			.isSameAs(mockGemfireAdminOperations);
+	}
+
+	@Test
+	public void resolvesNewFunctionGemfireAdminOperations() {
+
+		ClientCache mockClientCache = mock(ClientCache.class);
+
+		ClusterConfigurationConfiguration configuration = new ClusterConfigurationConfiguration();
+
+		GemfireAdminOperations operations =
+			configuration.resolveGemfireAdminOperations(null, mockClientCache);
+
+		assertThat(operations).isInstanceOf(FunctionGemfireAdminTemplate.class);
+
+		verifyZeroInteractions(mockClientCache);
+	}
+
+	@Test
+	public void resolvesNewRestHttpGemfireAdminOperationsUsingDefaults() throws Exception {
+
+		ClientCache mockClientCache = mock(ClientCache.class);
+
+		Environment mockEnvironment = mock(Environment.class);
+
+		when(mockEnvironment.getProperty(anyString(), eq(Boolean.class), anyBoolean())).thenReturn(false);
+
+		ClusterConfigurationConfiguration configuration = spy(new ClusterConfigurationConfiguration());
+
+		doReturn(Collections.emptyList()).when(configuration).resolveClientHttpRequestInterceptors();
+
+		configuration.setManagementUseHttp(true);
+
+		assertThat(configuration.resolveManagementRequireHttps()).isTrue();
+		assertThat(configuration.resolveManagementUseHttp()).isTrue();
+
+		GemfireAdminOperations operations =
+			configuration.resolveGemfireAdminOperations(mockEnvironment, mockClientCache);
+
+		assertThat(operations).isInstanceOf(RestHttpGemfireAdminTemplate.class);
+
+		RestHttpGemfireAdminTemplate template = (RestHttpGemfireAdminTemplate) operations;
+
+		RestTemplate restTemplate = resolveFieldValue(template, "restTemplate");
+
+		assertThat(restTemplate).isNotNull();
+		assertThat(restTemplate.getInterceptors()).isEmpty();
+		assertThat(restTemplate.getRequestFactory()).isInstanceOf(FollowRedirectsSimpleClientHttpRequestFactory.class);
+
+		FollowRedirectsSimpleClientHttpRequestFactory clientHttpRequestFactory =
+			(FollowRedirectsSimpleClientHttpRequestFactory) restTemplate.getRequestFactory();
+
+		assertThat(clientHttpRequestFactory.isFollowRedirects()).isFalse();
+
+		verifyZeroInteractions(mockClientCache);
+
+		verify(configuration, times(1)).resolveClientHttpRequestInterceptors();
+
+		verify(mockEnvironment, times(1))
+			.getProperty(eq(ClusterConfigurationConfiguration.HTTP_FOLLOW_REDIRECTS_PROPERTY), eq(Boolean.class),
+				eq(ClusterConfigurationConfiguration.DEFAULT_HTTP_FOLLOW_REDIRECTS));
+	}
+
+	@Test
+	public void resolvesNewRestHttpGemfireAdminOperationsSetsFollowRedirectsWithProperty() throws Exception {
+
+		System.setProperty(ClusterConfigurationConfiguration.HTTP_FOLLOW_REDIRECTS_PROPERTY, Boolean.TRUE.toString());
+
+		ClientCache mockClientCache = mock(ClientCache.class);
+
+		Environment environment = spy(new StandardEnvironment());
+
+		ClusterConfigurationConfiguration configuration = spy(new ClusterConfigurationConfiguration());
+
+		doReturn(Collections.emptyList()).when(configuration).resolveClientHttpRequestInterceptors();
+
+		configuration.setManagementUseHttp(true);
+
+		assertThat(configuration.resolveManagementRequireHttps()).isTrue();
+		assertThat(configuration.resolveManagementUseHttp()).isTrue();
+
+		GemfireAdminOperations operations =
+			configuration.resolveGemfireAdminOperations(environment, mockClientCache);
+
+		assertThat(operations).isInstanceOf(RestHttpGemfireAdminTemplate.class);
+
+		RestHttpGemfireAdminTemplate template = (RestHttpGemfireAdminTemplate) operations;
+
+		RestTemplate restTemplate = resolveFieldValue(template, "restTemplate");
+
+		assertThat(restTemplate).isNotNull();
+		assertThat(restTemplate.getInterceptors()).isEmpty();
+		assertThat(restTemplate.getRequestFactory()).isInstanceOf(FollowRedirectsSimpleClientHttpRequestFactory.class);
+
+		FollowRedirectsSimpleClientHttpRequestFactory clientHttpRequestFactory =
+			(FollowRedirectsSimpleClientHttpRequestFactory) restTemplate.getRequestFactory();
+
+		assertThat(clientHttpRequestFactory.isFollowRedirects()).isTrue();
+
+		verifyZeroInteractions(mockClientCache);
+
+		verify(configuration, times(1)).resolveClientHttpRequestInterceptors();
+
+		verify(environment, times(1))
+			.getProperty(eq(ClusterConfigurationConfiguration.HTTP_FOLLOW_REDIRECTS_PROPERTY), eq(Boolean.class),
+				eq(ClusterConfigurationConfiguration.DEFAULT_HTTP_FOLLOW_REDIRECTS));
+	}
+
+	@Test
+	public void resolvesNewRestHttpGemfireAdminOperationsUsesClientHttpRequestInterceptorsSetsFollowRedirectsWhenUsingHttp()
+			throws Exception {
+
+		assertThat(Boolean.getBoolean(ClusterConfigurationConfiguration.HTTP_FOLLOW_REDIRECTS_PROPERTY)).isFalse();
+
+		ClientCache mockClientCache = mock(ClientCache.class);
+
+		ClientHttpRequestInterceptor mockInterceptorOne = mock(ClientHttpRequestInterceptor.class);
+		ClientHttpRequestInterceptor mockInterceptorTwo = mock(ClientHttpRequestInterceptor.class);
+
+		Environment environment = spy(new StandardEnvironment());
+
+		ClusterConfigurationConfiguration configuration = spy(new ClusterConfigurationConfiguration());
+
+		doReturn(Arrays.asList(mockInterceptorOne, mockInterceptorTwo))
+			.when(configuration).resolveClientHttpRequestInterceptors();
+
+		configuration.setManagementRequireHttps(false);
+		configuration.setManagementUseHttp(true);
+
+		assertThat(configuration.resolveManagementRequireHttps()).isFalse();
+		assertThat(configuration.resolveManagementUseHttp()).isTrue();
+
+		GemfireAdminOperations operations =
+			configuration.resolveGemfireAdminOperations(environment, mockClientCache);
+
+		assertThat(operations).isInstanceOf(RestHttpGemfireAdminTemplate.class);
+
+		RestHttpGemfireAdminTemplate template = (RestHttpGemfireAdminTemplate) operations;
+
+		RestTemplate restTemplate = resolveFieldValue(template, "restTemplate");
+
+		assertThat(restTemplate).isNotNull();
+		assertThat(restTemplate.getInterceptors()).containsExactly(mockInterceptorOne, mockInterceptorTwo);
+		assertThat(restTemplate.getRequestFactory()).isInstanceOf(InterceptingClientHttpRequestFactory.class);
+
+		FollowRedirectsSimpleClientHttpRequestFactory clientHttpRequestFactory =
+			resolveFieldValue(restTemplate.getRequestFactory(), "requestFactory");
+
+		assertThat(clientHttpRequestFactory.isFollowRedirects()).isTrue();
+
+		verifyZeroInteractions(mockClientCache);
+
+		verify(configuration, times(1)).resolveClientHttpRequestInterceptors();
+
+		verify(environment, times(1))
+			.getProperty(eq(ClusterConfigurationConfiguration.HTTP_FOLLOW_REDIRECTS_PROPERTY), eq(Boolean.class),
+				eq(ClusterConfigurationConfiguration.DEFAULT_HTTP_FOLLOW_REDIRECTS));
 	}
 }
