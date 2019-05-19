@@ -13,21 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
+import java.io.IOException;
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
+import java.net.URI;
 import java.util.Optional;
 import java.util.Properties;
 
+import org.apache.geode.management.internal.security.ResourceConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.data.gemfire.config.annotation.support.AutoConfiguredAuthenticationInitializer;
+import org.springframework.data.gemfire.util.CollectionUtils;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.util.StringUtils;
 
 /**
@@ -59,8 +71,104 @@ public class AutoConfiguredAuthenticationConfiguration {
 	protected static final String AUTO_CONFIGURED_AUTH_INIT_STATIC_FACTORY_METHOD =
 		AutoConfiguredAuthenticationInitializer.class.getName().concat(".newAuthenticationInitializer");
 
+	protected static final String DEFAULT_USERNAME = "test";
+	protected static final String DEFAULT_PASSWORD = DEFAULT_USERNAME;
+	protected static final String HTTP_PROTOCOL = "HTTP";
 	protected static final String SECURITY_CLIENT_AUTH_INIT = "security-client-auth-init";
 	protected static final String SECURITY_PEER_AUTH_INIT = "security-peer-auth-init";
+
+	private Logger logger = LoggerFactory.getLogger(getClass());
+
+	@Bean("GemFireSecurityAuthenticator")
+	public Authenticator authenticator(Environment environment) {
+
+		Authenticator authenticator = new Authenticator() {
+
+			@Override
+			protected PasswordAuthentication getPasswordAuthentication() {
+
+				String username =
+					environment.getProperty(AutoConfiguredAuthenticationInitializer.SDG_SECURITY_USERNAME_PROPERTY,
+						DEFAULT_USERNAME);
+
+				String password =
+					environment.getProperty(AutoConfiguredAuthenticationInitializer.SDG_SECURITY_PASSWORD_PROPERTY,
+						DEFAULT_PASSWORD);
+
+				return new PasswordAuthentication(username, password.toCharArray());
+			}
+		};
+
+		Authenticator.setDefault(authenticator);
+
+		return authenticator;
+	}
+
+	@Bean
+	@Order(Ordered.LOWEST_PRECEDENCE)
+	public ClientHttpRequestInterceptor loggingAwareClientHttpRequestInterceptor() {
+
+		return (request, body, execution) -> {
+
+			logger.debug("HTTP Request URI [{}]", request.getURI());
+
+			Optional.ofNullable(request.getHeaders())
+				.ifPresent(httpHeaders -> {
+
+					CollectionUtils.nullSafeSet(httpHeaders.keySet()).forEach(httpHeaderName -> {
+						logger.debug("HTTP Request Header Name [{}] Value [{}]",
+							httpHeaderName, httpHeaders.get(httpHeaderName));
+					});
+				});
+
+			ClientHttpResponse response = execution.execute(request, body);
+
+			Optional.ofNullable(response)
+				.ifPresent(it -> {
+
+					try {
+						logger.debug("HTTP Response Status Code [{}] Message [{}]",
+							it.getRawStatusCode(), it.getStatusText());
+					}
+					catch (IOException cause) {
+						logger.debug("Error occurred getting HTTP Response Status Code and Message", cause);
+					}
+				});
+
+			return response;
+		};
+	}
+
+	@Bean
+	@Order(Ordered.HIGHEST_PRECEDENCE)
+	public ClientHttpRequestInterceptor securityAwareClientHttpRequestInterceptor(Authenticator authenticator) {
+
+		return (request, body, execution) -> {
+
+			URI uri = request.getURI();
+
+			PasswordAuthentication passwordAuthentication =
+				Authenticator.requestPasswordAuthentication(uri.getHost(), null, uri.getPort(),
+					HTTP_PROTOCOL, null, uri.getScheme());
+
+			String username = passwordAuthentication.getUserName();
+			char[] password = passwordAuthentication.getPassword();
+
+			if (isAuthenticationEnabled(username, password)) {
+
+				HttpHeaders requestHeaders = request.getHeaders();
+
+				requestHeaders.add(ResourceConstants.USER_NAME, username);
+				requestHeaders.add(ResourceConstants.PASSWORD, String.valueOf(password));
+			}
+
+			return execution.execute(request, body);
+		};
+	}
+
+	private boolean isAuthenticationEnabled(String username, char[] password) {
+		return StringUtils.hasText(username) && password != null && password.length > 0;
+	}
 
 	@Bean
 	public ClientCacheConfigurer authenticationCredentialsSettingClientCacheConfigurer(Environment environment) {
