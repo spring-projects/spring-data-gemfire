@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,11 +49,14 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * Integration tests for the {@link EnableClusterConfiguration} annotation
+ * Integration Tests for the {@link EnableClusterConfiguration} annotation
  * and {@link ClusterConfigurationConfiguration} class.
  *
  * @author John Blum
  * @see org.junit.Test
+ * @see org.apache.geode.cache.GemFireCache
+ * @see org.apache.geode.cache.client.ClientCache
+ * @see org.springframework.context.annotation.AnnotationConfigApplicationContext
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.context.annotation.Import
@@ -73,6 +75,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 @ContextConfiguration(classes = EnableClusterConfigurationIntegrationTests.TestConfiguration.class)
 @SuppressWarnings("unused")
 public class EnableClusterConfigurationIntegrationTests extends ClientServerIntegrationTestsSupport {
+
+	private static final String GEMFIRE_LOG_LEVEL = "error";
 
 	private static ProcessWrapper gemfireServer;
 
@@ -96,24 +100,31 @@ public class EnableClusterConfigurationIntegrationTests extends ClientServerInte
 
 	@AfterClass
 	public static void stopGemFireServer() {
-		System.clearProperty(GEMFIRE_CACHE_SERVER_PORT_PROPERTY);
+
 		stop(gemfireServer);
+		System.clearProperty(GEMFIRE_CACHE_SERVER_PORT_PROPERTY);
 	}
 
 	@Before
 	public void setup() {
-		this.adminOperations = new RestHttpGemfireAdminTemplate(this.gemfireCache,
-			"localhost", Integer.getInteger(GEMFIRE_CACHE_SERVER_PORT_PROPERTY, 40404));
+
+		this.adminOperations = new RestHttpGemfireAdminTemplate.Builder()
+			.with(this.gemfireCache)
+			.on("localhost")
+			.listenOn(Integer.getInteger(GEMFIRE_CACHE_SERVER_PORT_PROPERTY, 40404))
+			.build();
 	}
 
 	@Test
 	public void serverIndexesAreCorrect() {
+
 		assertThat(this.adminOperations.getAvailableServerRegionIndexes())
 			.containsAll(Arrays.asList("IndexOne", "IndexTwo"));
 	}
 
 	@Test
 	public void serverRegionsAreCorrect() {
+
 		assertThat(this.adminOperations.getAvailableServerRegions())
 			.containsAll(Arrays.asList("RegionOne", "RegionTwo", "RegionThree", "RegionFour"));
 	}
@@ -121,18 +132,17 @@ public class EnableClusterConfigurationIntegrationTests extends ClientServerInte
 	@Configuration
 	@EnableClusterConfiguration
 	@Import(ClientTestConfiguration.class)
-	static class TestConfiguration {
-	}
+	static class TestConfiguration { }
 
-	@ClientCacheApplication(logLevel = TEST_GEMFIRE_LOG_LEVEL, subscriptionEnabled = true)
+	@ClientCacheApplication(logLevel = GEMFIRE_LOG_LEVEL, subscriptionEnabled = true)
 	static class ClientTestConfiguration {
 
 		@Bean
 		ClientCacheConfigurer clientCachePoolPortConfigurer(
 				@Value("${" + GEMFIRE_CACHE_SERVER_PORT_PROPERTY + ":40404}") int port) {
 
-			return (bean, clientCacheFactoryBean) -> clientCacheFactoryBean.setServers(
-				Collections.singletonList(new ConnectionEndpoint("localhost", port)));
+			return (bean, clientCacheFactoryBean) -> clientCacheFactoryBean
+				.setServers(Collections.singletonList(new ConnectionEndpoint("localhost", port)));
 		}
 
 		@Bean("IndexOne")
@@ -186,7 +196,7 @@ public class EnableClusterConfigurationIntegrationTests extends ClientServerInte
 		}
 	}
 
-	@CacheServerApplication(name = "EnableClusterConfigurationIntegrationTests", logLevel = TEST_GEMFIRE_LOG_LEVEL)
+	@CacheServerApplication(name = "EnableClusterConfigurationIntegrationTests", logLevel = GEMFIRE_LOG_LEVEL)
 	static class ServerTestConfiguration {
 
 		public static void main(String[] args) {
@@ -219,9 +229,9 @@ public class EnableClusterConfigurationIntegrationTests extends ClientServerInte
 		}
 
 		@Bean("RegionTwo")
-		PartitionedRegionFactoryBean<Object, Object> regionTwo(GemFireCache gemfireCache) {
+		ReplicatedRegionFactoryBean<Object, Object> regionTwo(GemFireCache gemfireCache) {
 
-			PartitionedRegionFactoryBean<Object, Object> regionFactoryBean = new PartitionedRegionFactoryBean<>();
+			ReplicatedRegionFactoryBean<Object, Object> regionFactoryBean = new ReplicatedRegionFactoryBean<>();
 
 			regionFactoryBean.setCache(gemfireCache);
 			regionFactoryBean.setClose(false);
@@ -231,9 +241,9 @@ public class EnableClusterConfigurationIntegrationTests extends ClientServerInte
 		}
 
 		@Bean("RegionFour")
-		ReplicatedRegionFactoryBean<Object, Object> regionFour(GemFireCache gemfireCache) {
+		PartitionedRegionFactoryBean<Object, Object> regionFour(GemFireCache gemfireCache) {
 
-			ReplicatedRegionFactoryBean<Object, Object> regionFactoryBean = new ReplicatedRegionFactoryBean<>();
+			PartitionedRegionFactoryBean<Object, Object> regionFactoryBean = new PartitionedRegionFactoryBean<>();
 
 			regionFactoryBean.setCache(gemfireCache);
 			regionFactoryBean.setClose(false);

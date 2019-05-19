@@ -13,26 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
-import static java.util.stream.StreamSupport.stream;
 import static org.springframework.data.gemfire.util.CacheUtils.isClient;
 import static org.springframework.data.gemfire.util.CacheUtils.isPeer;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeMap;
 
 import java.lang.annotation.Annotation;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.query.Index;
+import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportAware;
 import org.springframework.core.OrderComparator;
 import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.config.admin.GemfireAdminOperations;
 import org.springframework.data.gemfire.config.admin.remote.FunctionGemfireAdminTemplate;
@@ -49,7 +57,9 @@ import org.springframework.data.gemfire.config.schema.support.IndexDefiner;
 import org.springframework.data.gemfire.config.schema.support.RegionDefiner;
 import org.springframework.data.gemfire.config.support.AbstractSmartLifecycle;
 import org.springframework.data.gemfire.util.CacheUtils;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * Spring {@link Configuration @Configuration} class defining Spring beans that will record the creation of
@@ -57,31 +67,53 @@ import org.springframework.util.Assert;
  * as Spring beans in the Spring container.
  *
  * @author John Blum
+ * @see java.lang.annotation.Annotation
  * @see org.apache.geode.cache.GemFireCache
  * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.client.ClientCache
  * @see org.apache.geode.cache.query.Index
+ * @see org.springframework.beans.factory.ListableBeanFactory
  * @see org.springframework.beans.factory.config.BeanPostProcessor
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.context.annotation.ImportAware
  * @see org.springframework.context.event.EventListener
+ * @see org.springframework.core.annotation.AnnotationAttributes
+ * @see org.springframework.core.env.Environment
+ * @see org.springframework.core.type.AnnotationMetadata
+ * @see org.springframework.data.gemfire.config.admin.GemfireAdminOperations
+ * @see org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport
+ * @see org.springframework.http.client.ClientHttpRequestInterceptor
  * @since 2.0.0
  */
 @Configuration
 @SuppressWarnings("unused")
 public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigSupport implements ImportAware {
 
+	protected static final boolean DEFAULT_HTTP_FOLLOW_REDIRECTS = false;
 	protected static final boolean DEFAULT_MANAGEMENT_USE_HTTP = false;
+	protected static final boolean DEFAULT_MANAGEMENT_REQUIRE_HTTPS = true;
 
 	protected static final int DEFAULT_MANAGEMENT_HTTP_PORT = HttpServiceConfiguration.DEFAULT_HTTP_SERVICE_PORT;
 
 	protected static final String DEFAULT_MANAGEMENT_HTTP_HOST = "localhost";
+	protected static final String HTTP_FOLLOW_REDIRECTS_PROPERTY =
+		"spring.data.gemfire.management.http.follow-redirects";
+	protected static final String HTTP_SCHEME = "http";
+	protected static final String HTTPS_SCHEME = "https";
 
 	private static final RegionShortcut DEFAULT_SERVER_REGION_SHORTCUT = RegionDefinition.DEFAULT_REGION_SHORTCUT;
 
+	private Boolean requireHttps = DEFAULT_MANAGEMENT_REQUIRE_HTTPS;
 	private Boolean useHttp = DEFAULT_MANAGEMENT_USE_HTTP;
 
 	private Integer managementHttpPort = DEFAULT_MANAGEMENT_HTTP_PORT;
+
+	@Autowired(required = false)
+	private GemfireAdminOperations gemfireAdminOperations;
+
+	@Autowired(required = false)
+	private List<ClientHttpRequestInterceptor> clientHttpRequestInterceptors;
 
 	private RegionShortcut serverRegionShortcut;
 
@@ -97,7 +129,7 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 	}
 
 	protected Optional<String> getManagementHttpHost() {
-		return Optional.ofNullable(this.managementHttpHost);
+		return Optional.ofNullable(this.managementHttpHost).filter(StringUtils::hasText);
 	}
 
 	protected String resolveManagementHttpHost() {
@@ -114,6 +146,18 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 
 	protected int resolveManagementHttpPort() {
 		return getManagementHttpPort().orElse(DEFAULT_MANAGEMENT_HTTP_PORT);
+	}
+
+	protected void setManagementRequireHttps(Boolean requireHttps) {
+		this.requireHttps = requireHttps;
+	}
+
+	protected Optional<Boolean> getManagementRequireHttps() {
+		return Optional.ofNullable(this.requireHttps);
+	}
+
+	protected boolean resolveManagementRequireHttps() {
+		return getManagementRequireHttps().orElse(DEFAULT_MANAGEMENT_REQUIRE_HTTPS);
 	}
 
 	protected void setManagementUseHttp(Boolean useHttp) {
@@ -153,6 +197,9 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 			setManagementHttpPort(resolveProperty(managementProperty("http.port"),
 				enableClusterConfigurationAttributes.<Integer>getNumber("port")));
 
+			setManagementRequireHttps(resolveProperty(managementProperty("require-https"),
+				enableClusterConfigurationAttributes.getBoolean("requireHttps")));
+
 			setManagementUseHttp(resolveProperty(managementProperty("use-http"),
 				enableClusterConfigurationAttributes.getBoolean("useHttp")));
 
@@ -162,14 +209,15 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 	}
 
 	@Bean
-	public ClusterSchemaObjectInitializer gemfireClusterSchemaObjectInitializer(GemFireCache gemfireCache) {
+	public ClusterSchemaObjectInitializer gemfireClusterSchemaObjectInitializer(Environment environment,
+			GemFireCache gemfireCache) {
 
 		return Optional.ofNullable(gemfireCache)
 			.filter(CacheUtils::isClient)
 			.map(clientCache -> {
 
 				SchemaObjectContext schemaObjectContext = SchemaObjectContext.from(gemfireCache)
-					.with(newGemfireAdminOperations((ClientCache) clientCache))
+					.with(resolveGemfireAdminOperations(environment, (ClientCache) clientCache))
 					.with(newSchemaObjectCollector())
 					.with(newSchemaObjectDefiner());
 
@@ -180,24 +228,93 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 	}
 
 	/**
-	 * Constructs an instance of {@link GemfireAdminOperations} to perform administrative, schema functions
-	 * on a Pivotal GemFire cache cluster as well as a client cache from a cache client.
+	 * Attempts to resolve a {@link List} of {@link ClientHttpRequestInterceptor} beans in the Spring
+	 * {@link ApplicationContext}.
 	 *
+	 * @return a {@link List} of declared and registered {@link ClientHttpRequestInterceptor} beans.
+	 * @see org.springframework.http.client.ClientHttpRequestInterceptor
+	 * @see #getBeanFactory()
+	 * @see java.util.List
+	 */
+	protected List<ClientHttpRequestInterceptor> resolveClientHttpRequestInterceptors() {
+
+		return Optional.ofNullable(this.clientHttpRequestInterceptors)
+			.orElseGet(() ->
+
+				Optional.of(getBeanFactory())
+					.filter(ListableBeanFactory.class::isInstance)
+					.map(ListableBeanFactory.class::cast)
+					.map(beanFactory -> {
+
+						Map<String, ClientHttpRequestInterceptor> beansOfType = beanFactory
+							.getBeansOfType(ClientHttpRequestInterceptor.class, true, false);
+
+						return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
+
+					})
+					.orElseGet(Collections::emptyList));
+	}
+
+	/**
+	 * Attempts to resolve the the {@link GemfireAdminOperations} object from the Spring {@link ApplicationContext}
+	 * which is used to create Apache Geode or Pivotal GemFire schema objects.
+	 *
+	 * @param environment reference to the {@link Environment}.
+	 * @param clientCache reference to the {@link ClientCache}.
+	 * @return the resovled {@link GemfireAdminOperations} instance.
+	 * @see org.springframework.core.env.Environment
+	 * @see org.springframework.data.gemfire.config.admin.GemfireAdminOperations
+	 * @see org.apache.geode.cache.client.ClientCache
+	 * @see #newGemfireAdminOperations(Environment, ClientCache)
+	 */
+	protected GemfireAdminOperations resolveGemfireAdminOperations(Environment environment, ClientCache clientCache) {
+
+		return Optional.ofNullable(this.gemfireAdminOperations)
+			.orElseGet(() -> newGemfireAdminOperations(environment, clientCache));
+	}
+
+
+	/**
+	 * Constructs a new instance of {@link GemfireAdminOperations} to perform administrative, schema functions
+	 * on a GemFire cache cluster as well as a client cache from a cache client.
+>>>>>>> d4f8a960... DATAGEODE-192 - Add support for HTTPS and Follow Redirects when using @EnableClusterConfiguration.
+	 *
+	 * @param environment reference to the {@link Environment}.
 	 * @param clientCache {@link ClientCache} instance used by the {@link GemfireAdminOperations} interface
 	 * to access the Pivotal GemFire system.
 	 * @return an implementation of the {@link GemfireAdminOperations} interface to perform administrative functions
 	 * on a Pivotal GemFire system.
 	 * @see org.springframework.data.gemfire.config.admin.GemfireAdminOperations
 	 * @see org.apache.geode.cache.client.ClientCache
+	 * @see #resolveClientHttpRequestInterceptors()
+	 * @see #resolveManagementHttpHost()
+	 * @see #resolveManagementHttpPort()
+	 * @see #resolveManagementRequireHttps()
+	 * @see #resolveManagementUseHttp()
 	 */
-	private GemfireAdminOperations newGemfireAdminOperations(ClientCache clientCache) {
+	private GemfireAdminOperations newGemfireAdminOperations(Environment environment, ClientCache clientCache) {
 
 		if (resolveManagementUseHttp()) {
 
-			String host = resolveManagementHttpHost();
+			boolean setFollowRedirects =
+				environment.getProperty(HTTP_FOLLOW_REDIRECTS_PROPERTY, Boolean.class, DEFAULT_HTTP_FOLLOW_REDIRECTS);
+
+			boolean requireHttps = resolveManagementRequireHttps();
+			boolean followRedirects = !requireHttps || setFollowRedirects;
+
 			int port = resolveManagementHttpPort();
 
-			return new RestHttpGemfireAdminTemplate(clientCache, host, port);
+			String host = resolveManagementHttpHost();
+			String scheme = requireHttps ? HTTPS_SCHEME : HTTP_SCHEME;
+
+			return new RestHttpGemfireAdminTemplate.Builder()
+				.with(resolveClientHttpRequestInterceptors())
+				.with(clientCache)
+				.using(scheme)
+				.on(host)
+				.listenOn(port)
+				.followRedirects(followRedirects)
+				.build();
 		}
 		else {
 			return new FunctionGemfireAdminTemplate(clientCache);
@@ -205,8 +322,8 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 	}
 
 	/**
-	 * Constructs an instance of {@link SchemaObjectCollector} to inspect the application's context
-	 * and find all the Pivotal GemFire schema objects declared of a particular type or types.
+	 * Constructs a new instance of {@link SchemaObjectCollector} to inspect the application's context
+	 * and find all the GemFire schema objects declared of a particular type or types.
 	 *
 	 * @return a new instance of {@link SchemaObjectCollector} to inspect a Pivotal GemFire system schema
 	 * in search of specific Pivotal GemFire schema objects (e.g. {@link Region} or {@link Index}).
@@ -221,7 +338,7 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 	}
 
 	/**
-	 * Constructs an instance of {@link SchemaObjectDefiner} used to reverse engineer a Pivotal GemFire schema object instance
+	 * Constructs a new instance of {@link SchemaObjectDefiner} used to reverse engineer a GemFire schema object instance
 	 * to build a definition.
 	 *
 	 * @return a new instance of {@link SchemaObjectDefiner}.
@@ -240,7 +357,9 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 		private final SchemaObjectContext schemaObjectContext;
 
 		protected ClusterSchemaObjectInitializer(SchemaObjectContext schemaObjectContext) {
+
 			Assert.notNull(schemaObjectContext, "SchemaObjectContext is required");
+
 			this.schemaObjectContext = schemaObjectContext;
 		}
 
@@ -254,7 +373,7 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 			return Integer.MIN_VALUE;
 		}
 
-		protected SchemaObjectContext getSchemaObjectContext() {
+		public SchemaObjectContext getSchemaObjectContext() {
 			return this.schemaObjectContext;
 		}
 
@@ -268,14 +387,16 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 				Iterable<?> schemaObjects = schemaObjectContext.getSchemaObjectCollector()
 					.collectFrom(requireApplicationContext());
 
-				stream(schemaObjects.spliterator(), false)
+				//Iterable<?> cacheSchemaObjects = schemaObjectContext.getSchemaObjectCollector()
+				//	.collectFrom(schemaObjectContext.<GemFireCache>getGemfireCache());
+
+				StreamSupport.stream(schemaObjects.spliterator(), false)
 					.map(schemaObjectContext.getSchemaObjectDefiner()::define)
 					.sorted(OrderComparator.INSTANCE)
-					.forEach(schemaObjectDefinition -> schemaObjectDefinition
-						.ifPresent(it -> it.create(schemaObjectContext.getGemfireAdminOperations())));
+					.forEach(schemaObjectDefinition -> schemaObjectDefinition.ifPresent(it ->
+						it.create(schemaObjectContext.getGemfireAdminOperations())));
 
 				setRunning(true);
-
 			}
 			/*
 			else if (schemaObjectContext.isPeerCache()) {
@@ -285,7 +406,6 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 
 				GemfireFunctionUtils.registerFunctionForPojoMethod(new CreateIndexFunction(),
 					CreateIndexFunction.CREATE_INDEX_FUNCTION_ID);
-
 			}
 			*/
 		}

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import java.lang.annotation.Documented;
@@ -26,19 +25,22 @@ import java.lang.annotation.Target;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.client.ClientCache;
 import org.springframework.context.annotation.Import;
 
 /**
- * The {@link EnableClusterConfiguration} annotation enables Apache Geode / Pivotal GemFire schema-like definitions
- * defined in a Spring [Boot], Geode/Pivotal GemFire cache client application using Spring config to be pushed to
- * a Geode/Pivotal GemFire cluster, similar to how schema commands (e.g. `create region`) in Gfsh are processed by
- * an Geode/Pivotal GemFire Manager.
+ * The {@link EnableClusterConfiguration} annotation enables Apache Geode / Pivotal GemFire schema object definitions
+ * defined in a Spring [Boot], Apache Geode / Pivotal GemFire {@link ClientCache} application using Spring config
+ * to be pushed to an Apache Geode / Pivotal GemFire cluster, similar to how schema commands (e.g. `create region`)
+ * in Gfsh are processed by an Apache Geode / Pivotal GemFire Manager.
  *
  * @author John Blum
  * @see java.lang.annotation.Documented
  * @see java.lang.annotation.Inherited
  * @see java.lang.annotation.Retention
  * @see java.lang.annotation.Target
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.client.ClientCache
  * @see org.springframework.context.annotation.Import
  * @see org.springframework.data.gemfire.config.annotation.ClusterConfigurationConfiguration
  * @since 2.0.0
@@ -74,6 +76,18 @@ public @interface EnableClusterConfiguration {
 	 * Defaults to {@literal 7070}.
 	 */
 	int port() default ClusterConfigurationConfiguration.DEFAULT_MANAGEMENT_HTTP_PORT;
+
+	/**
+	 * Configures whether the HTTP connection between Spring and Apache Geode or Pivotal GemFire should be secure.
+	 * That is, whether the HTTP connections uses TLS and results in a secure HTTPS connection rather a plain text
+	 * HTTP connection.
+	 *
+	 * Alternatively, you can configure this setting using the {@literal spring.data.gemfire.management.require-https}
+	 * property in {@literal application.properties}.
+	 *
+	 * Defaults to {@literal true}.
+	 */
+	boolean requireHttps() default ClusterConfigurationConfiguration.DEFAULT_MANAGEMENT_REQUIRE_HTTPS;
 
 	/**
 	 * Configuration setting used to specify the data management policy used when creating {@link Region Regions}
