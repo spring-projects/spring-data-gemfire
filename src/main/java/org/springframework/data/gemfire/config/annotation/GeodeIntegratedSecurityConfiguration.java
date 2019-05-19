@@ -14,7 +14,6 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import java.lang.annotation.Annotation;
@@ -61,6 +60,7 @@ public class GeodeIntegratedSecurityConfiguration extends EmbeddedServiceConfigu
 	 * @see #isShiroSecurityNotConfigured()
 	 */
 	protected boolean isShiroSecurityConfigured() {
+
 		try {
 			//return resolveBean(ApacheShiroSecurityConfiguration.class).isRealmsPresent();
 			return false;
@@ -92,6 +92,7 @@ public class GeodeIntegratedSecurityConfiguration extends EmbeddedServiceConfigu
 				(String) annotationAttributes.get("clientAuthenticationInitializer")));
 
 		if (isShiroSecurityNotConfigured()) {
+
 			gemfireProperties.setPropertyIfNotDefault(SECURITY_MANAGER,
 				annotationAttributes.get("securityManagerClass"), Void.class);
 

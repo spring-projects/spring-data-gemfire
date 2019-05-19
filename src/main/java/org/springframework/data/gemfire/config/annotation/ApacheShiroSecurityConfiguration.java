@@ -101,7 +101,7 @@ public class ApacheShiroSecurityConfiguration extends AbstractAnnotationConfigSu
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 
 		super.setBeanFactory(Optional.ofNullable(beanFactory)
-			.filter(it -> it instanceof ListableBeanFactory)
+			.filter(ListableBeanFactory.class::isInstance)
 			.orElseThrow(() -> newIllegalArgumentException(
 				"BeanFactory [%s] must be an instance of ListableBeanFactory",
 					ObjectUtils.nullSafeClassName(beanFactory))));
@@ -192,8 +192,8 @@ public class ApacheShiroSecurityConfiguration extends AbstractAnnotationConfigSu
 
 		try {
 
-			Map<String, Realm> realmBeans = getListableBeanFactory().getBeansOfType(Realm.class,
-				false, false);
+			Map<String, Realm> realmBeans =
+				getListableBeanFactory().getBeansOfType(Realm.class, false, false);
 
 			List<Realm> realms = new ArrayList<>(CollectionUtils.nullSafeMap(realmBeans).values());
 
