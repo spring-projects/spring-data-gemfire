@@ -200,6 +200,29 @@ public @interface EnableSsl {
 	 */
 	boolean webRequireAuthentication() default false;
 
+	/**
+	 * If {@literal true} then allows the use of default SSL context and sets
+	 * ssl-endpoint-identification-enabled to true.
+	 *
+	 * Defaults to {@literal false}.
+	 *
+	 * Use the {@literal spring.data.gemfire.security.ssl.use-default-context}
+	 * in {@literal application.properties}.
+	 */
+	boolean sslUseDefaultContext() default false;
+
+	/**
+	 * If {@literal true} clients (GemFire servers in cause of p2p) to validate server's
+	 * hostname using server`s certificate.
+	 *
+	 * Defaults to {@literal false}. Set to {@literal true} if
+	 * {@literal useSSLDefaultDefaultContext} is true.
+	 *
+	 * Use the {@literal spring.data.gemfire.security.ssl.endpoint-identification-enabled}
+	 * in {@literal application.properties}.
+	 */
+	boolean sslEndpointIdentificationEnabled() default false;
+
 	enum Component {
 
 		ALL(SecurableCommunicationChannels.ALL),

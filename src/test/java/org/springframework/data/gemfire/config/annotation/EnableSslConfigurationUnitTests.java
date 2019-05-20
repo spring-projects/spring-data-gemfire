@@ -99,6 +99,8 @@ public class EnableSslConfigurationUnitTests {
 		assertThat(gemfireProperties.getProperty("ssl-truststore-password")).isEqualTo("p@55w0rd!");
 		assertThat(gemfireProperties.getProperty("ssl-truststore-type")).isEqualTo("PKCS11");
 		assertThat(gemfireProperties.getProperty("ssl-web-require-authentication")).isEqualTo("true");
+		assertThat(gemfireProperties.getProperty("ssl-use-default-context")).isEqualTo("true");
+		assertThat(gemfireProperties.getProperty("ssl-endpoint-identification-enabled")).isEqualTo("true");
 	}
 
 	@Test
@@ -118,7 +120,10 @@ public class EnableSslConfigurationUnitTests {
 			.withProperty("spring.data.gemfire.security.ssl.truststore", "relative/path/to/trusted.keystore")
 			.withProperty("spring.data.gemfire.security.ssl.truststore.password", "kn0ckKn0ck")
 			.withProperty("spring.data.gemfire.security.ssl.truststore.type", "C3PO")
-			.withProperty("spring.data.gemfire.security.ssl.web-require-authentication", "true");
+			.withProperty("spring.data.gemfire.security.ssl.web-require-authentication", "true")
+			.withProperty("spring.data.gemfire.security.ssl.use-default-context", "true")
+			.withProperty("spring.data.gemfire.security.ssl.endpoint-identification-enabled", "true");
+
 
 		this.applicationContext = newApplicationContext(testPropertySource, SslPropertyBasedConfiguration.class);
 
@@ -154,6 +159,8 @@ public class EnableSslConfigurationUnitTests {
 		assertThat(gemfireProperties.getProperty("ssl-truststore-password")).isEqualTo("kn0ckKn0ck");
 		assertThat(gemfireProperties.getProperty("ssl-truststore-type")).isEqualTo("C3PO");
 		assertThat(gemfireProperties.getProperty("ssl-web-require-authentication")).isEqualTo("true");
+		assertThat(gemfireProperties.getProperty("ssl-use-default-context")).isEqualTo("true");
+		assertThat(gemfireProperties.getProperty("ssl-endpoint-identification-enabled")).isEqualTo("true");
 	}
 
 	@EnableGemFireMockObjects
@@ -171,7 +178,9 @@ public class EnableSslConfigurationUnitTests {
 		truststore = "/path/to/truststore.jks",
 		truststorePassword = "p@55w0rd!",
 		truststoreType = "PKCS11",
-		webRequireAuthentication = true
+		webRequireAuthentication = true,
+		sslUseDefaultContext = true,
+		sslEndpointIdentificationEnabled = true
 	)
 	static class SslAnnotationBasedConfiguration { }
 

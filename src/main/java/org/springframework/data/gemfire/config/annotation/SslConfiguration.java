@@ -103,7 +103,14 @@ public class SslConfiguration extends EmbeddedServiceConfigurationSupport {
 
 			.setProperty("ssl-web-require-authentication",
 				resolveProperty(sslProperty("web-require-authentication"),
-					annotationAttributes.getBoolean("webRequireAuthentication")));
+					annotationAttributes.getBoolean("webRequireAuthentication")))
+
+			.setProperty("ssl-use-default-context", resolveProperty(sslProperty("use-default-context"),
+				annotationAttributes.getBoolean("sslUseDefaultContext")))
+
+			.setProperty("ssl-endpoint-identification-enabled", resolveProperty(sslProperty("endpoint-identification-enabled"),
+					annotationAttributes.getBoolean("sslEndpointIdentificationEnabled")));
+
 
 		configureComponentCertificateAliases(annotationAttributes, gemfireProperties);
 
