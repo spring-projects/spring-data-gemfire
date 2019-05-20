@@ -65,9 +65,14 @@ import org.springframework.web.client.RestTemplate;
  * @see org.junit.Test
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.client.ClientCache
+ * @see org.apache.geode.cache.query.Index
  * @see org.springframework.data.gemfire.config.admin.remote.RestHttpGemfireAdminTemplate
+ * @see org.springframework.http.HttpHeaders
  * @see org.springframework.http.client.ClientHttpRequestFactory
  * @see org.springframework.http.client.ClientHttpRequestInterceptor
+ * @see org.springframework.http.client.InterceptingClientHttpRequestFactory
  * @see org.springframework.web.client.RestOperations
  * @see org.springframework.web.client.RestTemplate
  * @since 2.0.0
@@ -111,7 +116,7 @@ public class RestHttpGemfireAdminTemplateUnitTests {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> T resolveFieldValue(Object target, String fieldName) throws NoSuchFieldException {
+	private <T> T getFieldValue(Object target, String fieldName) throws NoSuchFieldException {
 
 		Field field = ReflectionUtils.findField(target.getClass(), fieldName, ClientHttpRequestFactory.class);
 
@@ -134,12 +139,11 @@ public class RestHttpGemfireAdminTemplateUnitTests {
 		assertThat(template).isNotNull();
 		assertThat(template.getClientCache()).isSameAs(this.mockClientCache);
 		assertThat(template.getManagementRestApiUrl())
-			.isEqualTo(String.format(RestHttpGemfireAdminTemplate.MANAGEMENT_REST_API_URL_TEMPLATE,
-				RestHttpGemfireAdminTemplate.DEFAULT_SCHEME, RestHttpGemfireAdminTemplate.DEFAULT_HOST,
-				RestHttpGemfireAdminTemplate.DEFAULT_PORT));
+			.isEqualTo(String.format(RestHttpGemfireAdminTemplate.MANAGEMENT_REST_API_NO_PORT_URL_TEMPLATE,
+				RestHttpGemfireAdminTemplate.DEFAULT_SCHEME, RestHttpGemfireAdminTemplate.DEFAULT_HOST));
 		assertThat(template.<RestOperations>getRestOperations()).isInstanceOf(RestTemplate.class);
 
-		RestTemplate restTemplate = (RestTemplate) template.getRestOperations();
+		RestTemplate restTemplate = template.getRestOperations();
 
 		ClientHttpRequestFactory clientHttpRequestFactory = restTemplate.getRequestFactory();
 
@@ -176,7 +180,7 @@ public class RestHttpGemfireAdminTemplateUnitTests {
 
 		assertThat(clientHttpRequestFactory).isInstanceOf(InterceptingClientHttpRequestFactory.class);
 
-		clientHttpRequestFactory = this.resolveFieldValue(clientHttpRequestFactory, "requestFactory");
+		clientHttpRequestFactory = this.getFieldValue(clientHttpRequestFactory, "requestFactory");
 
 		assertThat(clientHttpRequestFactory).isInstanceOf(FollowRedirectsSimpleClientHttpRequestFactory.class);
 		assertThat(((FollowRedirectsSimpleClientHttpRequestFactory) clientHttpRequestFactory).isFollowRedirects())
@@ -251,9 +255,9 @@ public class RestHttpGemfireAdminTemplateUnitTests {
 			.isEqualTo(String.format(RestHttpGemfireAdminTemplate.MANAGEMENT_REST_API_URL_TEMPLATE,
 				"https", "cardboardbox", 443));
 
-		assertThat(this.template.resolveManagementRestApiUrl("ftp", "jambox", 21))
+		assertThat(this.template.resolveManagementRestApiUrl("ftp", "lunchbox", 21))
 			.isEqualTo(String.format(RestHttpGemfireAdminTemplate.MANAGEMENT_REST_API_URL_TEMPLATE,
-				"ftp", "jambox", 21));
+				"ftp", "lunchbox", 21));
 
 		assertThat(this.template.resolveManagementRestApiUrl("sftp", "mailbox", 22))
 			.isEqualTo(String.format(RestHttpGemfireAdminTemplate.MANAGEMENT_REST_API_URL_TEMPLATE,
@@ -262,6 +266,26 @@ public class RestHttpGemfireAdminTemplateUnitTests {
 		assertThat(this.template.resolveManagementRestApiUrl("smtp", "skullbox", 25))
 			.isEqualTo(String.format(RestHttpGemfireAdminTemplate.MANAGEMENT_REST_API_URL_TEMPLATE,
 				"smtp", "skullbox", 25));
+	}
+
+	@Test
+	public void resolvesManagementRestApiUrlCorrectlyWhenInvalidPortIsGiven() {
+
+		assertThat(this.template.resolveManagementRestApiUrl("https", "box", -1))
+			.isEqualTo(String.format(RestHttpGemfireAdminTemplate.MANAGEMENT_REST_API_NO_PORT_URL_TEMPLATE,
+				"https", "box"));
+
+		assertThat(this.template.resolveManagementRestApiUrl("http", "dropbox", 0))
+			.isEqualTo(String.format(RestHttpGemfireAdminTemplate.MANAGEMENT_REST_API_NO_PORT_URL_TEMPLATE,
+				"http", "dropbox"));
+
+		assertThat(this.template.resolveManagementRestApiUrl("https", "jambox", 65536))
+			.isEqualTo(String.format(RestHttpGemfireAdminTemplate.MANAGEMENT_REST_API_NO_PORT_URL_TEMPLATE,
+				"https", "jambox"));
+
+		assertThat(this.template.resolveManagementRestApiUrl("http", "shoebox", 101123))
+			.isEqualTo(String.format(RestHttpGemfireAdminTemplate.MANAGEMENT_REST_API_NO_PORT_URL_TEMPLATE,
+				"http", "shoebox"));
 	}
 
 	@Test
@@ -276,7 +300,7 @@ public class RestHttpGemfireAdminTemplateUnitTests {
 
 			assertThat(requestEntity).isNotNull();
 			assertThat(requestEntity.getMethod()).isEqualTo(HttpMethod.POST);
-			assertThat(requestEntity.getUrl()).isEqualTo(URI.create("https://localhost:7070/gemfire/v1/indexes"));
+			assertThat(requestEntity.getUrl()).isEqualTo(URI.create("https://localhost/gemfire/v1/indexes"));
 
 			HttpHeaders headers = requestEntity.getHeaders();
 
@@ -316,7 +340,7 @@ public class RestHttpGemfireAdminTemplateUnitTests {
 
 			assertThat(requestEntity).isNotNull();
 			assertThat(requestEntity.getMethod()).isEqualTo(HttpMethod.POST);
-			assertThat(requestEntity.getUrl()).isEqualTo(URI.create("https://localhost:7070/gemfire/v1/regions"));
+			assertThat(requestEntity.getUrl()).isEqualTo(URI.create("https://localhost/gemfire/v1/regions"));
 
 			HttpHeaders headers = requestEntity.getHeaders();
 

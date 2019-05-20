@@ -57,6 +57,7 @@ import org.springframework.data.gemfire.config.schema.support.IndexDefiner;
 import org.springframework.data.gemfire.config.schema.support.RegionDefiner;
 import org.springframework.data.gemfire.config.support.AbstractSmartLifecycle;
 import org.springframework.data.gemfire.util.CacheUtils;
+import org.springframework.data.gemfire.util.NetworkUtils;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -97,8 +98,7 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 	protected static final int DEFAULT_MANAGEMENT_HTTP_PORT = HttpServiceConfiguration.DEFAULT_HTTP_SERVICE_PORT;
 
 	protected static final String DEFAULT_MANAGEMENT_HTTP_HOST = "localhost";
-	protected static final String HTTP_FOLLOW_REDIRECTS_PROPERTY =
-		"spring.data.gemfire.management.http.follow-redirects";
+	protected static final String HTTP_FOLLOW_REDIRECTS_PROPERTY = "spring.data.gemfire.management.http.follow-redirects";
 	protected static final String HTTP_SCHEME = "http";
 	protected static final String HTTPS_SCHEME = "https";
 
@@ -307,18 +307,24 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 			String host = resolveManagementHttpHost();
 			String scheme = requireHttps ? HTTPS_SCHEME : HTTP_SCHEME;
 
-			return new RestHttpGemfireAdminTemplate.Builder()
+			return configurePort(new RestHttpGemfireAdminTemplate.Builder()
 				.with(resolveClientHttpRequestInterceptors())
 				.with(clientCache)
 				.using(scheme)
 				.on(host)
-				.listenOn(port)
-				.followRedirects(followRedirects)
+				.followRedirects(followRedirects), port)
 				.build();
 		}
 		else {
 			return new FunctionGemfireAdminTemplate(clientCache);
 		}
+	}
+
+	private RestHttpGemfireAdminTemplate.Builder configurePort(RestHttpGemfireAdminTemplate.Builder builder, int port) {
+
+		return NetworkUtils.isValidNonEphemeralPort(port)
+			? builder.listenOn(port)
+			: builder;
 	}
 
 	/**

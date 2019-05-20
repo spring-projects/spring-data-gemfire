@@ -104,7 +104,7 @@ public class EnableClusterConfigurationWithSecurityIntegrationTests {
 	private ClusterSchemaObjectInitializer initializer;
 
 	@SuppressWarnings("unchecked")
-	private <T> T resolveFieldValue(Object target, String fieldName) throws NoSuchFieldException {
+	private <T> T getFieldValue(Object target, String fieldName) throws NoSuchFieldException {
 
 		Field field = ReflectionUtils.findField(target.getClass(), fieldName);
 
@@ -151,7 +151,7 @@ public class EnableClusterConfigurationWithSecurityIntegrationTests {
 
 		RestHttpGemfireAdminTemplate template = schemaObjectContext.getGemfireAdminOperations();
 
-		RestTemplate restTemplate = resolveFieldValue(template, "restTemplate");
+		RestTemplate restTemplate = getFieldValue(template, "restTemplate");
 
 		assertThat(restTemplate).isNotNull();
 		assertThat(restTemplate.getInterceptors()).containsExactly(this.securityAwareClientHttpRequestInterceptor,

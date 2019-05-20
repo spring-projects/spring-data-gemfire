@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.gemfire.util.NetworkUtils;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.InterceptingClientHttpRequestFactory;
@@ -55,7 +56,7 @@ public class RestHttpGemfireAdminTemplateBuilderUnitTests {
 	private ClientCache mockClientCache;
 
 	@SuppressWarnings("unchecked")
-	private <T> T resolveFieldValue(Object target, String fieldName) throws NoSuchFieldException {
+	private <T> T getFieldValue(Object target, String fieldName) throws NoSuchFieldException {
 
 		Field field = ReflectionUtils.findField(target.getClass(), fieldName, ClientHttpRequestFactory.class);
 
@@ -100,7 +101,7 @@ public class RestHttpGemfireAdminTemplateBuilderUnitTests {
 			.isInstanceOf(InterceptingClientHttpRequestFactory.class);
 
 		ClientHttpRequestFactory clientHttpRequestFactory =
-			resolveFieldValue(template.<RestTemplate>getRestOperations().getRequestFactory(), "requestFactory");
+			getFieldValue(template.<RestTemplate>getRestOperations().getRequestFactory(), "requestFactory");
 
 		assertThat(clientHttpRequestFactory).isInstanceOf(FollowRedirectsSimpleClientHttpRequestFactory.class);
 		assertThat(((FollowRedirectsSimpleClientHttpRequestFactory) clientHttpRequestFactory).isFollowRedirects())
@@ -114,7 +115,7 @@ public class RestHttpGemfireAdminTemplateBuilderUnitTests {
 		}
 		catch (IllegalArgumentException expected) {
 
-			assertThat(expected).hasMessage("Port [%d] must be greater than 0 and less than 65536", port);
+			assertThat(expected).hasMessage(NetworkUtils.INVALID_NO_EPHEMERAL_PORT_MESSAGE, port);
 			assertThat(expected).hasNoCause();
 
 			throw expected;
@@ -139,7 +140,7 @@ public class RestHttpGemfireAdminTemplateBuilderUnitTests {
 			.build();
 
 		assertThat(template).isNotNull();
-		assertThat(template.getManagementRestApiUrl()).isEqualTo("https://localhost:7070/gemfire/v1");
+		assertThat(template.getManagementRestApiUrl()).isEqualTo("https://localhost/gemfire/v1");
 	}
 
 	@Test
