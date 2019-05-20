@@ -68,10 +68,15 @@ import org.springframework.web.client.RestTemplate;
  * @see org.junit.Test
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.client.ClientCache
+ * @see org.springframework.beans.factory.BeanFactory
  * @see org.springframework.core.env.Environment
  * @see org.springframework.core.type.AnnotationMetadata
+ * @see org.springframework.data.gemfire.config.admin.GemfireAdminOperations
  * @see org.springframework.data.gemfire.config.annotation.ClusterConfigurationConfiguration
  * @see org.springframework.data.gemfire.config.annotation.EnableClusterConfiguration
+ * @see org.springframework.web.client.RestTemplate
  * @since 2.0.1
  */
 public class EnableClusterConfigurationUnitTests {
@@ -99,7 +104,7 @@ public class EnableClusterConfigurationUnitTests {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> T resolveFieldValue(Object target, String fieldName) throws NoSuchFieldException {
+	private <T> T getFieldValue(Object target, String fieldName) throws NoSuchFieldException {
 
 		Field field = ReflectionUtils.findField(target.getClass(), fieldName);
 
@@ -509,7 +514,7 @@ public class EnableClusterConfigurationUnitTests {
 
 		RestHttpGemfireAdminTemplate template = (RestHttpGemfireAdminTemplate) operations;
 
-		RestTemplate restTemplate = resolveFieldValue(template, "restTemplate");
+		RestTemplate restTemplate = getFieldValue(template, "restTemplate");
 
 		assertThat(restTemplate).isNotNull();
 		assertThat(restTemplate.getInterceptors()).isEmpty();
@@ -547,14 +552,13 @@ public class EnableClusterConfigurationUnitTests {
 		assertThat(configuration.resolveManagementRequireHttps()).isTrue();
 		assertThat(configuration.resolveManagementUseHttp()).isTrue();
 
-		GemfireAdminOperations operations =
-			configuration.resolveGemfireAdminOperations(environment, mockClientCache);
+		GemfireAdminOperations operations = configuration.resolveGemfireAdminOperations(environment, mockClientCache);
 
 		assertThat(operations).isInstanceOf(RestHttpGemfireAdminTemplate.class);
 
 		RestHttpGemfireAdminTemplate template = (RestHttpGemfireAdminTemplate) operations;
 
-		RestTemplate restTemplate = resolveFieldValue(template, "restTemplate");
+		RestTemplate restTemplate = getFieldValue(template, "restTemplate");
 
 		assertThat(restTemplate).isNotNull();
 		assertThat(restTemplate.getInterceptors()).isEmpty();
@@ -598,23 +602,61 @@ public class EnableClusterConfigurationUnitTests {
 		assertThat(configuration.resolveManagementRequireHttps()).isFalse();
 		assertThat(configuration.resolveManagementUseHttp()).isTrue();
 
-		GemfireAdminOperations operations =
-			configuration.resolveGemfireAdminOperations(environment, mockClientCache);
+		GemfireAdminOperations operations = configuration.resolveGemfireAdminOperations(environment, mockClientCache);
 
 		assertThat(operations).isInstanceOf(RestHttpGemfireAdminTemplate.class);
 
 		RestHttpGemfireAdminTemplate template = (RestHttpGemfireAdminTemplate) operations;
 
-		RestTemplate restTemplate = resolveFieldValue(template, "restTemplate");
+		RestTemplate restTemplate = getFieldValue(template, "restTemplate");
 
 		assertThat(restTemplate).isNotNull();
 		assertThat(restTemplate.getInterceptors()).containsExactly(mockInterceptorOne, mockInterceptorTwo);
 		assertThat(restTemplate.getRequestFactory()).isInstanceOf(InterceptingClientHttpRequestFactory.class);
 
 		FollowRedirectsSimpleClientHttpRequestFactory clientHttpRequestFactory =
-			resolveFieldValue(restTemplate.getRequestFactory(), "requestFactory");
+			getFieldValue(restTemplate.getRequestFactory(), "requestFactory");
 
 		assertThat(clientHttpRequestFactory.isFollowRedirects()).isTrue();
+
+		verifyZeroInteractions(mockClientCache);
+
+		verify(configuration, times(1)).resolveClientHttpRequestInterceptors();
+
+		verify(environment, times(1))
+			.getProperty(eq(ClusterConfigurationConfiguration.HTTP_FOLLOW_REDIRECTS_PROPERTY), eq(Boolean.class),
+				eq(ClusterConfigurationConfiguration.DEFAULT_HTTP_FOLLOW_REDIRECTS));
+	}
+
+	@Test
+	public void resolvesNewRestHttpGemfireAdminOperationsAvoidsSettingInvalidPort() throws Exception {
+
+		ClientCache mockClientCache = mock(ClientCache.class);
+
+		Environment environment = mock(Environment.class);
+
+		when(environment.getProperty(anyString(), eq(Boolean.class), anyBoolean())).thenReturn(false);
+
+		ClusterConfigurationConfiguration configuration = spy(new ClusterConfigurationConfiguration());
+
+		doReturn(Collections.emptyList()).when(configuration).resolveClientHttpRequestInterceptors();
+
+		configuration.setManagementHttpHost("skullbox");
+		configuration.setManagementHttpPort(-1);
+		configuration.setManagementUseHttp(true);
+
+		assertThat(configuration.resolveManagementHttpHost()).isEqualTo("skullbox");
+		assertThat(configuration.resolveManagementHttpPort()).isEqualTo(-1);
+		assertThat(configuration.resolveManagementUseHttp()).isTrue();
+
+		GemfireAdminOperations operations = configuration.resolveGemfireAdminOperations(environment, mockClientCache);
+
+		assertThat(operations).isInstanceOf(RestHttpGemfireAdminTemplate.class);
+
+		RestHttpGemfireAdminTemplate template = (RestHttpGemfireAdminTemplate) operations;
+
+		assertThat(this.<String>getFieldValue(template, "managementRestApiUrl"))
+			.isEqualTo("https://skullbox/gemfire/v1");
 
 		verifyZeroInteractions(mockClientCache);
 

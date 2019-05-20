@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.execute.Function;
@@ -32,6 +31,7 @@ import org.springframework.data.gemfire.config.schema.definitions.IndexDefinitio
 import org.springframework.data.gemfire.config.schema.definitions.RegionDefinition;
 import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.data.gemfire.util.CollectionUtils;
+import org.springframework.data.gemfire.util.NetworkUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -80,13 +80,16 @@ public class RestHttpGemfireAdminTemplate extends FunctionGemfireAdminTemplate {
 	protected static final boolean DEFAULT_CREATE_REGION_SKIP_IF_EXISTS = true;
 	protected static final boolean DEFAULT_HTTP_FOLLOW_REDIRECTS = true;
 
-	protected static final int DEFAULT_PORT = 7070;
+	// Default port to -1 to let HTTP clients determine the port from the protocol/scheme.
+	// By default, Apache Geode / Pivotal GemFire's (embedded) HTTP service listens on port 7070.
+	protected static final int DEFAULT_PORT = -1;
 
 	protected static final String DEFAULT_HOST = "localhost";
 	protected static final String DEFAULT_SCHEME = "https";
 	protected static final String HTTP_SCHEME = "http";
 	protected static final String HTTPS_SCHEME = "https";
 	protected static final String MANAGEMENT_REST_API_URL_TEMPLATE = "%1$s://%2$s:%3$d/gemfire/v1";
+	protected static final String MANAGEMENT_REST_API_NO_PORT_URL_TEMPLATE = "%1$s://%2$s/gemfire/v1";
 
 	protected static final List<String> VALID_SCHEMES = Arrays.asList(HTTP_SCHEME, HTTPS_SCHEME);
 
@@ -105,6 +108,7 @@ public class RestHttpGemfireAdminTemplate extends FunctionGemfireAdminTemplate {
 	 * @see org.apache.geode.cache.client.ClientCache
 	 */
 	public RestHttpGemfireAdminTemplate(ClientCache clientCache) {
+
 		this(clientCache, DEFAULT_SCHEME, DEFAULT_HOST, DEFAULT_PORT, DEFAULT_HTTP_FOLLOW_REDIRECTS,
 			Collections.emptyList());
 	}
@@ -188,7 +192,10 @@ public class RestHttpGemfireAdminTemplate extends FunctionGemfireAdminTemplate {
 	 * @return the resolved URL.
 	 */
 	String resolveManagementRestApiUrl(String scheme, String host, int port) {
-		return String.format(MANAGEMENT_REST_API_URL_TEMPLATE, scheme, host, port);
+
+		return NetworkUtils.isValidNonEphemeralPort(port)
+			? String.format(MANAGEMENT_REST_API_URL_TEMPLATE, scheme, host, port)
+			: String.format(MANAGEMENT_REST_API_NO_PORT_URL_TEMPLATE, scheme, host);
 	}
 
 	/**
@@ -286,8 +293,8 @@ public class RestHttpGemfireAdminTemplate extends FunctionGemfireAdminTemplate {
 
 		public Builder listenOn(int port) {
 
-			Assert.isTrue(port > 0 && port < 65536,
-				String.format("Port [%d] must be greater than 0 and less than 65536", port));
+			Assert.isTrue(NetworkUtils.isValidNonEphemeralPort(port),
+				String.format(NetworkUtils.INVALID_NO_EPHEMERAL_PORT_MESSAGE, port));
 
 			this.port = port;
 
@@ -321,11 +328,13 @@ public class RestHttpGemfireAdminTemplate extends FunctionGemfireAdminTemplate {
 			clientHttpRequestInterceptors =
 				ArrayUtils.nullSafeArray(clientHttpRequestInterceptors, ClientHttpRequestInterceptor.class);
 
-			return with(Arrays.stream(clientHttpRequestInterceptors).collect(Collectors.toList()));
+			return with(Arrays.asList(clientHttpRequestInterceptors));
 		}
 
 		public Builder with(List<ClientHttpRequestInterceptor> clientHttpRequestInterceptors) {
+
 			this.clientHttpRequestInterceptors.addAll(CollectionUtils.nullSafeList(clientHttpRequestInterceptors));
+
 			return this;
 		}
 
