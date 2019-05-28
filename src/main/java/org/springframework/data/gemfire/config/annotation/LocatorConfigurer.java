@@ -16,7 +16,9 @@
 package org.springframework.data.gemfire.config.annotation;
 
 import org.apache.geode.distributed.Locator;
+
 import org.springframework.data.gemfire.LocatorFactoryBean;
+import org.springframework.data.gemfire.config.annotation.support.Configurer;
 
 /**
  * A Spring Configurer used to apply additional, customized configuration for an Apache Geode or Pivotal GemFire
@@ -32,19 +34,10 @@ import org.springframework.data.gemfire.LocatorFactoryBean;
  * @see java.lang.FunctionalInterface
  * @see org.apache.geode.distributed.Locator
  * @see org.springframework.data.gemfire.LocatorFactoryBean
+ * @see org.springframework.data.gemfire.config.annotation.support.Configurer
  * @since 2.2.0
  */
 @FunctionalInterface
-public interface LocatorConfigurer {
-
-	/**
-	 * Customizes the configuration of the {@link LocatorFactoryBean}.
-	 *
-	 * @param beanName {@link String name} of the bean in the Spring context.
-	 * @param bean {@link LocatorFactoryBean} used to configure and bootstrap an Apache Geode or Pivotal GemFire
-	 * {@link Locator} using Spring.
-	 * @see org.springframework.data.gemfire.LocatorFactoryBean
-	 */
-	void configure(String beanName, LocatorFactoryBean bean);
+public interface LocatorConfigurer extends Configurer<LocatorFactoryBean> {
 
 }

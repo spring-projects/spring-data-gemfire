@@ -16,20 +16,17 @@
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
-import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeMap;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.distributed.Locator;
+
 import org.springframework.beans.factory.BeanDefinitionStoreException;
-import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.context.annotation.Bean;
@@ -181,20 +178,7 @@ public class LocatorApplicationConfiguration extends AbstractAnnotationConfigSup
 		return Optional.ofNullable(this.locatorConfigurers)
 			.filter(locatorConfigurers -> !locatorConfigurers.isEmpty())
 			.orElseGet(() ->
-
-				Optional.of(getBeanFactory())
-					.filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
-					.map(beanFactory -> {
-
-						Map<String, LocatorConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)
-							.getBeansOfType(LocatorConfigurer.class, true, false);
-
-						return nullSafeMap(beansOfType).values().stream()
-							.collect(Collectors.toList());
-
-					})
-					.orElseGet(Collections::emptyList)
-			);
+				Collections.singletonList(LazyResolvingComposableLocatorConfigurer.create(getBeanFactory())));
 	}
 
 	public void setBindAddress(String bindAddress) {
