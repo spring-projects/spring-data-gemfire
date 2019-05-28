@@ -14,20 +14,15 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.config.annotation;
-
-import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeMap;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.apache.geode.cache.Cache;
-import org.springframework.beans.factory.ListableBeanFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -106,19 +101,7 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
         return Optional.ofNullable(this.peerCacheConfigurers)
             .filter(peerCacheConfigurers -> !peerCacheConfigurers.isEmpty())
             .orElseGet(() ->
-
-                Optional.of(this.getBeanFactory())
-                    .filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
-                    .map(beanFactory -> {
-
-                        Map<String, PeerCacheConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)
-                            .getBeansOfType(PeerCacheConfigurer.class, true, false);
-
-                        return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
-
-                    })
-                    .orElseGet(Collections::emptyList)
-            );
+                Collections.singletonList(LazyResolvingComposablePeerCacheConfigurer.create(getBeanFactory())));
     }
 
     /**

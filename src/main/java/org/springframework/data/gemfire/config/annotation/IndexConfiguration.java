@@ -14,23 +14,19 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
-import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeMap;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.query.Index;
-import org.springframework.beans.factory.ListableBeanFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -305,16 +301,7 @@ public class IndexConfiguration extends EntityDefinedRegionsConfiguration {
 		return Optional.ofNullable(this.indexConfigurers)
 			.filter(indexConfigurers -> !indexConfigurers.isEmpty())
 			.orElseGet(() ->
-				Optional.of(getBeanFactory())
-					.filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
-					.map(beanFactory -> {
-						Map<String, IndexConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)
-							.getBeansOfType(IndexConfigurer.class, true, false);
-
-						return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
-					})
-					.orElseGet(Collections::emptyList)
-			);
+				Collections.singletonList(LazyResolvingComposableIndexConfigurer.create(getBeanFactory())));
 	}
 
 	private boolean resolveDefine(AnnotationAttributes enableIndexingAttributes) {

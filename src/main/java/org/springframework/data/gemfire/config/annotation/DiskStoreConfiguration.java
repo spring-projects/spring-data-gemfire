@@ -14,24 +14,21 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import static java.util.Arrays.stream;
 import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
-import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeMap;
 
+import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
-import org.springframework.beans.factory.ListableBeanFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -92,7 +89,7 @@ public class DiskStoreConfiguration extends AbstractAnnotationConfigSupport
 	 * @see org.springframework.data.gemfire.config.annotation.EnableDiskStore
 	 */
 	@Override
-	protected Class getAnnotationType() {
+	protected Class<? extends Annotation> getAnnotationType() {
 		return EnableDiskStore.class;
 	}
 
@@ -111,7 +108,6 @@ public class DiskStoreConfiguration extends AbstractAnnotationConfigSupport
 		}
 	}
 
-	/* (non-Javadoc) */
 	protected void registerDiskStoreBeanDefinition(AnnotationAttributes enableDiskStoreAttributes,
 			BeanDefinitionRegistry registry) {
 
@@ -205,27 +201,14 @@ public class DiskStoreConfiguration extends AbstractAnnotationConfigSupport
 		registry.registerBeanDefinition(diskStoreName, diskStoreFactoryBeanBuilder.getBeanDefinition());
 	}
 
-	/* (non-Javadoc) */
 	private List<DiskStoreConfigurer> resolveDiskStoreConfigurers() {
 
 		return Optional.ofNullable(this.diskStoreConfigurers)
 			.filter(diskStoreConfigurers -> !diskStoreConfigurers.isEmpty())
 			.orElseGet(() ->
-				Optional.of(this.getBeanFactory())
-					.filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
-					.map(beanFactory -> {
-
-						Map<String, DiskStoreConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)
-							.getBeansOfType(DiskStoreConfigurer.class, true, false);
-
-						return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
-
-					})
-					.orElseGet(Collections::emptyList)
-			);
+				Collections.singletonList(LazyResolvingComposableDiskStoreConfigurer.create(getBeanFactory())));
 	}
 
-	/* (non-Javadoc) */
 	protected BeanDefinitionBuilder resolveDiskStoreDirectories(String diskStoreName,
 			AnnotationAttributes enableDiskStoreAttributes, BeanDefinitionBuilder diskStoreFactoryBeanBuilder) {
 
@@ -304,7 +287,6 @@ public class DiskStoreConfiguration extends AbstractAnnotationConfigSupport
 		return diskStoreFactoryBeanBuilder;
 	}
 
-	/* (non-Javadoc) */
 	@SuppressWarnings("unused")
 	private String resolveDiskStoreDirectoryLocation(String... locations) {
 
@@ -314,7 +296,6 @@ public class DiskStoreConfiguration extends AbstractAnnotationConfigSupport
 			.orElse(".");
 	}
 
-	/* (non-Javadoc) */
 	private Integer resolveDiskStoreDirectorySize(Integer... sizes) {
 
 		return stream(nullSafeArray(sizes, Integer.class))
@@ -323,7 +304,6 @@ public class DiskStoreConfiguration extends AbstractAnnotationConfigSupport
 			.orElse(Integer.MAX_VALUE);
 	}
 
-	/* (non-Javadoc) */
 	protected ManagedList<BeanDefinition> parseDiskStoreDirectories(AnnotationAttributes enableDiskStoreAttributes) {
 
 		AnnotationAttributes[] diskDirectories =
@@ -338,7 +318,6 @@ public class DiskStoreConfiguration extends AbstractAnnotationConfigSupport
 		return diskDirectoryBeans;
 	}
 
-	/* (non-Javadoc) */
 	private BeanDefinition newDiskStoreDirectoryBean(String location, Integer maxSize) {
 
 		BeanDefinitionBuilder diskDirectoryBuilder =
@@ -350,7 +329,6 @@ public class DiskStoreConfiguration extends AbstractAnnotationConfigSupport
 		return diskDirectoryBuilder.getBeanDefinition();
 	}
 
-	/* (non-Javadoc) */
 	private <T> BeanDefinitionBuilder setPropertyValueIfNotDefault(BeanDefinitionBuilder beanDefinitionBuilder,
 			String propertyName, T value, T defaultValue) {
 
