@@ -14,7 +14,6 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.config.annotation.support;
 
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
@@ -63,7 +62,7 @@ import org.springframework.util.StringUtils;
  */
 @SuppressWarnings("unused")
 public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnotationConfigSupport
-		implements ImportBeanDefinitionRegistrar {
+	implements ImportBeanDefinitionRegistrar {
 
 	public static final Integer DEFAULT_PORT = 0;
 	public static final String DEFAULT_HOST = "localhost";
@@ -89,7 +88,7 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 
 	@Override
 	public final void registerBeanDefinitions(AnnotationMetadata importingClassMetadata,
-			BeanDefinitionRegistry registry) {
+		BeanDefinitionRegistry registry) {
 
 		if (isAnnotationPresent(importingClassMetadata)) {
 			Map<String, Object> annotationAttributes = getAnnotationAttributes(importingClassMetadata);
@@ -100,15 +99,16 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 
 	@SuppressWarnings("unused")
 	protected void registerBeanDefinitions(AnnotationMetadata importingClassMetaData,
-			Map<String, Object> annotationAttributes, BeanDefinitionRegistry registry) {
+		Map<String, Object> annotationAttributes, BeanDefinitionRegistry registry) {
 	}
 
 	protected void setGemFireProperties(AnnotationMetadata importingClassMetadata,
-			Map<String, Object> annotationAttributes, BeanDefinitionRegistry registry) {
+		Map<String, Object> annotationAttributes, BeanDefinitionRegistry registry) {
 
 		Properties gemfireProperties = toGemFireProperties(annotationAttributes);
 
 		if (hasProperties(gemfireProperties)) {
+
 			try {
 				getCacheConfiguration().add(gemfireProperties);
 			}
@@ -126,7 +126,7 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 	}
 
 	protected void registerGemFirePropertiesBeanPostProcessor(BeanDefinitionRegistry registry,
-			Properties customGemFireProperties) {
+		Properties customGemFireProperties) {
 
 		BeanDefinitionBuilder builder =
 			BeanDefinitionBuilder.genericBeanDefinition(GemFirePropertiesBeanPostProcessor.class);
@@ -138,8 +138,26 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 
 	protected void registerGemFirePropertiesConfigurer(BeanDefinitionRegistry registry, Properties gemfireProperties) {
 
+		registerClientGemFirePropertiesConfigurer(registry, gemfireProperties);
+		registerPeerGemFirePropertiesConfigurer(registry, gemfireProperties);
+	}
+
+	protected void registerClientGemFirePropertiesConfigurer(BeanDefinitionRegistry registry,
+		Properties gemfireProperties) {
+
 		BeanDefinitionBuilder builder =
-			BeanDefinitionBuilder.genericBeanDefinition(GemFirePropertiesConfigurer.class);
+			BeanDefinitionBuilder.genericBeanDefinition(ClientGemFirePropertiesConfigurer.class);
+
+		builder.addConstructorArgValue(gemfireProperties);
+
+		BeanDefinitionReaderUtils.registerBeanDefinition(newBeanDefinitionHolder(builder), registry);
+	}
+
+	protected void registerPeerGemFirePropertiesConfigurer(BeanDefinitionRegistry registry,
+		Properties gemfireProperties) {
+
+		BeanDefinitionBuilder builder =
+			BeanDefinitionBuilder.genericBeanDefinition(PeerGemFirePropertiesConfigurer.class);
 
 		builder.addConstructorArgValue(gemfireProperties);
 
@@ -213,29 +231,45 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 		return Optional.ofNullable(port).orElse(defaultPort);
 	}
 
-	protected static class GemFirePropertiesConfigurer implements PeerCacheConfigurer, ClientCacheConfigurer {
+	protected static class AbstractGemFirePropertiesConfigurer {
 
 		private final Properties gemfireProperties;
 
-		public GemFirePropertiesConfigurer(Properties gemfireProperties) {
+		protected AbstractGemFirePropertiesConfigurer(Properties gemfireProperties) {
 
 			Assert.notEmpty(gemfireProperties, "GemFire Properties are required");
 
 			this.gemfireProperties = gemfireProperties;
 		}
 
-		@Override
-		public void configure(String beanName, CacheFactoryBean bean) {
-			configureGemFireProperties(bean);
+		protected void configureGemFireProperties(CacheFactoryBean bean) {
+			bean.getProperties().putAll(this.gemfireProperties);
+		}
+	}
+
+	protected static class ClientGemFirePropertiesConfigurer extends AbstractGemFirePropertiesConfigurer
+		implements ClientCacheConfigurer {
+
+		protected ClientGemFirePropertiesConfigurer(Properties gemfireProperties) {
+			super(gemfireProperties);
 		}
 
 		@Override
 		public void configure(String beanName, ClientCacheFactoryBean bean) {
 			configureGemFireProperties(bean);
 		}
+	}
 
-		private void configureGemFireProperties(CacheFactoryBean bean) {
-			bean.getProperties().putAll(this.gemfireProperties);
+	protected static class PeerGemFirePropertiesConfigurer extends AbstractGemFirePropertiesConfigurer
+		implements PeerCacheConfigurer {
+
+		protected PeerGemFirePropertiesConfigurer(Properties gemfireProperties) {
+			super(gemfireProperties);
+		}
+
+		@Override
+		public void configure(String beanName, CacheFactoryBean bean) {
+			configureGemFireProperties(bean);
 		}
 	}
 
