@@ -14,15 +14,16 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import java.io.IOException;
 
-import org.apache.geode.internal.security.shiro.GeodePermissionResolver;
-import org.apache.shiro.realm.text.PropertiesRealm;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
+
+import org.apache.geode.internal.security.shiro.GeodePermissionResolver;
+import org.apache.shiro.realm.text.PropertiesRealm;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
