@@ -14,7 +14,6 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.apache.geode.security.ResourcePermission.Operation;
@@ -26,10 +25,12 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.geode.security.AuthenticationFailedException;
-import org.apache.geode.security.ResourcePermission;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
+
+import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.security.ResourcePermission;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.ActiveProfiles;
@@ -92,6 +93,7 @@ public class ApacheGeodeSecurityManagerSecurityIntegrationTests extends Abstract
 		}
 	}
 
+	@SuppressWarnings("unused")
 	public static class TestGeodeSecurityManager implements org.apache.geode.security.SecurityManager {
 
 		private final GeodeSecurityRepository securityRepository;

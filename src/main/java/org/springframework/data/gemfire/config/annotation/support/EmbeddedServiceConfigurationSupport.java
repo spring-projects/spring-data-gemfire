@@ -67,7 +67,6 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 	public static final Integer DEFAULT_PORT = 0;
 	public static final String DEFAULT_HOST = "localhost";
 
-	@SuppressWarnings("all")
 	@Autowired(required = false)
 	private AbstractCacheConfiguration cacheConfiguration;
 
@@ -165,7 +164,9 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 	}
 
 	protected BeanDefinitionHolder newBeanDefinitionHolder(BeanDefinitionBuilder builder) {
-		return new BeanDefinitionHolder(builder.getBeanDefinition(), generateBeanName());
+
+		return new BeanDefinitionHolder(builder.getBeanDefinition(),
+			generateBeanName(builder.getRawBeanDefinition().getBeanClass().getSimpleName()));
 	}
 
 	protected String generateBeanName() {
@@ -248,7 +249,7 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 	}
 
 	protected static class ClientGemFirePropertiesConfigurer extends AbstractGemFirePropertiesConfigurer
-		implements ClientCacheConfigurer {
+			implements ClientCacheConfigurer {
 
 		protected ClientGemFirePropertiesConfigurer(Properties gemfireProperties) {
 			super(gemfireProperties);
@@ -261,7 +262,7 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 	}
 
 	protected static class PeerGemFirePropertiesConfigurer extends AbstractGemFirePropertiesConfigurer
-		implements PeerCacheConfigurer {
+			implements PeerCacheConfigurer {
 
 		protected PeerGemFirePropertiesConfigurer(Properties gemfireProperties) {
 			super(gemfireProperties);
