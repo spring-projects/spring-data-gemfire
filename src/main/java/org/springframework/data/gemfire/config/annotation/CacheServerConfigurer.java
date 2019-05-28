@@ -14,10 +14,11 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import org.apache.geode.cache.server.CacheServer;
+
+import org.springframework.data.gemfire.config.annotation.support.Configurer;
 import org.springframework.data.gemfire.server.CacheServerFactoryBean;
 
 /**
@@ -29,19 +30,10 @@ import org.springframework.data.gemfire.server.CacheServerFactoryBean;
  * @see org.springframework.data.gemfire.config.annotation.CacheServerApplication
  * @see org.springframework.data.gemfire.config.annotation.EnableCacheServers
  * @see org.springframework.data.gemfire.config.annotation.EnableCacheServer
+ * @see org.springframework.data.gemfire.config.annotation.support.Configurer
  * @see org.springframework.data.gemfire.server.CacheServerFactoryBean
  * @since 1.9.0
  */
-public interface CacheServerConfigurer {
-
-	/**
-	 * Configuration callback method providing a reference to a {@link CacheServerFactoryBean} used to construct,
-	 * configure and initialize an instance of {@link CacheServer}.
-	 *
-	 * @param beanName name of {@link CacheServer} bean declared in the Spring application context.
-	 * @param bean reference to the {@link CacheServerFactoryBean}.
-	 * @see org.springframework.data.gemfire.server.CacheServerFactoryBean
-	 */
-	void configure(String beanName, CacheServerFactoryBean bean);
+public interface CacheServerConfigurer extends Configurer<CacheServerFactoryBean> {
 
 }

@@ -14,11 +14,12 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import org.apache.geode.cache.Cache;
+
 import org.springframework.data.gemfire.CacheFactoryBean;
+import org.springframework.data.gemfire.config.annotation.support.Configurer;
 
 /**
  * The {@link PeerCacheConfigurer} interface defines a contract for implementations to customize the configuration
@@ -28,18 +29,9 @@ import org.springframework.data.gemfire.CacheFactoryBean;
  * @see org.apache.geode.cache.Cache
  * @see org.springframework.data.gemfire.CacheFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.PeerCacheApplication
+ * @see org.springframework.data.gemfire.config.annotation.support.Configurer
  * @since 1.9.0
  */
-public interface PeerCacheConfigurer {
-
-	/**
-	 * Configuration callback method providing a reference to a {@link CacheFactoryBean} used to construct,
-	 * configure and initialize an instance of a peer {@link Cache}.
-	 *
-	 * @param beanName name of peer {@link Cache} bean declared in the Spring application context.
-	 * @param bean reference to the {@link CacheFactoryBean}.
-	 * @see org.springframework.data.gemfire.CacheFactoryBean
-	 */
-	void configure(String beanName, CacheFactoryBean bean);
+public interface PeerCacheConfigurer extends Configurer<CacheFactoryBean> {
 
 }

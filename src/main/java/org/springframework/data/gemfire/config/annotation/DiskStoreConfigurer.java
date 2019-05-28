@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import org.apache.geode.cache.DiskStore;
+
 import org.springframework.data.gemfire.DiskStoreFactoryBean;
+import org.springframework.data.gemfire.config.annotation.support.Configurer;
 
 /**
  * The {@link DiskStoreConfigurer} interface defines a contract for implementations to customize the configuration
@@ -28,18 +29,9 @@ import org.springframework.data.gemfire.DiskStoreFactoryBean;
  * @see org.springframework.data.gemfire.DiskStoreFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.EnableDiskStore
  * @see org.springframework.data.gemfire.config.annotation.EnableDiskStores
- * @since 1.1.0
+ * @see org.springframework.data.gemfire.config.annotation.support.Configurer
+ * @since 2.0.0
  */
-public interface DiskStoreConfigurer {
-
-	/**
-	 * Configuration callback method providing a reference to a {@link DiskStoreFactoryBean} used to construct,
-	 * configure and initialize an instance of {@link DiskStore}.
-	 *
-	 * @param beanName name of the {@link DiskStore} bean declared in the Spring application context.
-	 * @param bean reference to the {@link DiskStoreFactoryBean}.
-	 * @see org.springframework.data.gemfire.DiskStoreFactoryBean
-	 */
-	void configure(String beanName, DiskStoreFactoryBean bean);
+public interface DiskStoreConfigurer extends Configurer<DiskStoreFactoryBean> {
 
 }
