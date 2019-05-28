@@ -14,18 +14,14 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
-import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeMap;
-
+import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
@@ -70,9 +66,11 @@ public class AddCacheServerConfiguration extends AbstractAnnotationConfigSupport
 	@Autowired(required = false)
 	private List<CacheServerConfigurer> cacheServerConfigurers = Collections.emptyList();
 
-	/**
-	 * {@inheritDoc}
-	 */
+	@Override
+	protected Class<? extends Annotation> getAnnotationType() {
+		return EnableCacheServer.class;
+	}
+
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 
@@ -183,26 +181,15 @@ public class AddCacheServerConfiguration extends AbstractAnnotationConfigSupport
 					(Boolean) enableCacheServerAttributes.get("tcpNoDelay"))));
 	}
 
-	/* (non-Javadoc) */
 	private List<CacheServerConfigurer> resolveCacheServerConfigurers() {
 
 		return Optional.ofNullable(this.cacheServerConfigurers)
 			.filter(cacheServerConfigurers -> !cacheServerConfigurers.isEmpty())
 			.orElseGet(() ->
-				Optional.of(this.getBeanFactory())
-					.filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
-					.map(beanFactory -> {
-						Map<String, CacheServerConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)
-							.getBeansOfType(CacheServerConfigurer.class, true, false);
-
-						return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
-					})
-					.orElseGet(Collections::emptyList)
-			);
+				Collections.singletonList(LazyResolvingComposableCacheServerConfigurer.create(getBeanFactory())));
 
 	}
 
-	/* (non-Javadoc) */
 	protected String registerCacheServerFactoryBeanDefinition(AbstractBeanDefinition beanDefinition, String beanName,
 			BeanDefinitionRegistry registry) {
 
@@ -217,14 +204,7 @@ public class AddCacheServerConfiguration extends AbstractAnnotationConfigSupport
 		}
 	}
 
-	/* (non-Javadoc) */
 	protected BeanDefinitionHolder newBeanDefinitionHolder(BeanDefinition beanDefinition, String beanName) {
 		return new BeanDefinitionHolder(beanDefinition, beanName);
-	}
-
-	/* (non-Javadoc) */
-	@Override
-	protected Class getAnnotationType() {
-		return EnableCacheServer.class;
 	}
 }

@@ -14,19 +14,15 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
-import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeMap;
 import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeSet;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.GemFireCache;
@@ -36,7 +32,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.apache.geode.cache.server.ServerLoadProbe;
 import org.apache.shiro.util.Assert;
-import org.springframework.beans.factory.ListableBeanFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -146,20 +142,7 @@ public class CacheServerConfiguration extends PeerCacheConfiguration {
 		return Optional.ofNullable(this.cacheServerConfigurers)
 			.filter(cacheServerConfigurers -> !cacheServerConfigurers.isEmpty())
 			.orElseGet(() ->
-
-				Optional.of(this.getBeanFactory())
-					.filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
-					.map(beanFactory -> {
-
-						Map<String, CacheServerConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)
-							.getBeansOfType(CacheServerConfigurer.class, true, false);
-
-						return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
-
-					})
-					.orElseGet(Collections::emptyList)
-			);
-
+				Collections.singletonList(LazyResolvingComposableCacheServerConfigurer.create(getBeanFactory())));
 	}
 
 	/**

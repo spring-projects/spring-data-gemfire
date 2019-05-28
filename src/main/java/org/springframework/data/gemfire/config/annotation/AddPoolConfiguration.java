@@ -14,21 +14,18 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import static java.util.Arrays.stream;
 import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
-import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeMap;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
 
+import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -68,9 +65,11 @@ public class AddPoolConfiguration extends AbstractAnnotationConfigSupport
 	@Autowired(required = false)
 	private List<PoolConfigurer> poolConfigurers = Collections.emptyList();
 
-	/**
-	 * {@inheritDoc}
-	 */
+	@Override
+	protected Class<? extends Annotation> getAnnotationType() {
+		return EnablePool.class;
+	}
+
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 
@@ -202,20 +201,9 @@ public class AddPoolConfiguration extends AbstractAnnotationConfigSupport
 
 		return Optional.ofNullable(this.poolConfigurers)
 			.filter(poolConfigurers -> !poolConfigurers.isEmpty())
-			.orElseGet(() ->
-				Optional.of(this.getBeanFactory())
-					.filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
-					.map(beanFactory -> {
-						Map<String, PoolConfigurer> beansOfType = ((ListableBeanFactory) beanFactory)
-							.getBeansOfType(PoolConfigurer.class, true, false);
-
-						return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
-					})
-					.orElseGet(Collections::emptyList)
-			);
+			.orElseGet(() -> Collections.singletonList(LazyResolvingComposablePoolConfigurer.create(getBeanFactory())));
 	}
 
-	/* (non-Javadoc) */
 	protected String getAndValidatePoolName(Map<String, Object> enablePoolAttributes) {
 
 		return Optional.ofNullable((String) enablePoolAttributes.get("name"))
@@ -299,10 +287,5 @@ public class AddPoolConfiguration extends AbstractAnnotationConfigSupport
 
 	protected ConnectionEndpoint newConnectionEndpoint(String host, Integer port) {
 		return new ConnectionEndpoint(host, port);
-	}
-
-	@Override
-	protected Class getAnnotationType() {
-		return EnablePool.class;
 	}
 }
