@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import org.apache.geode.cache.Region;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.gemfire.PeerRegionFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.config.annotation.support.CacheTypeAwareRegionFactoryBean;
+import org.springframework.data.gemfire.config.annotation.support.Configurer;
 
 /**
  * The {@link RegionConfigurer} interface defines a contract for implementations to customize the configuration
@@ -29,13 +30,15 @@ import org.springframework.data.gemfire.config.annotation.support.CacheTypeAware
  *
  * @author John Blum
  * @see org.apache.geode.cache.Region
- * @see PeerRegionFactoryBean
+ * @see org.springframework.data.gemfire.PeerRegionFactoryBean
  * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
+ * @see org.springframework.data.gemfire.config.annotation.EnableCachingDefinedRegions
  * @see org.springframework.data.gemfire.config.annotation.EnableEntityDefinedRegions
+ * @see org.springframework.data.gemfire.config.annotation.support.Configurer
  * @see CacheTypeAwareRegionFactoryBean
- * @since 1.1.0
+ * @since 2.0.0
  */
-public interface RegionConfigurer {
+public interface RegionConfigurer extends Configurer<ClientRegionFactoryBean<?, ?>> {
 
 	/**
 	 * Configuration callback method providing a reference to a {@link PeerRegionFactoryBean} used to construct, configure
@@ -45,8 +48,7 @@ public interface RegionConfigurer {
 	 * @param bean reference to the {@link PeerRegionFactoryBean}.
 	 * @see PeerRegionFactoryBean
 	 */
-	default void configure(String beanName, PeerRegionFactoryBean<?, ?> bean) {
-	}
+	default void configure(String beanName, PeerRegionFactoryBean<?, ?> bean) { }
 
 	/**
 	 * Configuration callback method providing a reference to a {@link ClientRegionFactoryBean} used to construct,
@@ -56,6 +58,6 @@ public interface RegionConfigurer {
 	 * @param bean reference to the {@link ClientRegionFactoryBean}.
 	 * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
 	 */
-	default void configure(String beanName, ClientRegionFactoryBean<?, ?> bean) {
-	}
+	default void configure(String beanName, ClientRegionFactoryBean<?, ?> bean) { }
+
 }

@@ -14,11 +14,12 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import org.apache.geode.cache.client.ClientCache;
+
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
+import org.springframework.data.gemfire.config.annotation.support.Configurer;
 
 /**
  * The {@link ClientCacheConfigurer} interface defines a contract for implementations to customize the configuration
@@ -28,18 +29,9 @@ import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
  * @see org.apache.geode.cache.client.ClientCache
  * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.ClientCacheApplication
+ * @see org.springframework.data.gemfire.config.annotation.support.Configurer
  * @since 1.9.0
  */
-public interface ClientCacheConfigurer {
-
-	/**
-	 * Configuration callback method providing a reference to a {@link ClientCacheFactoryBean} used to construct,
-	 * configure and initialize an instance of {@link ClientCache}.
-	 *
-	 * @param beanName name of {@link ClientCache} bean declared in the Spring application context.
-	 * @param bean reference to the {@link ClientCacheFactoryBean}.
-	 * @see org.springframework.data.gemfire.CacheFactoryBean
-	 */
-	void configure(String beanName, ClientCacheFactoryBean bean);
+public interface ClientCacheConfigurer extends Configurer<ClientCacheFactoryBean> {
 
 }

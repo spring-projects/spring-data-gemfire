@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.query.Index;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.gemfire.IndexFactoryBean;
+import org.springframework.data.gemfire.config.annotation.support.Configurer;
 import org.springframework.data.gemfire.search.lucene.LuceneIndexFactoryBean;
 
 /**
@@ -33,10 +34,11 @@ import org.springframework.data.gemfire.search.lucene.LuceneIndexFactoryBean;
  * @see org.springframework.data.gemfire.IndexFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.EnableIndexing
  * @see org.springframework.data.gemfire.config.annotation.IndexConfiguration
+ * @see org.springframework.data.gemfire.config.annotation.support.Configurer
  * @see org.springframework.data.gemfire.search.lucene.LuceneIndexFactoryBean
- * @since 1.1.0
+ * @since 2.0.0
  */
-public interface IndexConfigurer {
+public interface IndexConfigurer extends Configurer<IndexFactoryBean> {
 
 	/**
 	 * Configuration callback method providing a reference to a {@link IndexFactoryBean} used to construct, configure
@@ -46,8 +48,7 @@ public interface IndexConfigurer {
 	 * @param bean reference to the {@link IndexFactoryBean}.
 	 * @see org.springframework.data.gemfire.IndexFactoryBean
 	 */
-	default void configure(String beanName, IndexFactoryBean bean) {
-	}
+	default void configure(String beanName, IndexFactoryBean bean) { }
 
 	/**
 	 * Configuration callback method providing a reference to a {@link LuceneIndexFactoryBean} used to construct,
@@ -57,6 +58,6 @@ public interface IndexConfigurer {
 	 * @param bean reference to the {@link LuceneIndexFactoryBean}.
 	 * @see org.springframework.data.gemfire.search.lucene.LuceneIndexFactoryBean
 	 */
-	default void configure(String beanName, LuceneIndexFactoryBean bean) {
-	}
+	default void configure(String beanName, LuceneIndexFactoryBean bean) { }
+
 }
