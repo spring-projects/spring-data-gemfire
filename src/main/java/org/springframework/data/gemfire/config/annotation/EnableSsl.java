@@ -14,7 +14,6 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
@@ -28,6 +27,7 @@ import java.lang.annotation.Target;
 import java.util.Arrays;
 
 import org.apache.geode.security.SecurableCommunicationChannels;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.util.Assert;
@@ -37,6 +37,7 @@ import org.springframework.util.Assert;
  * to configure and enable Pivotal GemFire/Apache Geode's TCP/IP Socket SSL.
  *
  * @author John Blum
+ * @author Srikanth Manvi
  * @see java.lang.annotation.Annotation
  * @see org.apache.geode.security.SecurableCommunicationChannels
  * @see org.springframework.context.annotation.Import
@@ -101,6 +102,18 @@ public @interface EnableSsl {
 	 * in {@literal application.properties}.
 	 */
 	String defaultCertificateAlias() default "";
+
+	/**
+	 * If {@literal true} then causes clients (or Apache Geode servers in cause of P2P) to validate the server's
+	 * hostname using the server`s certificate. Set to {@literal true} if {@literal useSSLDefaultDefaultContext}
+	 * is {@literal true}.
+	 *
+	 * Defaults to {@literal false}.
+	 *
+	 * Use the {@literal spring.data.gemfire.security.ssl.enable-endpoint-identification}
+	 * in {@literal application.properties}.
+	 */
+	boolean enableEndpointIdentification() default false;
 
 	/**
 	 * Pathname to the {@literal Keystore} used for SSL communications.
@@ -191,6 +204,17 @@ public @interface EnableSsl {
 	String truststoreType() default "JKS";
 
 	/**
+	 * If {@literal true} then this will enable the use of default SSL context
+	 * and sets {@literal ssl-endpoint-identification-enabled} to {@literal true}.
+	 *
+	 * Defaults to {@literal false}.
+	 *
+	 * Use the {@literal spring.data.gemfire.security.ssl.use-default-context}
+	 * in {@literal application.properties}.
+	 */
+	boolean useDefaultContext() default false;
+
+	/**
 	 * If {@literal true} then requires two-way authentication for web component.
 	 *
 	 * Defaults to {@literal false}.
@@ -199,29 +223,6 @@ public @interface EnableSsl {
 	 * in {@literal application.properties}.
 	 */
 	boolean webRequireAuthentication() default false;
-
-	/**
-	 * If {@literal true} then allows the use of default SSL context and sets
-	 * ssl-endpoint-identification-enabled to true.
-	 *
-	 * Defaults to {@literal false}.
-	 *
-	 * Use the {@literal spring.data.gemfire.security.ssl.use-default-context}
-	 * in {@literal application.properties}.
-	 */
-	boolean sslUseDefaultContext() default false;
-
-	/**
-	 * If {@literal true} clients (GemFire servers in cause of p2p) to validate server's
-	 * hostname using server`s certificate.
-	 *
-	 * Defaults to {@literal false}. Set to {@literal true} if
-	 * {@literal useSSLDefaultDefaultContext} is true.
-	 *
-	 * Use the {@literal spring.data.gemfire.security.ssl.endpoint-identification-enabled}
-	 * in {@literal application.properties}.
-	 */
-	boolean sslEndpointIdentificationEnabled() default false;
 
 	enum Component {
 

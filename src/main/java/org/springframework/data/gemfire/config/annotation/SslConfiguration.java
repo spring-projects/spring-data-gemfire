@@ -14,7 +14,6 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import java.lang.annotation.Annotation;
@@ -38,6 +37,7 @@ import org.springframework.util.StringUtils;
  * additional configuration using Pivotal GemFire/Apache Geode {@link Properties} to configure SSL.
  *
  * @author John Blum
+ * @author Srikanth Manvi
  * @see org.springframework.data.gemfire.config.annotation.EnableSsl
  * @see org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport
  * @since 1.9.0
@@ -69,48 +69,57 @@ public class SslConfiguration extends EmbeddedServiceConfigurationSupport {
 				.map(EnableSsl.Component::toString)
 				.collect(Collectors.toSet())))
 
-			.setProperty("ssl-ciphers", resolveProperty(sslProperty("ciphers"),
-				StringUtils.arrayToCommaDelimitedString(annotationAttributes.getStringArray("ciphers"))))
+			.setProperty("ssl-ciphers",
+				resolveProperty(sslProperty("ciphers"),
+					StringUtils.arrayToCommaDelimitedString(annotationAttributes.getStringArray("ciphers"))))
 
 			.setPropertyIfNotDefault("ssl-default-alias",
 				resolveProperty(sslProperty("certificate.alias.default"),
 					annotationAttributes.getString("defaultCertificateAlias")), "")
 
-			.setProperty("ssl-keystore", resolveProperty(sslProperty("keystore"),
-				annotationAttributes.getString("keystore")))
+			.setProperty("ssl-endpoint-identification-enabled",
+				resolveProperty(sslProperty("enable-endpoint-identification"),
+					annotationAttributes.getBoolean("enableEndpointIdentification")))
 
-			.setProperty("ssl-keystore-password", resolveProperty(sslProperty("keystore.password"),
-				annotationAttributes.getString("keystorePassword")))
+			.setProperty("ssl-keystore",
+				resolveProperty(sslProperty("keystore"),
+					annotationAttributes.getString("keystore")))
 
-			.setProperty("ssl-keystore-type", resolveProperty(sslProperty("keystore.type"),
-				annotationAttributes.getString("keystoreType")))
+			.setProperty("ssl-keystore-password",
+				resolveProperty(sslProperty("keystore.password"),
+					annotationAttributes.getString("keystorePassword")))
 
-			.setProperty("ssl-protocols", resolveProperty(sslProperty("protocols"),
-				StringUtils.arrayToCommaDelimitedString(annotationAttributes.getStringArray("protocols"))))
+			.setProperty("ssl-keystore-type",
+				resolveProperty(sslProperty("keystore.type"),
+					annotationAttributes.getString("keystoreType")))
+
+			.setProperty("ssl-protocols",
+				resolveProperty(sslProperty("protocols"),
+					StringUtils.arrayToCommaDelimitedString(annotationAttributes.getStringArray("protocols"))))
 
 			.setProperty("ssl-require-authentication",
 				resolveProperty(sslProperty("require-authentication"),
 					annotationAttributes.getBoolean("requireAuthentication")))
 
-			.setProperty("ssl-truststore", resolveProperty(sslProperty("truststore"),
-				annotationAttributes.getString("truststore")))
+			.setProperty("ssl-truststore",
+				resolveProperty(sslProperty("truststore"),
+					annotationAttributes.getString("truststore")))
 
-			.setProperty("ssl-truststore-password", resolveProperty(sslProperty("truststore.password"),
-				annotationAttributes.getString("truststorePassword")))
+			.setProperty("ssl-truststore-password",
+				resolveProperty(sslProperty("truststore.password"),
+					annotationAttributes.getString("truststorePassword")))
 
-			.setProperty("ssl-truststore-type", resolveProperty(sslProperty("truststore.type"),
-				annotationAttributes.getString("truststoreType")))
+			.setProperty("ssl-truststore-type",
+				resolveProperty(sslProperty("truststore.type"),
+					annotationAttributes.getString("truststoreType")))
+
+			.setProperty("ssl-use-default-context",
+				resolveProperty(sslProperty("use-default-context"),
+					annotationAttributes.getBoolean("useDefaultContext")))
 
 			.setProperty("ssl-web-require-authentication",
 				resolveProperty(sslProperty("web-require-authentication"),
-					annotationAttributes.getBoolean("webRequireAuthentication")))
-
-			.setProperty("ssl-use-default-context", resolveProperty(sslProperty("use-default-context"),
-				annotationAttributes.getBoolean("sslUseDefaultContext")))
-
-			.setProperty("ssl-endpoint-identification-enabled", resolveProperty(sslProperty("endpoint-identification-enabled"),
-					annotationAttributes.getBoolean("sslEndpointIdentificationEnabled")));
-
+					annotationAttributes.getBoolean("webRequireAuthentication")));
 
 		configureComponentCertificateAliases(annotationAttributes, gemfireProperties);
 
