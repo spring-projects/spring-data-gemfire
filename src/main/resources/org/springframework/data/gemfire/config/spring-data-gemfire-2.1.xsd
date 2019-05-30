@@ -10,14 +10,14 @@
 			attributeFormDefault="unqualified"
 			version="2.1">
 
-	<xsd:import namespace="http://www.springframework.org/schema/beans"/>
 	<xsd:import namespace="http://www.springframework.org/schema/context"
-				schemaLocation="http://www.springframework.org/schema/context/spring-context.xsd" />
+				schemaLocation="https://www.springframework.org/schema/context/spring-context.xsd" />
 	<xsd:import namespace="http://www.springframework.org/schema/data/repository"
-				schemaLocation="http://www.springframework.org/schema/data/repository/spring-repository.xsd"/>
+				schemaLocation="https://www.springframework.org/schema/data/repository/spring-repository.xsd"/>
 	<xsd:import namespace="http://www.springframework.org/schema/gemfire"
-				schemaLocation="http://www.springframework.org/schema/gemfire/spring-gemfire.xsd"/>
-	<xsd:import namespace="http://www.springframework.org/schema/tool"/>
+				schemaLocation="https://www.springframework.org/schema/gemfire/spring-gemfire.xsd"/>
+	<xsd:import namespace="http://www.springframework.org/schema/tool"
+				schemaLocation="https://www.springframework.org/schema/tool/spring-tool.xsd"/>
 
 	<!-- -->
 	<xsd:annotation>
