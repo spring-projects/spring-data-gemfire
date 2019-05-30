@@ -3,18 +3,18 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:p="http://www.springframework.org/schema/p"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+	xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
 
 	<context:annotation-config/>
 
 	<bean id="point" class="java.awt.Point"/>
-	
+
 	<bean id="area" class="java.awt.geom.Area"/>
 	<bean id="beans" class="java.beans.Beans"/>
 
-	<bean id="generator" class="org.springframework.data.gemfire.serialization.AsmInstantiatorGenerator"/> 
-	
+	<bean id="generator" class="org.springframework.data.gemfire.serialization.AsmInstantiatorGenerator"/>
+
 	<bean id="instantiator" class="org.springframework.data.gemfire.serialization.WiringInstantiator">
 		<constructor-arg>
 			<bean factory-bean="generator" factory-method="getInstantiator">
@@ -23,9 +23,9 @@
 			</bean>
 		</constructor-arg>
 	</bean>
-	
+
 	<bean class="org.springframework.data.gemfire.serialization.WiringInstantiatorTest$TemplateWiringBean" abstract="true" p:beans-ref="beans"/>
-	
+
 	<bean id="instantiator-factory" class="org.springframework.data.gemfire.serialization.InstantiatorFactoryBean">
 		<property name="customTypes">
 			<map>

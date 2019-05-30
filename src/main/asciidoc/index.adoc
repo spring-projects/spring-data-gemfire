@@ -34,7 +34,7 @@ Costin Leau; David Turanski; John Blum; Oliver Gierke; Jay Bryant
 :spring-data-commons-include: ../../../../spring-data-commons/src/main/asciidoc
 :spring-data-commons-docs-html: {spring-data-commons-docs}/html
 :spring-data-commons-javadoc: https://docs.spring.io/spring-data/commons/docs/current/api
-:spring-data-schema-location: http://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+:spring-data-schema-location: https://www.springframework.org/schema/gemfire/spring-gemfire.xsd
 :spring-data-schema-namespace: http://www.springframework.org/schema/gemfire
 :spring-data-website: https://spring.io/projects/spring-data
 :spring-framework-docs: https://docs.spring.io/spring/docs/current/spring-framework-reference
