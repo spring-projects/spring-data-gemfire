@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,9 +29,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.Scope;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -41,6 +37,11 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
+
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.Scope;
+
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -58,8 +59,8 @@ import org.springframework.util.FileSystemUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * The CacheClusterConfigurationIntegrationTest class is a test suite of test cases testing the integration of
- * SDG with Pivotal GemFire8's new shared, persistent, cluster configuration service.
+ * Test suite of test cases testing the integration of Spring Data for Apache Geode with Apache Geode's
+ * new shared, persistent, cluster configuration service.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -76,17 +77,19 @@ public class CacheClusterConfigurationIntegrationTest extends ClientServerIntegr
 
 	private static File locatorWorkingDirectory;
 
+	private static List<String> locatorProcessOutput = Collections.synchronizedList(new ArrayList<>());
+
 	private static ProcessWrapper locatorProcess;
 
-	private static List<String> locatorProcessOutput = Collections.synchronizedList(new ArrayList<String>());
-
-	private static final String LOG_LEVEL = "error";
+	private static final String LOG_LEVEL = "config";
+	private static final String LOG_FILE = "Locator.log";
 
 	@Rule
 	public TestRule watchman = new TestWatcher() {
 
 		@Override
 		protected void failed(Throwable throwable, Description description) {
+
 			System.err.printf("Test [%s] failed...%n", description.getDisplayName());
 			System.err.println(ThrowableUtils.toString(throwable));
 			System.err.println("Locator process log file contents were...");
@@ -102,7 +105,7 @@ public class CacheClusterConfigurationIntegrationTest extends ClientServerIntegr
 						String.format("%s-clusterconfiglocator.log", description.getMethodName())),
 							getLocatorProcessOutput(description));
 				}
-				catch (IOException cause) {
+				catch (IllegalArgumentException | IOException cause) {
 					throw newRuntimeException(cause, "Failed to write the contents of the Locator process log to a file");
 				}
 			}
@@ -111,11 +114,13 @@ public class CacheClusterConfigurationIntegrationTest extends ClientServerIntegr
 		private String getLocatorProcessOutput(Description description) {
 
 			try {
+
 				String locatorProcessOutputString = StringUtils.collectionToDelimitedString(locatorProcessOutput,
 					FileUtils.LINE_SEPARATOR, String.format("[%1$s] - ", description.getMethodName()), "");
 
 				locatorProcessOutputString = StringUtils.hasText(locatorProcessOutputString)
-					? locatorProcessOutputString : locatorProcess.readLogFile();
+					? locatorProcessOutputString
+					: locatorProcess.readLogFile();
 
 				return locatorProcessOutputString;
 			}
@@ -145,6 +150,7 @@ public class CacheClusterConfigurationIntegrationTest extends ClientServerIntegr
 		arguments.add("-Dspring.data.gemfire.enable-cluster-configuration=true");
 		arguments.add("-Dspring.data.gemfire.load-cluster-configuration=true");
 		arguments.add(String.format("-Dgemfire.log-level=%s", LOG_LEVEL));
+		arguments.add(String.format("-Dgemfire.log-file=%s", LOG_FILE));
 		arguments.add(String.format("-Dspring.data.gemfire.locator.port=%d", availablePort));
 
 		locatorProcess = run(locatorWorkingDirectory, LocatorProcess.class,
@@ -256,6 +262,7 @@ public class CacheClusterConfigurationIntegrationTest extends ClientServerIntegr
 	}
 
 	@Test
+	@SuppressWarnings("all")
 	public void localConfigurationTest() {
 
 		try {

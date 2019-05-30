@@ -44,7 +44,7 @@ public class LocatorProcess {
 	private static final int DEFAULT_LOCATOR_PORT = 20668;
 
 	private static final String GEMFIRE_NAME = "SpringDataGemFireLocator";
-	private static final String GEMFIRE_LOG_LEVEL = "error";
+	private static final String GEMFIRE_LOG_LEVEL = "config";
 	private static final String HOSTNAME_FOR_CLIENTS = "localhost";
 	private static final String HTTP_SERVICE_PORT = "0";
 
