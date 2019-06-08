@@ -18,15 +18,15 @@ package org.springframework.data.gemfire.config.annotation;
 import org.apache.geode.cache.Region;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.gemfire.ConfigurableRegionFactoryBean;
 import org.springframework.data.gemfire.PeerRegionFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
-import org.springframework.data.gemfire.config.annotation.support.CacheTypeAwareRegionFactoryBean;
 import org.springframework.data.gemfire.config.annotation.support.Configurer;
 
 /**
- * The {@link RegionConfigurer} interface defines a contract for implementations to customize the configuration
- * of Entity-defined {@link Region Regions} when a user annotates her Spring application {@link Configuration}
- * class with {@link EnableEntityDefinedRegions}.
+ * The {@link RegionConfigurer} interface defines a contract for implementing {@link Object Objects} in order to
+ * customize the configuration of Entity-defined {@link Region Regions} when a user annotates her Spring application
+ * {@link Configuration} {@link Class} with {@link EnableEntityDefinedRegions} or {@link EnableCachingDefinedRegions}.
  *
  * @author John Blum
  * @see org.apache.geode.cache.Region
@@ -35,29 +35,49 @@ import org.springframework.data.gemfire.config.annotation.support.Configurer;
  * @see org.springframework.data.gemfire.config.annotation.EnableCachingDefinedRegions
  * @see org.springframework.data.gemfire.config.annotation.EnableEntityDefinedRegions
  * @see org.springframework.data.gemfire.config.annotation.support.Configurer
- * @see CacheTypeAwareRegionFactoryBean
+ * @see org.springframework.data.gemfire.config.annotation.support.CacheTypeAwareRegionFactoryBean
  * @since 2.0.0
  */
-public interface RegionConfigurer extends Configurer<ClientRegionFactoryBean<?, ?>> {
+public interface RegionConfigurer extends Configurer<ConfigurableRegionFactoryBean<?, ?>> {
 
 	/**
-	 * Configuration callback method providing a reference to a {@link PeerRegionFactoryBean} used to construct, configure
-	 * and initialize an instance of a peer {@link Region}.
+	 * Applies additional user-defined configuration to the {@link ConfigurableRegionFactoryBean}.
 	 *
-	 * @param beanName name of {@link Region} bean declared in the Spring application context.
-	 * @param bean reference to the {@link PeerRegionFactoryBean}.
-	 * @see PeerRegionFactoryBean
+	 * @param beanName {@link String} containing the name of the Spring bean (component).
+	 * @param bean Spring component used to construct, configure and initialize the Apache Geode or Pivotal GemFire
+	 * @see org.springframework.data.gemfire.ConfigurableRegionFactoryBean
+	 * @see #configure(String, ClientRegionFactoryBean)
+	 * @see #configure(String, PeerRegionFactoryBean)
 	 */
-	default void configure(String beanName, PeerRegionFactoryBean<?, ?> bean) { }
+	@Override
+	default void configure(String beanName, ConfigurableRegionFactoryBean<?, ?> bean) {
+
+		if (bean instanceof ClientRegionFactoryBean) {
+			configure(beanName, (ClientRegionFactoryBean<?, ?>) bean);
+		}
+		else {
+			configure(beanName, (PeerRegionFactoryBean<?, ?>) bean);
+		}
+	}
 
 	/**
 	 * Configuration callback method providing a reference to a {@link ClientRegionFactoryBean} used to construct,
 	 * configure and initialize an instance of a client {@link Region}.
 	 *
 	 * @param beanName name of {@link Region} bean declared in the Spring application context.
-	 * @param bean reference to the {@link ClientRegionFactoryBean}.
+	 * @param bean reference to the {@link ClientRegionFactoryBean} used to create the client {@link Region}.
 	 * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
 	 */
 	default void configure(String beanName, ClientRegionFactoryBean<?, ?> bean) { }
+
+	/**
+	 * Configuration callback method providing a reference to a {@link PeerRegionFactoryBean} used to construct,
+	 * configure and initialize an instance of a peer {@link Region}.
+	 *
+	 * @param beanName name of {@link Region} bean declared in the Spring application context.
+	 * @param bean reference to the {@link PeerRegionFactoryBean} used to create the peer {@link Region}.
+	 * @see org.springframework.data.gemfire.PeerRegionFactoryBean
+	 */
+	default void configure(String beanName, PeerRegionFactoryBean<?, ?> bean) { }
 
 }

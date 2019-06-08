@@ -13,29 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
+import org.apache.geode.cache.client.ClientCache;
+
+import org.springframework.data.gemfire.config.annotation.support.Configurer;
 import org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer;
 
 /**
- * The {@link ContinuousQueryListenerContainerConfigurer} interfaces defines a contract for implementations to customize
- * the configuration of SDG's {@link ContinuousQueryListenerContainer} when enabling Continuous Query (CQ) functionality
- * in Spring Boot, Pivotal GemFire/Apache Geode cache client applications.
+ * The {@link ContinuousQueryListenerContainerConfigurer} interfaces defines a contract for implementing {@link Object Objects}
+ * in order to customize the configuration of a {@link ContinuousQueryListenerContainer} when enabling Continuous Query
+ * (CQ) functionality in a Spring Boot, Apache Geode/Pivotal GemFire {@link ClientCache} applications.
  *
  * @author John Blum
+ * @see java.lang.FunctionalInterface
+ * @see org.apache.geode.cache.client.ClientCache
+ * @see org.springframework.data.gemfire.config.annotation.support.Configurer
  * @see org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer
  * @since 2.0.0
  */
-public interface ContinuousQueryListenerContainerConfigurer {
-
-	/**
-	 * Applies addditional configuration to the declared/defined {@link ContinuousQueryListenerContainer}.
-	 *
-	 * @param beanName {@link String name} of the {@link ContinuousQueryListenerContainer} bean definition.
-	 * @param container reference to the {@link ContinuousQueryListenerContainer} instance.
-	 * @see org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer
-	 */
-	void configure(String beanName, ContinuousQueryListenerContainer container);
+@FunctionalInterface
+public interface ContinuousQueryListenerContainerConfigurer extends Configurer<ContinuousQueryListenerContainer> {
 
 }

@@ -62,7 +62,7 @@ import org.springframework.util.StringUtils;
  */
 @SuppressWarnings("unused")
 public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnotationConfigSupport
-	implements ImportBeanDefinitionRegistrar {
+		implements ImportBeanDefinitionRegistrar {
 
 	public static final Integer DEFAULT_PORT = 0;
 	public static final String DEFAULT_HOST = "localhost";
@@ -81,13 +81,14 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 	 */
 	@SuppressWarnings("unchecked")
 	protected <T extends AbstractCacheConfiguration> T getCacheConfiguration() {
+
 		return Optional.ofNullable((T) this.cacheConfiguration)
 			.orElseThrow(() -> newIllegalStateException("AbstractCacheConfiguration is required"));
 	}
 
 	@Override
 	public final void registerBeanDefinitions(AnnotationMetadata importingClassMetadata,
-		BeanDefinitionRegistry registry) {
+			BeanDefinitionRegistry registry) {
 
 		if (isAnnotationPresent(importingClassMetadata)) {
 			Map<String, Object> annotationAttributes = getAnnotationAttributes(importingClassMetadata);
@@ -98,11 +99,12 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 
 	@SuppressWarnings("unused")
 	protected void registerBeanDefinitions(AnnotationMetadata importingClassMetaData,
-		Map<String, Object> annotationAttributes, BeanDefinitionRegistry registry) {
+			Map<String, Object> annotationAttributes, BeanDefinitionRegistry registry) {
+
 	}
 
 	protected void setGemFireProperties(AnnotationMetadata importingClassMetadata,
-		Map<String, Object> annotationAttributes, BeanDefinitionRegistry registry) {
+			Map<String, Object> annotationAttributes, BeanDefinitionRegistry registry) {
 
 		Properties gemfireProperties = toGemFireProperties(annotationAttributes);
 
@@ -125,7 +127,7 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 	}
 
 	protected void registerGemFirePropertiesBeanPostProcessor(BeanDefinitionRegistry registry,
-		Properties customGemFireProperties) {
+			Properties customGemFireProperties) {
 
 		BeanDefinitionBuilder builder =
 			BeanDefinitionBuilder.genericBeanDefinition(GemFirePropertiesBeanPostProcessor.class);
@@ -142,7 +144,7 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 	}
 
 	protected void registerClientGemFirePropertiesConfigurer(BeanDefinitionRegistry registry,
-		Properties gemfireProperties) {
+			Properties gemfireProperties) {
 
 		BeanDefinitionBuilder builder =
 			BeanDefinitionBuilder.genericBeanDefinition(ClientGemFirePropertiesConfigurer.class);
@@ -153,7 +155,7 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 	}
 
 	protected void registerPeerGemFirePropertiesConfigurer(BeanDefinitionRegistry registry,
-		Properties gemfireProperties) {
+			Properties gemfireProperties) {
 
 		BeanDefinitionBuilder builder =
 			BeanDefinitionBuilder.genericBeanDefinition(PeerGemFirePropertiesConfigurer.class);
@@ -165,8 +167,9 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 
 	protected BeanDefinitionHolder newBeanDefinitionHolder(BeanDefinitionBuilder builder) {
 
-		return new BeanDefinitionHolder(builder.getBeanDefinition(),
-			generateBeanName(builder.getRawBeanDefinition().getBeanClass().getSimpleName()));
+		String beanName = generateBeanName(builder.getRawBeanDefinition().getBeanClass().getSimpleName());
+
+		return new BeanDefinitionHolder(builder.getBeanDefinition(), beanName);
 	}
 
 	protected String generateBeanName() {
@@ -221,7 +224,10 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 	}
 
 	protected String resolveHost(String hostname, String defaultHostname) {
-		return Optional.ofNullable(hostname).filter(StringUtils::hasText).orElse(defaultHostname);
+
+		return Optional.ofNullable(hostname)
+			.filter(StringUtils::hasText)
+			.orElse(defaultHostname);
 	}
 
 	protected Integer resolvePort(Integer port) {
@@ -229,7 +235,9 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 	}
 
 	protected Integer resolvePort(Integer port, Integer defaultPort) {
-		return Optional.ofNullable(port).orElse(defaultPort);
+
+		return Optional.ofNullable(port)
+			.orElse(defaultPort);
 	}
 
 	protected static class AbstractGemFirePropertiesConfigurer {

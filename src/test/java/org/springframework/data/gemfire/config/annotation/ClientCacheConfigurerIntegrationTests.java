@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,11 +21,14 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.geode.cache.client.ClientCache;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.apache.geode.cache.client.ClientCache;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -41,16 +43,21 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
  * @see org.apache.geode.cache.client.ClientCache
+ * @see org.springframework.context.annotation.Bean
  * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.ClientCacheApplication
  * @see org.springframework.data.gemfire.config.annotation.ClientCacheConfigurer
- * @see org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor
+ * @see org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockObjects
  * @see org.springframework.test.context.junit4.SpringRunner
- * @since 1.1.0
+ * @since 2.1.0
  */
 @RunWith(SpringRunner.class)
 @SuppressWarnings("unused")
 public class ClientCacheConfigurerIntegrationTests {
+
+	private static final AtomicBoolean testClientCacheConfigurerThreeCalled = new AtomicBoolean(false);
+
+	private static final String GEMFIRE_LOG_LEVEL = "error";
 
 	@Autowired
 	private ClientCache clientCache;
@@ -86,8 +93,13 @@ public class ClientCacheConfigurerIntegrationTests {
 		assertClientCacheConfigurerInvokedSuccessfully(this.configurerTwo, "gemfireCache");
 	}
 
+	@Test
+	public void clientCacheConfigurerThreeCalledSuccessfully() {
+		assertThat(testClientCacheConfigurerThreeCalled.get()).isTrue();
+	}
+
 	@EnableGemFireMockObjects
-	@ClientCacheApplication(logLevel = "error")
+	@ClientCacheApplication(logLevel = GEMFIRE_LOG_LEVEL)
 	static class TestConfiguration {
 
 		@Bean
@@ -98,6 +110,11 @@ public class ClientCacheConfigurerIntegrationTests {
 		@Bean
 		TestClientCacheConfigurer testClientCacheConfigurerTwo() {
 			return new TestClientCacheConfigurer();
+		}
+
+		@Bean
+		ClientCacheConfigurer testClientCacheConfigurerThree() {
+			return (beanName, bean) -> testClientCacheConfigurerThreeCalled.set(true);
 		}
 
 		@Bean

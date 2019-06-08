@@ -24,9 +24,9 @@ import org.springframework.data.gemfire.config.annotation.support.Configurer;
 import org.springframework.data.gemfire.search.lucene.LuceneIndexFactoryBean;
 
 /**
- * The {@link IndexConfigurer} interface defines a contract for implementations to customize the configuration
- * of Entity-defined {@link Index Indexes} when a user annotates her Spring application {@link Configuration}
- * class with {@link EnableIndexing}.
+ * The {@link IndexConfigurer} interface defines a contract for implementing {@link Object Objects} in order to
+ * customize the configuration of Entity-defined {@link Index Indexes} when a user annotates her Spring application
+ * {@link Configuration} {@link Class} with {@link EnableIndexing}.
  *
  * @author John Blum
  * @see org.apache.geode.cache.lucene.LuceneIndex
@@ -44,7 +44,7 @@ public interface IndexConfigurer extends Configurer<IndexFactoryBean> {
 	 * Configuration callback method providing a reference to a {@link IndexFactoryBean} used to construct, configure
 	 * and initialize an instance of a peer {@link Index}.
 	 *
-	 * @param beanName name of {@link Index} bean declared in the Spring application context.
+	 * @param beanName name of the {@link Index} bean declared in the Spring application context.
 	 * @param bean reference to the {@link IndexFactoryBean}.
 	 * @see org.springframework.data.gemfire.IndexFactoryBean
 	 */
@@ -54,7 +54,7 @@ public interface IndexConfigurer extends Configurer<IndexFactoryBean> {
 	 * Configuration callback method providing a reference to a {@link LuceneIndexFactoryBean} used to construct,
 	 * configure and initialize an instance of a peer {@link LuceneIndex}.
 	 *
-	 * @param beanName name of {@link LuceneIndex} bean declared in the Spring application context.
+	 * @param beanName name of the {@link LuceneIndex} bean declared in the Spring application context.
 	 * @param bean reference to the {@link LuceneIndexFactoryBean}.
 	 * @see org.springframework.data.gemfire.search.lucene.LuceneIndexFactoryBean
 	 */

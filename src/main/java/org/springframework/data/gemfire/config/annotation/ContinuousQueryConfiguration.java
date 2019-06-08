@@ -13,17 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import static java.util.Arrays.stream;
-import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeMap;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
@@ -31,10 +28,10 @@ import java.util.stream.Collectors;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.QueryService;
+
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Bean;
@@ -135,6 +132,7 @@ public class ContinuousQueryConfiguration extends AbstractAnnotationConfigSuppor
 			public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 
 				if (bean instanceof ContinuousQueryListenerContainer) {
+
 					this.container = (ContinuousQueryListenerContainer) bean;
 					this.continuousQueryDefinitions.forEach(this.container::addListener);
 					this.continuousQueryDefinitions.clear();
@@ -216,21 +214,8 @@ public class ContinuousQueryConfiguration extends AbstractAnnotationConfigSuppor
 	protected List<ContinuousQueryListenerContainerConfigurer> resolveContinuousQueryListenerContainerConfigurers() {
 
 		return Optional.ofNullable(this.configurers)
-			.filter(configurers -> !configurers.isEmpty())
 			.orElseGet(() ->
-				Optional.of(this.getBeanFactory())
-					.filter(beanFactory -> beanFactory instanceof ListableBeanFactory)
-					.map(beanFactory -> {
-
-						Map<String, ContinuousQueryListenerContainerConfigurer> beansOfType =
-							((ListableBeanFactory) beanFactory).getBeansOfType(ContinuousQueryListenerContainerConfigurer.class,
-								true, false);
-
-						return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
-
-					})
-					.orElseGet(Collections::emptyList)
-			);
+				Collections.singletonList(LazyResovlingComposableContinuousQueryListenerContainerConfigurer.create(getBeanFactory())));
 	}
 
 	protected Optional<ErrorHandler> resolveErrorHandler() {

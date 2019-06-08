@@ -13,16 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.client;
 
 import static java.util.Arrays.stream;
 import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
-import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeCollection;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -42,11 +38,11 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.compression.Compressor;
+
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.data.gemfire.ConfigurableRegionFactoryBean;
 import org.springframework.data.gemfire.GemfireUtils;
-import org.springframework.data.gemfire.config.annotation.RegionConfigurer;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.gemfire.eviction.EvictingRegionFactoryBean;
 import org.springframework.data.gemfire.expiration.ExpiringRegionFactoryBean;
@@ -126,18 +122,7 @@ public class ClientRegionFactoryBean<K, V> extends ConfigurableRegionFactoryBean
 
 	private Float loadFactor;
 
-	private List<RegionConfigurer> regionConfigurers = Collections.emptyList();
-
 	private RegionAttributes<K, V> attributes;
-
-	private RegionConfigurer compositeRegionConfigurer = new RegionConfigurer() {
-
-		@Override
-		public void configure(String beanName, ClientRegionFactoryBean<?, ?> bean) {
-			nullSafeCollection(regionConfigurers)
-				.forEach(regionConfigurer -> regionConfigurer.configure(beanName, bean));
-		}
-	};
 
 	private String diskStoreName;
 	private String poolName;
@@ -154,7 +139,7 @@ public class ClientRegionFactoryBean<K, V> extends ConfigurableRegionFactoryBean
 	 * @see org.apache.geode.cache.Region
 	 */
 	@Override
-	protected Region<K, V> createRegion(GemFireCache gemfireCache, String regionName) throws Exception {
+	protected Region<K, V> createRegion(GemFireCache gemfireCache, String regionName) {
 
 		applyRegionConfigurers(regionName);
 
@@ -186,7 +171,7 @@ public class ClientRegionFactoryBean<K, V> extends ConfigurableRegionFactoryBean
 			logInfo("Creating client sub-Region [%1$s] with parent Region [%2$s]",
 				regionName, parent.getName());
 
-			return clientRegionFactory.<K, V>createSubregion(parent, regionName);
+			return clientRegionFactory.createSubregion(parent, regionName);
 		}
 		else {
 			logInfo("Creating client Region [%s]", regionName);
