@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire;
 
 import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
@@ -23,10 +22,10 @@ import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeIter
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 import org.apache.geode.cache.Region;
+
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.config.annotation.RegionConfigurer;
@@ -54,6 +53,12 @@ public abstract class ConfigurableRegionFactoryBean<K, V> extends ResolvableRegi
 
 		@Override
 		public void configure(String beanName, ClientRegionFactoryBean<?, ?> bean) {
+			nullSafeCollection(regionConfigurers)
+				.forEach(regionConfigurer -> regionConfigurer.configure(beanName, bean));
+		}
+
+		@Override
+		public void configure(String beanName, PeerRegionFactoryBean<?, ?> bean) {
 			nullSafeCollection(regionConfigurers)
 				.forEach(regionConfigurer -> regionConfigurer.configure(beanName, bean));
 		}
@@ -92,7 +97,10 @@ public abstract class ConfigurableRegionFactoryBean<K, V> extends ResolvableRegi
 	 * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
 	 */
 	public void setRegionConfigurers(List<RegionConfigurer> regionConfigurers) {
-		this.regionConfigurers = Optional.ofNullable(regionConfigurers).orElseGet(Collections::emptyList);
+
+		this.regionConfigurers = regionConfigurers != null
+			? regionConfigurers
+			: Collections.emptyList();
 	}
 
 	/**
@@ -135,13 +143,13 @@ public abstract class ConfigurableRegionFactoryBean<K, V> extends ResolvableRegi
 	 */
 	protected void applyRegionConfigurers(String regionName, Iterable<RegionConfigurer> regionConfigurers) {
 
-		if (this instanceof PeerRegionFactoryBean) {
-			StreamSupport.stream(nullSafeIterable(regionConfigurers).spliterator(), false)
-				.forEach(regionConfigurer -> regionConfigurer.configure(regionName, (PeerRegionFactoryBean<K, V>) this));
-		}
-		else if (this instanceof ClientRegionFactoryBean) {
+		if (this instanceof ClientRegionFactoryBean) {
 			StreamSupport.stream(nullSafeIterable(regionConfigurers).spliterator(), false)
 				.forEach(regionConfigurer -> regionConfigurer.configure(regionName, (ClientRegionFactoryBean<K, V>) this));
+		}
+		else if (this instanceof PeerRegionFactoryBean) {
+			StreamSupport.stream(nullSafeIterable(regionConfigurers).spliterator(), false)
+				.forEach(regionConfigurer -> regionConfigurer.configure(regionName, (PeerRegionFactoryBean<K, V>) this));
 		}
 	}
 }

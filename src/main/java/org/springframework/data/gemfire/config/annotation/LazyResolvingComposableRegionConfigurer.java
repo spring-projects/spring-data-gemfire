@@ -16,6 +16,7 @@
 package org.springframework.data.gemfire.config.annotation;
 
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.data.gemfire.ConfigurableRegionFactoryBean;
 import org.springframework.data.gemfire.PeerRegionFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.config.annotation.support.AbstractLazyResolvingComposableConfigurer;
@@ -25,6 +26,8 @@ import org.springframework.lang.Nullable;
  * Composition for {@link RegionConfigurer}.
  *
  * @author John Blum
+ * @see org.springframework.beans.factory.BeanFactory
+ * @see org.springframework.data.gemfire.ConfigurableRegionFactoryBean
  * @see org.springframework.data.gemfire.PeerRegionFactoryBean
  * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
@@ -32,7 +35,7 @@ import org.springframework.lang.Nullable;
  * @since 2.2.0
  */
 public class LazyResolvingComposableRegionConfigurer
-		extends AbstractLazyResolvingComposableConfigurer<ClientRegionFactoryBean<?, ?>, RegionConfigurer>
+		extends AbstractLazyResolvingComposableConfigurer<ConfigurableRegionFactoryBean<?, ?>, RegionConfigurer>
 		implements RegionConfigurer {
 
 	public static LazyResolvingComposableRegionConfigurer create() {
@@ -49,9 +52,12 @@ public class LazyResolvingComposableRegionConfigurer
 	}
 
 	@Override
-	public void configure(String beanName, PeerRegionFactoryBean<?, ?> peerRegionFactoryBean) {
+	public void configure(String beanName, ClientRegionFactoryBean<?, ?> bean) {
+		resolveConfigurers().forEach(configurer -> configurer.configure(beanName, bean));
+	}
 
-		resolveConfigurers().forEach(configurer ->
-			configurer.configure(beanName, peerRegionFactoryBean));
+	@Override
+	public void configure(String beanName, PeerRegionFactoryBean<?, ?> peerRegionFactoryBean) {
+		resolveConfigurers().forEach(configurer -> configurer.configure(beanName, peerRegionFactoryBean));
 	}
 }

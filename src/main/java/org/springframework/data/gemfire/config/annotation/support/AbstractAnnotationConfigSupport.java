@@ -14,7 +14,6 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.config.annotation.support;
 
 import static org.springframework.data.gemfire.util.CollectionUtils.asSet;
@@ -33,6 +32,7 @@ import java.util.function.Supplier;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanFactory;
@@ -150,6 +150,7 @@ public abstract class AbstractAnnotationConfigSupport
 	 * @see #newEvaluationContext(BeanFactory)
 	 */
 	public AbstractAnnotationConfigSupport(BeanFactory beanFactory) {
+
 		this.evaluationContext = newEvaluationContext(beanFactory);
 		this.log = newLog();
 	}

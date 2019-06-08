@@ -15,35 +15,38 @@
  */
 package org.springframework.data.gemfire.config.annotation.support;
 
-import org.springframework.beans.factory.FactoryBean;
 import org.springframework.core.Ordered;
 
 /**
- * The {@link Configurer} interface defines a contract for implementing objects that can modify
- * some aspect of configuration given a reference to the Spring {@link FactoryBean} responsible
- * for the configuration of some {@link Object} or Spring bean.
+ * The {@link Configurer} interface defines a contract for implementing objects that can modify some aspect
+ * of configuration given a reference to the Spring component responsible for the configuration of some
+ * Apache Geode or Pivotal GemFire {@link Object} declared as a bean in the Spring container.
  *
  * @author John Blum
- * @see org.springframework.beans.factory.FactoryBean
+ * @param <T> {@link Class} type of the configurable Spring component processed by this {@link Configurer}.
  * @see org.springframework.core.Ordered
  * @since 2.2.0
  */
 @FunctionalInterface
-public interface Configurer<T extends FactoryBean<?>> extends Ordered {
+public interface Configurer<T> extends Ordered {
 
 	/**
-	 * Applies additional configuration to the given Spring {@link FactoryBean}.
+	 * Applies additional user-defined configuration to the given Spring component.
 	 *
-	 * @param beanName {@link String} containing the name of the Spring bean.
-	 * @param factoryBean {@link FactoryBean} used to construct, configure and initialize the {@link Object}
-	 * or Spring Bean.
+	 * @param beanName {@link String} containing the name of the Spring bean (component).
+	 * @param bean Spring component used to construct, configure and initialize the Apache Geode or Pivotal GemFire
+	 * {@link Object} declared as a bean in the Spring container.
 	 */
-	void configure(String beanName, T factoryBean);
+	void configure(String beanName, T bean);
 
 	/**
-	 * Defines the {@literal order} of this {@link Configurer} bean relative to other {@link Configurer Configurers}.
+	 * Determines the {@literal order} of this {@link Configurer} bean relative to other {@link Configurer Configurers}
+	 * of the same {@link Class type}.
+	 *
+	 * Returns {@literal 0} by default.
 	 *
 	 * @return the {@literal order} in which this {@link Configurer} is applied.
+	 * @see org.springframework.core.Ordered#getOrder()
 	 */
 	@Override
 	default int getOrder() {

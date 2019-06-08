@@ -25,23 +25,24 @@ import java.util.stream.Stream;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.core.OrderComparator;
 import org.springframework.lang.Nullable;
 
 /**
  * Abstract base class for {@link Configurer} interface implementations, encapsulating logic and functionality
- * common to all {@link Configurer} implementations
+ * common to all lazy resolving, composable {@link Configurer} implementations.
  *
  * @author John Blum
+ * @param <T> {@link Class} type of the configurable Spring component processed by this {@link Configurer}.
+ * @param <C> {@link Class sub-Class} type of {@link Configurer}.
  * @see org.springframework.beans.factory.BeanFactory
  * @see org.springframework.beans.factory.BeanFactoryAware
- * @see org.springframework.beans.factory.FactoryBean
+ * @see org.springframework.core.OrderComparator
  * @see org.springframework.data.gemfire.config.annotation.support.Configurer
  * @since 2.2.0
  */
-public abstract class AbstractLazyResolvingComposableConfigurer<T extends FactoryBean<?>, C extends Configurer<T>>
+public abstract class AbstractLazyResolvingComposableConfigurer<T, C extends Configurer<T>>
 		implements BeanFactoryAware, Configurer<T> {
 
 	private BeanFactory beanFactory;
@@ -109,18 +110,18 @@ public abstract class AbstractLazyResolvingComposableConfigurer<T extends Factor
 	}
 
 	/**
-	 * Applies the configuration from the composition of {@link Configurer Configurers} composed by this
-	 * {@link Configurer} to the given {@link FactoryBean}.
+	 * Applies the configuration from the composition of {@link Configurer Configurers} composed by
+	 * this {@link Configurer} to the given Spring component (bean).
 	 *
 	 * @param beanName {@link String} containing the name of the Spring bean.
-	 * @param factoryBean {@link FactoryBean} used to construct, configure and initialize the {@link Object}
+	 * @param bean Spring component used to construct, configure and initialize the {@link Object}.
 	 * @see #resolveConfigurers()
 	 */
 	@Override
-	public synchronized void configure(String beanName, T factoryBean) {
+	public synchronized void configure(String beanName, T bean) {
 
 		resolveConfigurers().forEach(configurer ->
-			configurer.configure(beanName, factoryBean));
+			configurer.configure(beanName, bean));
 	}
 
 	/**
