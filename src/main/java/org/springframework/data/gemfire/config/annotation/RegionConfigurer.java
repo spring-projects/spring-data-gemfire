@@ -18,7 +18,6 @@ package org.springframework.data.gemfire.config.annotation;
 import org.apache.geode.cache.Region;
 
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.gemfire.ConfigurableRegionFactoryBean;
 import org.springframework.data.gemfire.PeerRegionFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.config.annotation.support.Configurer;
@@ -38,27 +37,7 @@ import org.springframework.data.gemfire.config.annotation.support.Configurer;
  * @see org.springframework.data.gemfire.config.annotation.support.CacheTypeAwareRegionFactoryBean
  * @since 2.0.0
  */
-public interface RegionConfigurer extends Configurer<ConfigurableRegionFactoryBean<?, ?>> {
-
-	/**
-	 * Applies additional user-defined configuration to the {@link ConfigurableRegionFactoryBean}.
-	 *
-	 * @param beanName {@link String} containing the name of the Spring bean (component).
-	 * @param bean Spring component used to construct, configure and initialize the Apache Geode or Pivotal GemFire
-	 * @see org.springframework.data.gemfire.ConfigurableRegionFactoryBean
-	 * @see #configure(String, ClientRegionFactoryBean)
-	 * @see #configure(String, PeerRegionFactoryBean)
-	 */
-	@Override
-	default void configure(String beanName, ConfigurableRegionFactoryBean<?, ?> bean) {
-
-		if (bean instanceof ClientRegionFactoryBean) {
-			configure(beanName, (ClientRegionFactoryBean<?, ?>) bean);
-		}
-		else {
-			configure(beanName, (PeerRegionFactoryBean<?, ?>) bean);
-		}
-	}
+public interface RegionConfigurer extends Configurer<ClientRegionFactoryBean<?, ?>> {
 
 	/**
 	 * Configuration callback method providing a reference to a {@link ClientRegionFactoryBean} used to construct,

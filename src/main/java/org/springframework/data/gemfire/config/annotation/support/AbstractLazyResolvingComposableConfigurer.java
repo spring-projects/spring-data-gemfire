@@ -27,6 +27,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.core.OrderComparator;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 /**
@@ -76,7 +77,7 @@ public abstract class AbstractLazyResolvingComposableConfigurer<T, C extends Con
 	 * @return the primary {@link Class} type of the {@link Configurer} composed by this {@link Configurer}.
 	 * @see java.lang.Class
 	 */
-	protected abstract Class<C> getConfigurerType();
+	protected abstract @NonNull Class<C> getConfigurerType();
 
 	/**
 	 * Resolves the {@link Configurer Configurers} defined, declared and registered in the Spring application context.
@@ -86,7 +87,7 @@ public abstract class AbstractLazyResolvingComposableConfigurer<T, C extends Con
 	 * @see org.springframework.data.gemfire.config.annotation.support.Configurer
 	 * @see java.util.stream.Stream
 	 */
-	protected Stream<C> resolveConfigurers() {
+	protected @NonNull Stream<C> resolveConfigurers() {
 
 		return Optional.ofNullable(this.configurers)
 			.filter(it -> !it.isEmpty())
@@ -134,7 +135,7 @@ public abstract class AbstractLazyResolvingComposableConfigurer<T, C extends Con
 	 * @see #setBeanFactory(BeanFactory)
 	 */
 	@SuppressWarnings("unchecked")
-	public <S extends AbstractLazyResolvingComposableConfigurer<T, C>> S with(BeanFactory beanFactory) {
+	public <S extends AbstractLazyResolvingComposableConfigurer<T, C>> S with(@Nullable BeanFactory beanFactory) {
 
 		setBeanFactory(beanFactory);
 
