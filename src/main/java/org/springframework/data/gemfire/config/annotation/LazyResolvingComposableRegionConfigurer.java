@@ -16,7 +16,6 @@
 package org.springframework.data.gemfire.config.annotation;
 
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.data.gemfire.ConfigurableRegionFactoryBean;
 import org.springframework.data.gemfire.PeerRegionFactoryBean;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.config.annotation.support.AbstractLazyResolvingComposableConfigurer;
@@ -35,7 +34,7 @@ import org.springframework.lang.Nullable;
  * @since 2.2.0
  */
 public class LazyResolvingComposableRegionConfigurer
-		extends AbstractLazyResolvingComposableConfigurer<ConfigurableRegionFactoryBean<?, ?>, RegionConfigurer>
+		extends AbstractLazyResolvingComposableConfigurer<ClientRegionFactoryBean<?, ?>, RegionConfigurer>
 		implements RegionConfigurer {
 
 	public static LazyResolvingComposableRegionConfigurer create() {
@@ -49,11 +48,6 @@ public class LazyResolvingComposableRegionConfigurer
 	@Override
 	protected Class<RegionConfigurer> getConfigurerType() {
 		return RegionConfigurer.class;
-	}
-
-	@Override
-	public void configure(String beanName, ClientRegionFactoryBean<?, ?> bean) {
-		resolveConfigurers().forEach(configurer -> configurer.configure(beanName, bean));
 	}
 
 	@Override
