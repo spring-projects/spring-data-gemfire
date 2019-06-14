@@ -3,6 +3,20 @@ SPRING DATA GEMFIRE CHANGELOG
 https://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.2.0.RC1 (2019-06-14)
+-----------------------------------------
+* SGF-853 - Create security policy readme.
+* SGF-852 - Add support to EnableSsl for ssl-use-default-context and ssl-endpoint-identification-enabled.
+* SGF-851 - Fix CacheClusterConfigurationIntegrationTest.
+* SGF-850 - Refactor current SDG XML Schemas (XSD) and add new SDG 2.2 XML Schemas (XSD).
+* SGF-849 - Add support for lazy resolving, composable Configurers.
+* SGF-848 - Add support for dynamic HTTP client port configuration based on protocol/scheme.
+* SGF-846 - Add support for HTTPS and Follow Redirects when using @EnableClusterConfiguration.
+* SGF-834 - Release 2.2 RC1 (Moore).
+* SGF-827 - URL Cleanup.
+* SGF-521 - Configure GatewayReceivers with Annotations.
+
+
 Changes in version 2.1.9.RELEASE (2019-06-14)
 ---------------------------------------------
 * SGF-850 - Refactor current SDG XML Schemas (XSD) and add new SDG 2.2 XML Schemas (XSD).
