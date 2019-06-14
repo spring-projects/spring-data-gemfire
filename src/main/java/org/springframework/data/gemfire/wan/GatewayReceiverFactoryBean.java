@@ -24,10 +24,11 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
+
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.gemfire.config.annotation.GatewayReceiverConfigurer;
 import org.springframework.data.gemfire.util.CollectionUtils;
-import org.springframework.data.gemfire.wan.annotation.EnableGatewayReceiverConfigurer;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -37,11 +38,12 @@ import org.springframework.util.StringUtils;
  * @author David Turanski
  * @author John Blum
  * @author Udo Kohlmeyer
- * @see org.springframework.context.SmartLifecycle
- * @see org.springframework.data.gemfire.wan.AbstractWANComponentFactoryBean
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.wan.GatewayReceiver
  * @see org.apache.geode.cache.wan.GatewayReceiverFactory
+ * @see org.apache.geode.cache.wan.GatewayTransportFilter
+ * @see org.springframework.context.SmartLifecycle
+ * @see org.springframework.data.gemfire.wan.AbstractWANComponentFactoryBean
  * @since 1.2.2
  */
 @SuppressWarnings("unused")
@@ -57,13 +59,13 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 	private Integer startPort;
 
 	@Autowired
+	private GatewayReceiverConfigurer gatewayReceiverConfigurer;
+
+	@Autowired
 	private List<GatewayTransportFilter> transportFilters;
 
 	private String bindAddress;
 	private String hostnameForSenders;
-
-	@Autowired
-	private EnableGatewayReceiverConfigurer gatewayReceiverConfigurer;
 
 	/**
 	 * Constructs an instance of the {@link GatewayReceiverFactoryBean} class initialized with a reference to
@@ -81,7 +83,7 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 	 */
 	@Override
 	public GatewayReceiver getObject() throws Exception {
-		return gatewayReceiver;
+		return this.gatewayReceiver;
 	}
 
 	/**
@@ -89,58 +91,59 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 	 */
 	@Override
 	public Class<?> getObjectType() {
-		return (gatewayReceiver != null ? gatewayReceiver.getClass() : GatewayReceiver.class);
+
+		return this.gatewayReceiver != null
+			? this.gatewayReceiver.getClass()
+			: GatewayReceiver.class;
 	}
 
 	/**
 	 * @inheritDoc
 	 */
 	@Override
-	protected void doInit() throws Exception {
+	protected void doInit() {
+
 		GatewayReceiverFactory gatewayReceiverFactory = cache.createGatewayReceiverFactory();
 
-		Optional.of(gatewayReceiverConfigurer)
-				.ifPresent(gatewayReceiverConfigurer1 -> gatewayReceiverConfigurer1.configure("GatewayReceiver",this));
+		Optional.of(this.gatewayReceiverConfigurer)
+				.ifPresent(it -> it.configure(getName(),this));
 
-		if (StringUtils.hasText(bindAddress)) {
-			gatewayReceiverFactory.setBindAddress(bindAddress);
+		if (StringUtils.hasText(this.bindAddress)) {
+			gatewayReceiverFactory.setBindAddress(this.bindAddress);
 		}
 
-		if (StringUtils.hasText(hostnameForSenders)) {
-			gatewayReceiverFactory.setHostnameForSenders(hostnameForSenders);
+		if (StringUtils.hasText(this.hostnameForSenders)) {
+			gatewayReceiverFactory.setHostnameForSenders(this.hostnameForSenders);
 		}
 
-		int localStartPort = defaultPort(startPort, GatewayReceiver.DEFAULT_START_PORT);
-		int localEndPort = defaultPort(endPort, GatewayReceiver.DEFAULT_END_PORT);
+		int localStartPort = defaultPort(this.startPort, GatewayReceiver.DEFAULT_START_PORT);
+		int localEndPort = defaultPort(this.endPort, GatewayReceiver.DEFAULT_END_PORT);
 
 		Assert.isTrue(localStartPort <= localEndPort,
 			String.format("'startPort' must be less than or equal to %d.", localEndPort));
 
 		gatewayReceiverFactory.setStartPort(localStartPort);
 		gatewayReceiverFactory.setEndPort(localEndPort);
-		gatewayReceiverFactory.setManualStart(manualStart);
+		gatewayReceiverFactory.setManualStart(this.manualStart);
 
-		if (maximumTimeBetweenPings != null) {
-			gatewayReceiverFactory.setMaximumTimeBetweenPings(maximumTimeBetweenPings);
-		}
+		Optional.ofNullable(this.maximumTimeBetweenPings).ifPresent(gatewayReceiverFactory::setMaximumTimeBetweenPings);
+		Optional.ofNullable(this.socketBufferSize).ifPresent(gatewayReceiverFactory::setSocketBufferSize);
 
-		if (socketBufferSize != null) {
-			gatewayReceiverFactory.setSocketBufferSize(socketBufferSize);
-		}
+		CollectionUtils.nullSafeList(transportFilters).forEach(gatewayReceiverFactory::addGatewayTransportFilter);
 
-		for (GatewayTransportFilter transportFilter : CollectionUtils.nullSafeList(transportFilters)) {
-			gatewayReceiverFactory.addGatewayTransportFilter(transportFilter);
-		}
-
-		gatewayReceiver = gatewayReceiverFactory.create();
+		this.gatewayReceiver = gatewayReceiverFactory.create();
 	}
 
 	protected int defaultPort(Integer port, int defaultPort) {
-		return (port != null ? port : defaultPort);
+		return port != null ? port : defaultPort;
 	}
 
 	public void setGatewayReceiver(GatewayReceiver gatewayReceiver) {
 		this.gatewayReceiver = gatewayReceiver;
+	}
+
+	public void setGatewayReceiverConfigurer(GatewayReceiverConfigurer gatewayReceiverConfigurer) {
+		this.gatewayReceiverConfigurer = gatewayReceiverConfigurer;
 	}
 
 	public void setBindAddress(String bindAddress) {
@@ -177,9 +180,5 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 
 	public Collection<? extends GatewayTransportFilter> getTransportFilters() {
 		return Collections.unmodifiableList(transportFilters);
-	}
-
-	public void setGatewayReceiverConfigurer(EnableGatewayReceiverConfigurer gatewayReceiverConfigurer) {
-		this.gatewayReceiverConfigurer = gatewayReceiverConfigurer;
 	}
 }

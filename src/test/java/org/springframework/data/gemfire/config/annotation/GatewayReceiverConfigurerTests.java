@@ -1,3 +1,18 @@
+/*
+ * Copyright 2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -7,10 +22,12 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Optional;
 
-import org.apache.geode.cache.wan.GatewayReceiver;
-import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.junit.After;
 import org.junit.Test;
+
+import org.apache.geode.cache.wan.GatewayReceiver;
+import org.apache.geode.cache.wan.GatewayTransportFilter;
+
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -18,13 +35,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertySource;
 import org.springframework.data.gemfire.wan.GatewayReceiverFactoryBean;
-import org.springframework.data.gemfire.wan.annotation.EnableGatewayReceiver;
-import org.springframework.data.gemfire.wan.annotation.EnableGatewayReceiverConfiguration;
-import org.springframework.data.gemfire.wan.annotation.EnableGatewayReceiverConfigurer;
 import org.springframework.mock.env.MockPropertySource;
 
 /**
- * Tests for {@link org.springframework.data.gemfire.wan.annotation.EnableGatewayReceiver}.
+ * Tests for {@link EnableGatewayReceiver}.
  *
  * @author Udo Kohlmeyer
  * @see org.junit.Test
@@ -34,11 +48,11 @@ import org.springframework.mock.env.MockPropertySource;
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringRunner
  * @see org.springframework.data.gemfire.wan.GatewayReceiverFactoryBean
- * @see EnableGatewayReceiverConfigurer
- * @see EnableGatewayReceiverConfiguration
+ * @see GatewayReceiverConfigurer
+ * @see GatewayReceiverConfiguration
  * @since 2.2.0
  */
-public class EnableEnableGatewayReceiverConfigurerTests {
+public class GatewayReceiverConfigurerTests {
 
 	private ConfigurableApplicationContext applicationContext;
 
@@ -48,7 +62,7 @@ public class EnableEnableGatewayReceiverConfigurerTests {
 	}
 
 	private ConfigurableApplicationContext newApplicationContext(PropertySource<?> testPropertySource,
-		Class<?>... annotatedClasses) {
+			Class<?>... annotatedClasses) {
 
 		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
 
@@ -69,7 +83,7 @@ public class EnableEnableGatewayReceiverConfigurerTests {
 		MockPropertySource testPropertySource = new MockPropertySource();
 
 		this.applicationContext = newApplicationContext(testPropertySource,
-			EnableEnableGatewayReceiverConfigurerTests.TestConfigurationWithProperties.class);
+			GatewayReceiverConfigurerTests.TestConfigurationWithProperties.class);
 
 		assertThat(this.applicationContext).isNotNull();
 		assertThat(this.applicationContext.containsBean("GatewayReceiver")).isTrue();
@@ -103,7 +117,7 @@ public class EnableEnableGatewayReceiverConfigurerTests {
 			.withProperty("spring.data.gemfire.gateway.receiver.transport-filters", "transportBean1,transportBean2");
 
 		this.applicationContext = newApplicationContext(testPropertySource,
-			EnableEnableGatewayReceiverConfigurerTests.TestConfigurationWithProperties.class);
+			GatewayReceiverConfigurerTests.TestConfigurationWithProperties.class);
 
 		assertThat(this.applicationContext).isNotNull();
 		assertThat(this.applicationContext.containsBean("GatewayReceiver")).isTrue();
@@ -134,7 +148,7 @@ public class EnableEnableGatewayReceiverConfigurerTests {
 			.withProperty("spring.data.gemfire.gateway.receiver.transport-filters", "transportBean2,transportBean1");
 
 		this.applicationContext = newApplicationContext(testPropertySource,
-			EnableEnableGatewayReceiverConfigurerTests.TestConfiguration.class);
+			GatewayReceiverConfigurerTests.TestConfiguration.class);
 
 		assertThat(this.applicationContext).isNotNull();
 		assertThat(this.applicationContext.containsBean("GatewayReceiver")).isTrue();
@@ -164,16 +178,16 @@ public class EnableEnableGatewayReceiverConfigurerTests {
 
 		@Bean("transportBean1")
 		GatewayTransportFilter createGatewayTransportBean1() {
-			return new EnableEnableGatewayReceiverConfigurerTests.TestGatewayTransportFilter("transportBean1");
+			return new GatewayReceiverConfigurerTests.TestGatewayTransportFilter("transportBean1");
 		}
 
 		@Bean("transportBean2")
 		GatewayTransportFilter createGatewayTransportBean2() {
-			return new EnableEnableGatewayReceiverConfigurerTests.TestGatewayTransportFilter("transportBean2");
+			return new GatewayReceiverConfigurerTests.TestGatewayTransportFilter("transportBean2");
 		}
 
 		@Bean("gatewayConfigurer")
-		EnableGatewayReceiverConfigurer gatewayReceiverConfigurer() {
+		GatewayReceiverConfigurer gatewayReceiverConfigurer() {
 			return (String beanName, GatewayReceiverFactoryBean bean) -> {
 				bean.setBindAddress("127.0.0.1");
 				bean.setEndPort(25000);
@@ -196,16 +210,16 @@ public class EnableEnableGatewayReceiverConfigurerTests {
 
 		@Bean("transportBean1")
 		GatewayTransportFilter createGatewayTransportBean1() {
-			return new EnableEnableGatewayReceiverConfigurerTests.TestGatewayTransportFilter("transportBean1");
+			return new GatewayReceiverConfigurerTests.TestGatewayTransportFilter("transportBean1");
 		}
 
 		@Bean("transportBean2")
 		GatewayTransportFilter createGatewayTransportBean2() {
-			return new EnableEnableGatewayReceiverConfigurerTests.TestGatewayTransportFilter("transportBean2");
+			return new GatewayReceiverConfigurerTests.TestGatewayTransportFilter("transportBean2");
 		}
 
 		@Bean("gatewayConfigurer")
-		EnableGatewayReceiverConfigurer gatewayReceiverConfigurer() {
+		GatewayReceiverConfigurer gatewayReceiverConfigurer() {
 			return (String beanName, GatewayReceiverFactoryBean bean) -> {
 				bean.setBindAddress("127.0.0.1");
 				bean.setHostnameForSenders("testHostNameReceiverForSender");

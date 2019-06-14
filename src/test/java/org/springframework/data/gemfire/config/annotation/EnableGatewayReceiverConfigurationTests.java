@@ -1,3 +1,18 @@
+/*
+ * Copyright 2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -10,22 +25,21 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.geode.cache.wan.GatewayReceiver;
-import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.junit.After;
 import org.junit.Test;
+
+import org.apache.geode.cache.wan.GatewayReceiver;
+import org.apache.geode.cache.wan.GatewayTransportFilter;
+
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.gemfire.wan.GatewayReceiverFactoryBean;
-import org.springframework.data.gemfire.wan.annotation.EnableGatewayReceiver;
-import org.springframework.data.gemfire.wan.annotation.EnableGatewayReceiverConfiguration;
-import org.springframework.data.gemfire.wan.annotation.EnableGatewayReceiverConfigurer;
 
 /**
- * Tests for {@link org.springframework.data.gemfire.wan.annotation.EnableGatewayReceiver}.
+ * Tests for {@link EnableGatewayReceiver}.
  *
  * @author Udo Kohlmeyer
  * @see org.junit.Test
@@ -35,8 +49,8 @@ import org.springframework.data.gemfire.wan.annotation.EnableGatewayReceiverConf
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringRunner
  * @see org.springframework.data.gemfire.wan.GatewayReceiverFactoryBean
- * @see EnableGatewayReceiverConfigurer
- * @see EnableGatewayReceiverConfiguration
+ * @see GatewayReceiverConfigurer
+ * @see GatewayReceiverConfiguration
  * @since 2.2.0
  */
 public class EnableGatewayReceiverConfigurationTests {
@@ -44,8 +58,7 @@ public class EnableGatewayReceiverConfigurationTests {
     private ConfigurableApplicationContext applicationContext;
 
     @After
-    public void shutdown()
-    {
+    public void shutdown() {
         Optional.ofNullable(this.applicationContext).ifPresent(ConfigurableApplicationContext::close);
     }
 
@@ -69,7 +82,7 @@ public class EnableGatewayReceiverConfigurationTests {
         }
 
         @Bean("gatewayConfigurer")
-		EnableGatewayReceiverConfigurer gatewayReceiverConfigurer() {
+        GatewayReceiverConfigurer gatewayReceiverConfigurer() {
             return new TestGatewayReceiverConfigurer();
         }
     }
@@ -92,16 +105,18 @@ public class EnableGatewayReceiverConfigurationTests {
         }
 
         @Bean("gatewayConfigurer")
-		EnableGatewayReceiverConfigurer gatewayReceiverConfigurer() {
+        GatewayReceiverConfigurer gatewayReceiverConfigurer() {
             return new TestGatewayReceiverConfigurer();
         }
     }
 
     @Test
     public void annotationConfiguredGatewayTransportFiltersOrdered() {
+
         this.applicationContext = newApplicationContext(TestConfigurationFromAnnotation.class);
-        TestGatewayReceiverConfigurer gatewayReceiverConfigurer = (TestGatewayReceiverConfigurer) this.applicationContext.getBean(
-			EnableGatewayReceiverConfigurer.class);
+
+        TestGatewayReceiverConfigurer gatewayReceiverConfigurer =
+            (TestGatewayReceiverConfigurer) this.applicationContext.getBean(GatewayReceiverConfigurer.class);
 
         GatewayReceiver gatewayReceiver = this.applicationContext.getBean("GatewayReceiver",GatewayReceiver.class);
 
@@ -120,9 +135,11 @@ public class EnableGatewayReceiverConfigurationTests {
 
     @Test
     public void beanConfiguredGatewayTransportFiltersOrdered() {
+
         this.applicationContext = newApplicationContext(TestConfigurationWithOrder.class);
-        TestGatewayReceiverConfigurer gatewayReceiverConfigurer = (TestGatewayReceiverConfigurer) this.applicationContext.getBean(
-			EnableGatewayReceiverConfigurer.class);
+
+        TestGatewayReceiverConfigurer gatewayReceiverConfigurer =
+            (TestGatewayReceiverConfigurer) this.applicationContext.getBean(GatewayReceiverConfigurer.class);
 
         GatewayReceiver gatewayReceiver = this.applicationContext.getBean("GatewayReceiver",GatewayReceiver.class);
 
@@ -139,7 +156,7 @@ public class EnableGatewayReceiverConfigurationTests {
         assertThat(gatewayReceiverConfigurer.beanNames.toArray()).isEqualTo(new String[]{"transportBean1", "transportBean2"});
     }
 
-    private static class TestGatewayReceiverConfigurer implements EnableGatewayReceiverConfigurer, Iterable<String> {
+    private static class TestGatewayReceiverConfigurer implements GatewayReceiverConfigurer, Iterable<String> {
 
         private final List<String> beanNames = new ArrayList<>();
 
@@ -155,6 +172,7 @@ public class EnableGatewayReceiverConfigurationTests {
     }
 
     private static class TestGatewayTransportFilter implements GatewayTransportFilter {
+
         private String name;
 
         public TestGatewayTransportFilter(String name) {
