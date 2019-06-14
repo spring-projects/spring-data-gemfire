@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.xml;
 
 import static org.junit.Assert.assertEquals;
@@ -22,14 +21,16 @@ import static org.junit.Assert.assertNotNull;
 
 import javax.annotation.Resource;
 
-import org.apache.geode.cache.wan.GatewayReceiver;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.apache.geode.cache.wan.GatewayReceiver;
+
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.data.gemfire.wan.GatewayReceiverFactoryBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * The GatewayReceiverManualStartNamespaceTest class is a test suite of test cases testing the contract
@@ -47,7 +48,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @see org.apache.geode.cache.wan.GatewayReceiver
  * @since 1.5.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(value = "GatewayReceiverNamespaceTest-context.xml",
 	initializers = GemfireTestApplicationContextInitializer.class)
 @ActiveProfiles("manualStart")
@@ -59,10 +60,11 @@ public class GatewayReceiverManualStartNamespaceTest {
 
 	@Test
 	public void testManual() throws Exception {
-		assertNotNull("The 'Manual' GatewayReceiverFactoryBean was not properly configured and initialized!",
-			manualGatewayReceiverFactory);
 
-		GatewayReceiver manualGatewayReceiver = manualGatewayReceiverFactory.getObject();
+		assertNotNull("The 'Manual' GatewayReceiverFactoryBean was not properly configured and initialized!",
+			this.manualGatewayReceiverFactory);
+
+		GatewayReceiver manualGatewayReceiver = this.manualGatewayReceiverFactory.getObject();
 
 		assertNotNull(manualGatewayReceiver);
 		assertEquals("192.168.0.1", manualGatewayReceiver.getBindAddress());

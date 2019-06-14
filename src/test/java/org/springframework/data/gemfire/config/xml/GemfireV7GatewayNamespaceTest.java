@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.data.gemfire.config.xml;
 
 import static org.junit.Assert.assertEquals;
@@ -27,6 +28,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
+import org.junit.AfterClass;
+import org.junit.Test;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
@@ -37,8 +41,7 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
-import org.junit.AfterClass;
-import org.junit.Test;
+
 import org.springframework.data.gemfire.PeerRegionFactoryBean;
 import org.springframework.data.gemfire.RecreatingContextTest;
 import org.springframework.data.gemfire.TestUtils;
@@ -51,7 +54,6 @@ import org.springframework.data.gemfire.wan.GatewaySenderFactoryBean;
  * @author David Turanski
  * @author John Blum
  */
-@SuppressWarnings("unused")
 public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 
 	/*
@@ -73,7 +75,7 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 	public static void tearDown() {
 
 		for (String name : nullSafeArray(new File(".")
-				.list((file, filename) -> filename.startsWith("BACKUP")), String.class)) {
+			.list((file, filename) -> filename.startsWith("BACKUP")), String.class)) {
 
 			new File(name).delete();
 		}
@@ -105,7 +107,8 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 
 		assertNotNull(gatewaySenderFactoryBean);
 		assertNotNull(TestUtils.readField("cache", gatewaySenderFactoryBean));
-		assertEquals(2, TestUtils.<Integer>readField("remoteDistributedSystemId", gatewaySenderFactoryBean).longValue());
+		assertEquals(2,
+			TestUtils.<Integer>readField("remoteDistributedSystemId", gatewaySenderFactoryBean).longValue());
 		assertEquals(10, TestUtils.<Integer>readField("alertThreshold", gatewaySenderFactoryBean).longValue());
 		assertTrue(Boolean.TRUE.equals(TestUtils.readField("batchConflationEnabled", gatewaySenderFactoryBean)));
 		assertEquals(11, TestUtils.<Integer>readField("batchSize", gatewaySenderFactoryBean).intValue());
@@ -119,7 +122,8 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 		assertEquals(2, eventFilters.size());
 		assertTrue(eventFilters.get(0) instanceof TestEventFilter);
 
-		List<GatewayTransportFilter> transportFilters = TestUtils.readField("transportFilters", gatewaySenderFactoryBean);
+		List<GatewayTransportFilter> transportFilters = TestUtils
+			.readField("transportFilters", gatewaySenderFactoryBean);
 
 		assertNotNull(transportFilters);
 		assertEquals(2, transportFilters.size());
@@ -185,7 +189,8 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 
 		assertNotNull(gatewaySenderFactoryBean);
 		assertNotNull(TestUtils.readField("cache", gatewaySenderFactoryBean));
-		assertEquals(3, TestUtils.<Integer>readField("remoteDistributedSystemId", gatewaySenderFactoryBean).intValue());
+		assertEquals(3,
+			TestUtils.<Integer>readField("remoteDistributedSystemId", gatewaySenderFactoryBean).intValue());
 		assertTrue(Boolean.TRUE.equals(TestUtils.readField("batchConflationEnabled", gatewaySenderFactoryBean)));
 		assertEquals(50, TestUtils.<Integer>readField("batchSize", gatewaySenderFactoryBean).intValue());
 		assertEquals(10, TestUtils.<Integer>readField("dispatcherThreads", gatewaySenderFactoryBean).intValue());
@@ -198,7 +203,8 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 		assertTrue(eventFilters.get(0) instanceof TestEventFilter);
 		assertSame(applicationContext.getBean("event-filter"), eventFilters.get(0));
 
-		List<GatewayTransportFilter> transportFilters = TestUtils.readField("transportFilters", gatewaySenderFactoryBean);
+		List<GatewayTransportFilter> transportFilters = TestUtils
+			.readField("transportFilters", gatewaySenderFactoryBean);
 
 		assertNotNull(transportFilters);
 		assertEquals(1, transportFilters.size());
@@ -224,10 +230,12 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 	public static class TestEventFilter implements GatewayEventFilter {
 
 		@Override
-		public void close() { }
+		public void close() {
+		}
 
 		@Override
-		public void afterAcknowledgement(GatewayQueueEvent arg0) { }
+		public void afterAcknowledgement(GatewayQueueEvent arg0) {
+		}
 
 		@Override
 		public boolean beforeEnqueue(GatewayQueueEvent arg0) {
@@ -243,7 +251,8 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 	public static class TestTransportFilter implements GatewayTransportFilter {
 
 		@Override
-		public void close() { }
+		public void close() {
+		}
 
 		@Override
 		public InputStream getInputStream(InputStream arg0) {
@@ -260,7 +269,8 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 	public static class TestAsyncEventListener implements AsyncEventListener {
 
 		@Override
-		public void close() { }
+		public void close() {
+		}
 
 		@Override
 		public boolean processEvents(List<AsyncEvent> arg0) {

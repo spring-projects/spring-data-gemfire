@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.xml;
 
 import static org.junit.Assert.assertEquals;
@@ -22,14 +21,16 @@ import static org.junit.Assert.assertTrue;
 
 import javax.annotation.Resource;
 
-import org.apache.geode.cache.wan.GatewayReceiver;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.apache.geode.cache.wan.GatewayReceiver;
+
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.data.gemfire.wan.GatewayReceiverFactoryBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.StringUtils;
 
 /**
@@ -48,7 +49,7 @@ import org.springframework.util.StringUtils;
  * @see org.apache.geode.cache.wan.GatewayReceiver
  * @since 1.5.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(value = "GatewayReceiverNamespaceTest-context.xml",
 	initializers = GemfireTestApplicationContextInitializer.class)
 @ActiveProfiles("defaultStart")
@@ -60,10 +61,11 @@ public class GatewayReceiverDefaultStartNamespaceTest {
 
 	@Test
 	public void testDefault() throws Exception {
-		assertNotNull("The 'Default' GatewayReceiverFactoryBean was not properly configured and initialized!",
-			defaultGatewayReceiverFactory);
 
-		GatewayReceiver defaultGatewayReceiver = defaultGatewayReceiverFactory.getObject();
+		assertNotNull("The 'Default' GatewayReceiverFactoryBean was not properly configured and initialized!",
+			this.defaultGatewayReceiverFactory);
+
+		GatewayReceiver defaultGatewayReceiver = this.defaultGatewayReceiverFactory.getObject();
 
 		try {
 			assertNotNull(defaultGatewayReceiver);
@@ -79,5 +81,4 @@ public class GatewayReceiverDefaultStartNamespaceTest {
 			defaultGatewayReceiver.stop();
 		}
 	}
-
 }

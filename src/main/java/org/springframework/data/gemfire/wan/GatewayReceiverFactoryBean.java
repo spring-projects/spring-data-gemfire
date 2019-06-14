@@ -58,10 +58,10 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 	private Integer socketBufferSize;
 	private Integer startPort;
 
-	@Autowired
+	@Autowired(required = false)
 	private GatewayReceiverConfigurer gatewayReceiverConfigurer;
 
-	@Autowired
+	@Autowired(required = false)
 	private List<GatewayTransportFilter> transportFilters;
 
 	private String bindAddress;
@@ -105,8 +105,7 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 
 		GatewayReceiverFactory gatewayReceiverFactory = cache.createGatewayReceiverFactory();
 
-		Optional.of(this.gatewayReceiverConfigurer)
-				.ifPresent(it -> it.configure(getName(),this));
+		Optional.ofNullable(this.gatewayReceiverConfigurer).ifPresent(it -> it.configure(getName(),this));
 
 		if (StringUtils.hasText(this.bindAddress)) {
 			gatewayReceiverFactory.setBindAddress(this.bindAddress);

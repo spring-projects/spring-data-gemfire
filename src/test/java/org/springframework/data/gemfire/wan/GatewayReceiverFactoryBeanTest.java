@@ -13,22 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.wan;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.same;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
+import java.util.Collections;
+
+import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
-import org.junit.Test;
 
 /**
  * The GatewayReceiverFactoryBeanTest class is a test suite of test cases testing the contract and functionality
@@ -43,9 +43,14 @@ public class GatewayReceiverFactoryBeanTest {
 
 	@Test
 	public void testDoInit() throws Exception {
+
 		Cache mockCache = mock(Cache.class, "testDoInit.Cache");
-		GatewayReceiverFactory mockGatewayReceiverFactory = mock(GatewayReceiverFactory.class, "testDoInit.GatewayReceiverFactory");
-		GatewayTransportFilter mockGatewayTransportFilter = mock(GatewayTransportFilter.class, "testDoInit.GatewayTransportFilter");
+
+		GatewayReceiverFactory mockGatewayReceiverFactory = mock(GatewayReceiverFactory.class,
+			"testDoInit.GatewayReceiverFactory");
+
+		GatewayTransportFilter mockGatewayTransportFilter = mock(GatewayTransportFilter.class,
+			"testDoInit.GatewayTransportFilter");
 
 		when(mockCache.createGatewayReceiverFactory()).thenReturn(mockGatewayReceiverFactory);
 
@@ -59,7 +64,7 @@ public class GatewayReceiverFactoryBeanTest {
 		factoryBean.setMaximumTimeBetweenPings(5000);
 		factoryBean.setName("testDoInit");
 		factoryBean.setSocketBufferSize(16384);
-		factoryBean.setTransportFilters(Arrays.asList(mockGatewayTransportFilter));
+		factoryBean.setTransportFilters(Collections.singletonList(mockGatewayTransportFilter));
 		factoryBean.afterPropertiesSet();
 
 		verify(mockGatewayReceiverFactory).setBindAddress(eq("10.224.112.77"));
@@ -75,8 +80,11 @@ public class GatewayReceiverFactoryBeanTest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testDoInitWithIllegalStartEndPorts() throws Exception {
+
 		try {
+
 			Cache mockCache = mock(Cache.class, "testDoInitWithIllegalStartEndPorts.Cache");
+
 			GatewayReceiverFactory mockGatewayReceiverFactory = mock(GatewayReceiverFactory.class,
 				"testDoInitWithIllegalStartEndPorts.GatewayReceiverFactory");
 
@@ -94,5 +102,4 @@ public class GatewayReceiverFactoryBeanTest {
 			throw expected;
 		}
 	}
-
 }

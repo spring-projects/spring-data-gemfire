@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.wan;
 
 import static org.junit.Assert.assertEquals;
@@ -25,12 +24,14 @@ import java.io.IOException;
 
 import javax.annotation.Resource;
 
-import org.apache.geode.cache.wan.GatewayReceiver;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.apache.geode.cache.wan.GatewayReceiver;
+
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * The ManualGatewayReceiverStartIntegrationTest class is a test suite of test cases testing the manual start capability
@@ -44,7 +45,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @see org.springframework.test.context.junit4.SpringJUnit4ClassRunner
  * @since 1.5.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(initializers = GemfireTestApplicationContextInitializer.class)
 @SuppressWarnings("unused")
 public class ManualGatewayReceiverStartIntegrationTest {
@@ -55,19 +56,21 @@ public class ManualGatewayReceiverStartIntegrationTest {
 	@Resource(name = "Manual")
 	private GatewayReceiver manualGatewayReceiver;
 
-	protected void assertGreaterThanEqualToLessThanEqualTo(final String message,
-			final int actualValue, final int lowerBound, final int upperBound) {
+	protected void assertGreaterThanEqualToLessThanEqualTo(String message,
+			int actualValue, int lowerBound, int upperBound) {
+
 		assertTrue(message, actualValue >= lowerBound && actualValue <= upperBound);
 	}
 
 	@Test
 	public void testAutoGatewayReceiver() {
+
 		assertNotNull("The 'Auto' GatewayReceiver was not properly configured or initialized!", autoGatewayReceiver);
 		assertTrue(autoGatewayReceiver.isRunning());
 		assertEquals(7070, autoGatewayReceiver.getStartPort());
 		assertEquals(7700, autoGatewayReceiver.getEndPort());
 
-		final int gatewayReceiverPort = autoGatewayReceiver.getPort();
+		int gatewayReceiverPort = autoGatewayReceiver.getPort();
 
 		assertGreaterThanEqualToLessThanEqualTo(String.format(
 			"GatewayReceiver 'port' (%1$d) was not greater than equal to (%2$d) and less than equal to (%3$d)!",
@@ -81,6 +84,7 @@ public class ManualGatewayReceiverStartIntegrationTest {
 
 	@Test
 	public void testManualGatewayReceiverConfiguration() throws IOException {
+
 		assertNotNull("The 'Manual' GatewayReceiver was not properly configured or initialized!", manualGatewayReceiver);
 		assertFalse(manualGatewayReceiver.isRunning());
 		assertEquals(6060, manualGatewayReceiver.getStartPort());
@@ -90,7 +94,7 @@ public class ManualGatewayReceiverStartIntegrationTest {
 
 		assertTrue(manualGatewayReceiver.isRunning());
 
-		final int gatewayReceiverPort = manualGatewayReceiver.getPort();
+		int gatewayReceiverPort = manualGatewayReceiver.getPort();
 
 		assertGreaterThanEqualToLessThanEqualTo(String.format(
 			"GatewayReceiver 'port' (%1$d) was not greater than equal to (%2$d) and less than equal to (%3$d)!",
@@ -101,5 +105,4 @@ public class ManualGatewayReceiverStartIntegrationTest {
 
 		assertFalse(manualGatewayReceiver.isRunning());
 	}
-
 }
