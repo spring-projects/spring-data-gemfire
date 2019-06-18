@@ -43,6 +43,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 import java.io.InputStream;
 import java.util.Collections;
@@ -239,8 +240,8 @@ public class CacheFactoryBeanTest {
 		BeanFactory mockBeanFactory = mock(BeanFactory.class);
 		Cache mockCache = mock(Cache.class);
 		CacheTransactionManager mockCacheTransactionManager = mock(CacheTransactionManager.class);
-		DistributedMember mockDistributedMember = mock(DistributedMember.class);
-		DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
+		DistributedMember mockDistributedMember = mock(DistributedMember.class, withSettings().lenient());
+		DistributedSystem mockDistributedSystem = mock(DistributedSystem.class, withSettings().lenient());
 		GatewayConflictResolver mockGatewayConflictResolver = mock(GatewayConflictResolver.class);
 		PdxSerializer mockPdxSerializer = mock(PdxSerializer.class);
 		Resource mockCacheXml = mock(Resource.class);
