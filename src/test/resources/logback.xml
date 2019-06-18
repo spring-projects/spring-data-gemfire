@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration debug="false">
 
-    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
 
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d %5p %40.40c:%4L - %m%n</pattern>
         </encoder>
     </appender>
+
+    <appender name="nop" class="ch.qos.logback.core.helpers.NOPAppender"/>
 
     <appender name="testAppender" class="org.springframework.data.gemfire.test.logging.slf4j.logback.TestAppender">
         <encoder>
@@ -19,9 +21,13 @@
 
     <logger name="org.springframework" level="${logback.log.level:-ERROR}"/>
 
-    <logger name="org.springframework.data.gemfire.config.annotation.support.RegionDataAccessTracingAspect" level="trace">
+    <logger name="org.springframework.data.gemfire.config.annotation.support.RegionDataAccessTracingAspect" level="trace" additivity="false">
         <appender-ref ref="testAppender"/>
     </logger>
+
+    <logger name="org.springframework.data.gemfire.listener.adapter.ContinuousQueryListenerAdapter" level="off" additivity="false"/>
+
+    <logger name="org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer" level="off" additivity="false"/>
 
     <root level="${logback.log.level:-ERROR}">
         <appender-ref ref="console"/>
