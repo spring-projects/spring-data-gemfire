@@ -117,9 +117,9 @@ distributed transactions.
 Many managed environments with CMT maintain support for "_Last Resource_", non-XA compliant resources in JTA transactions
 though it is not actually required in the JTA spec.  More information on what a non-XA compliant, "_Last Resource_" means
 can be found in Red Hat's https://access.redhat.com/documentation/en-US/JBoss_Enterprise_Application_Platform/5/html/Administration_And_Configuration_Guide/lrco-overview.html[documentation].
-In fact, Red Hat's JBoss project, http://narayana.io/[Narayana] is one such LGPL Open Source implementation.  _Narayana_
+In fact, Red Hat's JBoss project, https://narayana.io/[Narayana] is one such LGPL Open Source implementation.  _Narayana_
 refers to this as "_Last Resource Commit Optimization_" (LRCO).  More details can be found
-http://narayana.io//docs/project/index.html#d0e1859[here].
+https://narayana.io//docs/project/index.html#d0e1859[here].
 
 However, whether you are using {data-store-name} in a standalone environment with an Open Source JTA Transaction Management
 implementation that supports "_Last Resource_", or a managed environment (e.g. Java EE AS such as WAS),
