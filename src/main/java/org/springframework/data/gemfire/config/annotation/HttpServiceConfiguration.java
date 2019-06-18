@@ -35,7 +35,7 @@ import org.springframework.data.gemfire.util.PropertiesBuilder;
  * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar
  * @see org.springframework.data.gemfire.config.annotation.EnableHttpService
  * @see org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport
- * @see <a href="http://geode.docs.pivotal.io/docs/rest_apps/book_intro.html">Developing REST Applications for Apache Geode</a>
+ * @see <a href="https://geode.docs.pivotal.io/docs/rest_apps/book_intro.html">Developing REST Applications for Apache Geode</a>
  * @since 1.9.0
  */
 public class HttpServiceConfiguration extends EmbeddedServiceConfigurationSupport {

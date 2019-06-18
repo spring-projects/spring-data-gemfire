@@ -3,7 +3,7 @@
 
 {sdg-name} provides support for using the Spring Data Repository abstraction to easily persist entities into
 {data-store-name} along with executing queries. A general introduction to the Repository programming model
-is provided http://docs.spring.io/spring-data/data-commons/docs/current/reference/html/#repositories[here].
+is provided https://docs.spring.io/spring-data/data-commons/docs/current/reference/html/#repositories[here].
 
 [[gemfire-repositories.spring-configuration-xml]]
 == Spring XML Configuration
@@ -85,7 +85,7 @@ One example of where custom repository implementations are needed with {data-sto
 Joins are not supported by {sdg-acronym} Repositories. With a {data-store-name} `PARTITION` Region, the join must be
 performed on collocated `PARTITION` Regions, since {data-store-name} does not support "`distributed`" joins.
 In addition, the Equi-Join OQL Query must be performed inside a {data-store-name} Function.
-See http://gemfire91.docs.pivotal.io/geode/developing/partitioned_regions/join_query_partitioned_regions.html[here]
+See https://gemfire91.docs.pivotal.io/geode/developing/partitioned_regions/join_query_partitioned_regions.html[here]
 for more details on {data-store-name} _Equi-Join Queries_.
 
 Many other aspects of the {sdg-acronym}'s Repository infrastructure extension may be customized as well. See the

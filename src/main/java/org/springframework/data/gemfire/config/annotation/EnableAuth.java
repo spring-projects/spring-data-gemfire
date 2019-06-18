@@ -41,8 +41,8 @@ import org.springframework.context.annotation.Import;
  * @see org.apache.geode.security.Authenticator
  * @see org.springframework.context.annotation.Import
  * @see org.springframework.data.gemfire.config.annotation.AuthConfiguration
- * @see <a href="http://gemfire.docs.pivotal.io/docs-gemfire/latest/managing/security/authentication_overview.html">Authentication</a>
- * @see <a href="http://gemfire.docs.pivotal.io/docs-gemfire/latest/managing/security/authorization_overview.html">Authorization</a>
+ * @see <a href="https://gemfire.docs.pivotal.io/docs-gemfire/latest/managing/security/authentication_overview.html">Authentication</a>
+ * @see <a href="https://gemfire.docs.pivotal.io/docs-gemfire/latest/managing/security/authorization_overview.html">Authorization</a>
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)

@@ -41,9 +41,9 @@ import org.springframework.data.gemfire.cache.GemfireCacheManager;
  * @see org.springframework.context.annotation.Configuration
  * @see org.springframework.data.gemfire.cache.GemfireCacheManager
  * @see org.springframework.data.gemfire.cache.config.EnableGemfireCaching
- * @see <a href="http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#cache">Cache Abstraction</a>
- * @see <a href="http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#cache-store-configuration-gemfire">GemFire-based Cache</a>
- * @see <a href="http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/#apis:spring-cache-abstraction">Support for Spring Cache Abstraction</a>
+ * @see <a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#cache">Cache Abstraction</a>
+ * @see <a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#cache-store-configuration-gemfire">GemFire-based Cache</a>
+ * @see <a href="https://docs.spring.io/spring-data-gemfire/docs/current/reference/html/#apis:spring-cache-abstraction">Support for Spring Cache Abstraction</a>
  * @since 2.0.0
  */
 @Configuration

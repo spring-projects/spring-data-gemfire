@@ -69,9 +69,9 @@ For instance, consider the following `cache.xml` file:
 [source,xml]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
-<cache xmlns="http://geode.apache.org/schema/cache"
+<cache xmlns="https://geode.apache.org/schema/cache"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       xsi:schemaLocation="https://geode.apache.org/schema/cache https://geode.apache.org/schema/cache/cache-1.0.xsd"
        version="1.0">
 
   <region name="Parent" refid="REPLICATE">
@@ -569,9 +569,9 @@ Consider the following native {data-store-name} `cache.xml` configuration file:
 [source,xml]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
-<cache xmlns="http://geode.apache.org/schema/cache"
+<cache xmlns="https://geode.apache.org/schema/cache"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       xsi:schemaLocation="https://geode.apache.org/schema/cache https://geode.apache.org/schema/cache/cache-1.0.xsd"
        version="1.0">
 
   <region name="Customers" refid="REPLICATE">
@@ -680,7 +680,7 @@ as `REPLICATE` and exist before the cache bean is initialized (once the `<gfe:ca
 
 Based on various constraints, each Region can have an eviction policy in place for evicting data from memory.
 Currently, in {data-store-name}, eviction applies to the Least Recently Used entry (also known as
-http://en.wikipedia.org/wiki/Cache_algorithms#Least_Recently_Used[LRU]). Evicted entries are either destroyed
+https://en.wikipedia.org/wiki/Cache_algorithms#Least_Recently_Used[LRU]). Evicted entries are either destroyed
 or paged to disk (referred to as "`overflow to disk`").
 
 {sdg-name} supports all eviction policies (entry count, memory, and heap usage) for PARTITION Regions, REPLICATE Regions,

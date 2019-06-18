@@ -40,7 +40,7 @@ The following example shows a typical, yet minimal, configuration for this class
 <?xml version="1.0" encoding="UTF-8"?>
 <cache xmlns="http://geode.apache.org/schema/cache"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       xsi:schemaLocation="https://geode.apache.org/schema/cache https://geode.apache.org/schema/cache/cache-1.0.xsd"
        version="1.0">
 
   <initializer>
@@ -67,7 +67,7 @@ in the classpath, as the following example shows:
 <?xml version="1.0" encoding="UTF-8"?>
 <cache xmlns="http://geode.apache.org/schema/cache"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       xsi:schemaLocation="https://geode.apache.org/schema/cache https://geode.apache.org/schema/cache/cache-1.0.xsd"
        version="1.0">
 
   <initializer>
@@ -151,7 +151,7 @@ the following (which comes from {sdg-acronym}'s test suite):
 <?xml version="1.0" encoding="UTF-8"?>
 <cache xmlns="http://geode.apache.org/schema/cache"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       xsi:schemaLocation="https://geode.apache.org/schema/cache https://geode.apache.org/schema/cache/cache-1.0.xsd"
        version="1.0">
 
   <region name="Users" refid="REPLICATE">

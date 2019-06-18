@@ -1,7 +1,6 @@
-
 /**
  * Package providing integration of
- * <a href="http://www.gemstone.com/products/gemfire">GemFire</a>
+ * <a href="https://pivotal.io/pivotal-gemfire">GemFire</a>
  * with Spring concepts.
  *
  * Contains helper classes, a template plus callback for GemFire
@@ -9,4 +8,3 @@
  * Pivotal GemFire transactions.
  */
 package org.springframework.data.gemfire;
-

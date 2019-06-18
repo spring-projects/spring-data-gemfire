@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.repository.query;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -144,7 +143,7 @@ public class GemfireQueryMethodUnitTests {
 	}
 
 	/**
-	 * @link http://jira.spring.io/browse/SGF-112
+	 * @link https://jira.spring.io/browse/SGF-112
 	 */
 	@Test
 	public void rejectsQueryMethodWithPageableParameter() throws Exception {

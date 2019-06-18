@@ -55,12 +55,12 @@ Using a new data access technology requires not only accommodating a new API but
 specific to that technology.
 
 To accommodate the exception handling case, the _Spring Framework_ provides a technology agnostic and consistent
-http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#dao-exceptions[exception hierarchy]
+https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#dao-exceptions[exception hierarchy]
 that abstracts the application from proprietary, and usually "checked", exceptions to a set of focused runtime
 exceptions.
 
 As mentioned in _Spring Framework's_ documentation,
-http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#orm-exception-translation[Exception translation]
+https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#orm-exception-translation[Exception translation]
 can be applied transparently to your Data Access Objects (DAO) through the use of the `@Repository` annotation and AOP
 by defining a `PersistenceExceptionTranslationPostProcessor` bean. The same exception translation functionality
 is enabled when using {data-store-name} as long as the `CacheFactoryBean` is declared, e.g. using either a `<gfe:cache/>`
@@ -71,10 +71,10 @@ the Spring infrastructure and used accordingly.
 == Local, Cache Transaction Management
 
 One of the most popular features of the _Spring Framework_ is
-http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction[Transaction Management].
+https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction[Transaction Management].
 
 If you are not familiar with Spring's transaction abstraction then we strongly recommend
-http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction-motivation[reading]
+https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction-motivation[reading]
 about _Spring's Transaction Management_ infrastructure as it offers a consistent _programming model_ that works
 transparently across multiple APIs and can be configured either programmatically or declaratively
 (the most popular choice).
@@ -130,12 +130,12 @@ involving more than 1 transactional resource.  Additionally, there can only be 1
 (e.g. {data-store-name}) in such an arrangement.
 
 1) First, you must complete Steps 1-4 in {data-store-name}'s documentation
-http://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[here].
+https://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[here].
 
 NOTE: #1 above is independent of your Spring [Boot] and/or [Data for {data-store-name}] application
 and must be completed successfully.
 
-2) Referring to Step 5 in {data-store-name}'s http://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[documentation],
+2) Referring to Step 5 in {data-store-name}'s https://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[documentation],
 {sdg-name}'s Annotation support will attempt to set the `GemFireCache`, {x-data-store-javadoc}/org/apache/geode/cache/GemFireCache.html#setCopyOnRead-boolean-[`copyOnRead`]
 property for you when using the `@EnableGemFireAsLastResource` annotation.
 
@@ -192,10 +192,10 @@ ClientCacheFactoryBean gemfireCache() {
 NOTE: explicitly setting the `copy-on-read` attribute or optionally the `copyOnRead` property
 really should not be necessary.
 
-3) At this point, you *skip* Steps 6-8 in {data-store-name}'s http://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[documentation]
+3) At this point, you *skip* Steps 6-8 in {data-store-name}'s https://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[documentation]
 and let _Spring Data Geode_ work its magic.  All you need do is annotate your Spring `@Configuration` class
 with {sdg-name}'s *new* `@EnableGemFireAsLastResource` annotation and a combination of Spring's
-http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction[Transaction Management]
+https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction[Transaction Management]
 infrastructure and {sdg-name}'s `@EnableGemFireAsLastResource` configuration does the trick.
 
 The configuration looks like this...
@@ -241,7 +241,7 @@ The use of {sdg-name}'s `GemfireTransactionManager` is applicable only in "Local
 You configure Spring's `JtaTransactionManager` as shown above.
 
 For more details on using _Spring's Transaction Management_ with JTA,
-see http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction-application-server-integration[here].
+see https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction-application-server-integration[here].
 
 Effectively, {sdg-name}'s `@EnableGemFireAsLastResource` annotation imports configuration containing 2 Aspect
 bean definitions that handles the {data-store-name} `o.a.g.ra.GFConnectionFactory.getConnection()`
@@ -261,7 +261,7 @@ Specifically, the correct sequence of events are...
 
 This is consistent with how you, as the application developer, would code this manually if you had to use the JTA API
 + {data-store-name} API yourself, as shown in the
-{data-store-name} http://gemfire90.docs.pivotal.io/geode/developing/transactions/jca_adapter_example.html#concept_swv_z2p_wk[example].
+{data-store-name} https://gemfire90.docs.pivotal.io/geode/developing/transactions/jca_adapter_example.html#concept_swv_z2p_wk[example].
 
 Thankfully, Spring does the heavy lifting for you and all you need do after applying the appropriate configuration
 (shown above) is...
@@ -307,10 +307,10 @@ JSON : [{"id":"MSG0000000000","message":"SENT"}] ]
 ----
 
 For more details on using {data-store-name} in JTA transactions,
-see http://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html[here].
+see https://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html[here].
 
 For more details on configuring {data-store-name} as a "_Last Resource_",
-see http://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[here].
+see https://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[here].
 
 :leveloffset: +1
 
@@ -458,13 +458,13 @@ Any format is allowed (Groovy, annotations, etc).
 === Configuration using auto-wiring and annotations
 
 By default, if no bean definition is found, `WiringDeclarableSupport` will
-http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-factory-autowire[autowire]
+https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-factory-autowire[autowire]
 the declaring instance. This means that unless any dependency injection *metadata* is offered by the instance,
 the container will find the object setters and try to automatically satisfy these dependencies.
 However, a developer can also use JDK 5 annotations to provide additional information to the auto-wiring process.
 
 TIP: We strongly recommend reading the dedicated
-http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-annotation-config[chapter]
+https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#beans-annotation-config[chapter]
 in the Spring documentation for more information on the supported annotations and enabling factors.
 
 For example, the hypothetical `DBLoader` declaration above can be injected with a Spring-configured `DataSource`
@@ -517,7 +517,7 @@ the `DBLoader` code.
 == Support for the Spring Cache Abstraction
 
 {sdg-name} provides an implementation of the Spring
-http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#cache[Cache Abstraction]
+https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#cache[Cache Abstraction]
 to position {data-store-name} as a _caching provider_ in Spring's caching infrastructure.
 
 To use {data-store-name} as a backing implementation, a "_caching provider_" _in Spring's Cache Abstraction_,
@@ -533,7 +533,7 @@ simply add `GemfireCacheManager` to your configuration:
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="
     http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
-    http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd
+    http://www.springframework.org/schema/cache https://www.springframework.org/schema/cache/spring-cache.xsd
     {spring-data-schema-namespace} {spring-data-schema-location}
 ">
 
@@ -587,7 +587,7 @@ XML:
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="
     http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
-    http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd
+    http://www.springframework.org/schema/cache https://www.springframework.org/schema/cache/spring-cache.xsd
     {spring-data-schema-namespace} {spring-data-schema-location}
 ">
 
@@ -640,4 +640,4 @@ class ApplicationConfiguration {
 Of course, you are free to choose whatever Region type you like (e.g. REPLICATE, PARTITION, LOCAL, etc).
 
 For more details on _Spring's Cache Abstraction_, again, please refer to the
-http://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#cache[documentation].
+https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#cache[documentation].

@@ -43,7 +43,7 @@ import org.springframework.data.gemfire.GemfireUtils;
  * @see org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer
  * @see org.apache.geode.distributed.ServerLauncherCacheProvider
  * @since 1.7.0
- * @link http://gemfire.docs.pivotal.io/latest/userguide/index.html#basic_config/the_cache/setting_cache_initializer.html
+ * @link https://gemfire.docs.pivotal.io/latest/userguide/index.html#basic_config/the_cache/setting_cache_initializer.html
  */
 public class SpringServerLauncherCacheProvider implements ServerLauncherCacheProvider {
 

@@ -62,7 +62,7 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.core.io.DefaultResourceLoader
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.Declarable
- * @link http://gemfire.docs.pivotal.io/latest/userguide/index.html#basic_config/the_cache/setting_cache_initializer.html
+ * @link https://gemfire.docs.pivotal.io/latest/userguide/index.html#basic_config/the_cache/setting_cache_initializer.html
  * @link https://jira.springsource.org/browse/SGF-248
  * @since 1.4.0
  */

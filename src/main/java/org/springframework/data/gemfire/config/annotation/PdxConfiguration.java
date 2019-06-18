@@ -187,7 +187,7 @@ public class PdxConfiguration extends AbstractAnnotationConfigSupport implements
 	 * @param cacheFactoryBean {@link CacheFactoryBean} instance on which to configure PDX.
 	 * with PDX de/serialization capabilities.
 	 * @see org.springframework.data.gemfire.CacheFactoryBean
-	 * @see <a href="http://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/data_serialization/gemfire_pdx_serialization.html">GemFire PDX Serialization</a>
+	 * @see <a href="https://gemfire.docs.pivotal.io/docs-gemfire/latest/developing/data_serialization/gemfire_pdx_serialization.html">GemFire PDX Serialization</a>
 	 */
 	protected void configurePdx(CacheFactoryBean cacheFactoryBean) {
 

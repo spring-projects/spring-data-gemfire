@@ -23,7 +23,7 @@ import org.springframework.util.StringUtils;
  * The JndiDataSourceType class is an enumeration of valid JNDI DataSource implementation types supported by GemFire.
  *
  * @author John Blum
- * @link http://gemfire.docs.pivotal.io/latest/userguide/index.html#reference/topics/cache_xml.html#jndi-binding
+ * @link https://gemfire.docs.pivotal.io/latest/userguide/index.html#reference/topics/cache_xml.html#jndi-binding
  * @since 1.7.0
  */
 @SuppressWarnings("unused")

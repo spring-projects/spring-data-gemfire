@@ -62,7 +62,7 @@ public @interface EnableMcast {
 	 *
 	 * Defaults to {@literal 239.192.81.1} for IPv4 and {@literal FF38::1234} for IPv6.
 	 *
-	 * @see <a href="http://www.iana.org/assignments/multicast-addresses">IANA chart</a>
+	 * @see <a href="https://www.iana.org/assignments/multicast-addresses">IANA chart</a>
 	 */
 	String address() default McastConfiguration.DEFAULT_MCAST_ADDRESS;
 

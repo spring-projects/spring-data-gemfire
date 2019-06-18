@@ -10,7 +10,7 @@ Spring Data Gemfire 2.1.9
    must include the following acknowledgement:
 
      "This product includes software developed by the Spring Framework
-      Project (http://www.springframework.org)."
+      Project (https://www.springframework.org)."
 
    Alternately, this acknowledgement may appear in the software itself,
    if and wherever such third-party acknowledgements normally appear.
