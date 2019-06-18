@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.fork;
 
 import java.io.IOException;
@@ -27,6 +26,7 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.server.CacheServer;
+
 import org.springframework.data.gemfire.ForkUtil;
 
 /**
@@ -41,16 +41,18 @@ public class CqCacheServerProcess {
 	private static Region<String, Integer> testCqRegion;
 
 	private static final String CACHE_SERVER_PORT_PROPERTY = "spring.data.gemfire.cache.server.port";
-	private static final String GEMFIRE_LOG_LEVEL = "warning";
+	private static final String GEMFIRE_LOG_LEVEL = "error";
 	private static final String GEMFIRE_NAME = "CqServer";
 
 	@SuppressWarnings("deprecation")
 	public static void main(final String[] args) throws Exception {
+
 		waitForShutdown(registerShutdownHook(startCacheServer(addRegion(
 			newGemFireCache(GEMFIRE_NAME, GEMFIRE_LOG_LEVEL), "test-cq"))));
 	}
 
 	private static Cache newGemFireCache(String name, String logLevel) {
+
 		return new CacheFactory()
 			.set("name", name)
 			.set("mcast-port", "0")
@@ -59,6 +61,7 @@ public class CqCacheServerProcess {
 	}
 
 	private static Cache addRegion(Cache gemfireCache, String name) {
+
 		RegionFactory<String, Integer> regionFactory = gemfireCache.createRegionFactory(RegionShortcut.REPLICATE);
 
 		regionFactory.setScope(Scope.DISTRIBUTED_ACK);
@@ -69,9 +72,12 @@ public class CqCacheServerProcess {
 	}
 
 	private static Cache startCacheServer(Cache gemfireCache) throws IOException {
+
 		CacheServer cacheServer = gemfireCache.addCacheServer();
+
 		cacheServer.setPort(getCacheServerPort(DEFAULT_CACHE_SERVER_PORT));
 		cacheServer.start();
+
 		return gemfireCache;
 	}
 
@@ -80,6 +86,7 @@ public class CqCacheServerProcess {
 	}
 
 	private static Cache registerShutdownHook(Cache gemfireCache) {
+
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			if (gemfireCache != null) {
 				try {
@@ -95,6 +102,7 @@ public class CqCacheServerProcess {
 
 	@SuppressWarnings("deprecation")
 	private static void waitForShutdown(Cache gemfireCache) throws IOException {
+
 		ForkUtil.createControlFile(CqCacheServerProcess.class.getName());
 
 		Scanner scanner = new Scanner(System.in);

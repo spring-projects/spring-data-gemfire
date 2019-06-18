@@ -14,7 +14,7 @@
 	<util:properties id="gemfireProperties">
 		<prop key="name">SubRegionWithInconsistentDataPolicyAndPersistentSettingsTest</prop>
 		<prop key="mcast-port">0</prop>
-		<prop key="log-level">warning</prop>
+		<prop key="log-level">error</prop>
 	</util:properties>
 
 	<gfe:cache properties-ref="gemfireProperties"/>

@@ -12,7 +12,7 @@
 	<util:properties id="gemfireProperties">
 		<prop key="name">MultipleCacheTest</prop>
 		<prop key="mcast-port">0</prop>
-		<prop key="log-level">warning</prop>
+		<prop key="log-level">error</prop>
 	</util:properties>
 
 	<gfe:cache close="false" properties-ref="gemfireProperties" use-bean-factory-locator="false"/>

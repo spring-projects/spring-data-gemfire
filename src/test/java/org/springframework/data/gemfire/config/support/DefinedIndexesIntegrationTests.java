@@ -118,7 +118,7 @@ public class DefinedIndexesIntegrationTests {
 		assertThat(name).isEqualTo(queryService.getIndex(people, name.getName()));
 	}
 
-	@PeerCacheApplication(logLevel = "warning")
+	@PeerCacheApplication(logLevel = "error")
 	static class DefinedIndexesConfiguration {
 
 		@Bean

@@ -12,7 +12,7 @@
 	<bean class="org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor"/>
 
 	<util:properties id="gemfireProperties">
-		<prop key="log-level">warning</prop>
+		<prop key="log-level">error</prop>
 	</util:properties>
 
 	<bean id="reflectionPdxSerializer" class="org.apache.geode.pdx.ReflectionBasedAutoSerializer"/>

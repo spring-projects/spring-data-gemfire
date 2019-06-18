@@ -14,7 +14,7 @@
 		<prop key="name">SpringContextBootstrappingInitializerTest</prop>
 		<prop key="statistic-sampling-enabled">false</prop>
 		<prop key="mcast-port">0</prop>
-		<prop key="log-level">config</prop>
+		<prop key="log-level">error</prop>
 	</util:properties>
 
 	<gfe:cache properties-ref="gemfireProperties" use-bean-factory-locator="false"/>

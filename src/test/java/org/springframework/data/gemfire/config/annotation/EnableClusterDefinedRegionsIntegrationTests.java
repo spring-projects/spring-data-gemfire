@@ -130,8 +130,7 @@ public class EnableClusterDefinedRegionsIntegrationTests extends ClientServerInt
 		}
 	}
 
-	@CacheServerApplication(name = "EnableClusterDefinedRegionsIntegrationTests",
-		logLevel = GEMFIRE_LOG_LEVEL)
+	@CacheServerApplication(name = "EnableClusterDefinedRegionsIntegrationTests", logLevel = GEMFIRE_LOG_LEVEL)
 	static class ServerTestConfiguration {
 
 		public static void main(String[] args) {

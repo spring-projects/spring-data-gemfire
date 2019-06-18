@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.client;
 
 import java.io.File;
@@ -25,14 +24,15 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.distributed.ServerLauncher;
-import org.assertj.core.api.Assertions;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.distributed.ServerLauncher;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
@@ -47,6 +47,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.Assert;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StringUtils;
+
+import org.assertj.core.api.Assertions;
 
 /**
  * The GemFireDataSourceUsingNonSpringConfiguredGemFireServerIntegrationTest class is a test suite of test cases
@@ -104,7 +106,7 @@ public class GemFireDataSourceUsingNonSpringConfiguredGemFireServerIntegrationTe
 
 		arguments.add(ServerLauncher.Command.START.getName());
 		arguments.add(String.format("-Dgemfire.name=%1$s", serverName));
-		arguments.add(String.format("-Dgemfire.log-level=%1$s", "error"));
+		arguments.add(String.format("-Dgemfire.log-level=%1$s", GEMFIRE_LOG_LEVEL));
 
 		gemfireServer = ProcessExecutor.launch(serverWorkingDirectory, customClasspath(), ServerLauncher.class,
 			arguments.toArray(new String[arguments.size()]));

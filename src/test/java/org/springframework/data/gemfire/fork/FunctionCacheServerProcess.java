@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.fork;
 
 import java.io.IOException;
@@ -30,6 +29,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.server.CacheServer;
+
 import org.springframework.data.gemfire.ForkUtil;
 
 /**
@@ -44,15 +44,17 @@ public class FunctionCacheServerProcess {
 	private static Region<Object,Object> testFunctionRegion;
 
 	private static final String CACHE_SERVER_PORT_PROPERTY = "spring.data.gemfire.cache.server.port";
-	private static final String GEMFIRE_LOG_LEVEL = "warning";
+	private static final String GEMFIRE_LOG_LEVEL = "error";
 	private static final String GEMFIRE_NAME = "FunctionServer";
 
 	public static void main(String[] args) throws Exception {
+
 		waitForShutdown(registerShutdownHook(registerFunctions(startCacheServer(
 			addRegion(newGemFireCache(GEMFIRE_NAME, GEMFIRE_LOG_LEVEL), "test-function")))));
 	}
 
 	private static Cache newGemFireCache(String name, String logLevel) {
+
 		return new CacheFactory()
 			.set("name", name)
 			.set("mcast-port", "0")
@@ -62,6 +64,7 @@ public class FunctionCacheServerProcess {
 	}
 
 	private static Cache addRegion(Cache gemfireCache, String name) {
+
 		RegionFactory<Object,Object> regionFactory = gemfireCache.createRegionFactory(RegionShortcut.REPLICATE);
 
 		regionFactory.setScope(Scope.DISTRIBUTED_ACK);
@@ -75,9 +78,12 @@ public class FunctionCacheServerProcess {
 	}
 
 	private static Cache startCacheServer(Cache gemfireCache) throws IOException {
+
 		CacheServer cacheServer = gemfireCache.addCacheServer();
+
 		cacheServer.setPort(getCacheServerPort(DEFAULT_CACHE_SERVER_PORT));
 		cacheServer.start();
+
 		return gemfireCache;
 	}
 
@@ -86,6 +92,7 @@ public class FunctionCacheServerProcess {
 	}
 
 	private static Cache registerFunctions(Cache gemfireCache) {
+
 		FunctionService.registerFunction(new EchoFunction());
 		FunctionService.registerFunction(new ServerFunction());
 
@@ -93,6 +100,7 @@ public class FunctionCacheServerProcess {
 	}
 
 	private static Cache registerShutdownHook(Cache gemfireCache) {
+
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			if (gemfireCache != null) {
 				try {
@@ -108,8 +116,11 @@ public class FunctionCacheServerProcess {
 
 	@SuppressWarnings({ "deprecation", "unused" })
 	private static void waitForShutdown(Cache gemfireCache) throws IOException {
+
 		ForkUtil.createControlFile(FunctionCacheServerProcess.class.getName());
+
 		Scanner scanner = new Scanner(System.in);
+
 		scanner.nextLine();
 	}
 
@@ -123,6 +134,7 @@ public class FunctionCacheServerProcess {
 
 		@Override
 		public void execute(FunctionContext functionContext) {
+
 			Object[] arguments = (Object[]) functionContext.getArguments();
 
 			for (int index = 0; index < arguments.length; index++) {
@@ -146,8 +158,11 @@ public class FunctionCacheServerProcess {
 
 		@Override
 		public void execute(FunctionContext functionContext) {
+
 			Object[] arguments = (Object[]) functionContext.getArguments();
+
 			testFunctionRegion.put(arguments[0], arguments[1]);
+
 			functionContext.getResultSender().lastResult(null);
 		}
 	}

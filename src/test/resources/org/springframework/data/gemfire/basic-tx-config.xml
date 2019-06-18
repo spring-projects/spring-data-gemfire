@@ -11,7 +11,7 @@
 	<util:properties id="gemfireProperties">
 		<prop key="name">BasicSubRegionConfig</prop>
 		<prop key="mcast-port">0</prop>
-		<prop key="log-level">config</prop>
+		<prop key="log-level">error</prop>
 	</util:properties>
 
 	<bean id="cache" class="org.springframework.data.gemfire.CacheFactoryBean">

@@ -94,7 +94,7 @@ public class EnableOqlIndexingConfigurationIntegrationTests {
 			"lastName", "/People", IndexType.HASH);
 	}
 
-	@ClientCacheApplication(logLevel = "none")
+	@ClientCacheApplication(logLevel = "error")
 	@EnableEntityDefinedRegions(
 		basePackageClasses = Person.class,
 		clientRegionShortcut = ClientRegionShortcut.LOCAL,

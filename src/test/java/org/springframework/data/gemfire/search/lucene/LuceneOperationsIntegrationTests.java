@@ -71,7 +71,7 @@ public class LuceneOperationsIntegrationTests {
 
 	private static final AtomicLong IDENTIFIER = new AtomicLong(0L);
 
-	protected static final String LOG_LEVEL = "none";
+	protected static final String LOG_LEVEL = "error";
 
 	private Person jonDoe;
 	private Person janeDoe;

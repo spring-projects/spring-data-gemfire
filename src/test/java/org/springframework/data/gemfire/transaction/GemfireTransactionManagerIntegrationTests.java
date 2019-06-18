@@ -55,7 +55,7 @@ import org.springframework.util.Assert;
 @ContextConfiguration
 public class GemfireTransactionManagerIntegrationTests {
 
-	private static final String GEMFIRE_LOG_LEVEL = "warning";
+	private static final String GEMFIRE_LOG_LEVEL = "error";
 
 	@Resource(name = "Example")
 	@SuppressWarnings("unused")

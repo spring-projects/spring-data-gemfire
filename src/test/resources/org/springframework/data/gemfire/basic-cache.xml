@@ -11,7 +11,7 @@
 			<props>
 				<prop key="name">default-cache</prop>
 				<prop key="mcast-port">0</prop>
-				<prop key="log-level">warning</prop>
+				<prop key="log-level">error</prop>
 			</props>
 		</property>
 	</bean>
@@ -21,7 +21,7 @@
 			<props>
 				<prop key="name">cache-with-props</prop>
 				<prop key="mcast-port">0</prop>
-				<prop key="log-level">warning</prop>
+				<prop key="log-level">error</prop>
 			</props>
 		</property>
 	</bean>
@@ -31,7 +31,7 @@
 			<props>
 				<prop key="name">named-cache</prop>
 				<prop key="mcast-port">0</prop>
-				<prop key="log-level">warning</prop>
+				<prop key="log-level">error</prop>
 			</props>
 		</property>
 	</bean>
@@ -42,7 +42,7 @@
 			<props>
 				<prop key="name">cache-with-xml</prop>
 				<prop key="mcast-port">0</prop>
-				<prop key="log-level">warning</prop>
+				<prop key="log-level">error</prop>
 			</props>
 		</property>
 	</bean>
@@ -52,7 +52,7 @@
 			<props>
 				<prop key="name">pdx-cache</prop>
 				<prop key="mcast-port">0</prop>
-				<prop key="log-level">warning</prop>
+				<prop key="log-level">error</prop>
 			</props>
 		</property>
 	</bean>

@@ -14,7 +14,7 @@
 	<context:property-placeholder location="classpath:port.properties"/>
 
 	<util:properties id="gemfireProperties">
-		<prop key="log-level">warning</prop>
+		<prop key="log-level">error</prop>
 	</util:properties>
 
 	<gfe:client-cache properties-ref="gemfireProperties"/>

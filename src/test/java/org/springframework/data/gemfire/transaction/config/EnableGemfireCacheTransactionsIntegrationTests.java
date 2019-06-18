@@ -106,7 +106,7 @@ public class EnableGemfireCacheTransactionsIntegrationTests {
 
 	@SuppressWarnings("unused")
 	@EnableGemfireCacheTransactions
-	@PeerCacheApplication(name = "EnableGemfireCacheTransactionsIntegrationTests", logLevel = "warning")
+	@PeerCacheApplication(name = "EnableGemfireCacheTransactionsIntegrationTests", logLevel = "error")
 	static class TestConfiguration {
 
 		@Bean("Example")

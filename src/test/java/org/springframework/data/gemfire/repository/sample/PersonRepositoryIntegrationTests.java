@@ -61,7 +61,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @SuppressWarnings("unused")
 public class PersonRepositoryIntegrationTests {
 
-	private static final String DEFAULT_GEMFIRE_LOG_LEVEL = "warning";
+	private static final String DEFAULT_GEMFIRE_LOG_LEVEL = "error";
 	private static final String GEMFIRE_LOG_LEVEL = System.getProperty("gemfire.log-level", DEFAULT_GEMFIRE_LOG_LEVEL);
 
 	protected final AtomicLong ID_SEQUENCE = new AtomicLong(0L);
@@ -195,6 +195,7 @@ public class PersonRepositoryIntegrationTests {
 	public static class GemFireConfiguration {
 
 		Properties gemfireProperties() {
+
 			Properties gemfireProperties = new Properties();
 
 			gemfireProperties.setProperty("name", applicationName());

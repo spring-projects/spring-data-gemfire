@@ -132,7 +132,7 @@ public class QueryPostProcessorIntegrationTests {
 		);
 	}
 
-	@ClientCacheApplication
+	@ClientCacheApplication(logLevel = "error")
 	@SuppressWarnings("unused")
 	static class TestConfiguration {
 

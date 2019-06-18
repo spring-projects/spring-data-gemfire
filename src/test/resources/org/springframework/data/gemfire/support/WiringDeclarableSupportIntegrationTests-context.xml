@@ -12,7 +12,7 @@
 
 	<util:properties id="gemfireProperties">
 		<prop key="name">WiringDeclarableSupportIntegrationTests</prop>
-		<prop key="log-level">warning</prop>
+		<prop key="log-level">error</prop>
 	</util:properties>
 
 	<gfe:cache cache-xml-location="cache-with-declarable.xml" properties-ref="gemfireProperties"

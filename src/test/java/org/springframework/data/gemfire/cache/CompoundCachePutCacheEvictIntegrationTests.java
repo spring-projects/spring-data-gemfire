@@ -198,7 +198,7 @@ public class CompoundCachePutCacheEvictIntegrationTests {
 	@Configuration
 	static class GemFireConfiguration {
 
-		static final String DEFAULT_GEMFIRE_LOG_LEVEL = "warning";
+		static final String DEFAULT_GEMFIRE_LOG_LEVEL = "error";
 
 		Properties gemfireProperties() {
 			Properties gemfireProperties = new Properties();

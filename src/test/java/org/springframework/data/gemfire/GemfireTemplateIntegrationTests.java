@@ -60,7 +60,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @SuppressWarnings("unused")
 public class GemfireTemplateIntegrationTests {
 
-	protected static final String DEFAULT_GEMFIRE_LOG_LEVEL = "warning";
+	protected static final String DEFAULT_GEMFIRE_LOG_LEVEL = "error";
 
 	protected static final List<User> TEST_USERS = new ArrayList<User>(9);
 

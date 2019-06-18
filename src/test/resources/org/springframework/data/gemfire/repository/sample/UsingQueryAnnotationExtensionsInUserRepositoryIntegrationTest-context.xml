@@ -16,7 +16,7 @@
 	<util:properties id="gemfireProperties">
 		<prop key="name">UsingQueryAnnotationExtensionsInUserRepositoryIntegrationTest</prop>
 		<prop key="mcast-port">0</prop>
-		<prop key="log-level">config</prop>
+		<prop key="log-level">error</prop>
 	</util:properties>
 
 	<gfe:cache properties-ref="gemfireProperties"/>

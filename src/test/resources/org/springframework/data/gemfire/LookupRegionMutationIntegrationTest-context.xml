@@ -13,7 +13,7 @@
 	<util:properties id="gemfireProperties">
 		<prop key="name">LookupRegionMutationIntegrationTest</prop>
 		<prop key="mcast-port">0</prop>
-		<prop key="log-level">warning</prop>
+		<prop key="log-level">error</prop>
 	</util:properties>
 
 	<gfe:cache cache-xml-location="/lookup-region-mutation-cache.xml" properties-ref="gemfireProperties"/>

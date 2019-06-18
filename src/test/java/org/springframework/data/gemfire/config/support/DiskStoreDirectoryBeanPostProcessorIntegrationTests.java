@@ -69,7 +69,7 @@ public class DiskStoreDirectoryBeanPostProcessorIntegrationTests {
 		assertThat(new File("./gfe/ds/store3/local").isDirectory()).isTrue();
 	}
 
-	@PeerCacheApplication(logLevel = "warning")
+	@PeerCacheApplication(logLevel = "error")
 	@SuppressWarnings("unused")
 	static class DiskStoreDirectoryBeanPostProcessorConfiguration {
 

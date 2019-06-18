@@ -130,7 +130,7 @@ public class EnableGemfireCachingIntegrationTests {
 	}
 
 	@EnableGemfireCaching
-	@PeerCacheApplication(name = "EnableGemfireCachingIntegrationTests", logLevel = "warning")
+	@PeerCacheApplication(name = "EnableGemfireCachingIntegrationTests", logLevel = "error")
 	@SuppressWarnings("unused")
 	static class TestConfiguration {
 

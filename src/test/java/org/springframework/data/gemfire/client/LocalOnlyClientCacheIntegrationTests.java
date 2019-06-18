@@ -14,7 +14,6 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,13 +22,15 @@ import java.util.Calendar;
 
 import javax.annotation.Resource;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.config.annotation.ClientCacheApplication;
 import org.springframework.data.gemfire.config.annotation.EnableEntityDefinedRegions;
@@ -80,9 +81,9 @@ public class LocalOnlyClientCacheIntegrationTests {
 		assertThat(this.people).hasSize(1);
 	}
 
-	@ClientCacheApplication
+	@ClientCacheApplication(logLevel = "error")
 	@EnableEntityDefinedRegions(basePackageClasses = Person.class,
 		clientRegionShortcut = ClientRegionShortcut.LOCAL, strict = true)
-	static class GemFireClientCacheConfiguration {
-	}
+	static class GemFireClientCacheConfiguration { }
+
 }

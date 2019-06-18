@@ -32,7 +32,7 @@
 	<util:properties id="gemfireProperties">
 		<prop key="durable-client-id">TestDurableClientId</prop>
 		<prop key="durable-client-timeout">300</prop>
-		<prop key="log-level">warning</prop>
+		<prop key="log-level">error</prop>
 		<prop key="mcast-port">0</prop>
 		<prop key="name">DurableClientCacheIntegrationTestClient</prop>
 	</util:properties>
