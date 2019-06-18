@@ -1,16 +1,21 @@
-<?xml version="1.0"?>
-<!DOCTYPE cache PUBLIC  "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN"
-	"http://www.gemstone.com/dtd/cache7_0.dtd">
-<cache>
+<?xml version="1.0" encoding="UTF-8"?>
+<cache xmlns="http://geode.apache.org/schema/cache"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+	   version="1.0">
+
 	<region name="Users" refid="REPLICATE">
 		<region-attributes initial-capacity="101" load-factor="0.85">
 			<key-constraint>java.lang.String</key-constraint>
 			<value-constraint>org.springframework.data.gemfire.repository.sample.User</value-constraint>
 			<cache-loader>
-				<class-name>org.springframework.data.gemfire.support.SpringContextBootstrappingInitializerIntegrationTest$UserDataStoreCacheLoader</class-name>
+				<class-name>
+					org.springframework.data.gemfire.support.SpringContextBootstrappingInitializerIntegrationTest$UserDataStoreCacheLoader
+				</class-name>
 			</cache-loader>
 		</region-attributes>
 	</region>
+
 	<initializer>
 		<class-name>org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer</class-name>
 		<parameter name="contextConfigLocations">
@@ -21,4 +26,5 @@
 			</string>
 		</parameter>
 	</initializer>
+
 </cache>

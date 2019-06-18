@@ -1,14 +1,13 @@
-<?xml version="1.0"?>
-  <!DOCTYPE client-cache PUBLIC
-    "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN"
-    "http://www.gemstone.com/dtd/cache6_5.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<client-cache xmlns="http://geode.apache.org/schema/cache"
+			  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			  xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+			  version="1.0">
 
-<client-cache>      
-   <pool name="DEFAULT">
-   	<locator port="1234" host="localhost"/>
-   </pool>
-   <region name="myRegion" refid="PROXY"/>
-   <!-- you can override or add to the PROXY attributes by adding
-         a region-attributes sub element here -->
+	<pool name="DEFAULT">
+		<locator port="1234" host="localhost"/>
+	</pool>
+
+	<region name="myRegion" refid="PROXY"/>
+
 </client-cache>
-

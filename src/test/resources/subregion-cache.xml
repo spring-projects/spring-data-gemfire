@@ -1,12 +1,15 @@
-<?xml version="1.0"?>
-<!DOCTYPE cache PUBLIC  "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN"
-	"http://www.gemstone.com/dtd/cache7_0.dtd">
-<cache>
+<?xml version="1.0" encoding="UTF-8"?>
+<cache xmlns="http://geode.apache.org/schema/cache"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+	   version="1.0">
+
 	<region name="Parent" refid="REPLICATE">
 		<region name="Child" refid="REPLICATE">
 			<region name="Grandchild" refid="REPLICATE"/>
 		</region>
 	</region>
+
 	<region name="Customers" refid="REPLICATE">
 		<region name="Accounts" refid="REPLICATE">
 			<region name="Orders" refid="REPLICATE">
@@ -14,4 +17,5 @@
 			</region>
 		</region>
 	</region>
+
 </cache>

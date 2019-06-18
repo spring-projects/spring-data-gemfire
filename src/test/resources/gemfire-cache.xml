@@ -1,39 +1,55 @@
-<?xml version="1.0"?>
-<!DOCTYPE cache PUBLIC "-//GemStone Systems, Inc.//GemFire Declarative Caching 5.7//EN" "http://www.gemstone.com/dtd/cache5_7.dtd">
-<cache lock-lease="120" lock-timeout="60" search-timeout="300">
-  <region-attributes id="attTemplate" scope="local" data-policy="normal" initial-capacity="16" load-factor="0.75" concurrency-level="16" statistics-enabled="true">
-    <key-constraint>java.lang.String</key-constraint>
-  </region-attributes>
-  <region name="root">
-    <region-attributes refid="attTemplate" scope="distributed-no-ack">
-      <region-time-to-live>
-        <expiration-attributes timeout="0" action="invalidate"/>
-      </region-time-to-live>
-      <region-idle-time>
-        <expiration-attributes timeout="0" action="invalidate"/>
-      </region-idle-time>
-      <entry-time-to-live>
-        <expiration-attributes timeout="0" action="invalidate"/>
-      </entry-time-to-live>
-      <entry-idle-time>
-        <expiration-attributes timeout="0" action="invalidate"/>
-      </entry-idle-time>
-    </region-attributes>
-    <entry>
-      <key><string>Application Version</string></key>
-      <value><string>1.0</string></value>
-    </entry>
-    <region name="rlocal">
-      <region-attributes refid="attTemplate">
-      </region-attributes>
-    </region>
-    <region name="rdistnoack">
-      <region-attributes refid="attTemplate" scope="distributed-no-ack">
-      </region-attributes>
-    </region>
-    <region name="rglobalreplication">
-      <region-attributes refid="attTemplate" scope="global" data-policy="replicate">
-      </region-attributes>
-    </region>
-  </region>
+<?xml version="1.0" encoding="UTF-8"?>
+<cache xmlns="http://geode.apache.org/schema/cache"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+	   version="1.0"
+	   lock-lease="120" lock-timeout="60" search-timeout="300">
+
+	<region-attributes id="attTemplate"
+					   concurrency-level="16"
+					   data-policy="normal"
+					   initial-capacity="16"
+					   load-factor="0.75"
+					   scope="local"
+					   statistics-enabled="true">
+		<key-constraint>java.lang.String</key-constraint>
+	</region-attributes>
+
+	<region name="root">
+		<region-attributes refid="attTemplate" scope="distributed-no-ack">
+			<region-time-to-live>
+				<expiration-attributes timeout="0" action="invalidate"/>
+			</region-time-to-live>
+			<region-idle-time>
+				<expiration-attributes timeout="0" action="invalidate"/>
+			</region-idle-time>
+			<entry-time-to-live>
+				<expiration-attributes timeout="0" action="invalidate"/>
+			</entry-time-to-live>
+			<entry-idle-time>
+				<expiration-attributes timeout="0" action="invalidate"/>
+			</entry-idle-time>
+		</region-attributes>
+		<entry>
+			<key>
+				<string>Application Version</string>
+			</key>
+			<value>
+				<string>1.0</string>
+			</value>
+		</entry>
+		<region name="rlocal">
+			<region-attributes refid="attTemplate">
+			</region-attributes>
+		</region>
+		<region name="rdistnoack">
+			<region-attributes refid="attTemplate" scope="distributed-no-ack">
+			</region-attributes>
+		</region>
+		<region name="rglobalreplication">
+			<region-attributes refid="attTemplate" scope="global" data-policy="replicate">
+			</region-attributes>
+		</region>
+	</region>
+
 </cache>
