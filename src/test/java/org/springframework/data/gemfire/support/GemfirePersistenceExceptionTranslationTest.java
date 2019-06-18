@@ -19,54 +19,53 @@ import static org.junit.Assert.fail;
 
 import java.util.Map;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.GemfireQueryException;
 import org.springframework.stereotype.Repository;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration
 public class GemfirePersistenceExceptionTranslationTest {
-	@Autowired
-	GemFireRepo1 gemfireRepo1;
+
 	@Autowired
 	ApplicationContext ctx;
 
+	@Autowired
+	GemFireRepo1 gemfireRepo1;
+
 	@Test
 	public void test() {
+
 		Map<String, BeanPostProcessor> bpps = ctx.getBeansOfType(BeanPostProcessor.class);
-		System.out.println(bpps.size());
-		for (BeanPostProcessor bpp: bpps.values()) {
-			System.out.println(bpp.getClass().getSimpleName());
-		}
+
 		try {
 			gemfireRepo1.doit(new QueryException());
 			fail("should throw a query exception");
-		} catch (GemfireQueryException e){
-
 		}
+		catch (GemfireQueryException ignore) { }
 
 		try {
 			gemfireRepo1.doit(new FunctionDomainException("test"));
 			fail("should throw a query exception");
-		} catch (GemfireQueryException e) {
-
 		}
+		catch (GemfireQueryException ignore) { }
 
 		try {
 			gemfireRepo1.doit(new QueryInvocationTargetException("test"));
 			fail("should throw a query exception");
-		} catch (GemfireQueryException e) {
-
 		}
+		catch (GemfireQueryException ignore) { }
 	}
 
 	/**

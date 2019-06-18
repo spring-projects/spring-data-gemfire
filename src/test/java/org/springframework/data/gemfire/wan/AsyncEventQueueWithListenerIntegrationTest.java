@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.wan;
 
 import static org.junit.Assert.assertEquals;
@@ -26,15 +25,17 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.wan.GatewaySender;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -51,7 +52,7 @@ import org.springframework.util.StringUtils;
  * @see org.apache.geode.cache.asyncqueue.AsyncEventQueue
  * @since 1.0.0
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(value = "asyncEventQueueWithListener.xml", initializers = GemfireTestApplicationContextInitializer.class)
 @SuppressWarnings("unused")
 public class AsyncEventQueueWithListenerIntegrationTest {
@@ -67,6 +68,7 @@ public class AsyncEventQueueWithListenerIntegrationTest {
 
 	@Test
 	public void testAsyncEventQueueOneAndListenerConfiguration() {
+
 		assertNotNull(queueOne);
 		assertEquals("QueueOne", queueOne.getId());
 		assertFalse(queueOne.isPersistent());
@@ -78,6 +80,7 @@ public class AsyncEventQueueWithListenerIntegrationTest {
 	}
 	@Test
 	public void testAsyncEventQueueTwoAndListenerConfiguration() {
+
 		assertNotNull(queueTwo);
 		assertEquals("QueueTwo", queueTwo.getId());
 		assertFalse(queueTwo.isPersistent());
@@ -90,6 +93,7 @@ public class AsyncEventQueueWithListenerIntegrationTest {
 
 	@Test
 	public void testAsyncEventQueueThreeAndListenerConfiguration() {
+
 		assertNotNull(queueThree);
 		assertEquals("QueueThree", queueThree.getId());
 		assertFalse(queueThree.isPersistent());
@@ -161,5 +165,4 @@ public class AsyncEventQueueWithListenerIntegrationTest {
 		}
 
 	}
-
 }

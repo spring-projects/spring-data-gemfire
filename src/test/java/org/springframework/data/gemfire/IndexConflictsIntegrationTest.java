@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,14 +21,16 @@ import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeColl
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.IndexExistsException;
 import org.apache.geode.cache.query.IndexNameConflictException;
 import org.apache.geode.cache.query.QueryService;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -271,7 +272,7 @@ public class IndexConflictsIntegrationTest {
 
 			gemfireProperties.setProperty("name", IndexConflictsIntegrationTest.class.getSimpleName());
 			gemfireProperties.setProperty("mcast-port", "0");
-			gemfireProperties.setProperty("log-level", "warning");
+			gemfireProperties.setProperty("log-level", "error");
 
 			return gemfireProperties;
 		}
