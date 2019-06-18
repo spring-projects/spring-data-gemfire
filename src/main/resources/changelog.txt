@@ -1,7 +1,7 @@
 SPRING DATA GEMFIRE CHANGELOG
 -----------------------------
 https://www.springsource.org/spring-gemfire
-=============================
+===========================================
 
 Changes in version 2.2.0.RC1 (2019-06-14)
 -----------------------------------------

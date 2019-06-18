@@ -69,7 +69,7 @@ For instance, consider the following `cache.xml` file:
 [source,xml]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
-<cache xmlns="http://geode.apache.org/schema/cache"
+<cache xmlns="https://geode.apache.org/schema/cache"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://geode.apache.org/schema/cache https://geode.apache.org/schema/cache/cache-1.0.xsd"
        version="1.0">
@@ -569,7 +569,7 @@ Consider the following native {data-store-name} `cache.xml` configuration file:
 [source,xml]
 ----
 <?xml version="1.0" encoding="UTF-8"?>
-<cache xmlns="http://geode.apache.org/schema/cache"
+<cache xmlns="https://geode.apache.org/schema/cache"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://geode.apache.org/schema/cache https://geode.apache.org/schema/cache/cache-1.0.xsd"
        version="1.0">

@@ -14,7 +14,6 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.springframework.data.gemfire.CacheFactoryBean.DynamicRegionSupport;
@@ -33,6 +32,7 @@ import org.apache.geode.cache.TransactionWriter;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.GatewayConflictResolver;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.context.annotation.Bean;

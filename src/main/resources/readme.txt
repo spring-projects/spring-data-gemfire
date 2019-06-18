@@ -15,10 +15,18 @@ details, consult the provided javadoc for specific packages and classes.
 
 3. GETTING STARTED
 
+<<<<<<< HEAD
 Please see the reference documentation at https://www.springsource.org/spring-gemfire/
+=======
+Please see the reference documentation at https://spring.io/projects/spring-data-geode
+>>>>>>> d6800dda... SGF-827 - More URL cleanup caught by Checkstyle.
 and the Spring GemFire Examples at https://github.com/SpringSource/spring-gemfire-examples
 
 ADDITIONAL RESOURCES
 Spring Data GemFire Homepage  : https://www.springsource.org/spring-gemfire
 VMware vFabric GemFire Documentation: https://www.vmware.com/products/application-platform/vfabric-gemfire/overview.html
+<<<<<<< HEAD
 VMware vFabric GemFire product page: https://www.vmware.com/products/application-platform/vfabric-gemfire
+=======
+VMware vFabric GemFire product page: https://www.vmware.com/products/application-platform/vfabric-gemfire
+>>>>>>> d6800dda... SGF-827 - More URL cleanup caught by Checkstyle.

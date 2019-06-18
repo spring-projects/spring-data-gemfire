@@ -33,7 +33,7 @@ import org.springframework.context.annotation.Import;
  * @author John Blum
  * @see org.springframework.data.gemfire.config.annotation.GemFirePropertiesConfiguration
  * @see <a href="https://gemfire.docs.pivotal.io/docs-gemfire/reference/topics/gemfire_properties.html">Pivotal GemFire System Properties</a>
- * @see <a href="https://geode.docs.pivotal.io/docs/reference/topics/gemfire_properties.html">Geode System Properties</a>
+ * @see <a href="https://geode.docs.pivotal.io/docs/reference/topics/gemfire_properties.html">Apache Geode System Properties</a>
  * @since 1.9.0
  */
 @Target(ElementType.TYPE)
