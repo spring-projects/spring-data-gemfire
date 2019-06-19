@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-104 the original author or authors.
+ * Copyright 2010-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,14 +22,16 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
 import edu.umd.cs.mtc.MultithreadedTestCase;
 import edu.umd.cs.mtc.TestFramework;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+
 import org.springframework.cache.Cache;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.test.support.AbstractNativeCacheTests;
@@ -58,13 +59,14 @@ public class GemfireCacheIntegrationTests extends AbstractNativeCacheTests<Regio
 	}
 
 	@Override
-	protected Region<Object, Object> newNativeCache() throws Exception {
+	protected Region<Object, Object> newNativeCache() {
+
 		Properties gemfireProperties = new Properties();
 
 		gemfireProperties.setProperty("name", GemfireCacheIntegrationTests.class.getName());
 		gemfireProperties.setProperty("mcast-port", "0");
 		gemfireProperties.setProperty("locators", "");
-		gemfireProperties.setProperty("log-level", "warning");
+		gemfireProperties.setProperty("log-level", "error");
 
 		org.apache.geode.cache.Cache cache = GemfireUtils.getCache();
 
@@ -82,6 +84,7 @@ public class GemfireCacheIntegrationTests extends AbstractNativeCacheTests<Regio
 	 */
 	@Test
 	public void findsTypedValue() throws Exception {
+
 		Cache cache = newCache();
 
 		cache.put("key", "value");
@@ -94,6 +97,7 @@ public class GemfireCacheIntegrationTests extends AbstractNativeCacheTests<Regio
 	 */
 	@Test
 	public void skipTypeChecksIfTargetTypeIsNull() throws Exception {
+
 		Cache cache = newCache();
 
 		cache.put("key", 1);
@@ -106,6 +110,7 @@ public class GemfireCacheIntegrationTests extends AbstractNativeCacheTests<Regio
 	 */
 	@Test
 	public void throwsIllegalStateExceptionIfTypedAccessDoesNotFindMatchingType() throws Exception {
+
 		Cache cache = newCache();
 
 		cache.put("key", "value");
@@ -120,6 +125,7 @@ public class GemfireCacheIntegrationTests extends AbstractNativeCacheTests<Regio
 
 	@Test
 	public void cacheGetWithValueLoaderFindsValue() throws Exception {
+
 		GemfireCache cache = newCache();
 
 		cache.put("key", "value");
@@ -131,6 +137,7 @@ public class GemfireCacheIntegrationTests extends AbstractNativeCacheTests<Regio
 	@Test
 	@SuppressWarnings("unchecked")
 	public void cacheGetWithValueLoaderUsesValueLoaderReturnsValue() throws Exception {
+
 		GemfireCache cache = newCache();
 
 		TestValueLoader<String> valueLoader = new TestValueLoader<String>("test");
@@ -143,6 +150,7 @@ public class GemfireCacheIntegrationTests extends AbstractNativeCacheTests<Regio
 	@Test
 	@SuppressWarnings("unchecked")
 	public void cacheGetWithValueLoaderUsesValueLoaderReturnsNull() throws Exception {
+
 		GemfireCache cache = newCache();
 
 		assertThat(cache.get("key", TestValueLoader.NULL_VALUE)).isNull();
@@ -153,11 +161,12 @@ public class GemfireCacheIntegrationTests extends AbstractNativeCacheTests<Regio
 	@Test
 	@SuppressWarnings("all")
 	public void cacheGetWithValueLoaderUsesValueLoaderAndThrowsException() throws Exception {
+
 		GemfireCache cache = newCache();
 
 		try {
-			TestValueLoader<Exception> exceptionThrowingValueLoader = new TestValueLoader<Exception>(
-				new IllegalStateException("test"));
+			TestValueLoader<Exception> exceptionThrowingValueLoader =
+				new TestValueLoader<Exception>(new IllegalStateException("test"));
 
 			exception.expect(Cache.ValueRetrievalException.class);
 			exception.expectCause(is(IllegalStateException.class));
@@ -262,5 +271,4 @@ public class GemfireCacheIntegrationTests extends AbstractNativeCacheTests<Regio
 			return value;
 		}
 	}
-
 }
