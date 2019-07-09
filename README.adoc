@@ -1,169 +1,173 @@
-image:https://jenkins.spring.io/buildStatus/icon?job=spring-data-gemfire%2Fmaster&subject=Moore%20(master)[link=https://jenkins.spring.io/view/SpringData/job/spring-data-gemfire/]
-image:https://jenkins.spring.io/buildStatus/icon?job=spring-data-gemfire%2F2.1.x&subject=Lovelace%20(2.1.x)[link=https://jenkins.spring.io/view/SpringData/job/spring-data-gemfire/]
-image:https://jenkins.spring.io/buildStatus/icon?job=spring-data-gemfire%2F1.9.x&subject=Ingalls%20(1.9.x)[link=https://jenkins.spring.io/view/SpringData/job/spring-data-gemfire/]
+image:https://spring.io/badges/spring-data-gemfire/ga.svg[Spring Data GemFire,link=https://projects.spring.io/spring-data-gemfire#quick-start] image:https://spring.io/badges/spring-data-gemfire/snapshot.svg[Spring Data GemFire,link=https://projects.spring.io/spring-data-gemfire#quick-start]
 
+= Spring Data for Pivotal GemFire image:https://jenkins.spring.io/buildStatus/icon?job=spring-data-gemfire%2Fmaster&subject=Build[link=https://jenkins.spring.io/view/SpringData/job/spring-data-gemfire/] https://gitter.im/spring-projects/spring-data[image:https://badges.gitter.im/spring-projects/spring-data.svg[Gitter]]
 
-= Spring Data for Pivotal GemFire
+The primary goal of the Spring Data for Pivotal GemFire project is to make it easier to build highly scalable _Spring_ powered applications using https://pivotal.io/pivotal-gemfire[Pivotal GemFire] as the underlying distributed, in-memory data management platform.
 
-The primary goal of the https://projects.spring.io/spring-data-gemfire[Spring Data for Pivotal GemFire] project
-is to make it easier to build highly scalable, _Spring_ powered applications using https://pivotal.io/pivotal-gemfire[Pivotal GemFire]
-as the underlying distributed, in-memory data management platform.
+== Features
 
-= Examples
+* XML namespace to http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/#bootstrap[configure and create Pivotal GemFire resources declaratively with Spring]
+* Annotation model to https://docs.spring.io/spring-data/gemfire/docs/current/reference/html/#bootstrap-annotation-config[quickly and easily get started with Pivotal GemFire out-of-the-box]
+* Simplifies https://docs.spring.io/spring-data/gemfire/docs/current/reference/html/#apis[working with Pivotal GemFire APIs]
+* https://docs.spring.io/spring-data/gemfire/docs/current/reference/html/#apis:spring-cache-abstraction[Spring Cache Abstraction backed by Pivotal GemFire]
+* https://docs.spring.io/spring-data/gemfire/docs/current/reference/html/#mapping[Spring Data Mapping infrastructure applied to POJOs stored in Pivotal GemFire]
+* https://docs.spring.io/spring-data/gemfire/docs/current/reference/html/#gemfire-repositories[Spring Data Repositories backed by Pivotal GemFire]
+* https://docs.spring.io/spring-data/gemfire/docs/current/reference/html/#apis:transaction-management[Pivotal GemFire Cache Transactions through Spring's Declarative Transaction Management]
+* Additional support for https://docs.spring.io/spring-data/gemfire/docs/current/reference/html/#apis:global-transaction-management[using Pivotal GemFire in Global, JTA Transactions through Spring's Declarative Transaction Management]
+* https://docs.spring.io/spring-data/gemfire/docs/current/reference/html/#serialization[Enhanced support for Pivotal GemFire Serialization]
+* https://docs.spring.io/spring-data/gemfire/docs/current/reference/html/#function-annotations[Annotations for Function Executions]
+* https://docs.spring.io/spring-data/gemfire/docs/current/reference/html/#apis:continuous-query[Support for Continuous Query]
+* https://docs.spring.io/spring-data/gemfire/docs/current/reference/html/#bootstrap:lucene[Enhanced support for Apache Lucene Integration]
+* https://docs.spring.io/spring-data/gemfire/docs/current/reference/html/#gemfire-bootstrap[Bootstrapping a Spring Context with Pivotal GemFire]
+* Spring Tool Suite http://docs.spring.io/sts/nan/v310/NewAndNoteworthy.html[Spring Project Templates for Pivotal GemFire]
 
-For examples on using the _Spring Data for Pivotal GemFire_, see the
-https://github.com/SpringSource/spring-gemfire-examples[spring-gemfire-examples] project.
+== Code of Conduct
 
-= Getting Help
+This project is governed by the link:CODE_OF_CONDUCT.adoc[Spring Code of Conduct]. By participating, you are expected to uphold this code of conduct. Please report unacceptable behavior to spring-code-of-conduct@pivotal.io.
 
-Read the main project https://projects.spring.io/spring-data-gemfire/[website] along with
-the https://docs.spring.io/spring-data-gemfire/docs/current/reference/html/[User Guide].
+== Getting Started
 
-Look at the source code and the https://docs.spring.io/spring-data-gemfire/docs/current/api/[JavaDocs].
+Here is a quick teaser of an application using Spring Data Repositories in Java:
 
-For more detailed questions, visit https://stackoverflow.com/questions/tagged/spring-data-gemfire[_StackOverflow_].
-
-If you are new to _Spring_ as well as _Spring Data for Pivotal GemFire_, look for information about
-https://spring.io/projects[_Spring_ projects].
-
-== Quick Start
-
-For developers in a hurry, you can download the JAR using:
-
-* Maven:
-[source,xml]
+[source,java]
 ----
-<dependency>
-  <groupId>org.springframework.data</groupId>
-  <artifactId>spring-data-gemfire</artifactId>
-  <version>${version}</version>
-</dependency>
+public interface PersonRepository extends CrudRepository<Person, Long> {
 
-<!-- nightly builds -->
-<repository>
-  <id>spring-maven-snapshot</id>
-  <name>Spring Maven SNAPSHOT Repository</name>
-  <url>https://repo.spring.io/snapshot</url>
-  <snapshots><enabled>true</enabled></snapshots>
-</repository>
+  List<Person> findByLastname(String lastname);
 
-<!-- milestones/release candidates-->
-<repository>
-  <id>spring-maven-milestone</id>
-  <name>Spring Maven Milestone Repository</name>
-  <url>https://repo.spring.io/milestone</url>
-</repository>
-----
-
-* Gradle:
-[source,groovy]
-----
-repositories {
-   mavenRepo name: "spring-snapshot", urls: "https://repo.spring.io/snapshot"
-   mavenRepo name: "spring-milestone", urls: "https://repo.spring.io/milestone"
-   mavenRepo name: "spring-plugins" , urls: "https://repo.spring.io/plugins-release"
+  List<Person> findByFirstnameLike(String firstname);
 }
 
-dependencies {
-   compile "org.springframework.data:spring-data-geode:${version}"
+@Service
+public class MyService {
+
+  private final PersonRepository repository;
+
+  public MyService(PersonRepository repository) {
+    this.repository = repository;
+  }
+
+  public void doWork() {
+
+    repository.deleteAll();
+
+    Person person = new Person();
+    person.setFirstname("John");
+    person.setLastname("Blum");
+    repository.save(person);
+
+    List<Person> lastNameResults = repository.findByLastname("Blum");
+    List<Person> firstNameResults = repository.findByFirstnameLike("J*");
+ }
 }
 ----
 
-* Configure a Pivotal GemFire cache and Region (REPLICATE, PARTITION and so on):
+Configure a Pivotal GemFire cache and Region (REPLICATE, PARTITION and so on):
+
 [source,xml]
 ----
 <beans xmlns="http://www.springframework.org/schema/beans"
   xmlns:gfe="http://www.springframework.org/schema/gemfire"
+	xmlns:gfe-data="http://www.springframework.org/schema/data/gemfire"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance
   xsi:schemaLocation="
     http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
-    http://www.springframework.org/schema/gemfire https://www.springframework.org/schema/gemfire/spring-gemfire.xsd">
+    http://www.springframework.org/schema/gemfire https://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+		http://www.springframework.org/schema/data/gemfire https://www.springframework.org/schema/data/gemfire/spring-data-gemfire.xsd">
 
   <gfe:cache/>
 
   <gfe:partitioned-region id="ExampleRegion" copies="2">
 
   <bean id="gemfireTemplate" class="org.springframework.data.gemfire.GemfireTemplate" p:region-ref="ExampleRegion"/>
+	<gfe-data:repositories base-package="com.acme"/>
 </beans>
 ----
 
-* Use the Region to read/write data:
-[source,java]
-----
-region.put(Long.valueOf(1), new Person("Jon", "Doe"));
-----
+=== Maven configuration
 
-* And/Or `GemFireTemplate` to interact with Pivotal GemFire:
-[source,java]
-----
-template.query("person = 1");
-----
+Add the Maven dependency:
 
-= Building
-
-_Spring Data for Pivotal GemFire_ uses Maven as its build system. To compile the project, simply type
-the following Maven command from the root folder:
-
-[source]
+[source,xml]
 ----
-mvn clean install
+<dependency>
+  <groupId>org.springframework.data</groupId>
+  <artifactId>spring-data-gemfire</artifactId>
+  <version>${version}.RELEASE</version>
+</dependency>
 ----
 
-= Contributing
+If you'd rather like the latest snapshots of the upcoming major version, use our Maven snapshot repository and declare the appropriate dependency version.
 
-Here are some ways for you to get involved in the community:
+[source,xml]
+----
+<dependency>
+  <groupId>org.springframework.data</groupId>
+  <artifactId>spring-data-gemfire</artifactId>
+  <version>${version}.BUILD-SNAPSHOT</version>
+</dependency>
 
-* Get involved with the _Spring_ community on the _Spring_ Community Forums (_StackOverflow_).
-Please help out on the https://stackoverflow.com/questions/tagged/spring-data-gemfire[forum]
-by responding to questions and joining the debate.
-* Create https://jira.spring.io/browse/SGF[JIRA] tickets for bugs and new features and comment and vote on the bugs
-you are interested in.
-* GitHub is for social coding. If you want to write code, we encourage contributions through pull requests
-from https://help.github.com/forking/[forks of this repository]. If you want to contribute code this way,
-please reference a JIRA ticket as well covering the specific issue you are addressing.
-* Watch for upcoming articles on _Spring_ by https://spring.io/blog[subscribing] to spring.io.
+<repository>
+  <id>spring-libs-snapshot</id>
+  <name>Spring Snapshot Repository</name>
+  <url>https://repo.spring.io/libs-snapshot</url>
+</repository>
+----
 
-Before we accept a non-trivial patch or pull request we will need you to
-https://cla.pivotal.io/sign/spring[sign the Contributor License Agreement]. Signing the contributor’s agreement
-does not grant anyone commit rights to the main repository, but it does mean that we can accept your contributions,
-and you will get an author credit if we do. If you forget to do so, you'll be reminded when you submit a pull request.
-Active contributors might be asked to join the core team, and given the ability to merge pull requests.
+== Getting Help
 
-= Running CI tasks locally
+Having trouble with Spring Data? We’d love to help!
 
-Since this pipeline is purely Docker-based, it's easy to:
+* Check the
+https://docs.spring.io/spring-data/gemfire/docs/current/reference/html/[reference documentation], and https://docs.spring.io/spring-data/gemfire/docs/current/api/[Javadocs].
+* Learn the Spring basics – Spring Data builds on Spring Framework, check the https://spring.io[spring.io] web-site for a wealth of reference documentation.
+If you are just starting out with Spring, try one of the https://spring.io/guides[guides].
+* If you are upgrading, check out the https://docs.spring.io/spring-data/gemfire/docs/current/changelog.txt[changelog] for "`new and noteworthy`" features.
+* Ask a question - we monitor https://stackoverflow.com[stackoverflow.com] for questions tagged with https://stackoverflow.com/tags/spring-data[`spring-data-gemfire`].
+You can also chat with the community on https://gitter.im/spring-projects/spring-data[Gitter].
+* Report bugs with Spring Data for Pivotal GemFire at https://jira.spring.io/browse/SGF[jira.spring.io/browse/SGF].
 
-* Debug what went wrong on your local machine.
-* Test out a a tweak to your `test.sh` script before sending it out.
-* Experiment against a new image before submitting your pull request.
+== Reporting Issues
 
-All of these use cases are great reasons to essentially run what the CI server does on your local machine.
+Spring Data uses JIRA as issue tracking system to record bugs and feature requests. If you want to raise an issue, please follow the recommendations below:
 
-IMPORTANT: To do this you must have Docker installed on your machine.
+* Before you log a bug, please search the
+https://jira.spring.io/browse/SGF[issue tracker] to see if someone has already reported the problem.
+* If the issue doesn’t already exist, https://jira.spring.io/browse/SGF[create a new issue].
+* Please provide as much information as possible with the issue report, we like to know the version of Spring Data that you are using and JVM version.
+* If you need to paste code, or include a stack trace use JIRA `{code}…{code}` escapes before and after your text.
+* If possible try to create a test-case or project that replicates the issue. Attach a link to your code or a compressed file containing your code.
 
-1. `docker run -it --mount type=bind,source="$(pwd)",target=/spring-data-gemfire-github adoptopenjdk/openjdk8:latest /bin/bash`
-+
-This will launch the Docker image and mount your source code at `spring-data-gemfire-github`.
-+
-2. `cd spring-data-gemfire-github`
-+
-Next, run your tests from inside the container:
-+
-3. `./mvnw clean dependency:list test -Dsort` (or whatever profile you need to test out)
+== Building from Source
 
-Since the container is binding to your source, you can make edits from your IDE and continue to run build jobs.
+You don’t need to build from source to use Spring Data (binaries in https://repo.spring.io[repo.spring.io]), but if you want to try out the latest and greatest, Spring Data can be easily built with the https://github.com/takari/maven-wrapper[maven wrapper].
+You also need JDK 1.8.
 
-If you test building the artifact, do this:
+[source,bash]
+----
+ $ ./mvnw clean install
+----
 
-1. `docker run -it --mount type=bind,source="$(pwd)",target=/spring-data-gemfire-github adoptopenjdk/openjdk8:latest /bin/bash`
-+
-This will launch the Docker image and mount your source code at `spring-data-gemfire-github`.
-+
-2. `cd spring-data-gemfire-github`
-+
-Next, try to package everything up from inside the container:
-+
-3. `./mvnw -Pci,snapshot -Dmaven.test.skip=true clean package`
+If you want to build with the regular `mvn` command, you will need https://maven.apache.org/run-maven/index.html[Maven v3.5.0 or above].
 
-NOTE: Docker containers can eat up disk space fast! From time to time, run `docker system prune` to clean out old images.
+_Also see link:CONTRIBUTING.adoc[CONTRIBUTING.adoc] if you wish to submit pull requests, and in particular please sign the https://cla.pivotal.io/sign/spring[Contributor’s Agreement] before your first change, is trivial._
 
+=== Building reference documentation
+
+Building the documentation builds also the project without running tests.
+
+[source,bash]
+----
+ $ ./mvnw clean install -Pdistribute
+----
+
+The generated documentation is available from `target/site/reference/html/index.html`.
+
+== Examples
+
+For examples on using the _Spring Data for Pivotal GemFire_, see the https://github.com/SpringSource/spring-gemfire-examples[spring-gemfire-examples] project.
+
+
+== License
+
+Spring Data for Pivotal GemFire is Open Source software released under the https://www.apache.org/licenses/LICENSE-2.0.html[Apache 2.0 license].
