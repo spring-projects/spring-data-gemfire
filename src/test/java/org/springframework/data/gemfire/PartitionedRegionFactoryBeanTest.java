@@ -13,29 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.RegionFactory;
 import org.junit.Test;
 
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.RegionFactory;
+
 /**
- * The PartitionedRegionFactoryBeanTest class is a test suite of test cases testing the component functionality
- * and correct behavior of the PartitionedRegionFactoryBean class.
+ * Unit Tests for {@link PartitionedRegionFactoryBean}.
  *
  * @author John Blum
  * @see org.junit.Test
  * @see org.mockito.Mockito
- * @see org.springframework.data.gemfire.PartitionedRegionFactoryBean
  * @see org.apache.geode.cache.DataPolicy
  * @see org.apache.geode.cache.RegionFactory
+ * @see org.springframework.data.gemfire.PartitionedRegionFactoryBean
  * @since 1.3.3
  */
 @SuppressWarnings("unchecked")
@@ -78,7 +77,7 @@ public class PartitionedRegionFactoryBeanTest {
 			factoryBean.resolveDataPolicy(mockRegionFactory, null, "  ");
 		}
 		catch (IllegalArgumentException e) {
-			assertEquals("Data Policy '  ' is invalid.", e.getMessage());
+			assertEquals("Data Policy [  ] is invalid.", e.getMessage());
 			throw e;
 		}
 		finally {
@@ -97,7 +96,7 @@ public class PartitionedRegionFactoryBeanTest {
 			factoryBean.resolveDataPolicy(mockRegionFactory, null, "");
 		}
 		catch (IllegalArgumentException e) {
-			assertEquals("Data Policy '' is invalid.", e.getMessage());
+			assertEquals("Data Policy [] is invalid.", e.getMessage());
 			throw e;
 		}
 		finally {
@@ -116,7 +115,7 @@ public class PartitionedRegionFactoryBeanTest {
 			factoryBean.resolveDataPolicy(mockRegionFactory, null, "INVALID_DATA_POLICY_NAME");
 		}
 		catch (IllegalArgumentException e) {
-			assertEquals("Data Policy 'INVALID_DATA_POLICY_NAME' is invalid.", e.getMessage());
+			assertEquals("Data Policy [INVALID_DATA_POLICY_NAME] is invalid.", e.getMessage());
 			throw e;
 		}
 		finally {
@@ -134,7 +133,7 @@ public class PartitionedRegionFactoryBeanTest {
 			factoryBean.resolveDataPolicy(mockRegionFactory, null, "REPLICATE");
 		}
 		catch (IllegalArgumentException e) {
-			assertEquals("Data Policy 'REPLICATE' is not supported in Partitioned Regions.", e.getMessage());
+			assertEquals("Data Policy [REPLICATE] is not supported in Partitioned Regions.", e.getMessage());
 			throw e;
 		}
 		finally {

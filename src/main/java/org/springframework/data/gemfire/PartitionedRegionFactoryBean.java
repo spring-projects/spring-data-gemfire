@@ -17,6 +17,7 @@ package org.springframework.data.gemfire;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionFactory;
+
 import org.springframework.data.gemfire.util.RegionUtils;
 import org.springframework.util.Assert;
 
@@ -30,13 +31,13 @@ public class PartitionedRegionFactoryBean<K, V> extends PeerRegionFactoryBean<K,
 	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, DataPolicy dataPolicy) {
 
 		if (dataPolicy == null) {
-			dataPolicy = (isPersistent() ? DataPolicy.PERSISTENT_PARTITION : DataPolicy.PARTITION);
+			dataPolicy = isPersistent() ? DataPolicy.PERSISTENT_PARTITION : DataPolicy.PARTITION;
 		}
 		else {
 			// Validate that the user-defined Data Policy matches the appropriate Spring Pivotal GemFire XML namespace
 			// configuration meta-data element for Region (i.e. <gfe:partitioned-region .../>)!
 			Assert.isTrue(dataPolicy.withPartitioning(), String.format(
-				"Data Policy '%1$s' is not supported in Partitioned Regions.", dataPolicy));
+				"Data Policy [%s] is not supported in Partitioned Regions.", dataPolicy));
 		}
 
 		// Validate the data-policy and persistent attributes are compatible when specified!
@@ -53,7 +54,7 @@ public class PartitionedRegionFactoryBean<K, V> extends PeerRegionFactoryBean<K,
 
 		if (dataPolicy != null) {
 			resolvedDataPolicy = new DataPolicyConverter().convert(dataPolicy);
-			Assert.notNull(resolvedDataPolicy, String.format("Data Policy '%1$s' is invalid.", dataPolicy));
+			Assert.notNull(resolvedDataPolicy, String.format("Data Policy [%s] is invalid.", dataPolicy));
 		}
 
 		resolveDataPolicy(regionFactory, persistent, resolvedDataPolicy);

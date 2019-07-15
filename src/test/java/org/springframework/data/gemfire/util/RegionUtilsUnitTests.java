@@ -17,9 +17,17 @@
 package org.springframework.data.gemfire.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import org.junit.Test;
 
 import org.apache.geode.cache.DataPolicy;
-import org.junit.Test;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionService;
 
 /**
  * Unit tests for {@link RegionUtils}.
@@ -34,9 +42,9 @@ public class RegionUtilsUnitTests {
 	public void assertAllDataPoliciesWithNullPersistentPropertyIsCompatible() {
 
 		RegionUtils.assertDataPolicyAndPersistentAttributeAreCompatible(DataPolicy.PARTITION, null);
-		RegionUtils.assertDataPolicyAndPersistentAttributeAreCompatible(DataPolicy.REPLICATE, null);
 		RegionUtils.assertDataPolicyAndPersistentAttributeAreCompatible(DataPolicy.PERSISTENT_PARTITION, null);
 		RegionUtils.assertDataPolicyAndPersistentAttributeAreCompatible(DataPolicy.PERSISTENT_REPLICATE, null);
+		RegionUtils.assertDataPolicyAndPersistentAttributeAreCompatible(DataPolicy.REPLICATE, null);
 	}
 
 	@Test
@@ -54,7 +62,7 @@ public class RegionUtilsUnitTests {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testAssertNonPersistentDataPolicyWithPersistentAttribute() {
+	public void assertNonPersistentDataPolicyWithPersistentAttribute() {
 
 		try {
 			RegionUtils.assertDataPolicyAndPersistentAttributeAreCompatible(DataPolicy.REPLICATE, true);
@@ -69,7 +77,7 @@ public class RegionUtilsUnitTests {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testAssertPersistentDataPolicyWithNonPersistentAttribute() {
+	public void assertPersistentDataPolicyWithNonPersistentAttribute() {
 
 		try {
 			RegionUtils.assertDataPolicyAndPersistentAttributeAreCompatible(DataPolicy.PERSISTENT_PARTITION, false);
@@ -81,5 +89,79 @@ public class RegionUtilsUnitTests {
 
 			throw expected;
 		}
+	}
+
+	@Test
+	public void closeRegionHandlesNull() {
+		assertThat(RegionUtils.close((Region<?, ?>) null)).isFalse();
+	}
+
+	@Test
+	public void closeRegionSuccessfully() {
+
+		Region mockRegion = mock(Region.class);
+
+		assertThat(RegionUtils.close(mockRegion)).isTrue();
+
+		verify(mockRegion, times(1)).close();
+	}
+
+	@Test
+	public void closeRegionUnsuccessfully() {
+
+		Region mockRegion = mock(Region.class);
+
+		doThrow(new RuntimeException("TEST")).when(mockRegion).close();
+
+		assertThat(RegionUtils.close(mockRegion)).isFalse();
+
+		verify(mockRegion, times(1)).close();
+	}
+
+	@Test
+	public void nullRegionIsNotCloseable() {
+		assertThat(RegionUtils.isCloseable(null)).isFalse();
+	}
+
+	@Test
+	public void regionIsCloseable() {
+
+		Region mockRegion = mock(Region.class);
+		RegionService mockRegionService = mock(RegionService.class);
+
+		when(mockRegion.getRegionService()).thenReturn(mockRegionService);
+		when(mockRegionService.isClosed()).thenReturn(false);
+
+		assertThat(RegionUtils.isCloseable(mockRegion)).isTrue();
+
+		verify(mockRegion, times(1)).getRegionService();
+		verify(mockRegionService, times(1)).isClosed();
+	}
+
+	@Test
+	public void regionIsNotCloseable() {
+
+		Region mockRegion = mock(Region.class);
+		RegionService mockRegionService = mock(RegionService.class);
+
+		when(mockRegion.getRegionService()).thenReturn(mockRegionService);
+		when(mockRegionService.isClosed()).thenReturn(true);
+
+		assertThat(RegionUtils.isCloseable(mockRegion)).isFalse();
+
+		verify(mockRegion, times(1)).getRegionService();
+		verify(mockRegionService, times(1)).isClosed();
+	}
+
+	@Test
+	public void regionWithNoRegionServiceIsNotCloseable() {
+
+		Region mockRegion = mock(Region.class);
+
+		when(mockRegion.getRegionService()).thenReturn(null);
+
+		assertThat(RegionUtils.isCloseable(mockRegion)).isFalse();
+
+		verify(mockRegion, times(1)).getRegionService();
 	}
 }

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.util;
 
 import java.util.Optional;
@@ -22,6 +21,7 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+
 import org.springframework.data.gemfire.client.ClientRegionShortcutWrapper;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -86,12 +86,54 @@ public abstract class RegionUtils extends CacheUtils {
 		}
 	}
 
+	/**
+	 * Safely closes the target {@link Region}.
+	 *
+	 * @param region {@link Region} to close
+	 * @return a boolean indicating whether the {@link Region} was successfully closed or not.
+	 * @see org.apache.geode.cache.Region#close
+	 */
+	public static boolean close(Region<?, ?> region) {
+
+		try {
+
+			region.close();
+
+			return true;
+		}
+		catch (Throwable ignore) {
+			return false;
+		}
+	}
+
+	/**
+	 * Determines whether the target {@link Region} is a {@literal client} {@link Region}.
+	 *
+	 * @param region {@link Region} to evaluate.
+	 * @return a boolean indicating whether the target {@link Region} is a {@literal client} {@link Region}.
+	 * @see org.apache.geode.cache.Region
+	 */
 	public static boolean isClient(Region region) {
 
 		return Optional.ofNullable(region)
 			.map(Region::getAttributes)
 			.map(RegionAttributes::getPoolName)
 			.filter(StringUtils::hasText)
+			.isPresent();
+	}
+
+	/**
+	 * Determines whether the given {@link Region} is closeable.
+	 *
+	 * @param region {@link Region} to evaluate.
+	 * @return a boolean value indicating whether the {@link Region} is closeable or not.
+	 * @see org.apache.geode.cache.Region
+	 */
+	public static boolean isCloseable(Region<?, ?> region) {
+
+		return Optional.ofNullable(region)
+			.map(Region::getRegionService)
+			.filter(regionService -> !regionService.isClosed())
 			.isPresent();
 	}
 
