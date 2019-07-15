@@ -17,6 +17,7 @@ package org.springframework.data.gemfire;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionFactory;
+
 import org.springframework.data.gemfire.util.RegionUtils;
 import org.springframework.util.Assert;
 
@@ -30,7 +31,7 @@ public class ReplicatedRegionFactoryBean<K, V> extends PeerRegionFactoryBean<K, 
 	protected void resolveDataPolicy(RegionFactory<K, V> regionFactory, Boolean persistent, DataPolicy dataPolicy) {
 
 		if (dataPolicy == null) {
-			dataPolicy = (isPersistent() ? DataPolicy.PERSISTENT_REPLICATE : DataPolicy.REPLICATE);
+			dataPolicy = isPersistent() ? DataPolicy.PERSISTENT_REPLICATE : DataPolicy.REPLICATE;
 		}
 		else if (DataPolicy.EMPTY.equals(dataPolicy)) {
 			dataPolicy = DataPolicy.EMPTY;
@@ -39,7 +40,7 @@ public class ReplicatedRegionFactoryBean<K, V> extends PeerRegionFactoryBean<K, 
 			// Validate that the user-defined Data Policy matches the appropriate Spring Pivotal GemFire XML namespace
 			// configuration meta-data element for the Region (i.e. <gfe:replicated-region .../>)!
 			Assert.isTrue(dataPolicy.withReplication(), String.format(
-				"Data Policy '%1$s' is not supported in Replicated Regions.", dataPolicy));
+				"Data Policy [%s] is not supported in Replicated Regions.", dataPolicy));
 		}
 
 		// Validate that the data-policy and persistent attributes are compatible when both are specified!
@@ -56,7 +57,7 @@ public class ReplicatedRegionFactoryBean<K, V> extends PeerRegionFactoryBean<K, 
 
 		if (dataPolicy != null) {
 			resolvedDataPolicy = new DataPolicyConverter().convert(dataPolicy);
-			Assert.notNull(resolvedDataPolicy, String.format("Data Policy '%1$s' is invalid.", dataPolicy));
+			Assert.notNull(resolvedDataPolicy, String.format("Data Policy [%s] is invalid.", dataPolicy));
 		}
 
 		resolveDataPolicy(regionFactory, persistent, resolvedDataPolicy);

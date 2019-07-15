@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire;
 
 import static java.util.Arrays.stream;
@@ -46,6 +45,7 @@ import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.cache.UserSpecifiedRegionAttributes;
+
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.SmartLifecycle;
@@ -91,9 +91,9 @@ import org.springframework.util.StringUtils;
  */
 @SuppressWarnings("unused")
 public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFactoryBean<K, V>
-		implements EvictingRegionFactoryBean, ExpiringRegionFactoryBean<K, V>, DisposableBean, SmartLifecycle {
+		implements DisposableBean, EvictingRegionFactoryBean, ExpiringRegionFactoryBean<K, V>, SmartLifecycle {
 
-	private boolean close = true;
+	private boolean close = false;
 	private boolean destroy = false;
 	private boolean running;
 
@@ -148,7 +148,7 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 	 * @see org.apache.geode.cache.Region
 	 */
 	@Override
-	protected Region<K, V> createRegion(GemFireCache gemfireCache, String regionName) throws Exception {
+	protected Region<K, V> createRegion(GemFireCache gemfireCache, String regionName) {
 
 		applyRegionConfigurers(regionName);
 
@@ -176,13 +176,14 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 
 		return Optional.ofNullable(parentRegion)
 			.map(parent -> {
-				logInfo("Creating Subregion [%1$s] with parent Region [%2$s]",
-					regionName, parent.getName());
 
-				return regionFactory.<K, V>createSubregion(parent, regionName);
+				logInfo("Creating Subregion [%1$s] with parent Region [%2$s]", regionName, parent.getName());
+
+				return regionFactory.createSubregion(parent, regionName);
 			})
 			.orElseGet(() -> {
-				logInfo("Created Region [%1$s]", regionName);
+
+				logInfo("Created Region [%s]", regionName);
 
 				return regionFactory.create(regionName);
 			});
@@ -191,8 +192,8 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 	private Cache resolveCache(GemFireCache gemfireCache) {
 
 		return Optional.ofNullable(gemfireCache)
-			.filter(cache -> cache instanceof Cache)
-			.map(cache -> (Cache) cache)
+			.filter(Cache.class::isInstance)
+			.map(Cache.class::cast)
 			.orElseThrow(() -> newIllegalArgumentException("Peer Cache is required"));
 	}
 
@@ -283,6 +284,8 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 
 		Optional.ofNullable(this.keyConstraint).ifPresent(regionFactory::setKeyConstraint);
 
+		Optional.ofNullable(this.offHeap).ifPresent(regionFactory::setOffHeap);
+
 		Optional.ofNullable(this.regionIdleTimeout).ifPresent(regionFactory::setRegionIdleTimeout);
 
 		Optional.ofNullable(this.regionTimeToLive).ifPresent(regionFactory::setRegionTimeToLive);
@@ -306,9 +309,6 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 	 * @see org.apache.geode.cache.RegionFactory
 	 */
 	protected RegionFactory<K, V> postProcess(RegionFactory<K, V> regionFactory) {
-
-		Optional.ofNullable(this.offHeap).ifPresent(regionFactory::setOffHeap);
-
 		return regionFactory;
 	}
 
@@ -368,7 +368,6 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 	 * @see org.apache.geode.cache.RegionAttributes
 	 * @see org.apache.geode.cache.RegionFactory
 	 */
-	@SuppressWarnings("unchecked")
 	protected <K, V> RegionFactory<K, V> mergeRegionAttributes(RegionFactory<K, V> regionFactory,
 			RegionAttributes<K, V> regionAttributes) {
 
@@ -459,6 +458,33 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 		}
 	}
 
+	private boolean isDiskStoreConfigurationAllowed() {
+
+		boolean allow = StringUtils.hasText(this.diskStoreName);
+
+		allow &= getDataPolicy().withPersistence()
+			|| (getAttributes() != null && getAttributes().getEvictionAttributes() != null
+				&& EvictionAction.OVERFLOW_TO_DISK.equals(attributes.getEvictionAttributes().getAction()));
+
+		return allow;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * This method is not part of the PeerRegionFactoryBean API and is strictly used for testing purposes!
+	 *
+	 * NOTE unfortunately, must resort to using a Pivotal GemFire internal class, ugh!
+	 *
+	 * @see org.apache.geode.internal.cache.UserSpecifiedRegionAttributes#hasEvictionAttributes
+	 */
+
+	boolean isUserSpecifiedEvictionAttributes(final RegionAttributes regionAttributes) {
+
+		return regionAttributes instanceof UserSpecifiedRegionAttributes
+			&& ((UserSpecifiedRegionAttributes) regionAttributes).hasEvictionAttributes();
+	}
+
 	/*
 	 * (non-Javadoc)
 	 *
@@ -471,30 +497,17 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 		org.apache.geode.cache.AttributesFactory.validateAttributes(regionAttributes);
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Returns true when the user explicitly specified a value for the persistent attribute and it is false.  If the
+	 * persistent attribute was not explicitly specified, then the persistence setting is implicitly undefined
+	 * and will be determined by the Data Policy.
 	 *
-	 * This method is not part of the PeerRegionFactoryBean API and is strictly used for testing purposes!
-	 *
-	 * NOTE unfortunately, must resort to using a Pivotal GemFire internal class, ugh!
-	 *
-	 * @see org.apache.geode.internal.cache.UserSpecifiedRegionAttributes#hasEvictionAttributes
+	 * @return true when the user specified an explicit value for the persistent attribute and it is false;
+	 * false otherwise.
+	 * @see #isPersistent()
 	 */
-	boolean isUserSpecifiedEvictionAttributes(final RegionAttributes regionAttributes) {
-		return (regionAttributes instanceof UserSpecifiedRegionAttributes
-			&& ((UserSpecifiedRegionAttributes) regionAttributes).hasEvictionAttributes());
-	}
-
-	private boolean isDiskStoreConfigurationAllowed() {
-
-		boolean allow = StringUtils.hasText(this.diskStoreName);
-
-		allow &= (getDataPolicy().withPersistence()
-			|| (getAttributes() != null
-			&& getAttributes().getEvictionAttributes() != null
-			&& EvictionAction.OVERFLOW_TO_DISK.equals(attributes.getEvictionAttributes().getAction())));
-
-		return allow;
+	protected boolean isNotPersistent() {
+		return Boolean.FALSE.equals(this.persistent);
 	}
 
 	/**
@@ -507,20 +520,7 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 	 * @see #isNotPersistent()
 	 */
 	protected boolean isPersistent() {
-		return Boolean.TRUE.equals(persistent);
-	}
-
-	/**
-	 * Returns true when the user explicitly specified a value for the persistent attribute and it is false.  If the
-	 * persistent attribute was not explicitly specified, then the persistence setting is implicitly undefined
-	 * and will be determined by the Data Policy.
-	 *
-	 * @return true when the user specified an explicit value for the persistent attribute and it is false;
-	 * false otherwise.
-	 * @see #isPersistent()
-	 */
-	protected boolean isNotPersistent() {
-		return Boolean.FALSE.equals(persistent);
+		return Boolean.TRUE.equals(this.persistent);
 	}
 
 	/**
@@ -575,7 +575,8 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 			DataPolicy regionAttributesDataPolicy = getDataPolicy(getAttributes(), DataPolicy.DEFAULT);
 
 			DataPolicy resolvedDataPolicy = isPersistent() && DataPolicy.DEFAULT.equals(regionAttributesDataPolicy)
-				? DataPolicy.PERSISTENT_REPLICATE : regionAttributesDataPolicy;
+				? DataPolicy.PERSISTENT_REPLICATE
+				: regionAttributesDataPolicy;
 
 			RegionUtils.assertDataPolicyAndPersistentAttributeAreCompatible(resolvedDataPolicy, this.persistent);
 
@@ -585,7 +586,10 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 	}
 
 	private DataPolicy getDataPolicy(RegionAttributes regionAttributes, DataPolicy defaultDataPolicy) {
-		return Optional.ofNullable(regionAttributes).map(RegionAttributes::getDataPolicy).orElse(defaultDataPolicy);
+
+		return Optional.ofNullable(regionAttributes)
+			.map(RegionAttributes::getDataPolicy)
+			.orElse(defaultDataPolicy);
 	}
 
 	/**
@@ -600,15 +604,9 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 	public void destroy() throws Exception {
 
 		Optional.ofNullable(getObject()).ifPresent(region -> {
-			if (this.close) {
-				if (!region.getRegionService().isClosed()) {
-					try {
-						region.close();
-					}
-					catch (Exception ignore) {
-					}
-				}
 
+			if (this.close && RegionUtils.isCloseable(region)) {
+				RegionUtils.close(region);
 			}
 
 			if (this.destroy) {

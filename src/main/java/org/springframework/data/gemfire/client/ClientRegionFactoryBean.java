@@ -174,7 +174,9 @@ public class ClientRegionFactoryBean<K, V> extends ConfigurableRegionFactoryBean
 			return clientRegionFactory.createSubregion(parent, regionName);
 		}
 		else {
+
 			logInfo("Creating client Region [%s]", regionName);
+
 			return clientRegionFactory.create(regionName);
 		}
 	}
@@ -427,14 +429,8 @@ public class ClientRegionFactoryBean<K, V> extends ConfigurableRegionFactoryBean
 
 		Optional.ofNullable(getObject()).ifPresent(region -> {
 
-			if (isClose()) {
-				if (!region.getRegionService().isClosed()) {
-					try {
-						region.close();
-					}
-					catch (Exception ignore) {
-					}
-				}
+			if (isClose() && RegionUtils.isCloseable(region)) {
+				RegionUtils.close(region);
 			}
 
 			if (isDestroy()) {

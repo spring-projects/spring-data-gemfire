@@ -13,31 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+
+import org.junit.Test;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
-import org.junit.Test;
+
 import org.springframework.data.gemfire.test.support.AbstractRegionFactoryBeanTests;
 
 /**
- * The PartitionedRegionFactoryBeanTest class is a test suite of test cases testing the component functionality
- * and correct behavior of the PartitionedRegionFactoryBean class.
+ * Unit Tests for {@link LocalRegionFactoryBean}.
  *
  * @author David Turanski
  * @author John Blum
  * @see org.mockito.Mockito
  * @see org.junit.Test
+ * @see org.apache.geode.cache.DataPolicy
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.RegionFactory
+ * @see org.apache.geode.cache.RegionShortcut
  * @see org.springframework.data.gemfire.LocalRegionFactoryBean
  * @since 1.3.x
  */
@@ -133,7 +137,7 @@ public class LocalRegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 			factoryBean.resolveDataPolicy(mockRegionFactory, null, "  ");
 		}
 		catch (IllegalArgumentException e) {
-			assertEquals("Data Policy '  ' is invalid.", e.getMessage());
+			assertEquals("Data Policy [  ] is invalid", e.getMessage());
 			throw e;
 		}
 		finally {
@@ -153,7 +157,7 @@ public class LocalRegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 			factoryBean.resolveDataPolicy(mockRegionFactory, null, "");
 		}
 		catch (IllegalArgumentException e) {
-			assertEquals("Data Policy '' is invalid.", e.getMessage());
+			assertEquals("Data Policy [] is invalid", e.getMessage());
 			throw e;
 		}
 		finally {
@@ -173,7 +177,7 @@ public class LocalRegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 			factoryBean.resolveDataPolicy(mockRegionFactory, null, "INVALID_DATA_POLICY_NAME");
 		}
 		catch (IllegalArgumentException e) {
-			assertEquals("Data Policy 'INVALID_DATA_POLICY_NAME' is invalid.", e.getMessage());
+			assertEquals("Data Policy [INVALID_DATA_POLICY_NAME] is invalid", e.getMessage());
 			throw e;
 		}
 		finally {
@@ -193,7 +197,7 @@ public class LocalRegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 			factoryBean.resolveDataPolicy(mockRegionFactory, null, "PARTITION");
 		}
 		catch (IllegalArgumentException e) {
-			assertEquals("Data Policy 'PARTITION' is not supported for Local Regions.", e.getMessage());
+			assertEquals("Data Policy [PARTITION] is not supported for Local Regions", e.getMessage());
 			throw e;
 		}
 		finally {
@@ -278,7 +282,7 @@ public class LocalRegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 			factoryBean.resolveDataPolicy(mockRegionFactory, null, DataPolicy.PERSISTENT_REPLICATE);
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Data Policy 'PERSISTENT_REPLICATE' is not supported for Local Regions.",
+			assertEquals("Data Policy [PERSISTENT_REPLICATE] is not supported for Local Regions",
 				expected.getMessage());
 			throw expected;
 		}
@@ -300,7 +304,7 @@ public class LocalRegionFactoryBeanTest extends AbstractRegionFactoryBeanTests {
 			factoryBean.resolveDataPolicy(mockRegionFactory, true, DataPolicy.PERSISTENT_REPLICATE);
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("Data Policy 'PERSISTENT_REPLICATE' is not supported for Local Regions.",
+			assertEquals("Data Policy [PERSISTENT_REPLICATE] is not supported for Local Regions",
 				expected.getMessage());
 			throw expected;
 		}
