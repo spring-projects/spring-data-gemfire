@@ -431,7 +431,7 @@ Notifies the server that this durable client is ready to receive updates.
 		<xsd:annotation>
 			<xsd:appinfo>
 				<tool:annotation>
-					<tool:exports type="org.apache.geode.cache.Region" />
+					<tool:exports type="org.apache.geode.cache.Region"/>
 				</tool:annotation>
 			</xsd:appinfo>
 		</xsd:annotation>

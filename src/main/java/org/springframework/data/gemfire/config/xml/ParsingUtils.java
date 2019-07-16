@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.xml;
 
 import java.util.List;
@@ -21,6 +20,7 @@ import java.util.List;
 import org.apache.geode.cache.LossAction;
 import org.apache.geode.cache.MembershipAttributes;
 import org.apache.geode.cache.ResumptionAction;
+
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
@@ -36,6 +36,7 @@ import org.springframework.data.gemfire.expiration.ExpirationAttributesFactoryBe
 import org.springframework.data.gemfire.util.SpringUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
+
 import org.w3c.dom.Element;
 
 /**
@@ -101,7 +102,7 @@ abstract class ParsingUtils {
 	}
 
 	static void setPropertyValue(BeanDefinitionBuilder builder, BeanDefinition source, String propertyName,
-		boolean withDependsOn) {
+			boolean addDependsOn) {
 
 		PropertyValue propertyValue = source.getPropertyValues().getPropertyValue(propertyName);
 
@@ -109,7 +110,7 @@ abstract class ParsingUtils {
 
 			builder.addPropertyValue(propertyValue.getName(), propertyValue.getValue());
 
-			if (withDependsOn && propertyValue.getValue() instanceof RuntimeBeanReference) {
+			if (addDependsOn && propertyValue.getValue() instanceof RuntimeBeanReference) {
 				builder.addDependsOn(((RuntimeBeanReference) propertyValue.getValue()).getBeanName());
 			}
 		}
@@ -122,19 +123,21 @@ abstract class ParsingUtils {
 	static Object getBeanReference(Element element, ParserContext parserContext, String refAttributeName) {
 
 		String refAttributeValue = element.getAttribute(refAttributeName);
-		Object returnValue = null;
 
 		if (StringUtils.hasText(refAttributeValue)) {
 			if (!DomUtils.getChildElements(element).isEmpty()) {
-				parserContext.getReaderContext().error(String.format(
-					"Use either the '%1$s' attribute or a nested bean declaration for '%2$s' element, but not both.",
-					refAttributeName, element.getLocalName()), element);
+
+				String message = String.format(
+					"Use either the [%1$s] attribute or a nested bean declaration for [%2$s] element, not both",
+						refAttributeName, element.getLocalName());
+
+				parserContext.getReaderContext().error(message, element);
 			}
 
-			returnValue = new RuntimeBeanReference(refAttributeValue);
+			return null;
 		}
 
-		return returnValue;
+		return new RuntimeBeanReference(refAttributeValue);
 	}
 
 	static Object parseRefOrNestedCustomElement(Element element, ParserContext parserContext,
@@ -202,15 +205,18 @@ abstract class ParsingUtils {
 
 		// parse nested bean definition
 		if (childElements.size() == 1) {
-			return parserContext.getDelegate().parsePropertySubElement(
-				childElements.get(0), builder.getRawBeanDefinition());
+
+			return parserContext.getDelegate()
+				.parsePropertySubElement(childElements.get(0), builder.getRawBeanDefinition());
 		}
 		else {
 			// TODO also triggered when there are no child elements; need to change the message...
 			if (single) {
-				parserContext.getReaderContext().error(String.format(
-					"The element '%1$s' does not support multiple nested bean definitions.",
-					element.getLocalName()), element);
+
+				String message = String.format("The element [%s] does not support multiple, nested bean definitions",
+					element.getLocalName());
+
+				parserContext.getReaderContext().error(message, element);
 			}
 		}
 
@@ -221,6 +227,17 @@ abstract class ParsingUtils {
 		}
 
 		return list;
+	}
+
+	static void parseCompressor(Element element, ParserContext parserContext,
+		BeanDefinitionBuilder regionAttributesBuilder) {
+
+		Element compressorElement = DomUtils.getChildElementByTagName(element, "compressor");
+
+		if (compressorElement != null) {
+			regionAttributesBuilder.addPropertyValue("compressor", parseRefOrSingleNestedBeanDeclaration(
+				compressorElement, parserContext, regionAttributesBuilder));
+		}
 	}
 
 	/**
@@ -238,8 +255,8 @@ abstract class ParsingUtils {
 
 		if (evictionElement != null) {
 
-			BeanDefinitionBuilder evictionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
-				EvictionAttributesFactoryBean.class);
+			BeanDefinitionBuilder evictionAttributesBuilder =
+				BeanDefinitionBuilder.genericBeanDefinition(EvictionAttributesFactoryBean.class);
 
 			setPropertyValue(evictionElement, evictionAttributesBuilder, "action");
 			setPropertyValue(evictionElement, evictionAttributesBuilder, "threshold");
@@ -249,8 +266,8 @@ abstract class ParsingUtils {
 
 			if (objectSizerElement != null) {
 
-				Object sizer = parseRefOrNestedBeanDeclaration(objectSizerElement, parserContext,
-					evictionAttributesBuilder);
+				Object sizer =
+					parseRefOrNestedBeanDeclaration(objectSizerElement, parserContext, evictionAttributesBuilder);
 
 				evictionAttributesBuilder.addPropertyValue("objectSizer", sizer);
 			}
@@ -265,52 +282,6 @@ abstract class ParsingUtils {
 	}
 
 	/**
-	 * Parses the subscription sub-element. Populates the given attribute factory with the proper attributes.
-	 *
-	 * @param element the XML element being parsed.
-	 * @param parserContext the context used while parsing the XML document.
-	 * @param regionAttributesBuilder the Region Attributes builder.
-	 * @return true if parsing actually occurred, false otherwise.
-	 */
-	@SuppressWarnings("unused")
-	static boolean parseSubscription(Element element, ParserContext parserContext,
-
-		BeanDefinitionBuilder regionAttributesBuilder) {
-
-		Element subscriptionElement = DomUtils.getChildElementByTagName(element, "subscription");
-
-		if (subscriptionElement != null) {
-
-			BeanDefinitionBuilder subscriptionAttributesBuilder =
-				BeanDefinitionBuilder.genericBeanDefinition(SubscriptionAttributesFactoryBean.class);
-
-			setPropertyValue(subscriptionElement, subscriptionAttributesBuilder, "type", "interestPolicy");
-
-			regionAttributesBuilder.addPropertyValue("subscriptionAttributes",
-				subscriptionAttributesBuilder.getBeanDefinition());
-
-			return true;
-		}
-
-		return false;
-	}
-
-	static void parseTransportFilters(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
-
-		Element transportFilterElement = DomUtils.getChildElementByTagName(element, "transport-filter");
-
-		if (transportFilterElement != null) {
-			builder.addPropertyValue("transportFilters", parseRefOrNestedBeanDeclaration(transportFilterElement,
-				parserContext,
-				builder));
-		}
-	}
-
-	static void parseStatistics(Element element, BeanDefinitionBuilder regionAttributesBuilder) {
-		setPropertyValue(element, regionAttributesBuilder, "statistics", "statisticsEnabled");
-	}
-
-	/**
 	 * Parses the expiration sub-elements. Populates the given attribute factory with proper attributes.
 	 *
 	 * @param element the XML element being parsed.
@@ -321,91 +292,23 @@ abstract class ParsingUtils {
 	static boolean parseExpiration(Element element, ParserContext parserContext,
 			BeanDefinitionBuilder regionAttributesBuilder) {
 
-		boolean result = parseExpiration(element, "region-ttl", "regionTimeToLive",
-			regionAttributesBuilder);
+		boolean result = parseRegionEntryExpiration(element, "region-ttl", "regionTimeToLive", regionAttributesBuilder);
 
-		result |= parseExpiration(element, "region-tti", "regionIdleTimeout", regionAttributesBuilder);
-		result |= parseExpiration(element, "entry-ttl", "entryTimeToLive", regionAttributesBuilder);
-		result |= parseExpiration(element, "entry-tti", "entryIdleTimeout", regionAttributesBuilder);
-		result |= parseCustomExpiration(element, parserContext, "custom-entry-ttl", "customEntryTimeToLive",
-			regionAttributesBuilder);
-		result |= parseCustomExpiration(element, parserContext, "custom-entry-tti", "customEntryIdleTimeout",
-			regionAttributesBuilder);
+		result |= parseRegionEntryExpiration(element, "region-tti", "regionIdleTimeout", regionAttributesBuilder);
+		result |= parseRegionEntryExpiration(element, "entry-ttl", "entryTimeToLive", regionAttributesBuilder);
+		result |= parseRegionEntryExpiration(element, "entry-tti", "entryIdleTimeout", regionAttributesBuilder);
+		result |= parseCustomExpiration(element, parserContext, "custom-entry-ttl", "customEntryTimeToLive", regionAttributesBuilder);
+		result |= parseCustomExpiration(element, parserContext, "custom-entry-tti", "customEntryIdleTimeout", regionAttributesBuilder);
 
 		if (result) {
-			// enable statistics
 			regionAttributesBuilder.addPropertyValue("statisticsEnabled", Boolean.TRUE);
 		}
 
 		return result;
 	}
 
-	@SuppressWarnings("unused")
-	static void parseOptionalRegionAttributes(Element element, ParserContext parserContext,
-		BeanDefinitionBuilder regionAttributesBuilder) {
-
-		setPropertyValue(element, regionAttributesBuilder, "cloning-enabled");
-		setPropertyValue(element, regionAttributesBuilder, "concurrency-level");
-		setPropertyValue(element, regionAttributesBuilder, "disk-synchronous");
-		setPropertyValue(element, regionAttributesBuilder, "enable-async-conflation");
-		setPropertyValue(element, regionAttributesBuilder, "enable-subscription-conflation");
-		setPropertyValue(element, regionAttributesBuilder, "ignore-jta", "ignoreJTA");
-		setPropertyValue(element, regionAttributesBuilder, "index-update-type");
-		setPropertyValue(element, regionAttributesBuilder, "initial-capacity");
-		setPropertyValue(element, regionAttributesBuilder, "is-lock-grantor", "lockGrantor");
-		setPropertyValue(element, regionAttributesBuilder, "key-constraint");
-		setPropertyValue(element, regionAttributesBuilder, "load-factor");
-		setPropertyValue(element, regionAttributesBuilder, "multicast-enabled");
-		setPropertyValue(element, regionAttributesBuilder, "off-heap");
-		setPropertyValue(element, regionAttributesBuilder, "publisher");
-		setPropertyValue(element, regionAttributesBuilder, "value-constraint");
-
-		String concurrencyChecksEnabled = element.getAttribute("concurrency-checks-enabled");
-
-		if (StringUtils.hasText(concurrencyChecksEnabled)) {
-			ParsingUtils.setPropertyValue(element, regionAttributesBuilder, "concurrency-checks-enabled");
-		}
-	}
-
-	@SuppressWarnings({ "deprecation", "unused" })
-	static void parseMembershipAttributes(Element element, ParserContext parserContext,
-
-		BeanDefinitionBuilder regionAttributesBuilder) {
-
-		Element membershipAttributes = DomUtils.getChildElementByTagName(element, "membership-attributes");
-
-		if (membershipAttributes != null) {
-			String[] requiredRoles = StringUtils.commaDelimitedListToStringArray(
-				membershipAttributes.getAttribute("required-roles"));
-
-			String lossActionValue = membershipAttributes.getAttribute("loss-action");
-
-			LossAction lossAction = (StringUtils.hasText(lossActionValue)
-				? LossAction.fromName(lossActionValue.toUpperCase().replace("-", "_"))
-				: LossAction.NO_ACCESS);
-
-			String resumptionActionValue = membershipAttributes.getAttribute("resumption-action");
-
-			ResumptionAction resumptionAction = (StringUtils.hasText(resumptionActionValue)
-				? ResumptionAction.fromName(resumptionActionValue.toUpperCase().replace("-", "_"))
-				: ResumptionAction.REINITIALIZE);
-
-			regionAttributesBuilder.addPropertyValue("membershipAttributes",
-				new MembershipAttributes(requiredRoles, lossAction, resumptionAction));
-		}
-	}
-
-	static void parseScope(Element element, BeanDefinitionBuilder builder) {
-
-		String scopeAttributeValue = element.getAttribute("scope");
-
-		if (StringUtils.hasText(scopeAttributeValue)) {
-			builder.addPropertyValue("scope", scopeAttributeValue);
-		}
-	}
-
-	private static boolean parseExpiration(Element rootElement, String elementName, String propertyName,
-		BeanDefinitionBuilder regionAttributesBuilder) {
+	private static boolean parseRegionEntryExpiration(Element rootElement, String elementName, String propertyName,
+			BeanDefinitionBuilder regionAttributesBuilder) {
 
 		Element expirationElement = DomUtils.getChildElementByTagName(rootElement, elementName);
 
@@ -442,14 +345,111 @@ abstract class ParsingUtils {
 		return false;
 	}
 
-	static void parseCompressor(Element element, ParserContext parserContext,
+	@SuppressWarnings({ "deprecation", "unused" })
+	static void parseMembershipAttributes(Element element, ParserContext parserContext,
+			BeanDefinitionBuilder regionAttributesBuilder) {
+
+		Element membershipAttributes = DomUtils.getChildElementByTagName(element, "membership-attributes");
+
+		if (membershipAttributes != null) {
+
+			String[] requiredRoles =
+				StringUtils.commaDelimitedListToStringArray(membershipAttributes.getAttribute("required-roles"));
+
+			String lossActionValue = membershipAttributes.getAttribute("loss-action");
+
+			LossAction lossAction = StringUtils.hasText(lossActionValue)
+				? LossAction.fromName(lossActionValue.toUpperCase().replace("-", "_"))
+				: LossAction.NO_ACCESS;
+
+			String resumptionActionValue = membershipAttributes.getAttribute("resumption-action");
+
+			ResumptionAction resumptionAction = StringUtils.hasText(resumptionActionValue)
+				? ResumptionAction.fromName(resumptionActionValue.toUpperCase().replace("-", "_"))
+				: ResumptionAction.REINITIALIZE;
+
+			regionAttributesBuilder.addPropertyValue("membershipAttributes",
+				new MembershipAttributes(requiredRoles, lossAction, resumptionAction));
+		}
+	}
+
+	@SuppressWarnings("unused")
+	static void parseOptionalRegionAttributes(Element element, ParserContext parserContext,
 		BeanDefinitionBuilder regionAttributesBuilder) {
 
-		Element compressorElement = DomUtils.getChildElementByTagName(element, "compressor");
+		setPropertyValue(element, regionAttributesBuilder, "cloning-enabled");
+		setPropertyValue(element, regionAttributesBuilder, "concurrency-level");
+		setPropertyValue(element, regionAttributesBuilder, "disk-synchronous");
+		setPropertyValue(element, regionAttributesBuilder, "enable-async-conflation");
+		setPropertyValue(element, regionAttributesBuilder, "enable-subscription-conflation");
+		setPropertyValue(element, regionAttributesBuilder, "ignore-jta", "ignoreJTA");
+		setPropertyValue(element, regionAttributesBuilder, "index-update-type");
+		setPropertyValue(element, regionAttributesBuilder, "initial-capacity");
+		setPropertyValue(element, regionAttributesBuilder, "is-lock-grantor", "lockGrantor");
+		setPropertyValue(element, regionAttributesBuilder, "key-constraint");
+		setPropertyValue(element, regionAttributesBuilder, "load-factor");
+		setPropertyValue(element, regionAttributesBuilder, "multicast-enabled");
+		setPropertyValue(element, regionAttributesBuilder, "off-heap");
+		setPropertyValue(element, regionAttributesBuilder, "publisher");
+		setPropertyValue(element, regionAttributesBuilder, "value-constraint");
 
-		if (compressorElement != null) {
-			regionAttributesBuilder.addPropertyValue("compressor", parseRefOrSingleNestedBeanDeclaration(
-				compressorElement, parserContext, regionAttributesBuilder));
+		String concurrencyChecksEnabled = element.getAttribute("concurrency-checks-enabled");
+
+		if (StringUtils.hasText(concurrencyChecksEnabled)) {
+			ParsingUtils.setPropertyValue(element, regionAttributesBuilder, "concurrency-checks-enabled");
+		}
+	}
+
+	static void parseScope(Element element, BeanDefinitionBuilder builder) {
+
+		String scopeAttributeValue = element.getAttribute("scope");
+
+		if (StringUtils.hasText(scopeAttributeValue)) {
+			builder.addPropertyValue("scope", scopeAttributeValue);
+		}
+	}
+
+	static void parseStatistics(Element element, BeanDefinitionBuilder regionAttributesBuilder) {
+		setPropertyValue(element, regionAttributesBuilder, "statistics", "statisticsEnabled");
+	}
+
+	/**
+	 * Parses the subscription sub-element. Populates the given attribute factory with the proper attributes.
+	 *
+	 * @param element the XML element being parsed.
+	 * @param parserContext the context used while parsing the XML document.
+	 * @param regionAttributesBuilder the Region Attributes builder.
+	 * @return true if parsing actually occurred, false otherwise.
+	 */
+	@SuppressWarnings("unused")
+	static boolean parseSubscription(Element element, ParserContext parserContext,
+			BeanDefinitionBuilder regionAttributesBuilder) {
+
+		Element subscriptionElement = DomUtils.getChildElementByTagName(element, "subscription");
+
+		if (subscriptionElement != null) {
+
+			BeanDefinitionBuilder subscriptionAttributesBuilder =
+				BeanDefinitionBuilder.genericBeanDefinition(SubscriptionAttributesFactoryBean.class);
+
+			setPropertyValue(subscriptionElement, subscriptionAttributesBuilder, "type", "interestPolicy");
+
+			regionAttributesBuilder.addPropertyValue("subscriptionAttributes",
+				subscriptionAttributesBuilder.getBeanDefinition());
+
+			return true;
+		}
+
+		return false;
+	}
+
+	static void parseTransportFilters(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+
+		Element transportFilterElement = DomUtils.getChildElementByTagName(element, "transport-filter");
+
+		if (transportFilterElement != null) {
+			builder.addPropertyValue("transportFilters",
+				parseRefOrNestedBeanDeclaration(transportFilterElement, parserContext, builder));
 		}
 	}
 
@@ -457,8 +457,11 @@ abstract class ParsingUtils {
 	static void assertGemFireFeatureAvailable(Element element, ParserContext parserContext) {
 
 		if (GemfireUtils.isGemfireFeatureUnavailable(element)) {
-			parserContext.getReaderContext().error(String.format("'%1$s' is not supported in %2$s v%3$s",
-				element.getLocalName(), GemfireUtils.GEMFIRE_NAME, GemfireUtils.GEMFIRE_VERSION), element);
+
+			String message = String.format("[%1$s] is not supported in %2$s v%3$s",
+				element.getLocalName(), GemfireUtils.GEMFIRE_NAME, GemfireUtils.GEMFIRE_VERSION);
+
+			parserContext.getReaderContext().error(message, element);
 		}
 	}
 
@@ -483,17 +486,18 @@ abstract class ParsingUtils {
 	}
 
 	static void throwExceptionWhenGemFireFeatureUnavailable(GemfireFeature feature,
-		String elementName, String attributeName, ParserContext parserContext) {
+			String elementName, String attributeName, ParserContext parserContext) {
 
 		if (GemfireUtils.isGemfireFeatureUnavailable(feature)) {
 
-			String messagePrefix = (attributeName != null)
-				? String.format("Attribute '%1$s' of element '%2$s'", attributeName, elementName)
-				: String.format("Element '%1$s'", elementName);
+			String messagePrefix = attributeName != null
+				? String.format("Attribute [%1$s] of element [%2$s]", attributeName, elementName)
+				: String.format("Element [%s]", elementName);
 
-			parserContext.getReaderContext()
-				.error(String.format("%1$s requires Pivotal GemFire version 7 or later. The current version is %2$s.",
-					messagePrefix, GemfireUtils.GEMFIRE_VERSION), null);
+			String message = String.format("%1$s requires Pivotal GemFire version 7 or later. Current version is %2$s.",
+				messagePrefix, GemfireUtils.GEMFIRE_VERSION);
+
+			parserContext.getReaderContext().error(message, null);
 		}
 	}
 }

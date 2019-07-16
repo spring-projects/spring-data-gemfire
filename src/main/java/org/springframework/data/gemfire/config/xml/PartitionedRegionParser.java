@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.xml;
 
 import java.util.List;
@@ -30,6 +29,7 @@ import org.springframework.data.gemfire.RegionAttributesFactoryBean;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
+
 import org.w3c.dom.Element;
 
 /**
