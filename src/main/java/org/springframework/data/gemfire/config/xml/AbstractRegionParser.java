@@ -22,9 +22,9 @@ import java.util.Optional;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
-import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.Region;
 
+import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
@@ -32,7 +32,6 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedArray;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.data.gemfire.PeerRegionFactoryBean;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -46,7 +45,6 @@ import org.w3c.dom.Element;
  * @author David Turanski
  * @author John Blum
  * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser
- * @see PeerRegionFactoryBean
  */
 abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 
@@ -134,12 +132,6 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		ParsingUtils.parseExpiration(element, parserContext, regionAttributesBuilder);
 		ParsingUtils.parseEviction(element, parserContext, regionAttributesBuilder);
 		ParsingUtils.parseCompressor(element, parserContext, regionAttributesBuilder);
-
-		parseCollectionOfCustomSubElements(element, parserContext, regionBuilder, AsyncEventQueue.class.getName(),
-			"async-event-queue", "asyncEventQueues");
-
-		parseCollectionOfCustomSubElements(element, parserContext, regionBuilder, GatewaySender.class.getName(),
-			"gateway-sender", "gatewaySenders");
 
 		List<Element> subElements = DomUtils.getChildElements(element);
 
@@ -256,20 +248,23 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 
 		String name = element.getAttribute(NAME_ATTRIBUTE);
 
-		return StringUtils.hasText(name) ? name : element.getAttribute(ID_ATTRIBUTE);
+		return StringUtils.hasText(name)
+			? name
+			: element.getAttribute(ID_ATTRIBUTE);
 	}
 
 	private String buildSubRegionPath(String parentName, String regionName) {
 
 		String regionPath = StringUtils.arrayToDelimitedString(new String[] { parentName, regionName }, "/");
 
-		if (!regionPath.startsWith("/")) {
-			regionPath = "/" + regionPath;
+		if (!regionPath.startsWith(Region.SEPARATOR)) {
+			regionPath = Region.SEPARATOR + regionPath;
 		}
 
 		return regionPath;
 	}
 
+	@SuppressWarnings("all")
 	private BeanDefinition parseSubRegion(Element element, ParserContext parserContext, String subRegionPath,
 			String cacheRef) {
 
@@ -281,20 +276,22 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 
 		BeanDefinition beanDefinition = parserContext.getDelegate().parseCustomElement(element);
 
-		beanDefinition.getPropertyValues().add("cache", new RuntimeBeanReference(cacheRef));
-		beanDefinition.getPropertyValues().add("parent", new RuntimeBeanReference(parentBeanName));
-		beanDefinition.getPropertyValues().add("regionName", regionName);
+		MutablePropertyValues propertyValues = beanDefinition.getPropertyValues();
+
+		propertyValues.add("cache", new RuntimeBeanReference(cacheRef));
+		propertyValues.add("parent", new RuntimeBeanReference(parentBeanName));
+		propertyValues.add("regionName", regionName);
 
 		return beanDefinition;
 	}
 
 	private String getParentRegionPathFrom(String regionPath) {
 
-		int index = regionPath.lastIndexOf("/");
+		int index = regionPath.lastIndexOf(Region.SEPARATOR);
 
 		String parentPath = regionPath.substring(0, index);
 
-		if (parentPath.lastIndexOf("/") == 0) {
+		if (parentPath.lastIndexOf(Region.SEPARATOR) == 0) {
 			parentPath = parentPath.substring(1);
 		}
 

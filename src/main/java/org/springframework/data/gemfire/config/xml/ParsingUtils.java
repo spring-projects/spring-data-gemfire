@@ -378,13 +378,11 @@ abstract class ParsingUtils {
 	static void parseOptionalRegionAttributes(Element element, ParserContext parserContext,
 		BeanDefinitionBuilder regionAttributesBuilder) {
 
-		setPropertyValue(element, regionAttributesBuilder, "async-event-queue-ids");
 		setPropertyValue(element, regionAttributesBuilder, "cloning-enabled");
 		setPropertyValue(element, regionAttributesBuilder, "concurrency-level");
 		setPropertyValue(element, regionAttributesBuilder, "disk-synchronous");
 		setPropertyValue(element, regionAttributesBuilder, "enable-async-conflation");
 		setPropertyValue(element, regionAttributesBuilder, "enable-subscription-conflation");
-		setPropertyValue(element, regionAttributesBuilder, "gateway-sender-ids");
 		setPropertyValue(element, regionAttributesBuilder, "ignore-jta", "ignoreJTA");
 		setPropertyValue(element, regionAttributesBuilder, "index-update-type");
 		setPropertyValue(element, regionAttributesBuilder, "initial-capacity");

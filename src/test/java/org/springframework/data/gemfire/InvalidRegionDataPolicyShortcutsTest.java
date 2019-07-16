@@ -13,51 +13,55 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
+
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.parsing.BeanDefinitionParsingException;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
- * The InvalidRegionDataPolicyShortcutsIntegrationTest class is a test suite of test cases testing and setting up
- * some invalid, or illegal uses of the Region data-policy and/or shortcut XML namespace attributes.
+ * Integration Tests testing and setting up some invalid, or illegal uses of the Region data-policy and shortcut
+ * XML namespace attributes.
  *
  * @author John Blum
  * @see org.junit.Test
+ * @see org.springframework.context.support.ClassPathXmlApplicationContext
  * @since 1.4.0
  */
 public class InvalidRegionDataPolicyShortcutsTest {
 
 	@Test(expected = BeanCreationException.class)
 	public void testInvalidRegionShortcutWithPersistentAttribute() {
+
 		try {
 			new ClassPathXmlApplicationContext(
 				"/org/springframework/data/gemfire/invalid-region-shortcut-with-persistent-attribute.xml");
 		}
 		catch (BeanCreationException expected) {
-			//expected.printStackTrace(System.err);
-			assertTrue(expected.getMessage().contains("Error creating bean with name 'InvalidReplicate'"));
+
+			assertThat(expected).hasMessageContaining("Error creating bean with name 'InvalidReplicate'");
+
 			throw expected;
 		}
 	}
 
 	@Test(expected = BeanDefinitionParsingException.class)
 	public void testInvalidUseOfRegionDataPolicyAndShortcut() {
+
 		try {
 			new ClassPathXmlApplicationContext(
 				"/org/springframework/data/gemfire/invalid-use-of-region-datapolicy-and-shortcut.xml");
 		}
 		catch (BeanDefinitionParsingException expected) {
-			//expected.printStackTrace(System.err);
-			assertTrue(expected.getMessage().contains(
-				"Only one of [data-policy, shortcut] may be specified with element 'gfe:partitioned-region'"));
+
+			assertThat(expected).hasMessageContaining(
+				"Only one of [data-policy, shortcut] may be specified with element [gfe:partitioned-region]");
+
 			throw expected;
 		}
 	}
-
 }

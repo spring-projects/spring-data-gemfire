@@ -14,7 +14,6 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.test.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,10 +27,12 @@ import java.net.Socket;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
+import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.geode.cache.server.CacheServer;
+
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.data.gemfire.process.ProcessWrapper;
 import org.springframework.data.gemfire.util.CollectionUtils;
@@ -81,6 +82,10 @@ public class ClientServerIntegrationTestsSupport {
 	protected static String asDirectoryName(Class<?> type) {
 		return String.format("%1$s-%2$s", asApplicationName(type),
 			LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-hh-mm-ss")));
+	}
+
+	protected static String block() {
+		return new Scanner(System.in).nextLine();
 	}
 
 	protected static File createDirectory(String pathname) {
@@ -141,7 +146,7 @@ public class ClientServerIntegrationTestsSupport {
 	}
 
 	protected static int intValue(Number number) {
-		return (number != null ? number.intValue() : 0);
+		return number != null ? number.intValue() : 0;
 	}
 
 	protected static String logFile() {
