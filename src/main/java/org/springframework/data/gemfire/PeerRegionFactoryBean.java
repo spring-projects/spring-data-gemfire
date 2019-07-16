@@ -21,6 +21,7 @@ import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newI
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -98,7 +99,7 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 
 	private boolean close = false;
 	private boolean destroy = false;
-	private boolean running;
+	private boolean running = false;
 
 	private Boolean offHeap;
 	private Boolean persistent;
@@ -999,13 +1000,12 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 	public void start() {
 
 		if (!ObjectUtils.isEmpty(this.gatewaySenders)) {
-			synchronized (this.gatewaySenders) {
-				for (Object obj : this.gatewaySenders) {
-					GatewaySender gatewaySender = (GatewaySender) obj;
-					if (!(gatewaySender.isManualStart() || gatewaySender.isRunning())) {
-						gatewaySender.start();
-					}
-				}
+			synchronized(this.gatewaySenders) {
+				Arrays.stream(this.gatewaySenders)
+					.filter(Objects::nonNull)
+					.filter(gatewaySender -> !gatewaySender.isManualStart())
+					.filter(gatewaySender -> !gatewaySender.isRunning())
+					.forEach(GatewaySender::start);
 			}
 		}
 

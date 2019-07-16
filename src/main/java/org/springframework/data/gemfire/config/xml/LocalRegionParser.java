@@ -27,10 +27,13 @@ import org.w3c.dom.Element;
  *
  * @author David Turanski
  * @author John Blum
+ * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
+ * @see org.springframework.beans.factory.xml.ParserContext
  * @see org.springframework.data.gemfire.LocalRegionFactoryBean
- * @see AbstractRegionParser
+ * @see org.springframework.data.gemfire.config.xml.AbstractPeerRegionParser
+ * @see org.w3c.dom.Element
  */
-class LocalRegionParser extends AbstractRegionParser {
+class LocalRegionParser extends AbstractPeerRegionParser {
 
 	/**
 	 * {@inheritDoc}

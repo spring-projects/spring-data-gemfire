@@ -40,10 +40,13 @@ import org.w3c.dom.Element;
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum
+ * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
+ * @see org.springframework.beans.factory.xml.ParserContext
  * @see org.springframework.data.gemfire.PartitionedRegionFactoryBean
- * @see AbstractRegionParser
+ * @see org.springframework.data.gemfire.config.xml.AbstractPeerRegionParser
+ * @see org.w3c.dom.Element
  */
-class PartitionedRegionParser extends AbstractRegionParser {
+class PartitionedRegionParser extends AbstractPeerRegionParser {
 
 	/**
 	 * {@inheritDoc}
@@ -75,7 +78,7 @@ class PartitionedRegionParser extends AbstractRegionParser {
 
 		mergeTemplateRegionPartitionAttributes(element, parserContext, regionBuilder, partitionAttributesBuilder);
 
-		parseColocatedWith(element, regionBuilder, partitionAttributesBuilder, "colocated-with");
+		parseCollocatedWith(element, regionBuilder, partitionAttributesBuilder, "colocated-with");
 		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "copies", "redundantCopies");
 		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "local-max-memory");
 		ParsingUtils.setPropertyValue(element, partitionAttributesBuilder, "recovery-delay");
@@ -122,7 +125,6 @@ class PartitionedRegionParser extends AbstractRegionParser {
 		regionAttributesBuilder.addPropertyValue("partitionAttributes", partitionAttributesBuilder.getBeanDefinition());
 	}
 
-	/* (non-Javadoc) */
 	void mergeTemplateRegionPartitionAttributes(Element element, ParserContext parserContext,
 			BeanDefinitionBuilder regionBuilder, BeanDefinitionBuilder partitionAttributesBuilder) {
 
@@ -158,8 +160,7 @@ class PartitionedRegionParser extends AbstractRegionParser {
 		}
 	}
 
-	/* (non-Javadoc) */
-	private void parseColocatedWith(Element element, BeanDefinitionBuilder regionBuilder,
+	private void parseCollocatedWith(Element element, BeanDefinitionBuilder regionBuilder,
 			BeanDefinitionBuilder partitionAttributesBuilder, String attributeName) {
 
 		// NOTE rather than using a dependency (with depends-on) we could also set the colocatedWith property of the
@@ -177,17 +178,15 @@ class PartitionedRegionParser extends AbstractRegionParser {
 		}
 	}
 
-	/* (non-Javadoc) */
-	private Object parsePartitionResolver(Element subElement, ParserContext parserContext,
-			BeanDefinitionBuilder builder) {
-
-		return ParsingUtils.parseRefOrSingleNestedBeanDeclaration(subElement, parserContext, builder);
-	}
-
-	/* (non-Javadoc) */
 	private Object parsePartitionListeners(Element subElement, ParserContext parserContext,
 			BeanDefinitionBuilder builder) {
 
 		return ParsingUtils.parseRefOrNestedBeanDeclaration(subElement, parserContext, builder);
+	}
+
+	private Object parsePartitionResolver(Element subElement, ParserContext parserContext,
+			BeanDefinitionBuilder builder) {
+
+		return ParsingUtils.parseRefOrSingleNestedBeanDeclaration(subElement, parserContext, builder);
 	}
 }
