@@ -59,7 +59,6 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		return getRegionFactoryClass();
 	}
 
-	/* (non-Javadoc) */
 	protected abstract Class<?> getRegionFactoryClass();
 
 	/**
@@ -67,20 +66,24 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 	 */
 	@Override
 	protected String getParentName(Element element) {
+
 		String regionTemplate = element.getAttribute("template");
+
 		return StringUtils.hasText(regionTemplate) ? regionTemplate : super.getParentName(element);
 	}
 
-	/* (non-Javadoc) */
 	protected boolean isRegionTemplate(Element element) {
+
 		String localName = element.getLocalName();
-		return (localName != null && localName.endsWith("-template"));
+
+		return localName != null && localName.endsWith("-template");
 	}
 
-	/* (non-Javadoc) */
 	protected boolean isSubRegion(Element element) {
+
 		String localName = element.getParentNode().getLocalName();
-		return (localName != null && localName.endsWith("region"));
+
+		return localName != null && localName.endsWith("region");
 	}
 
 	/**
@@ -88,8 +91,11 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 	 */
 	@Override
 	protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
+
 		super.doParse(element, builder);
+
 		builder.setAbstract(isRegionTemplate(element));
+
         doParseRegion(element, parserContext, builder, isSubRegion(element));
 	}
 
