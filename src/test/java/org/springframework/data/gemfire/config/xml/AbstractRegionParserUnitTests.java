@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.xml;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNull;
-import static org.mockito.Matchers.matches;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.matches;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -29,9 +28,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
+
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.beans.factory.xml.XmlReaderContext;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -50,15 +51,20 @@ public class AbstractRegionParserUnitTests {
 	private AbstractRegionParser regionParser = new TestRegionParser();
 
 	protected void assertIsRegionTemplateWhenElementLocalNameEndsWithTemplate(String localName) {
+
 		Element mockElement = mock(Element.class);
 
 		when(mockElement.getLocalName()).thenReturn(localName);
+
 		assertThat(regionParser.isRegionTemplate(mockElement)).isEqualTo(nullSafeEndsWith(localName, "-template"));
+
 		verify(mockElement, times(1)).getLocalName();
 	}
 
 	protected void assertIsSubRegionWhenElementLocalNameEndsWithRegion(String localName) {
+
 		Element mockElement = mock(Element.class);
+
 		Node mockNode = mock(Node.class);
 
 		when(mockElement.getParentNode()).thenReturn(mockNode);
@@ -71,12 +77,14 @@ public class AbstractRegionParserUnitTests {
 	}
 
 	protected boolean nullSafeEndsWith(String localName, String suffix) {
-		return (localName != null && localName.endsWith(suffix));
+		return localName != null && localName.endsWith(suffix);
 	}
 
 	@Test
 	public void getBeanClassIsEqualToTestRegionFactoryBean() {
+
 		AbstractRegionParser regionParserSpy = spy(AbstractRegionParser.class);
+
 		Element mockElement = mock(Element.class);
 
 		doReturn(AbstractRegionParserUnitTests.class).when(regionParserSpy).getRegionFactoryClass();
@@ -89,24 +97,31 @@ public class AbstractRegionParserUnitTests {
 
 	@Test
 	public void getParentNameWhenTemplateIsSet() {
+
 		Element mockElement = mock(Element.class);
 
 		when(mockElement.getAttribute(eq("template"))).thenReturn("test");
+
 		assertThat(regionParser.getParentName(mockElement)).isEqualTo("test");
+
 		verify(mockElement, times(1)).getAttribute(eq("template"));
 	}
 
 	@Test
 	public void getParentNameWhenTemplateIsUnset() {
+
 		Element mockElement = mock(Element.class);
 
 		when(mockElement.getAttribute(eq("template"))).thenReturn(null);
+
 		assertThat(regionParser.getParentName(mockElement)).isNull();
+
 		verify(mockElement, times(1)).getAttribute(eq("template"));
 	}
 
 	@Test
 	public void isRegionTemplateWithRegionTemplateElementsIsTrue() {
+
 		assertIsRegionTemplateWhenElementLocalNameEndsWithTemplate("client-region-template");
 		assertIsRegionTemplateWhenElementLocalNameEndsWithTemplate("local-region-template");
 		assertIsRegionTemplateWhenElementLocalNameEndsWithTemplate("partitioned-region-template");
@@ -115,6 +130,7 @@ public class AbstractRegionParserUnitTests {
 
 	@Test
 	public void isRegionTemplateWithRegionElementsIsFalse() {
+
 		assertIsRegionTemplateWhenElementLocalNameEndsWithTemplate("client-region");
 		assertIsRegionTemplateWhenElementLocalNameEndsWithTemplate("local-region");
 		assertIsRegionTemplateWhenElementLocalNameEndsWithTemplate("partitioned-region");
@@ -133,6 +149,7 @@ public class AbstractRegionParserUnitTests {
 
 	@Test
 	public void isSubRegionWithRegionElementIsTrue() {
+
 		assertIsSubRegionWhenElementLocalNameEndsWithRegion("client-region");
 		assertIsSubRegionWhenElementLocalNameEndsWithRegion("local-region");
 		assertIsSubRegionWhenElementLocalNameEndsWithRegion("partitioned-region");
@@ -141,6 +158,7 @@ public class AbstractRegionParserUnitTests {
 
 	@Test
 	public void isSubRegionWithRegionTemplateElementIsFalse() {
+
 		assertIsSubRegionWhenElementLocalNameEndsWithRegion("client-region-template");
 		assertIsSubRegionWhenElementLocalNameEndsWithRegion("local-region-template");
 		assertIsSubRegionWhenElementLocalNameEndsWithRegion("partitioned-region-template");
@@ -160,11 +178,13 @@ public class AbstractRegionParserUnitTests {
 
 	@Test
 	public void doParseWithAbstractRegionTemplate() {
+
 		AbstractRegionParser regionParserSpy = spy(AbstractRegionParser.class);
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition();
 
 		Element mockElement = mock(Element.class);
+
 		Node mockNode = mock(Node.class);
 
 		when(mockElement.getLocalName()).thenReturn("partitioned-region-template");
@@ -175,13 +195,14 @@ public class AbstractRegionParserUnitTests {
 
 		assertThat(builder.getRawBeanDefinition().isAbstract()).isTrue();
 
-		verify(regionParserSpy, times(1)).doParse(eq(mockElement), isNull(ParserContext.class), eq(builder));
-		verify(regionParserSpy, times(1)).doParseRegion(eq(mockElement), isNull(ParserContext.class),
+		verify(regionParserSpy, times(1)).doParse(eq(mockElement), isNull(), eq(builder));
+		verify(regionParserSpy, times(1)).doParseRegion(eq(mockElement), isNull(),
 			eq(builder), eq(false));
 	}
 
 	@Test
 	public void doParseWithNonAbstractSubRegion() {
+
 		AbstractRegionParser regionParserSpy = spy(AbstractRegionParser.class);
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition();
@@ -197,19 +218,20 @@ public class AbstractRegionParserUnitTests {
 
 		assertThat(builder.getRawBeanDefinition().isAbstract()).isFalse();
 
-		verify(regionParserSpy, times(1)).doParse(eq(mockElement), isNull(ParserContext.class), eq(builder));
-		verify(regionParserSpy, times(1)).doParseRegion(eq(mockElement), isNull(ParserContext.class),
+		verify(regionParserSpy, times(1)).doParse(eq(mockElement), isNull(), eq(builder));
+		verify(regionParserSpy, times(1)).doParseRegion(eq(mockElement), isNull(),
 			eq(builder), eq(true));
 	}
 
 	@Test
 	public void validateDataPolicyShortcutAttributesMutualExclusion() {
+
 		Element mockElement = mock(Element.class);
 
 		when(mockElement.hasAttribute(matches("data-policy"))).thenReturn(false);
 		when(mockElement.hasAttribute(matches("shortcut"))).thenReturn(false);
 
-		regionParser.validateDataPolicyShortcutAttributesMutualExclusion(mockElement, null);
+		this.regionParser.validateDataPolicyShortcutAttributesMutualExclusion(mockElement, null);
 
 		verify(mockElement).hasAttribute(eq("data-policy"));
 		verify(mockElement, never()).hasAttribute(eq("shortcut"));
@@ -217,12 +239,13 @@ public class AbstractRegionParserUnitTests {
 
 	@Test
 	public void validateDataPolicyShortcutAttributesMutualExclusionWithDataPolicy() {
+
 		Element mockElement = mock(Element.class);
 
 		when(mockElement.hasAttribute(matches("data-policy"))).thenReturn(true);
 		when(mockElement.hasAttribute(matches("shortcut"))).thenReturn(false);
 
-		regionParser.validateDataPolicyShortcutAttributesMutualExclusion(mockElement, null);
+		this.regionParser.validateDataPolicyShortcutAttributesMutualExclusion(mockElement, null);
 
 		verify(mockElement).hasAttribute(eq("data-policy"));
 		verify(mockElement).hasAttribute(eq("shortcut"));
@@ -230,12 +253,13 @@ public class AbstractRegionParserUnitTests {
 
 	@Test
 	public void validateDataPolicyShortcutAttributesMutualExclusionWithShortcut() {
+
 		Element mockElement = mock(Element.class);
 
 		when(mockElement.hasAttribute(matches("data-policy"))).thenReturn(false);
 		when(mockElement.hasAttribute(matches("shortcut"))).thenReturn(true);
 
-		regionParser.validateDataPolicyShortcutAttributesMutualExclusion(mockElement, null);
+		this.regionParser.validateDataPolicyShortcutAttributesMutualExclusion(mockElement, null);
 
 		verify(mockElement).hasAttribute(eq("data-policy"));
 		verify(mockElement, never()).hasAttribute(eq("shortcut"));
@@ -243,7 +267,9 @@ public class AbstractRegionParserUnitTests {
 
 	@Test
 	public void validateDataPolicyShortcutAttributesMutualExclusionWithDataPolicyAndShortcut() {
+
 		Element mockElement = mock(Element.class);
+
 		XmlReaderContext mockReaderContext = mock(XmlReaderContext.class);
 
 		ParserContext mockParserContext = new ParserContext(mockReaderContext, null);
@@ -252,10 +278,10 @@ public class AbstractRegionParserUnitTests {
 		when(mockElement.hasAttribute(matches("shortcut"))).thenReturn(true);
 		when(mockElement.getTagName()).thenReturn("local-region");
 
-		regionParser.validateDataPolicyShortcutAttributesMutualExclusion(mockElement, mockParserContext);
+		this.regionParser.validateDataPolicyShortcutAttributesMutualExclusion(mockElement, mockParserContext);
 
 		verify(mockReaderContext).error(
-			eq("Only one of [data-policy, shortcut] may be specified with element 'local-region'."),
+			eq("Only one of [data-policy, shortcut] may be specified with element [local-region]"),
 				eq(mockElement));
 	}
 

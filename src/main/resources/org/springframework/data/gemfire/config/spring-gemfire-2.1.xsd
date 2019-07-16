@@ -626,6 +626,15 @@ use inner bean declarations.
 					</xsd:choice>
 					<xsd:group ref="subRegionGroup" minOccurs="0" maxOccurs="unbounded"/>
 				</xsd:sequence>
+				<xsd:attribute name="async-event-queue-ids" type="xsd:string" use="optional">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Comma-delimited list of Apache Geode, AsyncEventQueue (AEQ) IDs configured for this Region.  This attribute is used
+when the member of the cluster hosting this Region is not the primary or secondary for the AEQ.  If the member is
+primary or a secondary, then the nested async-event-queue or the async-event-queue-ref element should be declared instead.
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
 				<xsd:attribute name="cloning-enabled" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[[
@@ -638,6 +647,16 @@ in the cache. GemFire default is false.
 				<xsd:attribute name="eviction-maximum" type="xsd:string">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[[
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="gateway-sender-ids" type="xsd:string" use="optional">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Comma-delimited list of Apache Geode, GatewaySender IDs configured for this Region.  This attribute is used
+when the member of the cluster hosting this Region is not the primary or secondary for the GatewaySender.
+If the member is primary or a secondary, then the nested gateway-sender or the gateway-sender-ref element
+should be declared instead.
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
@@ -1050,6 +1069,34 @@ use inner bean declarations.
 						</xsd:element>
 					</xsd:choice>
 				</xsd:sequence>
+				<xsd:attribute name="async-event-queue-ids" type="xsd:string" use="optional">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Comma-delimited list of Apache Geode, AsyncEventQueue (AEQ) IDs configured for this Region.  This attribute is used
+when the member of the cluster hosting this Region is not the primary or secondary for the AEQ.  If the member is
+primary or a secondary, then the nested async-event-queue or the async-event-queue-ref element should be declared instead.
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="gateway-sender-ids" type="xsd:string" use="optional">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Comma-delimited list of Apache Geode, GatewaySender IDs configured for this Region.  This attribute is used
+when the member of the cluster hosting this Region is not the primary or secondary for the GatewaySender.
+If the member is primary or a secondary, then the nested gateway-sender or the gateway-sender-ref element
+should be declared instead.
+						]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+				<xsd:attribute name="ignore-jta" type="xsd:string" use="optional">
+					<xsd:annotation>
+						<xsd:documentation><![CDATA[
+Indicates whether operations on this Region participates in active JTA transactions or ignores them and operates
+outside of transactions.  This is primarily used in cache loaders, writers, and listeners that need to perform
+non-transactional operations on a Region, such as caching a result set.  GemFire default is false.
+								]]></xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
 				<xsd:attribute name="index-update-type" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
