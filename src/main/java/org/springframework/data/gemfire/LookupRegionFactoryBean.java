@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire;
 
 import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
@@ -29,7 +31,9 @@ import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.wan.GatewaySender;
+
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * The LookupRegionFactoryBean class is a concrete implementation of ResolvableRegionFactoryBean for handling
@@ -66,6 +70,9 @@ public class LookupRegionFactoryBean<K, V> extends ResolvableRegionFactoryBean<K
 
 	private Integer evictionMaximum;
 
+	private String[] asyncEventQueueIds;
+	private String[] gatewaySenderIds;
+
 	@Override
 	public void afterPropertiesSet() throws Exception {
 
@@ -73,10 +80,10 @@ public class LookupRegionFactoryBean<K, V> extends ResolvableRegionFactoryBean<K
 
 		Optional.ofNullable(getRegion().getAttributesMutator()).ifPresent(attributesMutator -> {
 
-			Arrays.stream(nullSafeArray(this.asyncEventQueues, AsyncEventQueue.class))
-				.map(AsyncEventQueue::getId)
-				.forEach(attributesMutator::addAsyncEventQueueId);
+			// AsyncEventQueues (AEQ)
+			getConfiguredAsyncEventQueueIds().forEach(attributesMutator::addAsyncEventQueueId);
 
+			// CacheListeners
 			Arrays.stream(nullSafeArray(this.cacheListeners, CacheListener.class))
 				.forEach(attributesMutator::addCacheListener);
 
@@ -102,10 +109,41 @@ public class LookupRegionFactoryBean<K, V> extends ResolvableRegionFactoryBean<K
 				Optional.ofNullable(this.regionTimeToLive).ifPresent(attributesMutator::setRegionTimeToLive);
 			}
 
-			Arrays.stream(nullSafeArray(this.gatewaySenders, GatewaySender.class))
-				.map(GatewaySender::getId)
-				.forEach(attributesMutator::addGatewaySenderId);
+			// GatewaySenders
+			getConfiguredGatewaySenderIds().forEach(attributesMutator::addGatewaySenderId);
 		});
+	}
+
+	private Set<String> getConfiguredAsyncEventQueueIds() {
+
+		Set<String> asyncEventQueueIds = new HashSet<>();
+
+		Arrays.stream(nullSafeArray(this.asyncEventQueues, AsyncEventQueue.class))
+			.map(AsyncEventQueue::getId)
+			.collect(Collectors.toCollection(() -> asyncEventQueueIds));
+
+		Arrays.stream(nullSafeArray(this.asyncEventQueueIds, String.class))
+			.filter(StringUtils::hasText)
+			.map(String::trim)
+			.collect(Collectors.toCollection(() -> asyncEventQueueIds));
+
+		return asyncEventQueueIds;
+	}
+
+	private Set<String> getConfiguredGatewaySenderIds() {
+
+		Set<String> gatewaySenderIds = new HashSet<>();
+
+		Arrays.stream(nullSafeArray(this.gatewaySenders, GatewaySender.class))
+			.map(GatewaySender::getId)
+			.collect(Collectors.toCollection(() -> gatewaySenderIds));
+
+		Arrays.stream(nullSafeArray(this.gatewaySenderIds, String.class))
+			.filter(StringUtils::hasText)
+			.map(String::trim)
+			.collect(Collectors.toCollection(() -> gatewaySenderIds));
+
+		return gatewaySenderIds;
 	}
 
 	@Override
@@ -115,6 +153,10 @@ public class LookupRegionFactoryBean<K, V> extends ResolvableRegionFactoryBean<K
 
 	public void setAsyncEventQueues(AsyncEventQueue[] asyncEventQueues) {
 		this.asyncEventQueues = asyncEventQueues;
+	}
+
+	public void setAsyncEventQueueIds(String[] asyncEventQueueIds) {
+		this.asyncEventQueueIds = asyncEventQueueIds;
 	}
 
 	public void setCacheListeners(CacheListener<K, V>[] cacheListeners) {
@@ -159,6 +201,10 @@ public class LookupRegionFactoryBean<K, V> extends ResolvableRegionFactoryBean<K
 
 	public void setGatewaySenders(GatewaySender[] gatewaySenders) {
 		this.gatewaySenders = gatewaySenders;
+	}
+
+	public void setGatewaySenderIds(String[] gatewaySenderIds) {
+		this.gatewaySenderIds = gatewaySenderIds;
 	}
 
 	public void setRegionIdleTimeout(ExpirationAttributes regionIdleTimeout) {

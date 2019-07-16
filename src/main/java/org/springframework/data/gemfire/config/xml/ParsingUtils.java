@@ -123,6 +123,7 @@ abstract class ParsingUtils {
 	static Object getBeanReference(Element element, ParserContext parserContext, String refAttributeName) {
 
 		String refAttributeValue = element.getAttribute(refAttributeName);
+		Object returnValue = null;
 
 		if (StringUtils.hasText(refAttributeValue)) {
 			if (!DomUtils.getChildElements(element).isEmpty()) {
@@ -134,10 +135,10 @@ abstract class ParsingUtils {
 				parserContext.getReaderContext().error(message, element);
 			}
 
-			return null;
+			returnValue = new RuntimeBeanReference(refAttributeValue);
 		}
 
-		return new RuntimeBeanReference(refAttributeValue);
+		return returnValue;
 	}
 
 	static Object parseRefOrNestedCustomElement(Element element, ParserContext parserContext,
@@ -377,11 +378,13 @@ abstract class ParsingUtils {
 	static void parseOptionalRegionAttributes(Element element, ParserContext parserContext,
 		BeanDefinitionBuilder regionAttributesBuilder) {
 
+		setPropertyValue(element, regionAttributesBuilder, "async-event-queue-ids");
 		setPropertyValue(element, regionAttributesBuilder, "cloning-enabled");
 		setPropertyValue(element, regionAttributesBuilder, "concurrency-level");
 		setPropertyValue(element, regionAttributesBuilder, "disk-synchronous");
 		setPropertyValue(element, regionAttributesBuilder, "enable-async-conflation");
 		setPropertyValue(element, regionAttributesBuilder, "enable-subscription-conflation");
+		setPropertyValue(element, regionAttributesBuilder, "gateway-sender-ids");
 		setPropertyValue(element, regionAttributesBuilder, "ignore-jta", "ignoreJTA");
 		setPropertyValue(element, regionAttributesBuilder, "index-update-type");
 		setPropertyValue(element, regionAttributesBuilder, "initial-capacity");

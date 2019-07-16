@@ -18,9 +18,12 @@ package org.springframework.data.gemfire;
 import static java.util.Arrays.stream;
 import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
-import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -138,6 +141,9 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 
 	private String diskStoreName;
 
+	private String[] asyncEventQueueIds;
+	private String[] gatewaySenderIds;
+
 	/**
 	 * Creates a new {@link Region} with the given {@link String name}.
 	 *
@@ -252,8 +258,7 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 
 		regionFactory.setStatisticsEnabled(resolveStatisticsEnabled());
 
-		stream(nullSafeArray(this.asyncEventQueues, AsyncEventQueue.class))
-			.forEach(asyncEventQueue -> regionFactory.addAsyncEventQueueId(asyncEventQueue.getId()));
+		getConfiguredAsyncEventQueueIds().forEach(regionFactory::addAsyncEventQueueId);
 
 		stream(nullSafeArray(this.cacheListeners, CacheListener.class)).forEach(regionFactory::addCacheListener);
 
@@ -279,8 +284,7 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 
 		Optional.ofNullable(this.evictionAttributes).ifPresent(regionFactory::setEvictionAttributes);
 
-		stream(nullSafeArray(this.gatewaySenders, GatewaySender.class))
-			.forEach(gatewaySender -> regionFactory.addGatewaySenderId(gatewaySender.getId()));
+		getConfiguredGatewaySenderIds().forEach(regionFactory::addGatewaySenderId);
 
 		Optional.ofNullable(this.keyConstraint).ifPresent(regionFactory::setKeyConstraint);
 
@@ -310,6 +314,38 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 	 */
 	protected RegionFactory<K, V> postProcess(RegionFactory<K, V> regionFactory) {
 		return regionFactory;
+	}
+
+	private Set<String> getConfiguredAsyncEventQueueIds() {
+
+		Set<String> asyncEventQueueIds = new HashSet<>();
+
+		Arrays.stream(nullSafeArray(this.asyncEventQueues, AsyncEventQueue.class))
+			.map(AsyncEventQueue::getId)
+			.collect(Collectors.toCollection(() -> asyncEventQueueIds));
+
+		Arrays.stream(nullSafeArray(this.asyncEventQueueIds, String.class))
+			.filter(StringUtils::hasText)
+			.map(String::trim)
+			.collect(Collectors.toCollection(() -> asyncEventQueueIds));
+
+		return asyncEventQueueIds;
+	}
+
+	private Set<String> getConfiguredGatewaySenderIds() {
+
+		Set<String> gatewaySenderIds = new HashSet<>();
+
+		Arrays.stream(nullSafeArray(this.gatewaySenders, GatewaySender.class))
+			.map(GatewaySender::getId)
+			.collect(Collectors.toCollection(() -> gatewaySenderIds));
+
+		Arrays.stream(nullSafeArray(this.gatewaySenderIds, String.class))
+			.filter(StringUtils::hasText)
+			.map(String::trim)
+			.collect(Collectors.toCollection(() -> gatewaySenderIds));
+
+		return gatewaySenderIds;
 	}
 
 	/*
@@ -627,6 +663,10 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 		this.asyncEventQueues = asyncEventQueues;
 	}
 
+	public void setAsyncEventQueueIds(String[] asyncEventQueueIds) {
+		this.asyncEventQueueIds = asyncEventQueueIds;
+	}
+
 	/**
 	 * Sets the {@link RegionAttributes} used to configure this {@link Region}.
 	 *
@@ -760,8 +800,10 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 	 * @see org.apache.geode.cache.DataPolicy
 	 */
 	public DataPolicy getDataPolicy() {
-		return Optional.ofNullable(this.dataPolicy)
-			.orElseThrow(() -> newIllegalStateException("Data Policy has not been properly resolved yet"));
+
+		Assert.state(this.dataPolicy != null, "Data Policy has not been properly resolved yet");
+
+		return this.dataPolicy;
 	}
 
 	/**
@@ -774,8 +816,6 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 	public void setDiskStoreName(String diskStoreName) {
 		this.diskStoreName = diskStoreName;
 	}
-
-	// TODO: review/add Javadoc from here forward...
 
 	public void setEntryIdleTimeout(ExpirationAttributes entryIdleTimeout) {
 		this.entryIdleTimeout = entryIdleTimeout;
@@ -799,6 +839,10 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 	 */
 	public void setGatewaySenders(GatewaySender[] gatewaySenders) {
 		this.gatewaySenders = gatewaySenders;
+	}
+
+	public void setGatewaySenderIds(String[] gatewaySenderIds) {
+		this.gatewaySenderIds = gatewaySenderIds;
 	}
 
 	/**

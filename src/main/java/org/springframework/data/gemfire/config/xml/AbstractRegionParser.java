@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.xml;
 
 import java.util.HashMap;
@@ -25,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.wan.GatewaySender;
+
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
@@ -37,6 +37,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
+
 import org.w3c.dom.Element;
 
 /**
@@ -107,10 +108,10 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 
 		mergeRegionTemplateAttributes(element, parserContext, regionBuilder, regionAttributesBuilder);
 
-		String resolvedCacheRef = ParsingUtils.resolveCacheReference(element.getAttribute("cache-ref"));
+		String resolvedCacheReference = ParsingUtils.resolveCacheReference(element.getAttribute("cache-ref"));
 
 		if (!subRegion) {
-			regionBuilder.addPropertyReference("cache", resolvedCacheRef);
+			regionBuilder.addPropertyReference("cache", resolvedCacheReference);
 			ParsingUtils.setPropertyValue(element, regionBuilder, "close");
 			ParsingUtils.setPropertyValue(element, regionBuilder, "destroy");
 		}
@@ -158,7 +159,7 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		}
 
 		if (!subRegion) {
-			parseSubRegions(element, parserContext, resolvedCacheRef);
+			parseSubRegions(element, parserContext, resolvedCacheReference);
 		}
 	}
 
@@ -255,7 +256,7 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 
 		String name = element.getAttribute(NAME_ATTRIBUTE);
 
-		return (StringUtils.hasText(name) ? name : element.getAttribute(ID_ATTRIBUTE));
+		return StringUtils.hasText(name) ? name : element.getAttribute(ID_ATTRIBUTE);
 	}
 
 	private String buildSubRegionPath(String parentName, String regionName) {
@@ -269,7 +270,6 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		return regionPath;
 	}
 
-	/* (non-Javadoc) */
 	private BeanDefinition parseSubRegion(Element element, ParserContext parserContext, String subRegionPath,
 			String cacheRef) {
 
@@ -288,7 +288,6 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		return beanDefinition;
 	}
 
-	/* (non-Javadoc) */
 	private String getParentRegionPathFrom(String regionPath) {
 
 		int index = regionPath.lastIndexOf("/");
@@ -302,13 +301,14 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		return parentPath;
 	}
 
-	/* (non-Javadoc) */
 	protected void validateDataPolicyShortcutAttributesMutualExclusion(Element element, ParserContext parserContext) {
 
 		if (element.hasAttribute("data-policy") && element.hasAttribute("shortcut")) {
-			parserContext.getReaderContext().error(String.format(
-				"Only one of [data-policy, shortcut] may be specified with element '%1$s'.", element.getTagName()),
-					element);
+
+			String message = String.format("Only one of [data-policy, shortcut] may be specified with element [%s]",
+				element.getTagName());
+
+			parserContext.getReaderContext().error(message, element);
 		}
 	}
 }
