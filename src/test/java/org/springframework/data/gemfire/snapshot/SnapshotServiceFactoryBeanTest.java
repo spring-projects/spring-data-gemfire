@@ -703,14 +703,14 @@ public class SnapshotServiceFactoryBeanTest {
 		SnapshotOptions mockSnapshotOptionsTwo = mock(SnapshotOptions.class, "MockSnapshotOptionsTwo");
 
 		when(mockCache.getSnapshotService()).thenReturn(mockCacheSnapshotService);
-		when(mockCacheSnapshotService.createOptions()).thenReturn(mockSnapshotOptionsOne)
-			.thenReturn(mockSnapshotOptionsTwo);
+		when(mockCacheSnapshotService.createOptions()).thenReturn(mockSnapshotOptionsOne).thenReturn(mockSnapshotOptionsTwo);
 		when(mockSnapshotOptionsOne.setFilter(eq(mockSnapshotFilterOne))).thenReturn(mockSnapshotOptionsOne);
 		when(mockSnapshotOptionsTwo.setFilter(eq(mockSnapshotFilterTwo))).thenReturn(mockSnapshotOptionsTwo);
 
 		SnapshotMetadata[] expectedImports = toArray(
-			newSnapshotMetadata(FileSystemUtils.USER_HOME, mockSnapshotFilterOne),
-				newSnapshotMetadata(mockSnapshotFilterTwo));
+			newSnapshotMetadata(FileSystemUtils.TEMPORARY_DIRECTORY, mockSnapshotFilterOne),
+			newSnapshotMetadata(mockSnapshotFilterTwo)
+		);
 
 		SnapshotServiceFactoryBean factoryBean = new SnapshotServiceFactoryBean();
 
@@ -730,11 +730,12 @@ public class SnapshotServiceFactoryBeanTest {
 
 		verify(mockCache, times(1)).getSnapshotService();
 		verify(mockCacheSnapshotService, times(2)).createOptions();
-		verify(mockCacheSnapshotService, times(1)).load(eq(FileSystemUtils.safeListFiles(FileSystemUtils.USER_HOME, FileSystemUtils.FileOnlyFilter.INSTANCE)),
-			eq(SnapshotFormat.GEMFIRE), eq(mockSnapshotOptionsOne));
-		verify(mockCacheSnapshotService, times(1)).load(eq(FileSystemUtils.safeListFiles(
-			FileSystemUtils.WORKING_DIRECTORY, FileSystemUtils.FileOnlyFilter.INSTANCE)),
-			eq(SnapshotFormat.GEMFIRE), eq(mockSnapshotOptionsTwo));
+		verify(mockCacheSnapshotService, times(1))
+			.load(eq(FileSystemUtils.safeListFiles(FileSystemUtils.TEMPORARY_DIRECTORY, FileSystemUtils.FileOnlyFilter.INSTANCE)),
+				eq(SnapshotFormat.GEMFIRE), eq(mockSnapshotOptionsOne));
+		verify(mockCacheSnapshotService, times(1))
+			.load(eq(FileSystemUtils.safeListFiles(FileSystemUtils.WORKING_DIRECTORY, FileSystemUtils.FileOnlyFilter.INSTANCE)),
+				eq(SnapshotFormat.GEMFIRE), eq(mockSnapshotOptionsTwo));
 		verify(mockSnapshotOptionsOne, times(1)).setFilter(eq(mockSnapshotFilterOne));
 		verify(mockSnapshotOptionsTwo, times(1)).setFilter(eq(mockSnapshotFilterTwo));
 	}
@@ -1252,7 +1253,7 @@ public class SnapshotServiceFactoryBeanTest {
 	}
 
 	@Test
-	public void createSnapshotMetadataWithFileNullFilterAndGemFireFormat() throws Exception {
+	public void createSnapshotMetadataWithFileNullFilterAndGemFireFormat() {
 
 		SnapshotMetadata snapshotMetadata = new SnapshotMetadata(snapshotDat, null, SnapshotFormat.GEMFIRE);
 

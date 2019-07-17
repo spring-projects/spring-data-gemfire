@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.snapshot;
 
-import static com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import static org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean.SnapshotServiceAdapter;
 
 import java.io.Closeable;
@@ -32,8 +30,17 @@ import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import com.gemstone.gemfire.cache.Cache;
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.snapshot.CacheSnapshotService;
+import com.gemstone.gemfire.cache.snapshot.RegionSnapshotService;
+import com.gemstone.gemfire.cache.snapshot.SnapshotFilter;
+import com.gemstone.gemfire.cache.snapshot.SnapshotOptions;
+import com.gemstone.gemfire.cache.snapshot.SnapshotOptions.SnapshotFormat;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -45,13 +52,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-
-import com.gemstone.gemfire.cache.Cache;
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.snapshot.CacheSnapshotService;
-import com.gemstone.gemfire.cache.snapshot.RegionSnapshotService;
-import com.gemstone.gemfire.cache.snapshot.SnapshotFilter;
-import com.gemstone.gemfire.cache.snapshot.SnapshotOptions;
 
 /**
  * The SnapshotServiceFactoryBean class is a Spring FactoryBean used to configure and create an instance
@@ -188,7 +188,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * @see #getRegion()
 	 */
 	protected Region<K, V> getRegion() {
-		return region;
+		return this.region;
 	}
 
 	/**
@@ -349,8 +349,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 				}
 			}
 		}
-		catch (Exception ignore) {
-		}
+		catch (Exception ignore) { }
 	}
 
 	/**
@@ -363,7 +362,7 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	 * @see SnapshotApplicationEvent
 	 */
 	protected boolean isMatch(SnapshotApplicationEvent event) {
-		return (event.isCacheSnapshotEvent() || event.matches(getRegion()));
+		return event.isCacheSnapshotEvent() || event.matches(getRegion());
 	}
 
 	/**
@@ -380,8 +379,9 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 	protected SnapshotMetadata<K, V>[] resolveSnapshotMetadata(SnapshotApplicationEvent<K, V> event) {
 		SnapshotMetadata<K, V>[] eventSnapshotMetadata = event.getSnapshotMetadata();
 
-		return (!ObjectUtils.isEmpty(eventSnapshotMetadata) ? eventSnapshotMetadata
-			: (event instanceof ExportSnapshotApplicationEvent ? getExports() : getImports()));
+		return !ObjectUtils.isEmpty(eventSnapshotMetadata)
+			? eventSnapshotMetadata
+			: (event instanceof ExportSnapshotApplicationEvent ? getExports() : getImports());
 	}
 
 	/**
@@ -453,8 +453,11 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 		protected abstract File[] handleLocation(SnapshotMetadata<K, V> configuration);
 
 		protected File[] handleDirectoryLocation(File directory) {
+
 			return directory.listFiles(new FileFilter() {
-				@Override public boolean accept(File pathname) {
+
+				@Override
+				public boolean accept(File pathname) {
 					return nullSafeIsFile(pathname);
 				}
 			});
@@ -506,8 +509,8 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 				closeable.close();
 				return true;
 			}
-			catch (IOException ignore) {
-				logDebug(ignore, "Failed to close (%1$s)", closeable);
+			catch (IOException cause) {
+				logDebug(cause, "Failed to close [%s]", closeable);
 				return false;
 			}
 		}
@@ -570,8 +573,10 @@ public class SnapshotServiceFactoryBean<K, V> implements FactoryBean<SnapshotSer
 
 		@Override
 		protected File[] handleLocation(SnapshotMetadata<Object, Object> configuration) {
-			return (configuration.isFile() ? handleFileLocation(configuration.getLocation())
-				: handleDirectoryLocation(configuration.getLocation()));
+
+			return configuration.isFile()
+				? handleFileLocation(configuration.getLocation())
+				: handleDirectoryLocation(configuration.getLocation());
 		}
 
 		@Override
