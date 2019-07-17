@@ -62,9 +62,9 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @since 2.2.0
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(locations = "GatewaySenderXmlConfigurationByIdIntegrationTests-context.xml")
+@ContextConfiguration(locations = "GatewaySenderByIdXmlConfigurationIdIntegrationTests-context.xml")
 @SuppressWarnings("unused")
-public class GatewaySenderXmlConfigurationByIdIntegrationTests extends ClientServerIntegrationTestsSupport {
+public class GatewaySenderByIdXmlConfigurationIdIntegrationTests extends ClientServerIntegrationTestsSupport {
 
 	private static ProcessWrapper geodeServer;
 

@@ -64,9 +64,9 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @since 2.2.0
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(locations = "AsyncEventQueueXmlConfigurationByIdIntegrationTests-context.xml")
+@ContextConfiguration(locations = "AsyncEventQueueByIdXmlConfigurationIdIntegrationTests-context.xml")
 @SuppressWarnings("unused")
-public class AsyncEventQueueXmlConfigurationByIdIntegrationTests extends ClientServerIntegrationTestsSupport {
+public class AsyncEventQueueByIdXmlConfigurationIdIntegrationTests extends ClientServerIntegrationTestsSupport {
 
 	private static final String GEMFIRE_LOG_LEVEL = "error";
 
