@@ -14,7 +14,6 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.search.lucene;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,20 +28,22 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-import javax.annotation.Resource;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
 import org.springframework.data.gemfire.config.annotation.PeerCacheApplication;
+import org.springframework.data.gemfire.util.SpringUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -71,61 +72,32 @@ public class LuceneOperationsIntegrationTests {
 
 	private static final AtomicLong IDENTIFIER = new AtomicLong(0L);
 
-	protected static final String LOG_LEVEL = "none";
+	protected static final String GEMFIRE_LOG_LEVEL = "none";
 
-	private Person jonDoe;
-	private Person janeDoe;
-	private Person cookieDoe;
-	private Person froDoe;
-	private Person hoDoe;
-	private Person pieDoe;
-	private Person sourDoe;
+	private static Person jonDoe = Person.newPerson(LocalDate.of(1969, Month.JULY, 4), "Jon", "Doe").with("Master of Science");
+	private static Person janeDoe = Person.newPerson(LocalDate.of(1969, Month.AUGUST, 16), "Jane", "Doe").with("Doctor of Astrophysics");
+	private static Person cookieDoe = Person.newPerson(LocalDate.of(1991, Month.APRIL, 2), "Cookie", "Doe").with("Bachelor of Physics");
+	private static Person froDoe = Person.newPerson(LocalDate.of(1988, Month.MAY, 25), "Fro", "Doe").with("Doctor of Computer Science");
+	private static Person hoDoe = Person.newPerson(LocalDate.of(1984, Month.NOVEMBER, 11), "Ho", "Doe").with("Doctor of Math");
+	private static Person pieDoe = Person.newPerson(LocalDate.of(1996, Month.JUNE, 4), "Pie", "Doe").with("Master of Astronomy");
+	private static Person sourDoe = Person.newPerson(LocalDate.of(1999, Month.DECEMBER, 1), "Sour", "Doe").with("Bachelor of Art");
 
-	@Autowired
-	private LuceneService luceneService;
+	private static List<String> asNames(List<? extends Nameable> nameables) {
+
+		return nameables.stream()
+			.map(Nameable::getName)
+			.collect(Collectors.toList());
+	}
+
+	private static List<User> asUsers(Person... people) {
+
+		return Arrays.stream(people)
+			.map(User::from)
+			.collect(Collectors.toList());
+	}
 
 	@Autowired
 	private ProjectingLuceneOperations template;
-
-	@Resource(name = "People")
-	private Region<Long, Person> people;
-
-	@Before
-	public void setup() {
-
-		jonDoe = save(Person.newPerson(LocalDate.of(1969, Month.JULY, 4), "Jon", "Doe").with("Master of Science"));
-		janeDoe = save(Person.newPerson(LocalDate.of(1969, Month.AUGUST, 16), "Jane", "Doe").with("Doctor of Astrophysics"));
-		cookieDoe = save(Person.newPerson(LocalDate.of(1991, Month.APRIL, 2), "Cookie", "Doe").with("Bachelor of Physics"));
-		froDoe = save(Person.newPerson(LocalDate.of(1988, Month.MAY, 25), "Fro", "Doe").with("Doctor of Computer Science"));
-		hoDoe = save(Person.newPerson(LocalDate.of(1984, Month.NOVEMBER, 11), "Ho", "Doe").with("Doctor of Math"));
-		pieDoe = save(Person.newPerson(LocalDate.of(1996, Month.JUNE, 4), "Pie", "Doe").with("Master of Astronomy"));
-		sourDoe = save(Person.newPerson(LocalDate.of(1999, Month.DECEMBER, 1), "Sour", "Doe").with("Bachelor of Art"));
-
-		flushLuceneIndex();
-	}
-
-	private Person save(Person person) {
-		person.setId(IDENTIFIER.incrementAndGet());
-		people.put(person.getId(), person);
-		return person;
-	}
-
-	private void flushLuceneIndex() {
-		try {
-			this.luceneService.waitUntilFlushed("PersonTitleIndex", "/People",
-				15L, TimeUnit.SECONDS);
-		}
-		catch (Throwable ignore) {
-		}
-	}
-
-	private List<String> asNames(List<? extends Nameable> nameables) {
-		return nameables.stream().map(Nameable::getName).collect(Collectors.toList());
-	}
-
-	private List<User> asUsers(Person... people) {
-		return Arrays.stream(people).map(User::from).collect(Collectors.toList());
-	}
 
 	@Test
 	public void findsDoctorDoesAsTypePersonSuccessfully() {
@@ -150,7 +122,7 @@ public class LuceneOperationsIntegrationTests {
 	}
 
 	@SuppressWarnings("unused")
-	@PeerCacheApplication(name = "LuceneOperationsIntegrationTests", logLevel = LOG_LEVEL)
+	@PeerCacheApplication(name = "LuceneOperationsIntegrationTests", logLevel = GEMFIRE_LOG_LEVEL)
 	static class TestConfiguration {
 
 		@Bean(name = "People")
@@ -192,7 +164,26 @@ public class LuceneOperationsIntegrationTests {
 		@Bean
 		@DependsOn("personTitleIndex")
 		ProjectingLuceneOperations luceneTemplate() {
-			return new ProjectingLuceneTemplate("personTitleIndex", "/People");
+			return new ProjectingLuceneTemplate("PersonTitleIndex", "/People");
+		}
+
+		@EventListener(ContextRefreshedEvent.class)
+		@SuppressWarnings("unchecked")
+		public void loadPeople(ContextRefreshedEvent event) {
+
+			Region<Long, Person> people = event.getApplicationContext().getBean("People", Region.class);
+
+			Arrays.asList(jonDoe, janeDoe, cookieDoe, froDoe, hoDoe, pieDoe, sourDoe)
+				.forEach(person -> {
+					person.setId(IDENTIFIER.incrementAndGet());
+					people.put(person.getId(), person);
+				});
+
+			LuceneService luceneService =
+				event.getApplicationContext().getBean("luceneService", LuceneService.class);
+
+			SpringUtils.safeRunOperation(() ->
+				luceneService.waitUntilFlushed("PersonTitleIndex", "/People", 15L, TimeUnit.SECONDS));
 		}
 	}
 

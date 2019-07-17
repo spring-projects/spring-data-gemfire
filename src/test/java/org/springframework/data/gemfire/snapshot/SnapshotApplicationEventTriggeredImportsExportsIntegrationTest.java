@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.snapshot;
 
 import static java.util.Arrays.stream;
@@ -31,12 +30,14 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.annotation.Resource;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.snapshot.SnapshotFilter;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.snapshot.SnapshotFilter;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.gemfire.repository.sample.Person;
@@ -143,8 +144,9 @@ public class SnapshotApplicationEventTriggeredImportsExportsIntegrationTest {
 	protected void wait(int seconds, int expectedDoeSize, int expectedEveryoneSize, int expectedHandySize) {
 
 		ThreadUtils.timedWait(TimeUnit.SECONDS.toMillis(seconds), 500,
-			() -> (doe.size() < expectedDoeSize && everyoneElse.size() <
-				expectedEveryoneSize && handy.size() < expectedHandySize));
+			() -> doe.size() < expectedDoeSize
+				|| everyoneElse.size() < expectedEveryoneSize
+				|| handy.size() < expectedHandySize);
 	}
 
 	@Test
@@ -178,7 +180,7 @@ public class SnapshotApplicationEventTriggeredImportsExportsIntegrationTest {
 
 		eventPublisher.publishEvent(event);
 
-		wait(10, 5, 4, 3);
+		wait(5, 5, 4, 3);
 
 		assertPeople(doe, jonDoe, janeDoe, cookieDoe, pieDoe, sourDoe);
 		assertPeople(everyoneElse, jackBlack, joeDirt, jackHill, jillHill);
@@ -239,7 +241,7 @@ public class SnapshotApplicationEventTriggeredImportsExportsIntegrationTest {
 		@Autowired
 		private ApplicationEventPublisher eventPublisher;
 
-		private static final Map<File, Long> snapshotFileLastModifiedMap = new ConcurrentHashMap<File, Long>(2);
+		private static final Map<File, Long> snapshotFileLastModifiedMap = new ConcurrentHashMap<>(2);
 
 		@Scheduled(fixedDelay = 1000)
 		@SuppressWarnings("unchecked")

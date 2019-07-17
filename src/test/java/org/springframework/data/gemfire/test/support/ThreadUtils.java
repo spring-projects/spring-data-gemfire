@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.test.support;
 
 import java.util.concurrent.TimeUnit;
@@ -29,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 public abstract class ThreadUtils {
 
 	public static boolean sleep(long milliseconds) {
+
 		try {
 			Thread.sleep(milliseconds);
 			return true;
@@ -44,11 +44,7 @@ public abstract class ThreadUtils {
 	}
 
 	public static boolean timedWait(long duration, long interval) {
-		return timedWait(duration, interval, new WaitCondition() {
-			@Override public boolean waiting() {
-				return true;
-			}
-		});
+		return timedWait(duration, interval, () -> true);
 	}
 
 	@SuppressWarnings("all")

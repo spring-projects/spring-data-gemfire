@@ -14,7 +14,6 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.search.lucene;
 
 import static java.util.stream.StreamSupport.stream;
@@ -40,6 +39,7 @@ import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.lucene.analysis.Analyzer;
+
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -423,8 +423,12 @@ public class LuceneIndexFactoryBean extends AbstractFactoryBeanSupport<LuceneInd
 	 */
 	@Override
 	public void setBeanName(String name) {
+
 		super.setBeanName(name);
-		setIndexName(name);
+
+		if (!StringUtils.hasText(this.indexName)) {
+			setIndexName(name);
+		}
 	}
 
 	/**
