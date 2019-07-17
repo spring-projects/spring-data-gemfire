@@ -9,11 +9,11 @@
 		<Null name="nop"/>
 	</Appenders>
 	<Loggers>
-		<Logger name="org.apache.geode" level="error"/>
-		<Logger name="org.springframework" level="error"/>
+		<Logger name="org.apache.geode" level="${sys:log4j.geode.log.level:-error}"/>
+		<Logger name="org.springframework" level="${sys:log4j.spring.log.level:-error}"/>
 		<Logger name="org.springframework.data.gemfire.listener.adapter.ContinuousQueryListenerAdapter" level="off" additivity="false"/>
 		<Logger name="org.springframework.data.gemfire.support.SpringContextBootstrappingInitializer" level="off" additivity="false"/>
-		<Root level="error">
+		<Root level="${sys:log4j.log.level:-error}">
 			<AppenderRef ref="Console"/>
 			<!--AppenderRef ref="File" /-->
 		</Root>
