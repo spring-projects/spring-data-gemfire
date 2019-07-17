@@ -15,6 +15,7 @@
  */
 package org.springframework.data.gemfire.config.xml;
 
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.wan.GatewaySender;
 
@@ -24,10 +25,16 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.w3c.dom.Element;
 
 /**
- * The AbstractPeerRegionParser class...
+ * Abstract Spring XML Parser for peer {@link Region} bean definitions.
  *
  * @author John Blum
- * @since 1.0.0
+ * @see org.apache.geode.cache.Region
+ * @see org.apache.geode.cache.asyncqueue.AsyncEventQueue
+ * @see org.apache.geode.cache.wan.GatewaySender
+ * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
+ * @see org.springframework.beans.factory.xml.ParserContext
+ * @see org.w3c.dom.Element
+ * @since 2.2.0
  */
 public abstract class AbstractPeerRegionParser extends AbstractRegionParser {
 
