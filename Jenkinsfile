@@ -31,7 +31,7 @@ pipeline {
                     options { timeout(time: 30, unit: 'MINUTES') }
                     steps {
                         sh 'rm -rf ?'
-                        sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw clean dependency:list test -Dsort -B'
+                        sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home -Duser.dir=$PWD" ./mvnw clean dependency:list test -Dsort -B'
                     }
                 }
             }
@@ -56,7 +56,7 @@ pipeline {
 
             steps {
                 sh 'rm -rf ?'
-                sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Pci,artifactory ' +
+                sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home -Duser.dir=$PWD" ./mvnw -Pci,artifactory ' +
                         '-Dartifactory.server=https://repo.spring.io ' +
                         "-Dartifactory.username=${ARTIFACTORY_USR} " +
                         "-Dartifactory.password=${ARTIFACTORY_PSW} " +
@@ -85,7 +85,7 @@ pipeline {
 
             steps {
                 sh 'rm -rf ?'
-                sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home" ./mvnw -Pci,artifactory ' +
+                sh 'MAVEN_OPTS="-Duser.name=jenkins -Duser.home=/tmp/jenkins-home -Duser.dir=$PWD" ./mvnw -Pci,artifactory ' +
                         '-Dartifactory.server=https://repo.spring.io ' +
                         "-Dartifactory.username=${ARTIFACTORY_USR} " +
                         "-Dartifactory.password=${ARTIFACTORY_PSW} " +
