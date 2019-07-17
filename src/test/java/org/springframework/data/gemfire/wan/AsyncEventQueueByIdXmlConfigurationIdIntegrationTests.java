@@ -64,7 +64,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @since 2.2.0
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(locations = "AsyncEventQueueByIdXmlConfigurationIdIntegrationTests-context.xml")
+@ContextConfiguration(locations = "AsyncEventQueueByIdXmlConfigurationIntegrationTests-context.xml")
 @SuppressWarnings("unused")
 public class AsyncEventQueueByIdXmlConfigurationIdIntegrationTests extends ClientServerIntegrationTestsSupport {
 

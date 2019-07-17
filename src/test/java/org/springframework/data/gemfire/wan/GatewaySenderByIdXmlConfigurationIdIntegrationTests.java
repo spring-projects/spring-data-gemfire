@@ -62,7 +62,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @since 2.2.0
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(locations = "GatewaySenderByIdXmlConfigurationIdIntegrationTests-context.xml")
+@ContextConfiguration(locations = "GatewaySenderByIdXmlConfigurationIntegrationTests-context.xml")
 @SuppressWarnings("unused")
 public class GatewaySenderByIdXmlConfigurationIdIntegrationTests extends ClientServerIntegrationTestsSupport {
 
