@@ -16,6 +16,7 @@
 package org.springframework.data.gemfire.wan;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 
@@ -31,11 +32,12 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.asyncqueue.AsyncEventListener;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
-import org.springframework.data.gemfire.ReplicatedRegionFactoryBean;
+import org.springframework.data.gemfire.PartitionedRegionFactoryBean;
 import org.springframework.data.gemfire.config.annotation.EnableLocator;
 import org.springframework.data.gemfire.config.annotation.PeerCacheApplication;
 import org.springframework.data.gemfire.process.ProcessWrapper;
@@ -45,15 +47,15 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * Integration Tests testing the configuration of {@link GatewaySender GatewaySenders} on a cache {@link Region}
- * by {@literal identifier} using the SDG XML Namespace.
+ * Integration Tests testing the configuration of {@link AsyncEventQueue AsyncEventQueue} (AEQ)
+ * on a cache {@link Region} by {@literal identifier} using the SDG XML Namespace.
  *
  * @author John Blum
  * @see org.junit.Test
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.GemFireCache
  * @see org.apache.geode.cache.Region
- * @see org.apache.geode.cache.wan.GatewaySender
+ * @see org.apache.geode.cache.asyncqueue.AsyncEventQueue
  * @see org.springframework.data.gemfire.config.annotation.EnableLocator
  * @see org.springframework.data.gemfire.config.annotation.PeerCacheApplication
  * @see org.springframework.data.gemfire.test.support.ClientServerIntegrationTestsSupport
@@ -62,13 +64,13 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @since 2.2.0
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(locations = "GatewaySenderXmlConfigurationByIdIntegrationTests-context.xml")
+@ContextConfiguration(locations = "AsyncEventQueueXmlConfigurationByIdIntegrationTests-context.xml")
 @SuppressWarnings("unused")
-public class GatewaySenderXmlConfigurationByIdIntegrationTests extends ClientServerIntegrationTestsSupport {
-
-	private static ProcessWrapper geodeServer;
+public class AsyncEventQueueXmlConfigurationByIdIntegrationTests extends ClientServerIntegrationTestsSupport {
 
 	private static final String GEMFIRE_LOG_LEVEL = "error";
+
+	private static ProcessWrapper geodeServer;
 
 	@BeforeClass
 	public static void startGeodeServer() throws IOException {
@@ -95,7 +97,7 @@ public class GatewaySenderXmlConfigurationByIdIntegrationTests extends ClientSer
 	private Region<?, ?> example;
 
 	@Test
-	public void regionGatewaySendersByIdConfiguredCorrectly() {
+	public void regionAsyncEventQueuesByIdConfiguredCorrectly() {
 
 		assertThat(this.example).isNotNull();
 		assertThat(this.example.getName()).isEqualTo("Example");
@@ -103,9 +105,9 @@ public class GatewaySenderXmlConfigurationByIdIntegrationTests extends ClientSer
 		RegionAttributes<?, ?> exampleAttributes = this.example.getAttributes();
 
 		assertThat(exampleAttributes).isNotNull();
-		assertThat(exampleAttributes.getDataPolicy()).isEqualTo(DataPolicy.REPLICATE);
-		assertThat(exampleAttributes.getGatewaySenderIds())
-			.containsExactlyInAnyOrder("TestGatewaySenderOne", "TestGatewaySenderTwo");
+		assertThat(exampleAttributes.getDataPolicy()).isEqualTo(DataPolicy.PARTITION);
+		assertThat(exampleAttributes.getAsyncEventQueueIds())
+			.containsExactlyInAnyOrder("TestAsyncEventQueueOne", "TestAsyncEventQueueTwo");
 	}
 
 	@EnableLocator
@@ -120,37 +122,25 @@ public class GatewaySenderXmlConfigurationByIdIntegrationTests extends ClientSer
 			block();
 		}
 
-		@Bean("TestGatewaySenderOne")
-		public GatewaySenderFactoryBean gatewaySenderOne(Cache cache) {
-
-			GatewaySenderFactoryBean gatewaySenderOne = new GatewaySenderFactoryBean(cache);
-
-			gatewaySenderOne.setRemoteDistributedSystemId(1);
-			gatewaySenderOne.setManualStart(true);
-
-			return gatewaySenderOne;
+		@Bean("TestAsyncEventQueueOne")
+		public AsyncEventQueueFactoryBean asyncEventQueueOne(Cache cache) {
+			return new AsyncEventQueueFactoryBean(cache, mock(AsyncEventListener.class));
 		}
 
-		@Bean("TestGatewaySenderTwo")
-		public GatewaySenderFactoryBean gatewaySenderTwo(Cache cache) {
-
-			GatewaySenderFactoryBean gatewaySenderTwo = new GatewaySenderFactoryBean(cache);
-
-			gatewaySenderTwo.setRemoteDistributedSystemId(1);
-			gatewaySenderTwo.setManualStart(true);
-
-			return gatewaySenderTwo;
+		@Bean("TestAsyncEventQueueTwo")
+		public AsyncEventQueueFactoryBean asyncEventQueueTwo(Cache cache) {
+			return new AsyncEventQueueFactoryBean(cache, mock(AsyncEventListener.class));
 		}
 
 		@Bean("Example")
-		public ReplicatedRegionFactoryBean<Object, Object> exampleRegion(GemFireCache gemfireCache,
-				@Qualifier("TestGatewaySenderOne") GatewaySender gatewaySenderOne,
-				@Qualifier("TestGatewaySenderTwo") GatewaySender gatewaySenderTwo) {
+		public PartitionedRegionFactoryBean<Object, Object> exampleRegion(GemFireCache gemfireCache,
+				@Qualifier("TestAsyncEventQueueOne") AsyncEventQueue asyncEventQueueOne,
+				@Qualifier("TestAsyncEventQueueTwo") AsyncEventQueue asyncEventQueueTwo) {
 
-			ReplicatedRegionFactoryBean<Object, Object> exampleRegion = new ReplicatedRegionFactoryBean<>();
+			PartitionedRegionFactoryBean<Object, Object> exampleRegion = new PartitionedRegionFactoryBean<>();
 
 			exampleRegion.setCache(gemfireCache);
-			exampleRegion.setGatewaySenders(ArrayUtils.asArray(gatewaySenderOne, gatewaySenderTwo));
+			exampleRegion.setAsyncEventQueues(ArrayUtils.asArray(asyncEventQueueOne, asyncEventQueueTwo));
 
 			return exampleRegion;
 		}
