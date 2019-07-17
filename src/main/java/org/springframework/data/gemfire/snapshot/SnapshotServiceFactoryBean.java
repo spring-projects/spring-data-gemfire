@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.snapshot;
 
 import static java.util.Arrays.stream;
@@ -44,6 +43,7 @@ import org.apache.geode.cache.snapshot.CacheSnapshotService;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
 import org.apache.geode.cache.snapshot.SnapshotFilter;
 import org.apache.geode.cache.snapshot.SnapshotOptions;
+
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationListener;
@@ -258,7 +258,7 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 	 * @see #getRegion()
 	 */
 	protected Region<K, V> getRegion() {
-		return region;
+		return this.region;
 	}
 
 	/**
@@ -305,7 +305,9 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 	@Override
 	@SuppressWarnings("unchecked")
 	public Class<?> getObjectType() {
-		return Optional.ofNullable(this.snapshotServiceAdapter).map(Object::getClass)
+
+		return Optional.ofNullable(this.snapshotServiceAdapter)
+			.map(Object::getClass)
 			.orElse((Class) SnapshotServiceAdapter.class);
 	}
 
@@ -360,8 +362,7 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 				}
 			}
 		}
-		catch (Exception ignore) {
-		}
+		catch (Exception ignore) { }
 	}
 
 	/**
@@ -374,7 +375,7 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 	 * @see SnapshotApplicationEvent
 	 */
 	protected boolean isMatch(SnapshotApplicationEvent event) {
-		return (event.isCacheSnapshotEvent() || event.matches(getRegion()));
+		return event.isCacheSnapshotEvent() || event.matches(getRegion());
 	}
 
 	/**
@@ -392,8 +393,9 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 
 		SnapshotMetadata<K, V>[] eventSnapshotMetadata = event.getSnapshotMetadata();
 
-		return (!ObjectUtils.isEmpty(eventSnapshotMetadata) ? eventSnapshotMetadata
-			: (event instanceof ExportSnapshotApplicationEvent ? getExports() : getImports()));
+		return !ObjectUtils.isEmpty(eventSnapshotMetadata)
+			? eventSnapshotMetadata
+			: (event instanceof ExportSnapshotApplicationEvent ? getExports() : getImports());
 	}
 
 	/**
@@ -473,7 +475,7 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 		protected abstract File[] handleLocation(SnapshotMetadata<K, V> configuration);
 
 		protected File[] handleDirectoryLocation(File directory) {
-			return directory.listFiles(pathname -> nullSafeIsFile(pathname));
+			return directory.listFiles(SnapshotServiceFactoryBean::nullSafeIsFile);
 		}
 
 		protected File[] handleFileLocation(File file) {
@@ -527,8 +529,8 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 				closeable.close();
 				return true;
 			}
-			catch (IOException ignore) {
-				logDebug(ignore, "Failed to close [%s]", closeable);
+			catch (IOException cause) {
+				logDebug(cause, "Failed to close [%s]", closeable);
 				return false;
 			}
 		}
@@ -593,9 +595,9 @@ public class SnapshotServiceFactoryBean<K, V> extends AbstractFactoryBeanSupport
 		@Override
 		protected File[] handleLocation(SnapshotMetadata<Object, Object> configuration) {
 
-			return (configuration.isFile()
+			return configuration.isFile()
 				? handleFileLocation(configuration.getLocation())
-				: handleDirectoryLocation(configuration.getLocation()));
+				: handleDirectoryLocation(configuration.getLocation());
 		}
 
 		@Override
