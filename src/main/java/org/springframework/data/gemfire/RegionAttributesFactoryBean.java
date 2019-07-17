@@ -13,13 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire;
+
+import java.util.Arrays;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.RegionAttributes;
+
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.data.gemfire.util.ArrayUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * Spring-friendly bean for creating {@link RegionAttributes}. Eliminates the need of using a XML 'factory-method' tag.
@@ -32,10 +36,10 @@ import org.springframework.beans.factory.InitializingBean;
  * @see org.apache.geode.cache.RegionAttributes
  */
 @SuppressWarnings({ "unused" })
-public class RegionAttributesFactoryBean extends AttributesFactory
+public class RegionAttributesFactoryBean<K, V> extends AttributesFactory<K, V>
 		implements FactoryBean<RegionAttributes>, InitializingBean {
 
-	private RegionAttributes regionAttributes;
+	private RegionAttributes<K, V> regionAttributes;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -43,13 +47,16 @@ public class RegionAttributesFactoryBean extends AttributesFactory
 	}
 
 	@Override
-	public RegionAttributes getObject() throws Exception {
+	public RegionAttributes<K, V> getObject() throws Exception {
 		return this.regionAttributes;
 	}
 
 	@Override
 	public Class<?> getObjectType() {
-		return this.regionAttributes != null ? this.regionAttributes.getClass() : RegionAttributes.class;
+
+		return this.regionAttributes != null
+			? this.regionAttributes.getClass()
+			: RegionAttributes.class;
 	}
 
 	@Override
@@ -57,7 +64,23 @@ public class RegionAttributesFactoryBean extends AttributesFactory
 		return true;
 	}
 
+	public void setAsyncEventQueueIds(String[] asyncEventQueueIds) {
+
+		Arrays.stream(ArrayUtils.nullSafeArray(asyncEventQueueIds, String.class))
+			.filter(StringUtils::hasText)
+			.map(String::trim)
+			.forEach(this::addAsyncEventQueueId);
+	}
+
 	public void setIndexUpdateType(IndexMaintenancePolicyType indexUpdateType) {
 		indexUpdateType.setIndexMaintenance(this);
+	}
+
+	public void setGatewaySenderIds(String[] gatewaySenderIds) {
+
+		Arrays.stream(ArrayUtils.nullSafeArray(gatewaySenderIds, String.class))
+			.filter(StringUtils::hasText)
+			.map(String::trim)
+			.forEach(this::addGatewaySenderId);
 	}
 }
