@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.snapshot;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -26,12 +25,17 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+
 import javax.annotation.Resource;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import com.gemstone.gemfire.cache.Region;
+import com.gemstone.gemfire.cache.snapshot.SnapshotFilter;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.gemfire.repository.sample.Person;
@@ -45,9 +49,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-
-import com.gemstone.gemfire.cache.Region;
-import com.gemstone.gemfire.cache.snapshot.SnapshotFilter;
 
 /**
  * The SnapshotApplicationEventTriggeredImportsExportsIntegrationTest class is a test suite of test cases testing
@@ -93,6 +94,7 @@ public class SnapshotApplicationEventTriggeredImportsExportsIntegrationTest {
 
 	@BeforeClass
 	public static void setupBeforeClass() throws Exception {
+
 		snapshotsDirectory = new File(new File(FileSystemUtils.WORKING_DIRECTORY, "gemfire"), "snapshots");
 
 		assertThat(snapshotsDirectory.isDirectory() || snapshotsDirectory.mkdirs(), is(true));
@@ -110,6 +112,7 @@ public class SnapshotApplicationEventTriggeredImportsExportsIntegrationTest {
 	}
 
 	protected void assertPeople(Region<Long, Person> targetRegion, Person... people) {
+
 		assertThat(targetRegion.size(), is(equalTo(people.length)));
 
 		for (Person person : people) {
@@ -118,6 +121,7 @@ public class SnapshotApplicationEventTriggeredImportsExportsIntegrationTest {
 	}
 
 	protected void assertPerson(Person expectedPerson, Person actualPerson) {
+
 		assertThat(String.format("Expected (%1$s); but was (%2$s)", expectedPerson, actualPerson),
 			actualPerson, is(notNullValue()));
 		assertThat(actualPerson.getId(), is(equalTo(expectedPerson.getId())));
@@ -130,16 +134,22 @@ public class SnapshotApplicationEventTriggeredImportsExportsIntegrationTest {
 	}
 
 	protected Person put(Region<Long, Person> targetRegion, Person person) {
+
 		targetRegion.putIfAbsent(person.getId(), person);
+
 		return person;
 	}
 
 	protected void wait(final int seconds, final int expectedDoeSize, final int expectedEveryoneSize,
 			final int expectedHandySize) {
+
 		ThreadUtils.timedWait(TimeUnit.SECONDS.toMillis(seconds), 500, new ThreadUtils.WaitCondition() {
-			@Override public boolean waiting() {
-				return (doe.size() < expectedDoeSize && everyoneElse.size() < expectedEveryoneSize
-					&& handy.size() < expectedHandySize);
+
+			@Override
+			public boolean waiting() {
+				return doe.size() < expectedDoeSize
+					|| everyoneElse.size() < expectedEveryoneSize
+					|| handy.size() < expectedHandySize;
 			}
 		});
 	}
@@ -147,6 +157,7 @@ public class SnapshotApplicationEventTriggeredImportsExportsIntegrationTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void exportsTriggeringImportsOnSnapshotApplicationEvents() {
+
 		Person jonDoe = put(people, createPerson("Jon", "Doe"));
 		Person janeDoe = put(people, createPerson("Jane", "Doe"));
 		Person jackBlack = put(people, createPerson("Jack", "Black"));
@@ -171,7 +182,8 @@ public class SnapshotApplicationEventTriggeredImportsExportsIntegrationTest {
 		Person jillHill = put(people, createPerson("Jill", "Hill"));
 
 		eventPublisher.publishEvent(event);
-		wait(10, 5, 4, 3);
+
+		wait(5, 5, 4, 3);
 
 		assertPeople(doe, jonDoe, janeDoe, cookieDoe, pieDoe, sourDoe);
 		assertPeople(everyoneElse, jackBlack, joeDirt, jackHill, jillHill);
@@ -195,12 +207,16 @@ public class SnapshotApplicationEventTriggeredImportsExportsIntegrationTest {
 		private final String lastName;
 
 		public LastNameSnapshotFilter(String lastName) {
+
 			Assert.hasText(lastName, "'lastName' must be specified");
+
 			this.lastName = lastName;
 		}
 
 		protected String getLastName() {
+
 			Assert.state(StringUtils.hasText(lastName), "'lastName' was not properly initialized");
+
 			return lastName;
 		}
 
@@ -231,11 +247,13 @@ public class SnapshotApplicationEventTriggeredImportsExportsIntegrationTest {
 		@Autowired
 		private ApplicationEventPublisher eventPublisher;
 
-		private static final Map<File, Long> snapshotFileLastModifiedMap = new ConcurrentHashMap<File, Long>(2);
+		private static final Map<File, Long> snapshotFileLastModifiedMap =
+			new ConcurrentHashMap<File, Long>(2);
 
 		@Scheduled(fixedDelay = 1000)
 		@SuppressWarnings("unchecked")
 		public void processSnapshots() {
+
 			boolean triggerEvent = false;
 
 			for (File snapshotFile : nullSafeArray(snapshotsDirectory.listFiles(FileSystemUtils.FileOnlyFilter.INSTANCE))) {
@@ -248,10 +266,11 @@ public class SnapshotApplicationEventTriggeredImportsExportsIntegrationTest {
 		}
 
 		protected File[] nullSafeArray(File... files) {
-			return (files != null ? files : new File[0]);
+			return files != null ? files : new File[0];
 		}
 
 		protected boolean isUnprocessedSnapshotFile(File snapshotFile) {
+
 			Long lastModified = snapshotFile.lastModified();
 			Long previousLastModified = snapshotFileLastModifiedMap.get(snapshotFile);
 

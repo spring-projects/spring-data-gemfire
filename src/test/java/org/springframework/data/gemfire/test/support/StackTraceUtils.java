@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.test.support;
 
 /**
@@ -49,6 +48,7 @@ public abstract class StackTraceUtils extends ThreadUtils {
 	}
 
 	public static StackTraceElement getTestCaller(final Thread thread) {
+
 		for (StackTraceElement stackTraceElement : thread.getStackTrace()) {
 			if (isTestSuiteClass(stackTraceElement) && isTestCaseMethod(stackTraceElement)) {
 				return stackTraceElement;
@@ -59,6 +59,7 @@ public abstract class StackTraceUtils extends ThreadUtils {
 	}
 
 	private static boolean isTestCaseMethod(final StackTraceElement element) {
+
 		boolean result = element.getMethodName().toLowerCase().startsWith("test");
 
 		try {
@@ -71,9 +72,11 @@ public abstract class StackTraceUtils extends ThreadUtils {
 	}
 
 	private static boolean isTestSuiteClass(final StackTraceElement element) {
+
 		boolean result = element.getClass().getSimpleName().toLowerCase().endsWith("test");
+
 		result |= element.getClass().isAssignableFrom(junit.framework.TestCase.class);
+
 		return result;
 	}
-
 }

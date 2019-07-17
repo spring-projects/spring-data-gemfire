@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.test.support;
 
 import java.io.PrintWriter;
@@ -31,10 +30,12 @@ import java.io.StringWriter;
 @SuppressWarnings("unused")
 public abstract class ThrowableUtils {
 
-	public static String toString(final Throwable t) {
+	public static String toString(Throwable cause) {
+
 		StringWriter writer = new StringWriter();
-		t.printStackTrace(new PrintWriter(writer));
+
+		cause.printStackTrace(new PrintWriter(writer));
+
 		return writer.toString();
 	}
-
 }
