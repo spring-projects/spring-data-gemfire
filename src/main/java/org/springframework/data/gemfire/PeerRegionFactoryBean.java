@@ -57,6 +57,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.eviction.EvictingRegionFactoryBean;
 import org.springframework.data.gemfire.expiration.ExpiringRegionFactoryBean;
+import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.data.gemfire.util.RegionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
@@ -410,8 +411,12 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 
 		if (regionAttributes != null) {
 
-			// NOTE: this validation may not be strictly necessary depending on how the RegionAttributes were "created",
+			// NOTE: this validation may not be strictly necessary depending on how the RegionAttributes were "created".
 			validateRegionAttributes(regionAttributes);
+
+			CollectionUtils.nullSafeSet(regionAttributes.getAsyncEventQueueIds()).stream()
+				.filter(StringUtils::hasText)
+				.forEach(regionFactory::addAsyncEventQueueId);
 
 			regionFactory.setCloningEnabled(regionAttributes.getCloningEnabled());
 			regionFactory.setCompressor(regionAttributes.getCompressor());
@@ -429,6 +434,10 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 			if (isUserSpecifiedEvictionAttributes(regionAttributes)) {
 				regionFactory.setEvictionAttributes(regionAttributes.getEvictionAttributes());
 			}
+
+			CollectionUtils.nullSafeSet(regionAttributes.getGatewaySenderIds()).stream()
+				.filter(StringUtils::hasText)
+				.forEach(regionFactory::addGatewaySenderId);
 
 			regionFactory.setIgnoreJTA(regionAttributes.getIgnoreJTA());
 			regionFactory.setIndexMaintenanceSynchronous(regionAttributes.getIndexMaintenanceSynchronous());

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:gfe="http://www.springframework.org/schema/geode"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/geode http://www.springframework.org/schema/geode/spring-geode.xsd
+">
+
+	<bean class="org.springframework.data.gemfire.test.mock.config.GemFireMockObjectsBeanPostProcessor"/>
+
+	<gfe:cache/>
+
+	<bean id="MockAsyncEventListener"
+		  class="org.springframework.data.gemfire.wan.RegionsWithAsyncEventQueuesAndGatewaySendersUnitTests$AsyncEventListenerFactoryBean"/>
+
+	<gfe:async-event-queue id="E">
+		<gfe:async-event-listener ref="MockAsyncEventListener"/>
+	</gfe:async-event-queue>
+
+	<gfe:gateway-sender id="5" manual-start="true" remote-distributed-system-id="1"/>
+
+	<gfe:region-template id="BaseRegionTemplate" async-event-queue-ids="X, Y" gateway-sender-ids="99, 100">
+
+		<gfe:gateway-sender name="101" manual-start="true" remote-distributed-system-id="1"/>
+
+		<gfe:async-event-queue name="Z">
+			<gfe:async-event-listener ref="MockAsyncEventListener"/>
+		</gfe:async-event-queue>
+
+	</gfe:region-template>
+
+	<!-- Template Region AsyncEventQueues (AEQ) & GatewaySenders are used -->
+	<gfe:local-region id="TemplateBasedLocalRegion" template="BaseRegionTemplate"/>
+
+	<!-- Template Region AsyncEventQueues (AEQ) & GatewaySenders are overridden -->
+	<gfe:local-region id="LocalRegion"
+					  async-event-queue-ids="A, B, C"
+					  gateway-sender-ids="1, 2, 3"
+					  template="BaseRegionTemplate">
+
+		<gfe:gateway-sender name="4" manual-start="true" remote-distributed-system-id="1"/>
+
+		<gfe:gateway-sender-ref bean="5"/>
+
+		<gfe:async-event-queue name="D">
+			<gfe:async-event-listener ref="MockAsyncEventListener"/>
+		</gfe:async-event-queue>
+
+		<gfe:async-event-queue-ref bean="E"/>
+
+	</gfe:local-region>
+
+	<!-- Template Region AsyncEventQueues (AEQ) & GatewaySenders are overridden -->
+	<gfe:partitioned-region id="PartitionRegion"
+							async-event-queue-ids="F, G, H"
+							gateway-sender-ids="6, 7, 8"
+							template="BaseRegionTemplate">
+
+		<gfe:gateway-sender name="9" manual-start="true" remote-distributed-system-id="1"/>
+
+		<gfe:gateway-sender-ref bean="5"/>
+
+		<gfe:async-event-queue name="I">
+			<gfe:async-event-listener ref="MockAsyncEventListener"/>
+		</gfe:async-event-queue>
+
+		<gfe:async-event-queue-ref bean="E"/>
+
+	</gfe:partitioned-region>
+
+	<!-- Template Region AsyncEventQueues (AEQ) & GatewaySenders are overridden -->
+	<gfe:replicated-region id="ReplicateRegion"
+						   async-event-queue-ids="J, K, L"
+						   gateway-sender-ids="10, 11, 12"
+						   template="BaseRegionTemplate">
+
+		<gfe:gateway-sender name="13" manual-start="true" remote-distributed-system-id="1"/>
+
+		<gfe:gateway-sender-ref bean="5"/>
+
+		<gfe:async-event-queue name="M">
+			<gfe:async-event-listener ref="MockAsyncEventListener"/>
+		</gfe:async-event-queue>
+
+		<gfe:async-event-queue-ref bean="E"/>
+
+	</gfe:replicated-region>
+
+</beans>

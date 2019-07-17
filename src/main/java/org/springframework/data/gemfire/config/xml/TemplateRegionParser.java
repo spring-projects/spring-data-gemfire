@@ -13,24 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.xml;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.data.gemfire.RegionAttributesFactoryBean;
 import org.springframework.data.gemfire.PeerRegionFactoryBean;
+import org.springframework.data.gemfire.RegionAttributesFactoryBean;
+
 import org.w3c.dom.Element;
 
 /**
  * Bean definition parser for &lt;gfe:*-region-template&gt; SDG XML namespace (XSD) elements.
  *
  * @author John Blum
- * @see PeerRegionFactoryBean
- * @see AbstractRegionParser
+ * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
+ * @see org.springframework.beans.factory.xml.ParserContext
+ * @see org.springframework.data.gemfire.PeerRegionFactoryBean
+ * @see org.springframework.data.gemfire.RegionAttributesFactoryBean
+ * @see org.springframework.data.gemfire.config.xml.AbstractRegionParser
+ * @see org.w3c.dom.Element
  * @since 1.5.0
  */
-class TemplateRegionParser extends AbstractRegionParser {
+class TemplateRegionParser extends AbstractPeerRegionParser {
 
 	/**
 	 * {@inheritDoc}
@@ -46,8 +50,9 @@ class TemplateRegionParser extends AbstractRegionParser {
 	@Override
 	protected void doParseRegion(Element element, ParserContext parserContext, BeanDefinitionBuilder builder,
 			boolean subRegion) {
-		BeanDefinitionBuilder regionAttributesBuilder = BeanDefinitionBuilder.genericBeanDefinition(
-			RegionAttributesFactoryBean.class);
+
+		BeanDefinitionBuilder regionAttributesBuilder =
+			BeanDefinitionBuilder.genericBeanDefinition(RegionAttributesFactoryBean.class);
 
 		doParseRegionConfiguration(element, parserContext, builder, regionAttributesBuilder, subRegion);
 

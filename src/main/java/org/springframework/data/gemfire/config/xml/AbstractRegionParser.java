@@ -109,7 +109,9 @@ abstract class AbstractRegionParser extends AbstractSingleBeanDefinitionParser {
 		String resolvedCacheReference = ParsingUtils.resolveCacheReference(element.getAttribute("cache-ref"));
 
 		if (!subRegion) {
+
 			regionBuilder.addPropertyReference("cache", resolvedCacheReference);
+
 			ParsingUtils.setPropertyValue(element, regionBuilder, "close");
 			ParsingUtils.setPropertyValue(element, regionBuilder, "destroy");
 		}
