@@ -975,7 +975,7 @@ The name of the region definition.]]>
 	<xsd:complexType name="baseRegionType" abstract="true">
 		<xsd:complexContent>
 			<xsd:extension base="baseReadOnlyRegionType">
-				<xsd:sequence minOccurs="0" maxOccurs="1">
+				<xsd:sequence>
 					<xsd:element name="cache-loader" type="beanDeclarationType" minOccurs="0" maxOccurs="1">
 						<xsd:annotation>
 							<xsd:documentation source="org.apache.geode.cache.CacheLoader"><![CDATA[
