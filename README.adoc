@@ -6,7 +6,7 @@ The primary goal of the Spring Data for Pivotal GemFire project is to make it ea
 
 == Features
 
-* XML namespace to http://docs.spring.io/spring-data-gemfire/docs/current/reference/html/#bootstrap[configure and create Pivotal GemFire resources declaratively with Spring]
+* XML namespace to https://docs.spring.io/spring-data-gemfire/docs/current/reference/html/#bootstrap[configure and create Pivotal GemFire resources declaratively with Spring]
 * Annotation model to https://docs.spring.io/spring-data/gemfire/docs/current/reference/html/#bootstrap-annotation-config[quickly and easily get started with Pivotal GemFire out-of-the-box]
 * Simplifies https://docs.spring.io/spring-data/gemfire/docs/current/reference/html/#apis[working with Pivotal GemFire APIs]
 * https://docs.spring.io/spring-data/gemfire/docs/current/reference/html/#apis:spring-cache-abstraction[Spring Cache Abstraction backed by Pivotal GemFire]
@@ -19,7 +19,7 @@ The primary goal of the Spring Data for Pivotal GemFire project is to make it ea
 * https://docs.spring.io/spring-data/gemfire/docs/current/reference/html/#apis:continuous-query[Support for Continuous Query]
 * https://docs.spring.io/spring-data/gemfire/docs/current/reference/html/#bootstrap:lucene[Enhanced support for Apache Lucene Integration]
 * https://docs.spring.io/spring-data/gemfire/docs/current/reference/html/#gemfire-bootstrap[Bootstrapping a Spring Context with Pivotal GemFire]
-* Spring Tool Suite http://docs.spring.io/sts/nan/v310/NewAndNoteworthy.html[Spring Project Templates for Pivotal GemFire]
+* Spring Tool Suite https://docs.spring.io/sts/nan/v310/NewAndNoteworthy.html[Spring Project Templates for Pivotal GemFire]
 
 == Code of Conduct
 
@@ -72,8 +72,8 @@ Configure a Pivotal GemFire cache and Region (REPLICATE, PARTITION and so on):
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance
   xsi:schemaLocation="
     http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
-    http://www.springframework.org/schema/gemfire https://www.springframework.org/schema/gemfire/spring-gemfire.xsd
-		http://www.springframework.org/schema/data/gemfire https://www.springframework.org/schema/data/gemfire/spring-data-gemfire.xsd">
+    http://www.springframework.org/schema/geode https://www.springframework.org/schema/gemfire/spring-gemfire.xsd
+	http://www.springframework.org/schema/data/gemfire https://www.springframework.org/schema/data/geode/spring-data-gemfire.xsd">
 
   <gfe:cache/>
 
