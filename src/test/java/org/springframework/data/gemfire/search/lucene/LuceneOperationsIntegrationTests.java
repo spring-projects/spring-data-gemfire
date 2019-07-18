@@ -182,8 +182,16 @@ public class LuceneOperationsIntegrationTests {
 			LuceneService luceneService =
 				event.getApplicationContext().getBean("luceneService", LuceneService.class);
 
-			SpringUtils.safeRunOperation(() ->
-				luceneService.waitUntilFlushed("PersonTitleIndex", "/People", 15L, TimeUnit.SECONDS));
+			boolean flushed = SpringUtils.safeGetValue(() -> {
+				try {
+					return luceneService.waitUntilFlushed("PersonTitleIndex", "/People", 15L, TimeUnit.SECONDS);
+				}
+				catch (Throwable ignore) {
+					return false;
+				}
+			});
+
+			assertThat(flushed).describedAs("LuceneIndex not flushed!").isTrue();
 		}
 	}
 
