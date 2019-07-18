@@ -64,7 +64,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(locations = "GatewaySenderByIdXmlConfigurationIntegrationTests-context.xml")
 @SuppressWarnings("unused")
-public class GatewaySenderByIdXmlConfigurationIdIntegrationTests extends ClientServerIntegrationTestsSupport {
+public class GatewaySenderByIdXmlConfigurationIntegrationTests extends ClientServerIntegrationTestsSupport {
 
 	private static ProcessWrapper geodeServer;
 
