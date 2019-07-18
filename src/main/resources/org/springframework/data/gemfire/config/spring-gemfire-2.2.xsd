@@ -1088,15 +1088,6 @@ should be declared instead.
 						]]></xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
-				<xsd:attribute name="ignore-jta" type="xsd:string" use="optional">
-					<xsd:annotation>
-						<xsd:documentation><![CDATA[
-Indicates whether operations on this Region participates in active JTA transactions or ignores them and operates
-outside of transactions.  This is primarily used in cache loaders, writers, and listeners that need to perform
-non-transactional operations on a Region, such as caching a result set.  GemFire default is false.
-								]]></xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
 				<xsd:attribute name="index-update-type" type="xsd:string" use="optional">
 					<xsd:annotation>
 						<xsd:documentation><![CDATA[
