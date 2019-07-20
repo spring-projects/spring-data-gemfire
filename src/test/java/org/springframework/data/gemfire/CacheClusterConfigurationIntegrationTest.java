@@ -23,8 +23,10 @@ import static org.junit.Assert.fail;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newRuntimeException;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -55,6 +57,7 @@ import org.springframework.data.gemfire.test.support.FileUtils;
 import org.springframework.data.gemfire.test.support.ThreadUtils;
 import org.springframework.data.gemfire.test.support.ThrowableUtils;
 import org.springframework.data.gemfire.test.support.ZipUtils;
+import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.util.StringUtils;
 
@@ -138,7 +141,7 @@ public class CacheClusterConfigurationIntegrationTest extends ClientServerIntegr
 
 		String locatorName = "ClusterConfigLocator";
 
-		locatorWorkingDirectory = new File(System.getProperty("user.dir"), locatorName.toLowerCase());
+		locatorWorkingDirectory = new File(System.getProperty("java.io.tmpdir"), locatorName.toLowerCase());
 
 		assertTrue(locatorWorkingDirectory.isDirectory() || locatorWorkingDirectory.mkdirs());
 
@@ -194,6 +197,12 @@ public class CacheClusterConfigurationIntegrationTest extends ClientServerIntegr
 		if (Boolean.valueOf(System.getProperty("spring.gemfire.fork.clean", Boolean.TRUE.toString()))) {
 			FileSystemUtils.deleteRecursively(locatorWorkingDirectory);
 		}
+
+		FilenameFilter logFileFilter = (directory, name) -> name.endsWith(".log");
+
+		File[] logFiles = ArrayUtils.nullSafeArray(locatorWorkingDirectory.listFiles(logFileFilter), File.class);
+
+		Arrays.stream(logFiles).forEach(File::delete);
 	}
 
 	private Region assertRegion(Region actualRegion, String expectedRegionName) {
