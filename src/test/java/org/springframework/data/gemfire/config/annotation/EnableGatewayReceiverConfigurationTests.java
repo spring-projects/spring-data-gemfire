@@ -167,7 +167,7 @@ public class EnableGatewayReceiverConfigurationTests {
 
         @Override
         public void configure(String beanName, GatewayReceiverFactoryBean bean) {
-            bean.getTransportFilters().stream().forEach(o -> beanNames.add(((TestGatewayTransportFilter) o).name));
+            bean.getTransportFilters().forEach(o -> beanNames.add(((TestGatewayTransportFilter) o).name));
         }
     }
 

@@ -78,48 +78,26 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 		super(cache);
 	}
 
-	/**
-	 * @inheritDoc
-	 */
-	@Override
-	public GatewayReceiver getObject() throws Exception {
-		return this.gatewayReceiver;
-	}
-
-	/**
-	 * @inheritDoc
-	 */
-	@Override
-	public Class<?> getObjectType() {
-
-		return this.gatewayReceiver != null
-			? this.gatewayReceiver.getClass()
-			: GatewayReceiver.class;
-	}
-
-	/**
-	 * @inheritDoc
-	 */
 	@Override
 	protected void doInit() {
 
-		GatewayReceiverFactory gatewayReceiverFactory = cache.createGatewayReceiverFactory();
+		GatewayReceiverFactory gatewayReceiverFactory = this.cache.createGatewayReceiverFactory();
 
 		Optional.ofNullable(this.gatewayReceiverConfigurer).ifPresent(it -> it.configure(getName(),this));
 
-		if (StringUtils.hasText(this.bindAddress)) {
-			gatewayReceiverFactory.setBindAddress(this.bindAddress);
-		}
+		Optional.ofNullable(this.bindAddress)
+			.filter(StringUtils::hasText)
+			.ifPresent(gatewayReceiverFactory::setBindAddress);
 
-		if (StringUtils.hasText(this.hostnameForSenders)) {
-			gatewayReceiverFactory.setHostnameForSenders(this.hostnameForSenders);
-		}
+		Optional.ofNullable(this.hostnameForSenders)
+			.filter(StringUtils::hasText)
+			.ifPresent(gatewayReceiverFactory::setHostnameForSenders);
 
 		int localStartPort = defaultPort(this.startPort, GatewayReceiver.DEFAULT_START_PORT);
 		int localEndPort = defaultPort(this.endPort, GatewayReceiver.DEFAULT_END_PORT);
 
 		Assert.isTrue(localStartPort <= localEndPort,
-			String.format("'startPort' must be less than or equal to %d.", localEndPort));
+			String.format("[startPort] must be less than or equal to [%d]", localEndPort));
 
 		gatewayReceiverFactory.setStartPort(localStartPort);
 		gatewayReceiverFactory.setEndPort(localEndPort);
@@ -128,9 +106,22 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 		Optional.ofNullable(this.maximumTimeBetweenPings).ifPresent(gatewayReceiverFactory::setMaximumTimeBetweenPings);
 		Optional.ofNullable(this.socketBufferSize).ifPresent(gatewayReceiverFactory::setSocketBufferSize);
 
-		CollectionUtils.nullSafeList(transportFilters).forEach(gatewayReceiverFactory::addGatewayTransportFilter);
+		CollectionUtils.nullSafeList(this.transportFilters).forEach(gatewayReceiverFactory::addGatewayTransportFilter);
 
 		this.gatewayReceiver = gatewayReceiverFactory.create();
+	}
+
+	@Override
+	public GatewayReceiver getObject() throws Exception {
+		return this.gatewayReceiver;
+	}
+
+	@Override
+	public Class<?> getObjectType() {
+
+		return this.gatewayReceiver != null
+			? this.gatewayReceiver.getClass()
+			: GatewayReceiver.class;
 	}
 
 	protected int defaultPort(Integer port, int defaultPort) {
@@ -178,6 +169,6 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 	}
 
 	public Collection<? extends GatewayTransportFilter> getTransportFilters() {
-		return Collections.unmodifiableList(transportFilters);
+		return Collections.unmodifiableList(this.transportFilters);
 	}
 }

@@ -16,6 +16,7 @@
 package org.springframework.data.gemfire.wan;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.wan.GatewayEventFilter;
@@ -23,9 +24,10 @@ import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
+import org.apache.shiro.util.StringUtils;
+
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.data.gemfire.util.CollectionUtils;
-import org.springframework.util.Assert;
 
 /**
  * Spring {@link FactoryBean} for creating a parallel or serial Pivotal GemFire {@link GatewaySender}.
@@ -88,79 +90,50 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 	@Override
 	protected void doInit() {
 
-		GatewaySenderFactory gatewaySenderFactory = this.factory != null
-			? (GatewaySenderFactory) this.factory
-			: this.cache.createGatewaySenderFactory();
+		GatewaySenderFactory gatewaySenderFactory = resolveGatewaySenderFactory();
 
-		if (alertThreshold != null) {
-			gatewaySenderFactory.setAlertThreshold(alertThreshold);
-		}
+		Optional.ofNullable(this.alertThreshold).ifPresent(gatewaySenderFactory::setAlertThreshold);
+		Optional.ofNullable(this.batchConflationEnabled).ifPresent(gatewaySenderFactory::setBatchConflationEnabled);
+		Optional.ofNullable(this.batchSize).ifPresent(gatewaySenderFactory::setBatchSize);
+		Optional.ofNullable(this.batchTimeInterval).ifPresent(gatewaySenderFactory::setBatchTimeInterval);
 
-		if (batchConflationEnabled != null) {
-			gatewaySenderFactory.setBatchConflationEnabled(batchConflationEnabled);
-		}
+		Optional.ofNullable(this.diskStoreReference)
+			.filter(StringUtils::hasText)
+			.ifPresent(gatewaySenderFactory::setDiskStoreName);
 
-		if (batchSize != null) {
-			gatewaySenderFactory.setBatchSize(batchSize);
-		}
+		Optional.ofNullable(this.diskSynchronous).ifPresent(gatewaySenderFactory::setDiskSynchronous);
+		Optional.ofNullable(this.dispatcherThreads).ifPresent(gatewaySenderFactory::setDispatcherThreads);
 
-		if (batchTimeInterval != null) {
-			gatewaySenderFactory.setBatchTimeInterval(batchTimeInterval);
-		}
+		CollectionUtils.nullSafeList(this.eventFilters).forEach(gatewaySenderFactory::addGatewayEventFilter);
 
-		if (diskStoreReference != null) {
-			gatewaySenderFactory.setDiskStoreName(diskStoreReference);
-		}
+		Optional.ofNullable(this.eventSubstitutionFilter)
+			.ifPresent(gatewaySenderFactory::setGatewayEventSubstitutionFilter);
 
-		if (diskSynchronous != null) {
-			gatewaySenderFactory.setDiskSynchronous(diskSynchronous);
-		}
+		gatewaySenderFactory.setManualStart(this.manualStart);
 
-		if (dispatcherThreads != null) {
-			gatewaySenderFactory.setDispatcherThreads(dispatcherThreads);
-		}
-
-		for (GatewayEventFilter eventFilter : CollectionUtils.nullSafeList(eventFilters)) {
-			gatewaySenderFactory.addGatewayEventFilter(eventFilter);
-		}
-
-		if (eventSubstitutionFilter != null) {
-			gatewaySenderFactory.setGatewayEventSubstitutionFilter(eventSubstitutionFilter);
-		}
-
-		gatewaySenderFactory.setManualStart(manualStart);
-
-		if (maximumQueueMemory != null) {
-			gatewaySenderFactory.setMaximumQueueMemory(maximumQueueMemory);
-		}
-
-		if (orderPolicy != null) {
-
-			Assert.isTrue(isSerialGatewaySender(), "OrderPolicy cannot be used with a Parallel GatewaySender");
-
-			gatewaySenderFactory.setOrderPolicy(this.orderPolicy);
-		}
+		Optional.ofNullable(this.maximumQueueMemory).ifPresent(gatewaySenderFactory::setMaximumQueueMemory);
+		Optional.ofNullable(this.orderPolicy).ifPresent(gatewaySenderFactory::setOrderPolicy);
 
 		gatewaySenderFactory.setParallel(isParallelGatewaySender());
 		gatewaySenderFactory.setPersistenceEnabled(isPersistent());
 
-		if (socketBufferSize != null) {
-			gatewaySenderFactory.setSocketBufferSize(socketBufferSize);
-		}
+		Optional.ofNullable(this.socketBufferSize).ifPresent(gatewaySenderFactory::setSocketBufferSize);
+		Optional.ofNullable(this.socketReadTimeout).ifPresent(gatewaySenderFactory::setSocketReadTimeout);
 
-		if (socketReadTimeout != null) {
-			gatewaySenderFactory.setSocketReadTimeout(socketReadTimeout);
-		}
-
-		for (GatewayTransportFilter transportFilter : CollectionUtils.nullSafeList(transportFilters)) {
-			gatewaySenderFactory.addGatewayTransportFilter(transportFilter);
-		}
+		CollectionUtils.nullSafeList(this.transportFilters).forEach(gatewaySenderFactory::addGatewayTransportFilter);
 
 		GatewaySenderWrapper wrapper =
-			new GatewaySenderWrapper(gatewaySenderFactory.create(getName(), remoteDistributedSystemId));
+			new GatewaySenderWrapper(gatewaySenderFactory.create(getName(), this.remoteDistributedSystemId));
 
-        wrapper.setManualStart(manualStart);
-        gatewaySender = wrapper;
+        wrapper.setManualStart(this.manualStart);
+        this.gatewaySender = wrapper;
+	}
+
+	private GatewaySenderFactory resolveGatewaySenderFactory() {
+
+		return this.factory != null
+			? (GatewaySenderFactory) this.factory
+			: this.cache.createGatewaySenderFactory();
 	}
 
 	@Override
@@ -170,7 +143,10 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 
 	@Override
 	public Class<?> getObjectType() {
-		return this.gatewaySender != null ? this.gatewaySender.getClass() : GatewaySender.class;
+
+		return this.gatewaySender != null
+			? this.gatewaySender.getClass()
+			: GatewaySender.class;
 	}
 
 	public void setAlertThreshold(Integer alertThreshold) {
@@ -217,7 +193,7 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 		this.eventFilters = gatewayEventFilters;
 	}
 
-	public void setEventSubstitutionFilter(final GatewayEventSubstitutionFilter eventSubstitutionFilter) {
+	public void setEventSubstitutionFilter(GatewayEventSubstitutionFilter eventSubstitutionFilter) {
 		this.eventSubstitutionFilter = eventSubstitutionFilter;
 	}
 
@@ -242,7 +218,7 @@ public class GatewaySenderFactoryBean extends AbstractWANComponentFactoryBean<Ga
 	}
 
 	public boolean isParallelGatewaySender() {
-		return Boolean.TRUE.equals(parallel);
+		return Boolean.TRUE.equals(this.parallel);
 	}
 
 	public void setPersistent(Boolean persistent) {

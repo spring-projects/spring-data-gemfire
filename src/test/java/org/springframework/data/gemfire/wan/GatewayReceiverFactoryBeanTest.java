@@ -15,7 +15,7 @@
  */
 package org.springframework.data.gemfire.wan;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
@@ -98,7 +98,10 @@ public class GatewayReceiverFactoryBeanTest {
 			factoryBean.afterPropertiesSet();
 		}
 		catch (IllegalArgumentException expected) {
-			assertEquals("'startPort' must be less than or equal to 8192.", expected.getMessage());
+
+			assertThat(expected).hasMessageContaining("[startPort] must be less than or equal to [8192]");
+			assertThat(expected).hasNoCause();
+
 			throw expected;
 		}
 	}

@@ -17,10 +17,9 @@ package org.springframework.data.gemfire.wan;
 
 import org.apache.geode.cache.Cache;
 
-import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.data.gemfire.support.AbstractFactoryBeanSupport;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -33,13 +32,13 @@ import org.slf4j.LoggerFactory;
  * @author David Turanski
  * @author John Blum
  * @see org.apache.geode.cache.Cache
- * @see org.springframework.beans.factory.BeanNameAware
  * @see org.springframework.beans.factory.DisposableBean
  * @see org.springframework.beans.factory.FactoryBean
  * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.data.gemfire.support.AbstractFactoryBeanSupport
  */
-public abstract class AbstractWANComponentFactoryBean<T>
-		implements BeanNameAware, DisposableBean, FactoryBean<T>, InitializingBean {
+public abstract class AbstractWANComponentFactoryBean<T> extends AbstractFactoryBeanSupport<T>
+		implements DisposableBean, InitializingBean {
 
 	protected Cache cache;
 
@@ -72,12 +71,10 @@ public abstract class AbstractWANComponentFactoryBean<T>
 	}
 
 	public String getName() {
-		return StringUtils.hasText(this.name) ? this.name : this.beanName;
-	}
 
-	@Override
-	public final boolean isSingleton() {
-		return true;
+		return StringUtils.hasText(this.name)
+			? this.name
+			: this.beanName;
 	}
 
 	@Override
