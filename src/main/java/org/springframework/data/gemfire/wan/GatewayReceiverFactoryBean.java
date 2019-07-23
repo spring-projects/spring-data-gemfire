@@ -15,12 +15,16 @@
  */
 package org.springframework.data.gemfire.wan;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
+
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
@@ -66,42 +70,24 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 		super(cache);
 	}
 
-	/**
-	 * @inheritDoc
-	 */
 	@Override
-	public GatewayReceiver getObject() throws Exception {
-		return gatewayReceiver;
-	}
+	protected void doInit() {
 
-	/**
-	 * @inheritDoc
-	 */
-	@Override
-	public Class<?> getObjectType() {
-		return (gatewayReceiver != null ? gatewayReceiver.getClass() : GatewayReceiver.class);
-	}
+		GatewayReceiverFactory gatewayReceiverFactory = this.cache.createGatewayReceiverFactory();
 
-	/**
-	 * @inheritDoc
-	 */
-	@Override
-	protected void doInit() throws Exception {
-		GatewayReceiverFactory gatewayReceiverFactory = cache.createGatewayReceiverFactory();
+		Optional.ofNullable(this.bindAddress)
+			.filter(StringUtils::hasText)
+			.ifPresent(gatewayReceiverFactory::setBindAddress);
 
-		if (StringUtils.hasText(bindAddress)) {
-			gatewayReceiverFactory.setBindAddress(bindAddress);
-		}
-
-		if (StringUtils.hasText(hostnameForSenders)) {
-			gatewayReceiverFactory.setHostnameForSenders(hostnameForSenders);
-		}
+		Optional.ofNullable(this.hostnameForSenders)
+			.filter(StringUtils::hasText)
+			.ifPresent(gatewayReceiverFactory::setHostnameForSenders);
 
 		int localStartPort = defaultPort(startPort, GatewayReceiver.DEFAULT_START_PORT);
 		int localEndPort = defaultPort(endPort, GatewayReceiver.DEFAULT_END_PORT);
 
 		Assert.isTrue(localStartPort <= localEndPort,
-			String.format("'startPort' must be less than or equal to %d.", localEndPort));
+			String.format("[startPort] must be less than or equal to [%d]", localEndPort));
 
 		gatewayReceiverFactory.setStartPort(localStartPort);
 		gatewayReceiverFactory.setEndPort(localEndPort);
@@ -115,11 +101,22 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 			gatewayReceiverFactory.setSocketBufferSize(socketBufferSize);
 		}
 
-		for (GatewayTransportFilter transportFilter : CollectionUtils.nullSafeList(transportFilters)) {
-			gatewayReceiverFactory.addGatewayTransportFilter(transportFilter);
-		}
+		CollectionUtils.nullSafeList(this.transportFilters).forEach(gatewayReceiverFactory::addGatewayTransportFilter);
 
 		gatewayReceiver = gatewayReceiverFactory.create();
+	}
+
+	@Override
+	public GatewayReceiver getObject() throws Exception {
+		return this.gatewayReceiver;
+	}
+
+	@Override
+	public Class<?> getObjectType() {
+
+		return this.gatewayReceiver != null
+			? this.gatewayReceiver.getClass()
+			: GatewayReceiver.class;
 	}
 
 	protected int defaultPort(Integer port, int defaultPort) {
@@ -160,5 +157,9 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 
 	public void setTransportFilters(List<GatewayTransportFilter> transportFilters) {
 		this.transportFilters = transportFilters;
+	}
+
+	public Collection<? extends GatewayTransportFilter> getTransportFilters() {
+		return Collections.unmodifiableList(this.transportFilters);
 	}
 }
