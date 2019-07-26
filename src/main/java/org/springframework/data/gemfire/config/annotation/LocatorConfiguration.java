@@ -14,7 +14,6 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import java.lang.annotation.Annotation;
@@ -23,6 +22,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.apache.geode.distributed.Locator;
+
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.config.annotation.support.EmbeddedServiceConfigurationSupport;

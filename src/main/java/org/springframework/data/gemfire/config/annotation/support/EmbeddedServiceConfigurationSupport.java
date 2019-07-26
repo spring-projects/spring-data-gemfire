@@ -33,6 +33,7 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
+import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
@@ -48,13 +49,17 @@ import org.springframework.util.StringUtils;
  * the configuration of Pivotal GemFire and Apache Geode embedded services.
  *
  * @author John Blum
+ * @see java.util.Map
  * @see java.util.Properties
  * @see org.springframework.beans.factory.BeanFactory
  * @see org.springframework.beans.factory.config.AutowireCapableBeanFactory
  * @see org.springframework.beans.factory.config.BeanDefinitionHolder
+ * @see org.springframework.beans.factory.config.BeanPostProcessor
+ * @see org.springframework.beans.factory.config.NamedBeanHolder
  * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
  * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
  * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar
+ * @see org.springframework.core.annotation.AnnotationAttributes
  * @see org.springframework.core.type.AnnotationMetadata
  * @see org.springframework.data.gemfire.config.annotation.AbstractCacheConfiguration
  * @see org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport
@@ -91,7 +96,9 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 			BeanDefinitionRegistry registry) {
 
 		if (isAnnotationPresent(importingClassMetadata)) {
-			Map<String, Object> annotationAttributes = getAnnotationAttributes(importingClassMetadata);
+
+			AnnotationAttributes annotationAttributes = getAnnotationAttributes(importingClassMetadata);
+
 			registerBeanDefinitions(importingClassMetadata, annotationAttributes, registry);
 			setGemFireProperties(importingClassMetadata, annotationAttributes, registry);
 		}
@@ -104,7 +111,7 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 	}
 
 	protected void setGemFireProperties(AnnotationMetadata importingClassMetadata,
-			Map<String, Object> annotationAttributes, BeanDefinitionRegistry registry) {
+			AnnotationAttributes annotationAttributes, BeanDefinitionRegistry registry) {
 
 		Properties gemfireProperties = toGemFireProperties(annotationAttributes);
 
@@ -319,7 +326,7 @@ public abstract class EmbeddedServiceConfigurationSupport extends AbstractAnnota
 
 				Properties gemfirePropertiesBean = (Properties) bean;
 
-				gemfirePropertiesBean.putAll(gemfireProperties);
+				gemfirePropertiesBean.putAll(this.gemfireProperties);
 			}
 
 			return bean;

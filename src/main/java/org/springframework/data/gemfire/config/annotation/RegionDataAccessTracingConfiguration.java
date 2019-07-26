@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import org.springframework.context.annotation.Bean;
@@ -30,7 +29,6 @@ import org.springframework.data.gemfire.config.annotation.support.RegionDataAcce
 @SuppressWarnings("unused")
 public class RegionDataAccessTracingConfiguration {
 
-	/* (non-Javadoc) */
 	@Bean
 	public RegionDataAccessTracingAspect regionDataAccessTracingAspect() {
 		return new RegionDataAccessTracingAspect();

@@ -14,7 +14,6 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import static java.util.Arrays.stream;
@@ -30,6 +29,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;

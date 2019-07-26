@@ -14,14 +14,14 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
-import java.util.Map;
+import java.util.Arrays;
 
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.data.gemfire.util.ArrayUtils;
 
 /**
  * The {@link AddCacheServersConfiguration} class registers {@link org.springframework.data.gemfire.server.CacheServerFactoryBean}
@@ -41,16 +41,18 @@ public class AddCacheServersConfiguration extends AddCacheServerConfiguration {
 	 */
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+
 		if (importingClassMetadata.hasAnnotation(EnableCacheServers.class.getName())) {
-			Map<String, Object> enableCacheServersAttributes = importingClassMetadata.getAnnotationAttributes(
-				EnableCacheServers.class.getName());
+
+			AnnotationAttributes enableCacheServersAttributes =
+				getAnnotationAttributes(importingClassMetadata, EnableCacheServers.class.getName());
 
 			AnnotationAttributes[] serversAttributes =
-				(AnnotationAttributes[]) enableCacheServersAttributes.get("servers");
+				enableCacheServersAttributes.getAnnotationArray("servers");
 
-			for (AnnotationAttributes enableCacheServerAttributes : serversAttributes) {
-				registerCacheServerFactoryBeanDefinition(enableCacheServerAttributes, registry);
-			}
+			Arrays.stream(ArrayUtils.nullSafeArray(serversAttributes, AnnotationAttributes.class))
+				.forEach(enableCacheServerAttributes ->
+					registerCacheServerFactoryBeanDefinition(enableCacheServerAttributes, registry));
 		}
 	}
 }

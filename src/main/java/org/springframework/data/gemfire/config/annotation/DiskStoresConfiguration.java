@@ -14,15 +14,14 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
-import static java.util.Arrays.stream;
-import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+import java.util.Arrays;
 
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.data.gemfire.util.ArrayUtils;
 
 /**
  * The {@link DiskStoresConfiguration} class is a Spring {@link org.springframework.context.annotation.ImportBeanDefinitionRegistrar}
@@ -38,25 +37,23 @@ import org.springframework.core.type.AnnotationMetadata;
  */
 public class DiskStoresConfiguration extends DiskStoreConfiguration {
 
-	/* (non-Javadoc) */
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 
 		if (importingClassMetadata.hasAnnotation(EnableDiskStores.class.getName())) {
 
-			AnnotationAttributes enableDiskStoresAttributes = AnnotationAttributes.fromMap(
-				importingClassMetadata.getAnnotationAttributes(EnableDiskStores.class.getName()));
+			AnnotationAttributes enableDiskStoresAttributes =
+				getAnnotationAttributes(importingClassMetadata, EnableDiskStores.class.getName());
 
 			AnnotationAttributes[] diskStores =
 				enableDiskStoresAttributes.getAnnotationArray("diskStores");
 
-			stream(nullSafeArray(diskStores, AnnotationAttributes.class)).forEach(diskStoreAttributes ->
-				registerDiskStoreBeanDefinition(
+			Arrays.stream(ArrayUtils.nullSafeArray(diskStores, AnnotationAttributes.class))
+				.forEach(diskStoreAttributes ->  registerDiskStoreBeanDefinition(
 					mergeDiskStoreAttributes(enableDiskStoresAttributes, diskStoreAttributes), registry));
 		}
 	}
 
-	/* (non-Javadoc) */
 	protected AnnotationAttributes mergeDiskStoreAttributes(AnnotationAttributes enableDiskStoresAttributes,
 			AnnotationAttributes diskStoreAttributes) {
 
@@ -72,7 +69,6 @@ public class DiskStoresConfiguration extends DiskStoreConfiguration {
 		return diskStoreAttributes;
 	}
 
-	/* (non-Javadoc) */
 	private <T> void setAttributeIfNotDefault(AnnotationAttributes diskStoreAttributes,
 			String attributeName, T newValue, T defaultValue) {
 
@@ -83,7 +79,6 @@ public class DiskStoresConfiguration extends DiskStoreConfiguration {
 		}
 	}
 
-	/* (non-Javadoc) */
 	private String toString(Object value) {
 		return String.valueOf(value);
 	}

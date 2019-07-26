@@ -14,14 +14,14 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
-import java.util.Map;
+import java.util.Arrays;
 
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.data.gemfire.util.ArrayUtils;
 
 /**
  * The {@link AddPoolsConfiguration} class registers {@link org.springframework.data.gemfire.client.PoolFactoryBean}
@@ -42,15 +42,17 @@ public class AddPoolsConfiguration extends AddPoolConfiguration {
 	 */
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+
 		if (importingClassMetadata.hasAnnotation(EnablePools.class.getName())) {
-			Map<String, Object> enablePoolsAttributes = importingClassMetadata.getAnnotationAttributes(
-				EnablePools.class.getName());
 
-			AnnotationAttributes[] serversAttributes = (AnnotationAttributes[]) enablePoolsAttributes.get("pools");
+			AnnotationAttributes enablePoolsAttributes =
+				getAnnotationAttributes(importingClassMetadata, EnablePools.class.getName());
 
-			for (AnnotationAttributes enablePoolAttributes : serversAttributes) {
-				registerPoolFactoryBeanDefinition(enablePoolAttributes, registry);
-			}
+			AnnotationAttributes[] serversAttributes =
+				enablePoolsAttributes.getAnnotationArray("pools");
+
+			Arrays.stream(ArrayUtils.nullSafeArray(serversAttributes, AnnotationAttributes.class))
+				.forEach(enablePoolAttributes -> registerPoolFactoryBeanDefinition(enablePoolAttributes, registry));
 		}
 	}
 }

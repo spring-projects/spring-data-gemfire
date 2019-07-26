@@ -67,6 +67,7 @@ import org.slf4j.LoggerFactory;
  * @author John Blum
  * @author Udo Kohlmeyer
  * @see java.lang.ClassLoader
+ * @see java.lang.annotation.Annotation
  * @see org.springframework.beans.factory.BeanClassLoaderAware
  * @see org.springframework.beans.factory.BeanFactory
  * @see org.springframework.beans.factory.BeanFactoryAware
@@ -76,7 +77,10 @@ import org.slf4j.LoggerFactory;
  * @see org.springframework.context.EnvironmentAware
  * @see org.springframework.context.expression.BeanFactoryAccessor
  * @see org.springframework.context.expression.EnvironmentAccessor
+ * @see org.springframework.core.annotation.AnnotationAttributes
  * @see org.springframework.core.env.Environment
+ * @see org.springframework.core.type.AnnotationMetadata
+ * @see org.springframework.core.type.MethodMetadata
  * @see org.springframework.expression.EvaluationContext
  * @since 1.9.0
  */
@@ -844,6 +848,21 @@ public abstract class AbstractAnnotationConfigSupport
 	 */
 	protected Optional<Class<?>> resolveBeanClass(BeanDefinition beanDefinition, BeanDefinitionRegistry registry) {
 		return resolveBeanClass(beanDefinition, resolveBeanClassLoader(registry));
+	}
+
+	/**
+	 * Resolves the {@link Class type} of the bean defined by the given {@link BeanDefinition}.
+	 *
+	 * @param beanDefinition {@link BeanDefinition} defining the bean from which the {@link Class type} is resolved.
+	 * @param beanFactory {@link ConfigurableBeanFactory} used to resolve the {@link ClassLoader} used to resolve
+	 * the bean's {@link Class type}.
+	 * @return an {@link Optional} {@link Class} specifying the resolved type of the bean.
+	 * @see org.springframework.beans.factory.config.BeanDefinition
+	 * @see org.springframework.beans.factory.config.ConfigurableBeanFactory
+	 * @see #resolveBeanClass(BeanDefinition, ClassLoader)
+	 */
+	protected Optional<Class<?>> resolveBeanClass(BeanDefinition beanDefinition, ConfigurableBeanFactory beanFactory) {
+		return resolveBeanClass(beanDefinition, beanFactory.getBeanClassLoader());
 	}
 
 	/**

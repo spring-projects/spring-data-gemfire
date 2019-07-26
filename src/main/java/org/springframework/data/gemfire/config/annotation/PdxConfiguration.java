@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import java.lang.annotation.Annotation;
@@ -21,6 +20,7 @@ import java.util.Optional;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.pdx.PdxSerializer;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -241,7 +241,6 @@ public class PdxConfiguration extends AbstractAnnotationConfigSupport implements
 	 * @see #getBeanFactory()
 	 */
 	@NonNull
-	@SuppressWarnings("unchecked")
 	protected PdxSerializer resolvePdxSerializer() {
 
 		BeanFactory beanFactory = getBeanFactory();

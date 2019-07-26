@@ -19,7 +19,6 @@ package org.springframework.data.gemfire.config.annotation;
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +29,7 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
+import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
@@ -74,10 +74,9 @@ public class AddCacheServerConfiguration extends AbstractAnnotationConfigSupport
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 
-		if (importingClassMetadata.hasAnnotation(EnableCacheServer.class.getName())) {
+		if (isAnnotationPresent(importingClassMetadata)) {
 
-			Map<String, Object> enableCacheServerAttributes =
-				importingClassMetadata.getAnnotationAttributes(EnableCacheServer.class.getName());
+			AnnotationAttributes enableCacheServerAttributes = getAnnotationAttributes(importingClassMetadata);
 
 			registerCacheServerFactoryBeanDefinition(enableCacheServerAttributes, registry);
 		}
@@ -94,13 +93,13 @@ public class AddCacheServerConfiguration extends AbstractAnnotationConfigSupport
 	 * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
 	 * @see org.springframework.data.gemfire.server.CacheServerFactoryBean
 	 */
-	protected void registerCacheServerFactoryBeanDefinition(Map<String, Object> enableCacheServerAttributes,
+	protected void registerCacheServerFactoryBeanDefinition(AnnotationAttributes enableCacheServerAttributes,
 			BeanDefinitionRegistry registry) {
 
 		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(CacheServerFactoryBean.class);
 
 		String beanName = registerCacheServerFactoryBeanDefinition(builder.getBeanDefinition(),
-			(String) enableCacheServerAttributes.get("name"), registry);
+			enableCacheServerAttributes.getString("name"), registry);
 
 		builder.addPropertyReference("cache", GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
 		builder.addPropertyValue("cacheServerConfigurers", resolveCacheServerConfigurers());
@@ -108,77 +107,77 @@ public class AddCacheServerConfiguration extends AbstractAnnotationConfigSupport
 		builder.addPropertyValue("autoStartup",
 			resolveProperty(namedCacheServerProperty(beanName, "auto-startup"),
 				resolveProperty(cacheServerProperty("auto-startup"),
-					(Boolean) enableCacheServerAttributes.get("autoStartup"))));
+					enableCacheServerAttributes.getBoolean("autoStartup"))));
 
 		builder.addPropertyValue("bindAddress",
 			resolveProperty(namedCacheServerProperty(beanName, "bind-address"),
 				resolveProperty(cacheServerProperty("bind-address"),
-					(String) enableCacheServerAttributes.get("bindAddress"))));
+					enableCacheServerAttributes.getString("bindAddress"))));
 
 		builder.addPropertyValue("hostNameForClients",
 			resolveProperty(namedCacheServerProperty(beanName, "hostname-for-clients"),
 				resolveProperty(cacheServerProperty("hostname-for-clients"),
-					(String) enableCacheServerAttributes.get("hostnameForClients"))));
+					enableCacheServerAttributes.getString("hostnameForClients"))));
 
 		builder.addPropertyValue("loadPollInterval",
 			resolveProperty(namedCacheServerProperty(beanName, "load-poll-interval"),
 				resolveProperty(cacheServerProperty("load-poll-interval"),
-					(Long) enableCacheServerAttributes.get("loadPollInterval"))));
+					enableCacheServerAttributes.<Long>getNumber("loadPollInterval"))));
 
 		builder.addPropertyValue("maxConnections",
 			resolveProperty(namedCacheServerProperty(beanName, "max-connections"),
 				resolveProperty(cacheServerProperty("max-connections"),
-					(Integer) enableCacheServerAttributes.get("maxConnections"))));
+					enableCacheServerAttributes.<Integer>getNumber("maxConnections"))));
 
 		builder.addPropertyValue("maxMessageCount",
 			resolveProperty(namedCacheServerProperty(beanName, "max-message-count"),
 				resolveProperty(cacheServerProperty("max-message-count"),
-					(Integer) enableCacheServerAttributes.get("maxMessageCount"))));
+					enableCacheServerAttributes.<Integer>getNumber("maxMessageCount"))));
 
 		builder.addPropertyValue("maxThreads",
 			resolveProperty(namedCacheServerProperty(beanName, "max-threads"),
 				resolveProperty(cacheServerProperty("max-threads"),
-					(Integer) enableCacheServerAttributes.get("maxThreads"))));
+					enableCacheServerAttributes.<Integer>getNumber("maxThreads"))));
 
 		builder.addPropertyValue("maxTimeBetweenPings",
 			resolveProperty(namedCacheServerProperty(beanName, "max-time-between-pings"),
 				resolveProperty(cacheServerProperty("max-time-between-pings"),
-					(Integer) enableCacheServerAttributes.get("maxTimeBetweenPings"))));
+					enableCacheServerAttributes.<Integer>getNumber("maxTimeBetweenPings"))));
 
 		builder.addPropertyValue("messageTimeToLive",
 			resolveProperty(namedCacheServerProperty(beanName, "message-time-to-live"),
 				resolveProperty(cacheServerProperty("message-time-to-live"),
-					(Integer) enableCacheServerAttributes.get("messageTimeToLive"))));
+					enableCacheServerAttributes.<Integer>getNumber("messageTimeToLive"))));
 
 		builder.addPropertyValue("port",
 			resolveProperty(namedCacheServerProperty(beanName, "port"),
 				resolveProperty(cacheServerProperty("port"),
-					(Integer) enableCacheServerAttributes.get("port"))));
+					enableCacheServerAttributes.<Integer>getNumber("port"))));
 
 		builder.addPropertyValue("socketBufferSize",
 			resolveProperty(namedCacheServerProperty(beanName, "socket-buffer-size"),
 				resolveProperty(cacheServerProperty("socket-buffer-size"),
-					(Integer) enableCacheServerAttributes.get("socketBufferSize"))));
+					enableCacheServerAttributes.<Integer>getNumber("socketBufferSize"))));
 
 		builder.addPropertyValue("subscriptionCapacity",
 			resolveProperty(namedCacheServerProperty(beanName, "subscription-capacity"),
 				resolveProperty(cacheServerProperty("subscription-capacity"),
-					(Integer) enableCacheServerAttributes.get("subscriptionCapacity"))));
+					enableCacheServerAttributes.<Integer>getNumber("subscriptionCapacity"))));
 
 		builder.addPropertyValue("subscriptionDiskStore",
 			resolveProperty(namedCacheServerProperty(beanName, "subscription-disk-store-name"),
 				resolveProperty(cacheServerProperty("subscription-disk-store-name"),
-					(String) enableCacheServerAttributes.get("subscriptionDiskStoreName"))));
+					enableCacheServerAttributes.getString("subscriptionDiskStoreName"))));
 
 		builder.addPropertyValue("subscriptionEvictionPolicy",
 			resolveProperty(namedCacheServerProperty(beanName, "subscription-eviction-policy"),
 				SubscriptionEvictionPolicy.class, resolveProperty(cacheServerProperty("subscription-eviction-policy"),
-					SubscriptionEvictionPolicy.class, (SubscriptionEvictionPolicy) enableCacheServerAttributes.get("subscriptionEvictionPolicy"))));
+					SubscriptionEvictionPolicy.class, enableCacheServerAttributes.getEnum("subscriptionEvictionPolicy"))));
 
 		builder.addPropertyValue("tcpNoDelay",
 			resolveProperty(namedCacheServerProperty(beanName, "tcp-no-delay"),
 				resolveProperty(cacheServerProperty("tcp-no-delay"),
-					(Boolean) enableCacheServerAttributes.get("tcpNoDelay"))));
+					enableCacheServerAttributes.getBoolean("tcpNoDelay"))));
 	}
 
 	private List<CacheServerConfigurer> resolveCacheServerConfigurers() {
@@ -194,8 +193,10 @@ public class AddCacheServerConfiguration extends AbstractAnnotationConfigSupport
 			BeanDefinitionRegistry registry) {
 
 		if (StringUtils.hasText(beanName)) {
-			BeanDefinitionReaderUtils.registerBeanDefinition(
-				newBeanDefinitionHolder(beanDefinition, beanName), registry);
+
+			BeanDefinitionHolder beanDefinitionHolder = newBeanDefinitionHolder(beanDefinition, beanName);
+
+			BeanDefinitionReaderUtils.registerBeanDefinition(beanDefinitionHolder, registry);
 
 			return beanName;
 		}

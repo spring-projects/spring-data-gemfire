@@ -99,10 +99,9 @@ public class DiskStoreConfiguration extends AbstractAnnotationConfigSupport
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 
-		if (importingClassMetadata.hasAnnotation(getAnnotationTypeName())) {
+		if (isAnnotationPresent(importingClassMetadata)) {
 
-			AnnotationAttributes enableDiskStoreAttributes =
-				AnnotationAttributes.fromMap(importingClassMetadata.getAnnotationAttributes(getAnnotationTypeName()));
+			AnnotationAttributes enableDiskStoreAttributes = getAnnotationAttributes(importingClassMetadata);
 
 			registerDiskStoreBeanDefinition(enableDiskStoreAttributes, registry);
 		}
@@ -332,7 +331,8 @@ public class DiskStoreConfiguration extends AbstractAnnotationConfigSupport
 	private <T> BeanDefinitionBuilder setPropertyValueIfNotDefault(BeanDefinitionBuilder beanDefinitionBuilder,
 			String propertyName, T value, T defaultValue) {
 
-		return (value != null && !value.equals(defaultValue) ?
-			beanDefinitionBuilder.addPropertyValue(propertyName, value) : beanDefinitionBuilder);
+		return value != null && !value.equals(defaultValue)
+			? beanDefinitionBuilder.addPropertyValue(propertyName, value)
+			: beanDefinitionBuilder;
 	}
 }

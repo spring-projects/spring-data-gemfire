@@ -14,7 +14,6 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.springframework.data.gemfire.config.annotation.EnableExpiration.ExpirationPolicy;
@@ -33,6 +32,7 @@ import java.util.function.Supplier;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Bean;
@@ -138,7 +138,6 @@ public class ExpirationConfiguration extends AbstractAnnotationConfigSupport imp
 		return new BeanPostProcessor() {
 
 			@Override
-			@SuppressWarnings("unchecked")
 			public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 				return isRegionFactoryBean(bean) ? getExpirationPolicyConfigurer().configure(bean) : bean;
 			}

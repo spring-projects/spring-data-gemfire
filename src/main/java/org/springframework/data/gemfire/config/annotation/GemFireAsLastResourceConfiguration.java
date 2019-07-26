@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
@@ -23,7 +22,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.apache.geode.cache.GemFireCache;
-import org.aspectj.lang.annotation.Aspect;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,6 +32,8 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.config.annotation.support.GemFireAsLastResourceConnectionAcquiringAspect;
 import org.springframework.data.gemfire.config.annotation.support.GemFireAsLastResourceConnectionClosingAspect;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import org.aspectj.lang.annotation.Aspect;
 
 /**
  * The {@link GemFireAsLastResourceConfiguration} class is a Spring {@link Configuration @Configuration}
@@ -58,14 +59,11 @@ public class GemFireAsLastResourceConfiguration implements ImportAware {
 
 	private Integer enableTransactionManagementOrder;
 
-	/* (non-Javadoc) */
 	@Override
 	public void setImportMetadata(AnnotationMetadata importMetadata) {
 		this.enableTransactionManagementOrder = resolveEnableTransactionManagementOrder(importMetadata);
 	}
 
-	/* (non-Javadoc) */
-	@SuppressWarnings("all")
 	protected int resolveEnableTransactionManagementOrder(AnnotationMetadata importMetadata) {
 
 		AnnotationAttributes enableTransactionManagementAttributes =
@@ -81,8 +79,6 @@ public class GemFireAsLastResourceConfiguration implements ImportAware {
 				EnableTransactionManagement.class.getSimpleName(), String.valueOf(order)));
 	}
 
-	/* (non-Javadoc) */
-	@SuppressWarnings("all")
 	protected AnnotationAttributes resolveEnableTransactionManagementAttributes(
 			AnnotationMetadata importMetadata) {
 
@@ -98,7 +94,6 @@ public class GemFireAsLastResourceConfiguration implements ImportAware {
 				EnableTransactionManagement.class.getSimpleName()));
 	}
 
-	/* (non-Javadoc) */
 	protected Integer getEnableTransactionManagementOrder() {
 
 		return Optional.ofNullable(this.enableTransactionManagementOrder)
@@ -109,14 +104,15 @@ public class GemFireAsLastResourceConfiguration implements ImportAware {
 				Configuration.class.getSimpleName(), EnableGemFireAsLastResource.class.getSimpleName()));
 	}
 
-	/* (non-Javadoc) */
 	@Bean
 	public Object gemfireCachePostProcessor(@Autowired(required = false) GemFireCache gemfireCache) {
-		Optional.ofNullable(gemfireCache).ifPresent(cache -> cache.setCopyOnRead(true));
+
+		Optional.ofNullable(gemfireCache)
+			.ifPresent(cache -> cache.setCopyOnRead(true));
+
 		return null;
 	}
 
-	/* (non-Javadoc) */
 	@Bean
 	public GemFireAsLastResourceConnectionAcquiringAspect gemfireJcaConnectionAcquiringAspect() {
 
@@ -130,7 +126,6 @@ public class GemFireAsLastResourceConfiguration implements ImportAware {
 		return connectionAcquiringAspect;
 	}
 
-	/* (non-Javadoc) */
 	@Bean
 	public GemFireAsLastResourceConnectionClosingAspect gemfireJcaConnectionClosingAspect() {
 
