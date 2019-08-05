@@ -3,6 +3,14 @@ SPRING DATA GEMFIRE CHANGELOG
 https://www.springsource.org/spring-gemfire
 ===========================================
 
+Changes in version 1.9.23.RELEASE (2019-08-05)
+----------------------------------------------
+* SGF-864 - Fix unreliable tests.
+* SGF-847 - Introduce Jenkins CI.
+* SGF-843 - Release 1.9.23 (Ingalls SR23).
+* SGF-827 - URL Cleanup.
+
+
 Changes in version 2.2.0.RC1 (2019-06-14)
 -----------------------------------------
 * SGF-853 - Create security policy readme.
