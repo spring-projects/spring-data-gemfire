@@ -3,6 +3,19 @@ SPRING DATA GEMFIRE CHANGELOG
 https://www.springsource.org/spring-gemfire
 ===========================================
 
+Changes in version 2.1.10.RELEASE (2019-08-05)
+----------------------------------------------
+* SGF-865 - Refactor Gateway Sender/Receiver support and remove unnecessary configuration validations.
+* SGF-864 - Fix unreliable tests.
+* SGF-863 - Add support in the XML Namespace for Region to AsyncEventQueue and GatewaySender associations by ID.
+* SGF-862 - Upgrade to Pivotal GemFire 9.5.4.
+* SGF-859 - Tune the build log output.
+* SGF-858 - Replace all cache.xml document schema declarations referring to the DTD to use the XSD.
+* SGF-857 - Tune build log output.
+* SGF-854 - Release 2.1.10 (Lovelace SR10).
+* SGF-847 - Introduce Jenkins CI.
+
+
 Changes in version 1.9.23.RELEASE (2019-08-05)
 ----------------------------------------------
 * SGF-864 - Fix unreliable tests.
