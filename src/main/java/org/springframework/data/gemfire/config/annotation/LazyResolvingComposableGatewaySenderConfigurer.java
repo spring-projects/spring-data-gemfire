@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import org.springframework.beans.factory.BeanFactory;
@@ -31,8 +30,8 @@ import org.springframework.lang.Nullable;
  * @since 2.2.0
  */
 public class LazyResolvingComposableGatewaySenderConfigurer
-	extends AbstractLazyResolvingComposableConfigurer<GatewaySenderFactoryBean, GatewaySenderConfigurer>
-	implements GatewaySenderConfigurer {
+		extends AbstractLazyResolvingComposableConfigurer<GatewaySenderFactoryBean, GatewaySenderConfigurer>
+		implements GatewaySenderConfigurer {
 
 	public static LazyResolvingComposableGatewaySenderConfigurer create() {
 		return create(null);

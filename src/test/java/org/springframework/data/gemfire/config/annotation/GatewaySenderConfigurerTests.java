@@ -1,3 +1,18 @@
+/*
+ * Copyright 2010-2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,9 +31,10 @@ import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
+
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -48,17 +64,13 @@ public class GatewaySenderConfigurerTests {
 
 	private ConfigurableApplicationContext applicationContext;
 
-	@Before
-	public void setup() {
-	}
-
 	@After
 	public void shutdown() {
 		Optional.ofNullable(this.applicationContext).ifPresent(ConfigurableApplicationContext::close);
 	}
 
 	private ConfigurableApplicationContext newApplicationContext(PropertySource<?> testPropertySource,
-		Class<?>... annotatedClasses) {
+			Class<?>... annotatedClasses) {
 
 		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
 
@@ -75,16 +87,16 @@ public class GatewaySenderConfigurerTests {
 
 	@Test
 	public void annotationConfigurationOfMultipleGatewaySendersWithConfigurersAndProperties() {
+
 		MockPropertySource testPropertySource = new MockPropertySource();
+
 		testPropertySource.setProperty("spring.data.gemfire.gateway.sender.alert-threshold", 1234);
 		testPropertySource.setProperty("spring.data.gemfire.gateway.sender.TestGatewaySender.batch-size", 1002);
 		testPropertySource.setProperty("spring.data.gemfire.gateway.sender.TestGatewaySender2.batch-size", 1002);
 		testPropertySource.setProperty("spring.data.gemfire.gateway.sender.batch-time-interval", 2000);
 		testPropertySource.setProperty("spring.data.gemfire.gateway.sender.maximum-queue-memory", 400);
-		testPropertySource
-			.setProperty("spring.data.gemfire.gateway.sender.TestGatewaySender.socket-read-timeout", 4000);
-		testPropertySource
-			.setProperty("spring.data.gemfire.gateway.sender.TestGatewaySender2.socket-read-timeout", 4000);
+		testPropertySource.setProperty("spring.data.gemfire.gateway.sender.TestGatewaySender.socket-read-timeout", 4000);
+		testPropertySource.setProperty("spring.data.gemfire.gateway.sender.TestGatewaySender2.socket-read-timeout", 4000);
 		testPropertySource.setProperty("spring.data.gemfire.gateway.sender.socket-buffer-size", 16384);
 
 		this.applicationContext = newApplicationContext(testPropertySource,
@@ -93,12 +105,15 @@ public class GatewaySenderConfigurerTests {
 
 		Map<String, GatewaySender> beansOfType = this.applicationContext.getBeansOfType(GatewaySender.class);
 
-		assertThat(beansOfType.size()).isEqualTo(2);
 		String[] senders = new String[] { "TestGatewaySender", "TestGatewaySender2" };
-		assertThat(beansOfType.keySet().toArray()).containsExactly(senders);
+
+		assertThat(beansOfType).hasSize(2);
+		assertThat(beansOfType.keySet()).containsExactlyInAnyOrder(senders);
 
 		for (String sender : senders) {
+
 			GatewaySender gatewaySender = this.applicationContext.getBean(sender, GatewaySender.class);
+
 			assertThat(gatewaySender.isManualStart()).isEqualTo(false);
 			assertThat(gatewaySender.getRemoteDSId()).isEqualTo(2);
 			assertThat(gatewaySender.getId()).isEqualTo(sender);
@@ -117,8 +132,8 @@ public class GatewaySenderConfigurerTests {
 
 			assertThat(gatewaySender.getGatewayTransportFilters().size()).isEqualTo(0);
 
-			Region region1 = (Region) this.applicationContext.getBean("Region1");
-			Region region2 = (Region) this.applicationContext.getBean("Region2");
+			Region<?, ?> region1 = this.applicationContext.getBean("Region1", Region.class);
+			Region<?, ?> region2 = this.applicationContext.getBean("Region2", Region.class);
 
 			assertThat(region1.getAttributes().getGatewaySenderIds())
 				.containsExactlyInAnyOrder("TestGatewaySender", "TestGatewaySender2");
@@ -165,6 +180,29 @@ public class GatewaySenderConfigurerTests {
 		}
 	}
 
+	private static class TestGatewayEventFilter implements GatewayEventFilter {
+
+		private String name;
+
+		public TestGatewayEventFilter(String name) {
+			this.name = name;
+		}
+
+		@Override
+		public boolean beforeEnqueue(GatewayQueueEvent gatewayQueueEvent) {
+			return false;
+		}
+
+		@Override
+		public boolean beforeTransmit(GatewayQueueEvent gatewayQueueEvent) {
+			return false;
+		}
+
+		@Override
+		public void afterAcknowledgement(GatewayQueueEvent gatewayQueueEvent) { }
+
+	}
+
 	private static class TestGatewayEventSubstitutionFilter implements GatewayEventSubstitutionFilter {
 
 		private String name;
@@ -173,13 +211,14 @@ public class GatewaySenderConfigurerTests {
 			this.name = name;
 		}
 
-		@Override public Object getSubstituteValue(EntryEvent entryEvent) {
+		@Override
+		public Object getSubstituteValue(EntryEvent entryEvent) {
 			return null;
 		}
 
-		@Override public void close() {
+		@Override
+		public void close() { }
 
-		}
 	}
 
 	private static class TestGatewayTransportFilter implements GatewayTransportFilter {
@@ -209,27 +248,6 @@ public class GatewaySenderConfigurerTests {
 		}
 	}
 
-	private static class TestGatewayEventFilter implements GatewayEventFilter {
-
-		private String name;
-
-		public TestGatewayEventFilter(String name) {
-			this.name = name;
-		}
-
-		@Override public boolean beforeEnqueue(GatewayQueueEvent gatewayQueueEvent) {
-			return false;
-		}
-
-		@Override public boolean beforeTransmit(GatewayQueueEvent gatewayQueueEvent) {
-			return false;
-		}
-
-		@Override public void afterAcknowledgement(GatewayQueueEvent gatewayQueueEvent) {
-
-		}
-	}
-
 	@Configuration
 	@EnableGatewaySenders(gatewaySenders = {
 		@EnableGatewaySender(name = "TestGatewaySender", regions = "Region1"),
@@ -239,12 +257,13 @@ public class GatewaySenderConfigurerTests {
 
 		@Bean
 		GatewaySenderConfigurer gatewaySenderConfigurer() {
-			return ((beanName, gatewaySenderFactoryBean) -> {
+
+			return (beanName, gatewaySenderFactoryBean) -> {
 				gatewaySenderFactoryBean.setRemoteDistributedSystemId(2);
 				gatewaySenderFactoryBean.setDispatcherThreads(22);
 				gatewaySenderFactoryBean.setParallel(true);
 				gatewaySenderFactoryBean.setOrderPolicy(GatewaySender.OrderPolicy.PARTITION);
-			});
+			};
 		}
 	}
 }

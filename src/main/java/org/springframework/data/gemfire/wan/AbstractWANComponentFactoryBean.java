@@ -17,8 +17,10 @@ package org.springframework.data.gemfire.wan;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.GemFireCache;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +33,7 @@ import org.springframework.util.StringUtils;
  *
  * @author David Turanski
  * @author John Blum
+ * @author Udo Kohlmeyer
  * @see org.apache.geode.cache.Cache
  * @see org.springframework.beans.factory.DisposableBean
  * @see org.springframework.beans.factory.FactoryBean
@@ -50,8 +53,7 @@ public abstract class AbstractWANComponentFactoryBean<T> extends AbstractFactory
 	private String beanName;
 	private String name;
 
-	protected AbstractWANComponentFactoryBean() {
-	}
+	protected AbstractWANComponentFactoryBean() { }
 
 	protected AbstractWANComponentFactoryBean(GemFireCache cache) {
 		this.cache = (Cache) cache;
@@ -62,16 +64,16 @@ public abstract class AbstractWANComponentFactoryBean<T> extends AbstractFactory
 		this.beanName = beanName;
 	}
 
+	public void setCache(Cache cache) {
+		this.cache = cache;
+	}
+
 	public void setFactory(Object factory) {
 		this.factory = factory;
 	}
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	public void setCache(Cache cache) {
-		this.cache = cache;
 	}
 
 	public String getName() {

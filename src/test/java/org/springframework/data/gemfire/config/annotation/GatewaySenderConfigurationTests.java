@@ -1,3 +1,18 @@
+/*
+ * Copyright 2010-2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,9 +34,10 @@ import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
+
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -49,10 +65,6 @@ public class GatewaySenderConfigurationTests {
 
 	private ConfigurableApplicationContext applicationContext;
 
-	@Before
-	public void setup() {
-	}
-
 	@After
 	public void shutdown() {
 		Optional.ofNullable(this.applicationContext).ifPresent(ConfigurableApplicationContext::close);
@@ -60,20 +72,24 @@ public class GatewaySenderConfigurationTests {
 
 	@Test
 	public void annotationConfigurationOfMultipleGatewaySendersWithDefaultsFromParent() {
+
 		this.applicationContext = newApplicationContext(BaseGatewaySenderTestConfiguration.class,
 			TestConfigurationOfMultipleGatewaySenderAnnotationsButWithDefaultsFromParent.class);
 
-		TestGatewaySenderConfigurer gatewaySenderConfigurer = this.applicationContext
-			.getBean(TestGatewaySenderConfigurer.class);
+		TestGatewaySenderConfigurer gatewaySenderConfigurer =
+			this.applicationContext.getBean(TestGatewaySenderConfigurer.class);
 
 		Map<String, GatewaySender> beansOfType = this.applicationContext.getBeansOfType(GatewaySender.class);
 
-		assertThat(beansOfType.size()).isEqualTo(2);
 		String[] senders = new String[] { "TestGatewaySender", "TestGatewaySender2" };
-		assertThat(beansOfType.keySet().toArray()).containsExactly(senders);
+
+		assertThat(beansOfType).hasSize(2);
+		assertThat(beansOfType.keySet()).containsExactlyInAnyOrder(senders);
 
 		for (String sender : senders) {
+
 			GatewaySender gatewaySender = this.applicationContext.getBean(sender, GatewaySender.class);
+
 			assertThat(gatewaySender.isManualStart()).isEqualTo(true);
 			assertThat(gatewaySender.getRemoteDSId()).isEqualTo(2);
 			assertThat(gatewaySender.getId()).isEqualTo(sender);
@@ -99,8 +115,8 @@ public class GatewaySenderConfigurationTests {
 			assertThat(gatewaySenderConfigurer.beanNames.get(gatewaySender.getId()).toArray())
 				.isEqualTo(new String[] { "transportBean2", "transportBean1" });
 
-			Region region1 = (Region) this.applicationContext.getBean("Region1");
-			Region region2 = (Region) this.applicationContext.getBean("Region2");
+			Region<?, ?> region1 = this.applicationContext.getBean("Region1", Region.class);
+			Region<?, ?> region2 = this.applicationContext.getBean("Region2", Region.class);
 
 			assertThat(region1.getAttributes().getGatewaySenderIds())
 				.containsExactlyInAnyOrder("TestGatewaySender", "TestGatewaySender2");
@@ -111,22 +127,26 @@ public class GatewaySenderConfigurationTests {
 
 	@Test
 	public void annotationConfiguredMultipleGatewaySenders() {
+
 		this.applicationContext = newApplicationContext(BaseGatewaySenderTestConfiguration.class,
 			TestConfigurationWithMultipleGatewaySenderAnnotations.class);
+
 		Map<String, GatewaySender> beansOfType = this.applicationContext.getBeansOfType(GatewaySender.class);
 
 		assertThat(beansOfType.keySet().toArray()).containsExactlyInAnyOrder("TestGatewaySender", "TestGatewaySender2");
-
 	}
 
 	@Test
 	public void annotationConfiguredGatewaySender() {
+
 		this.applicationContext = newApplicationContext(BaseGatewaySenderTestConfiguration.class,
 			TestConfigurationWithAnnotations.class);
-		TestGatewaySenderConfigurer gatewaySenderConfigurer = this.applicationContext
-			.getBean(TestGatewaySenderConfigurer.class);
+
+		TestGatewaySenderConfigurer gatewaySenderConfigurer =
+			this.applicationContext.getBean(TestGatewaySenderConfigurer.class);
 
 		GatewaySender gatewaySender = this.applicationContext.getBean("TestGatewaySender", GatewaySender.class);
+
 		assertThat(gatewaySender.isManualStart()).isEqualTo(true);
 		assertThat(gatewaySender.getRemoteDSId()).isEqualTo(2);
 		assertThat(gatewaySender.getId()).isEqualTo("TestGatewaySender");
@@ -151,8 +171,8 @@ public class GatewaySenderConfigurationTests {
 		assertThat(gatewaySenderConfigurer.beanNames.get(gatewaySender.getId()).toArray())
 			.isEqualTo(new String[] { "transportBean2", "transportBean1" });
 
-		Region region1 = (Region) this.applicationContext.getBean("Region1");
-		Region region2 = (Region) this.applicationContext.getBean("Region2");
+		Region<?, ?> region1 = this.applicationContext.getBean("Region1", Region.class);
+		Region<?, ?> region2 = this.applicationContext.getBean("Region2", Region.class);
 
 		assertThat(region1.getAttributes().getGatewaySenderIds()).containsExactlyInAnyOrder("TestGatewaySender");
 		assertThat(region2.getAttributes().getGatewaySenderIds()).containsExactlyInAnyOrder("TestGatewaySender");
@@ -160,20 +180,24 @@ public class GatewaySenderConfigurationTests {
 
 	@Test
 	public void annotationConfigurationOfMultipleGatewaySendersWithOverrides() {
+
 		this.applicationContext = newApplicationContext(BaseGatewaySenderTestConfiguration.class,
 			TestConfigurationOfMultipleGatewaySenderAnnotationsWithOverrides.class);
 
-		TestGatewaySenderConfigurer gatewaySenderConfigurer = this.applicationContext
-			.getBean("gatewayConfigurer", TestGatewaySenderConfigurer.class);
+		TestGatewaySenderConfigurer gatewaySenderConfigurer =
+			this.applicationContext.getBean("gatewayConfigurer", TestGatewaySenderConfigurer.class);
 
 		Map<String, GatewaySender> beansOfType = this.applicationContext.getBeansOfType(GatewaySender.class);
 
-		assertThat(beansOfType.size()).isEqualTo(2);
 		String[] senders = new String[] { "TestGatewaySender", "TestGatewaySender2" };
-		assertThat(beansOfType.keySet().toArray()).containsExactly(senders);
+
+		assertThat(beansOfType).hasSize(2);
+		assertThat(beansOfType.keySet()).containsExactlyInAnyOrder(senders);
 
 		for (String sender : senders) {
+
 			GatewaySender gatewaySender = this.applicationContext.getBean(sender, GatewaySender.class);
+
 			assertThat(gatewaySender.isManualStart()).isEqualTo(true);
 			assertThat(gatewaySender.getRemoteDSId()).isEqualTo(2);
 			assertThat(gatewaySender.getId()).isEqualTo(sender);
@@ -191,18 +215,21 @@ public class GatewaySenderConfigurationTests {
 			assertThat(gatewaySender.getSocketReadTimeout()).isEqualTo(4000);
 			assertThat(gatewaySender.getSocketBufferSize()).isEqualTo(16384);
 		}
+
 		GatewaySender gatewaySender = this.applicationContext.getBean("TestGatewaySender", GatewaySender.class);
+
 		assertThat(gatewaySender.getGatewayTransportFilters().size()).isEqualTo(1);
 		assertThat(((GatewaySenderConfigurationTests.TestGatewayTransportFilter) gatewaySender
 			.getGatewayTransportFilters().get(0)).name).isEqualTo("transportBean1");
 
 		gatewaySender = this.applicationContext.getBean("TestGatewaySender2", GatewaySender.class);
+
 		assertThat(gatewaySender.getGatewayTransportFilters().size()).isEqualTo(2);
 		assertThat(gatewaySenderConfigurer.beanNames.get(gatewaySender.getId()).toArray())
 			.isEqualTo(new String[] { "transportBean2", "transportBean1" });
 
-		Region region1 = (Region) this.applicationContext.getBean("Region1");
-		Region region2 = (Region) this.applicationContext.getBean("Region2");
+		Region<?, ?> region1 = this.applicationContext.getBean("Region1", Region.class);
+		Region<?, ?> region2 = this.applicationContext.getBean("Region2", Region.class);
 
 		assertThat(region1.getAttributes().getGatewaySenderIds()).containsExactlyInAnyOrder("TestGatewaySender2");
 		assertThat(region2.getAttributes().getGatewaySenderIds())
@@ -211,8 +238,8 @@ public class GatewaySenderConfigurationTests {
 
 	private ConfigurableApplicationContext newApplicationContext(Class<?>... annotatedClasses) {
 
-		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(
-			annotatedClasses);
+		AnnotationConfigApplicationContext applicationContext =
+			new AnnotationConfigApplicationContext(annotatedClasses);
 
 		applicationContext.registerShutdownHook();
 
@@ -266,10 +293,7 @@ public class GatewaySenderConfigurationTests {
 		eventFilters = "SomeEventFilter", batchTimeInterval = 2000, dispatcherThreads = 22, maximumQueueMemory = 400, socketBufferSize = 16384,
 		socketReadTimeout = 4000, regions = { "Region1", "Region2" },
 		transportFilters = { "transportBean2", "transportBean1" })
-	static class TestConfigurationOfMultipleGatewaySenderAnnotationsButWithDefaultsFromParent {
-
-
-	}
+	static class TestConfigurationOfMultipleGatewaySenderAnnotationsButWithDefaultsFromParent { }
 
 	@EnableGatewaySenders(gatewaySenders = {
 		@EnableGatewaySender(name = "TestGatewaySender", transportFilters = "transportBean1", regions = "Region2"),
@@ -281,9 +305,7 @@ public class GatewaySenderConfigurationTests {
 		eventFilters = "SomeEventFilter", batchTimeInterval = 2000, dispatcherThreads = 22, maximumQueueMemory = 400, socketBufferSize = 16384,
 		socketReadTimeout = 4000, regions = { "Region1", "Region2" },
 		transportFilters = { "transportBean2", "transportBean1" })
-	static class TestConfigurationOfMultipleGatewaySenderAnnotationsWithOverrides {
-
-	}
+	static class TestConfigurationOfMultipleGatewaySenderAnnotationsWithOverrides { }
 
 	private static class TestGatewaySenderConfigurer implements GatewaySenderConfigurer {
 
@@ -297,6 +319,29 @@ public class GatewaySenderConfigurationTests {
 		}
 	}
 
+	private static class TestGatewayEventFilter implements GatewayEventFilter {
+
+		private String name;
+
+		public TestGatewayEventFilter(String name) {
+			this.name = name;
+		}
+
+		@Override
+		public boolean beforeEnqueue(GatewayQueueEvent gatewayQueueEvent) {
+			return false;
+		}
+
+		@Override
+		public boolean beforeTransmit(GatewayQueueEvent gatewayQueueEvent) {
+			return false;
+		}
+
+		@Override
+		public void afterAcknowledgement(GatewayQueueEvent gatewayQueueEvent) { }
+
+	}
+
 	private static class TestGatewayEventSubstitutionFilter implements GatewayEventSubstitutionFilter {
 
 		private String name;
@@ -305,13 +350,14 @@ public class GatewaySenderConfigurationTests {
 			this.name = name;
 		}
 
-		@Override public Object getSubstituteValue(EntryEvent entryEvent) {
+		@Override
+		public Object getSubstituteValue(EntryEvent entryEvent) {
 			return null;
 		}
 
-		@Override public void close() {
+		@Override
+		public void close() { }
 
-		}
 	}
 
 	private static class TestGatewayTransportFilter implements GatewayTransportFilter {
@@ -332,33 +378,14 @@ public class GatewaySenderConfigurationTests {
 			return null;
 		}
 
-		@Override public int hashCode() {
+		@Override
+		public int hashCode() {
 			return name.hashCode();
 		}
 
-		@Override public boolean equals(Object obj) {
+		@Override
+		public boolean equals(Object obj) {
 			return this.name.equals(((TestGatewayTransportFilter) obj).name);
-		}
-	}
-
-	private static class TestGatewayEventFilter implements GatewayEventFilter {
-
-		private String name;
-
-		public TestGatewayEventFilter(String name) {
-			this.name = name;
-		}
-
-		@Override public boolean beforeEnqueue(GatewayQueueEvent gatewayQueueEvent) {
-			return false;
-		}
-
-		@Override public boolean beforeTransmit(GatewayQueueEvent gatewayQueueEvent) {
-			return false;
-		}
-
-		@Override public void afterAcknowledgement(GatewayQueueEvent gatewayQueueEvent) {
-
 		}
 	}
 

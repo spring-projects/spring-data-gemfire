@@ -10,7 +10,6 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-
 package org.springframework.data.gemfire.util;
 
 import java.lang.reflect.Array;
@@ -123,6 +122,17 @@ public abstract class ArrayUtils {
 	 */
 	public static boolean isEmpty(Object[] array) {
 		return length(array) == 0;
+	}
+
+	/**
+	 * Determines whether the given array is empty or not.
+	 *
+	 * @param array the array to evaluate for emptiness.
+	 * @return a boolean value indicating whether the given array is empty.
+	 * @see #isEmpty(Object[])
+	 */
+	public static boolean isNotEmpty(Object[] array) {
+		return !isEmpty(array);
 	}
 
 	/**

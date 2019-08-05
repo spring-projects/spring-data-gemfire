@@ -13,24 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.wan;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.geode.cache.util.Gateway;
+import org.apache.geode.cache.wan.GatewaySender;
+
 import org.junit.Test;
 
 /**
- * The OrderPolicyTypeTest class is a test suite of test cases testing the contract and functionality
- * of the OrderPolicyType enum.
+ * Unit Tests for {@link OrderPolicyType}.
  *
  * @author John Blum
  * @see org.junit.Test
+ * @see org.apache.geode.cache.wan.GatewaySender
+ * @see org.apache.geode.cache.wan.GatewaySender.OrderPolicy
  * @see org.springframework.data.gemfire.wan.OrderPolicyType
- * @see org.apache.geode.cache.util.Gateway
  * @since 1.7.0
  */
 @SuppressWarnings("deprecation")
@@ -38,44 +36,49 @@ public class OrderPolicyTypeTest {
 
 	@Test
 	public void testStaticGetOrderPolicy() {
-		assertEquals(Gateway.OrderPolicy.KEY, OrderPolicyType.getOrderPolicy(OrderPolicyType.KEY));
-		assertEquals(Gateway.OrderPolicy.PARTITION, OrderPolicyType.getOrderPolicy(OrderPolicyType.PARTITION));
+
+		assertThat(OrderPolicyType.getOrderPolicy(OrderPolicyType.KEY)).isEqualTo(GatewaySender.OrderPolicy.KEY);
+		assertThat(OrderPolicyType.getOrderPolicy(OrderPolicyType.PARTITION)).isEqualTo(GatewaySender.OrderPolicy.PARTITION);
 	}
 
 	@Test
+	@SuppressWarnings("all")
 	public void testStaticGetOrderPolicyWithNull() {
-		assertNull(OrderPolicyType.getOrderPolicy(null));
+		assertThat(OrderPolicyType.getOrderPolicy(null)).isNull();
 	}
 
 	@Test
 	public void testValueOfGemFireOrderPolicies() {
-		for (Gateway.OrderPolicy orderPolicy : Gateway.OrderPolicy.values()) {
+
+		for (GatewaySender.OrderPolicy orderPolicy : GatewaySender.OrderPolicy.values()) {
+
 			OrderPolicyType orderPolicyType = OrderPolicyType.valueOf(orderPolicy);
 
-			assertNotNull(orderPolicyType);
-			assertEquals(orderPolicy, orderPolicyType.getOrderPolicy());
+			assertThat(orderPolicyType).isNotNull();
+			assertThat(orderPolicyType.getOrderPolicy()).isEqualTo(orderPolicy);
 		}
 	}
 
 	@Test
 	public void testValueOfNullGemFireOrderPolicy() {
-		assertNull(OrderPolicyType.valueOf((Gateway.OrderPolicy) null));
+		assertThat(OrderPolicyType.valueOf((GatewaySender.OrderPolicy) null)).isNull();
 	}
 
 	@Test
 	public void testValueOfIgnoreCase() {
-		assertEquals(OrderPolicyType.KEY, OrderPolicyType.valueOfIgnoreCase("KEY"));
-		assertEquals(OrderPolicyType.PARTITION, OrderPolicyType.valueOfIgnoreCase("Partition"));
-		assertEquals(OrderPolicyType.PARTITION, OrderPolicyType.valueOfIgnoreCase("PARTition"));
-		assertEquals(OrderPolicyType.PARTITION, OrderPolicyType.valueOfIgnoreCase("PartItIon"));
-		assertEquals(OrderPolicyType.THREAD, OrderPolicyType.valueOfIgnoreCase("thread"));
+
+		assertThat(OrderPolicyType.valueOfIgnoreCase("KEY")).isEqualTo(OrderPolicyType.KEY);
+		assertThat(OrderPolicyType.valueOfIgnoreCase("Partition")).isEqualTo(OrderPolicyType.PARTITION);
+		assertThat(OrderPolicyType.valueOfIgnoreCase("PARTition")).isEqualTo(OrderPolicyType.PARTITION);
+		assertThat(OrderPolicyType.valueOfIgnoreCase("PartItIon")).isEqualTo(OrderPolicyType.PARTITION);
+		assertThat(OrderPolicyType.valueOfIgnoreCase("thread")).isEqualTo(OrderPolicyType.THREAD);
 	}
 
 	@Test
 	public void testValueOfIgnoreCaseWithInvalidValues() {
-		assertNull(OrderPolicyType.valueOfIgnoreCase("KEYZ"));
-		assertNull(OrderPolicyType.valueOfIgnoreCase("Values"));
-		assertNull(OrderPolicyType.valueOfIgnoreCase("invalid"));
-	}
 
+		assertThat(OrderPolicyType.valueOfIgnoreCase("KEYZ")).isNull();
+		assertThat(OrderPolicyType.valueOfIgnoreCase("Values")).isNull();
+		assertThat(OrderPolicyType.valueOfIgnoreCase("invalid")).isNull();
+	}
 }

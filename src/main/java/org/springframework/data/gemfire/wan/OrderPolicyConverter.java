@@ -15,21 +15,24 @@
  */
 package org.springframework.data.gemfire.wan;
 
+import java.beans.PropertyEditor;
+
 import org.apache.geode.cache.wan.GatewaySender;
 
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.gemfire.support.AbstractPropertyEditorConverterSupport;
 
 /**
- * The OrderPolicyConverter class is a Spring Converter and JavaBeans PropertyEditor used to convert a String value
- * into an appropriate Pivotal GemFire Gateway.OrderPolicy enum.
+ * The {@link OrderPolicyConverter} class is a Spring {@link Converter} and JavaBeans {@link PropertyEditor} used to
+ * convert a {@link String} into an appropriate {@link GatewaySender.OrderPolicy} enum.
  *
  * @author John Blum
+ * @see org.apache.geode.cache.wan.GatewaySender.OrderPolicy
  * @see org.springframework.data.gemfire.support.AbstractPropertyEditorConverterSupport
  * @see org.springframework.data.gemfire.wan.OrderPolicyType
- * @see org.apache.geode.cache.util.Gateway.OrderPolicy
  * @since 1.7.0
  */
-@SuppressWarnings({ "deprecation", "unused" })
+@SuppressWarnings("unused")
 public class OrderPolicyConverter extends AbstractPropertyEditorConverterSupport<GatewaySender.OrderPolicy> {
 
 	/**
@@ -44,7 +47,8 @@ public class OrderPolicyConverter extends AbstractPropertyEditorConverterSupport
 	 */
 	@Override
 	public GatewaySender.OrderPolicy convert(String source) {
+
 		return assertConverted(source, OrderPolicyType.getOrderPolicy(OrderPolicyType.valueOfIgnoreCase(source)),
 			GatewaySender.OrderPolicy.class);
-		}
+	}
 }

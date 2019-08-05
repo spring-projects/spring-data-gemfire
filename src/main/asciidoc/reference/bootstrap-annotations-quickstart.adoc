@@ -627,20 +627,21 @@ See {sdg-javadoc}/org/springframework/data/gemfire/listener/annotation/Continuou
 See <<apis:continuous-query>> and <<bootstrap-annotation-config-continuous-queries>> for more details.
 
 [[bootstap-annotations-quickstart-gatewayreceiver]]
-== Configure Gateway Receivers
+== Configure `GatewayReceivers`
 
-The replication of data between different {data-store-name} clusters is an increasingly important fault-tolerance and high availability mechanism.
-{data-store-name} WAN Replication is a mechanism that allows one {data-store-name} cluster to replicate its data to another
-{data-store-name} cluster in a reliable, fault-tolerant manner.
+The replication of data between different {data-store-name} clusters is an increasingly important fault-tolerance
+and high availability mechanism.  {data-store-name} WAN Replication is a mechanism that allows one {data-store-name}
+cluster to replicate its data to another {data-store-name} cluster in a reliable, fault-tolerant manner.
 
 {data-store-name} WAN replication requires two components to be configured:
-* Gateway Receiver - The WAN replication component that receives data from a remote {data-store-name} cluster's Gateway Sender
-* Gateway Senders  - The WAN replication component that sends data to a remote {data-store-name} cluster's Gateway Receiver
 
-To enable a Gateway Receiver the application class needs to be annotated with `@EnableGatewayReceiver` as follows:
+* `GatewayReceiver` - The WAN replication component that receives data from a remote {data-store-name} cluster's `GatewaySender`.
+* `GatewaySender` - The WAN replication component that sends data to a remote {data-store-name} cluster's `GatewayReceiver`.
+
+To enable a `GatewayReceiver`, the application class needs to be annotated with `@EnableGatewayReceiver` as follows:
+
 [source,java]
 ----
-@Configuration
 @CacheServerApplication
 @EnableGatewayReceiver(manualStart = false, startPort = 10000, endPort = 11000, maximumTimeBetweenPings = 1000,
     socketBufferSize = 16384, bindAddress = "localhost",transportFilters = {"transportBean1", "transportBean2"},
@@ -649,17 +650,22 @@ To enable a Gateway Receiver the application class needs to be annotated with `@
       ...
     }
 }
+class MySpringApplication { .. }
 ----
-NOTE: {data-store-name} GatewayReceiver is a server-side feature only and can only be configured on a CacheServer or PeerServer
+
+NOTE: {data-store-name} `GatewayReceiver` is a server-side feature only and can only be configured on a `CacheServer`
+or peer `Cache` node.
 
 See {sdg-javadoc}/org/springframework/data/gemfire/wan/annotation/EnableGatewayReceiver.html[`@EnableGatewayReceiver` Javadoc].
 
 [[bootstap-annotations-quickstart-gatewaysenders]]
+== Configure `GatewaySenders`
 
-To enable Gateway Senders in the application class needs to be annotated with `@EnableGatewaySenders` and `@EnableGatewaySender` as follows:
+To enable `GatewaySender`, the application class needs to be annotated with `@EnableGatewaySenders`
+and `@EnableGatewaySender` as follows:
+
 [source,java]
 ----
-@Configuration
 @CacheServerApplication
 @EnableGatewaySenders(gatewaySenders = {
 		@EnableGatewaySender(name = "GatewaySender", manualStart = true,
@@ -677,16 +683,25 @@ To enable Gateway Senders in the application class needs to be annotated with `@
 			maximumQueueMemory = 400, socketBufferSize = 16384,socketReadTimeout = 4000,
 			regions = { "Region2" })
 }){
-....
+class MySpringApplication { .. }
 }
 ----
-NOTE: {data-store-name} GatewaySender is a server-side feature only and can only be configured on a CacheServer or PeerServer
+NOTE: {data-store-name} `GatewaySender` is a server-side feature only and can only be configured on a `CacheServer`
+or a peer `Cache` node.
 
-In the above example, the application is configured with 2 Regions, `Region1` and `Region2`. In addition 2 GatewaySenders will be configured for service both Regions. `GatewaySender1` will be configured to replicate `Region1`'s data and `GatewaySender2` will be configured to replicate `Region2`'s data. As demonstrated each GatewaySender property can be configured on each `EnableGatewaySender` annotation.
+In the above example, the application is configured with 2 Regions, `Region1` and `Region2`. In addition,
+two `GatewaySenders` will be configured to service both Regions. `GatewaySender1` will be configured to replicate
+`Region1`'s data and `GatewaySender2` will be configured to replicate `Region2`'s data.
 
-It is also possible to have a more generic, "defaulted" properties approach, where all properties are configured on the `EnableGatewaySenders` annotation. This way a set of generic, defaulted values can be set on the parent annotation and then overridden on the child if required, as demonstrated below:
+As demonstrated each `GatewaySender` property can be configured on each `EnableGatewaySender` annotation.
+
+It is also possible to have a more generic, "defaulted" properties approach, where all properties are configured on
+the `EnableGatewaySenders` annotation. This way, a set of generic, defaulted values can be set on the parent annotation
+and then overridden on the child if required, as demonstrated below:
+
 [source,java]
 ----
+@CacheServerApplication
 @EnableGatewaySenders(gatewaySenders = {
 		@EnableGatewaySender(name = "GatewaySender", transportFilters = "transportBean1", regions = "Region2"),
 		@EnableGatewaySender(name = "GatewaySender2")},
@@ -696,9 +711,11 @@ It is also possible to have a more generic, "defaulted" properties approach, whe
 		eventFilters = "SomeEventFilter", batchTimeInterval = 2000, dispatcherThreads = 22, maximumQueueMemory = 400,
 		socketBufferSize = 16384, socketReadTimeout = 4000, regions = { "Region1", "Region2" },
 		transportFilters = { "transportBean2", "transportBean1" })
+class MySpringApplication { .. }
 ----
 
-NOTE: When the `regions` property is left empty or not populated, the GatewaySender(s) will automatically attach itself to every
-configured Region within the application
+NOTE: When the `regions` attribute is left empty or not populated, the `GatewaySender`(s) will automatically attach
+itself to every configured `Region` within the application.
 
-See {sdg-javadoc}/org/springframework/data/gemfire/wan/annotation/EnableGatewaySenders.html[`@EnableGatewaySenders` Javadoc] and {sdg-javadoc}/org/springframework/data/gemfire/wan/annotation/EnableGatewaySender.html[`@EnableGatewaySender` Javadoc].
+See {sdg-javadoc}/org/springframework/data/gemfire/wan/annotation/EnableGatewaySenders.html[`@EnableGatewaySenders` Javadoc]
+and {sdg-javadoc}/org/springframework/data/gemfire/wan/annotation/EnableGatewaySender.html[`@EnableGatewaySender` Javadoc].

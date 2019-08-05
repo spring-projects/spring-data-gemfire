@@ -35,10 +35,12 @@
 			<id>spring-libs-snapshot</id>
 			<url>https://repo.spring.io/libs-snapshot</url>
 		</repository>
+<!--
 		<repository>
 			<id>apache-snapshots</id>
 			<url>https://repository.apache.org/content/repositories/snapshots</url>
 		</repository>
+-->
 	</repositories>
 
 	<pluginRepositories>
@@ -225,6 +227,7 @@
 			<version>${spring-shell.version}</version>
 			<scope>test</scope>
 		</dependency>
+
 	</dependencies>
 
 	<build>

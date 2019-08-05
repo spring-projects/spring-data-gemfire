@@ -21,6 +21,8 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
 import org.apache.geode.cache.util.Gateway;
+import org.apache.geode.cache.wan.GatewaySender;
+
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,40 +47,48 @@ public class OrderPolicyConverterUnitTests {
 
 	@After
 	public void tearDown() {
-		converter.setValue(null);
+		this.converter.setValue(null);
 	}
 
 	@Test
 	public void convert() {
-		assertThat(converter.convert("key")).isEqualTo(Gateway.OrderPolicy.KEY);
-		assertThat(converter.convert("Partition")).isEqualTo(Gateway.OrderPolicy.PARTITION);
-		assertThat(converter.convert("THREAD")).isEqualTo(Gateway.OrderPolicy.THREAD);
+
+		assertThat(this.converter.convert("key")).isEqualTo(GatewaySender.OrderPolicy.KEY);
+		assertThat(this.converter.convert("Partition")).isEqualTo(GatewaySender.OrderPolicy.PARTITION);
+		assertThat(this.converter.convert("THREAD")).isEqualTo(GatewaySender.OrderPolicy.THREAD);
 	}
 
 	@Test
 	public void convertIllegalValue() {
+
 		exception.expect(IllegalArgumentException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage("[process] is not a valid OrderPolicy");
 
-		converter.convert("process");
+		this.converter.convert("process");
 	}
 
 	@Test
 	public void setAsText() {
-		assertThat(converter.getValue()).isNull();
-		converter.setAsText("PartItIOn");
-		assertThat(converter.getValue()).isEqualTo(Gateway.OrderPolicy.PARTITION);
-		converter.setAsText("thREAD");
-		assertThat(converter.getValue()).isEqualTo(Gateway.OrderPolicy.THREAD);
+
+		assertThat(this.converter.getValue()).isNull();
+
+		this.converter.setAsText("PartItIOn");
+
+		assertThat(this.converter.getValue()).isEqualTo(GatewaySender.OrderPolicy.PARTITION);
+
+		this.converter.setAsText("thREAD");
+
+		assertThat(this.converter.getValue()).isEqualTo(GatewaySender.OrderPolicy.THREAD);
 	}
 
 	@Test
 	public void setAsTextWithIllegalValue() {
+
 		exception.expect(IllegalArgumentException.class);
 		exception.expectCause(is(nullValue(Throwable.class)));
 		exception.expectMessage("[value] is not a valid OrderPolicy");
 
-		converter.setAsText("value");
+		this.converter.setAsText("value");
 	}
 }
