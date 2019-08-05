@@ -3,6 +3,21 @@ SPRING DATA GEMFIRE CHANGELOG
 http://www.springsource.org/spring-gemfire
 =============================
 
+Changes in version 2.2.0.RC2 (2019-08-05)
+-----------------------------------------
+* SGF-867 - Polish Annotation-based Configuration Model.
+* SGF-866 - Upgrade to Pivotal GemFire 9.8.3.
+* SGF-865 - Refactor Gateway Sender/Receiver support and remove unnecessary configuration validations.
+* SGF-864 - Fix unreliable tests.
+* SGF-863 - Add support in the XML Namespace for Region to AsyncEventQueue and GatewaySender associations by ID.
+* SGF-861 - Revise readme for a consistent structure.
+* SGF-860 - Add Integration Tests asserting the configuration of Pivotal GemFire Logging using Spring.
+* SGF-856 - Upgrade to Pivotal GemFire 9.8.2.
+* SGF-855 - Release 2.2 RC2 (Moore).
+* SGF-847 - Introduce Jenkins CI.
+* SGF-550 - Configure GatewaySenders with Annotations.
+
+
 Changes in version 2.1.10.RELEASE (2019-08-05)
 ----------------------------------------------
 * SGF-865 - Refactor Gateway Sender/Receiver support and remove unnecessary configuration validations.
