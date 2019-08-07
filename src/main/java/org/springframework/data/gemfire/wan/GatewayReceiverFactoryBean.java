@@ -15,6 +15,9 @@
  */
 package org.springframework.data.gemfire.wan;
 
+import static java.util.stream.StreamSupport.stream;
+import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeIterable;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -24,7 +27,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
-
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.gemfire.config.annotation.GatewayReceiverConfigurer;
@@ -59,7 +61,7 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 	private Integer startPort;
 
 	@Autowired(required = false)
-	private GatewayReceiverConfigurer gatewayReceiverConfigurer;
+	private List<GatewayReceiverConfigurer> gatewayReceiverConfigurers;
 
 	@Autowired(required = false)
 	private List<GatewayTransportFilter> transportFilters;
@@ -83,7 +85,8 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 
 		GatewayReceiverFactory gatewayReceiverFactory = this.cache.createGatewayReceiverFactory();
 
-		Optional.ofNullable(this.gatewayReceiverConfigurer).ifPresent(it -> it.configure(getName(),this));
+		stream(nullSafeIterable(this.gatewayReceiverConfigurers).spliterator(), false)
+			.forEach(it -> it.configure(getName(), this));
 
 		Optional.ofNullable(this.bindAddress)
 			.filter(StringUtils::hasText)
@@ -132,8 +135,8 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 		this.gatewayReceiver = gatewayReceiver;
 	}
 
-	public void setGatewayReceiverConfigurer(GatewayReceiverConfigurer gatewayReceiverConfigurer) {
-		this.gatewayReceiverConfigurer = gatewayReceiverConfigurer;
+	public void setGatewayReceiverConfigurers(List<GatewayReceiverConfigurer> gatewayReceiverConfigurers) {
+		this.gatewayReceiverConfigurers = gatewayReceiverConfigurers;
 	}
 
 	public void setBindAddress(String bindAddress) {
