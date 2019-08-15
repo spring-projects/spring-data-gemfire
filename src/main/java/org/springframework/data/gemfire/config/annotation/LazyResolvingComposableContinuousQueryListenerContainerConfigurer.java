@@ -30,16 +30,16 @@ import org.springframework.lang.Nullable;
  * @see org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer
  * @since 2.2.0
  */
-public class LazyResovlingComposableContinuousQueryListenerContainerConfigurer
+public class LazyResolvingComposableContinuousQueryListenerContainerConfigurer
 		extends AbstractLazyResolvingComposableConfigurer<ContinuousQueryListenerContainer, ContinuousQueryListenerContainerConfigurer>
 		implements ContinuousQueryListenerContainerConfigurer {
 
-	public static LazyResovlingComposableContinuousQueryListenerContainerConfigurer create() {
+	public static LazyResolvingComposableContinuousQueryListenerContainerConfigurer create() {
 		return create(null);
 	}
 
-	public static LazyResovlingComposableContinuousQueryListenerContainerConfigurer create(@Nullable BeanFactory beanFactory) {
-		return new LazyResovlingComposableContinuousQueryListenerContainerConfigurer().with(beanFactory);
+	public static LazyResolvingComposableContinuousQueryListenerContainerConfigurer create(@Nullable BeanFactory beanFactory) {
+		return new LazyResolvingComposableContinuousQueryListenerContainerConfigurer().with(beanFactory);
 	}
 
 	@Override
