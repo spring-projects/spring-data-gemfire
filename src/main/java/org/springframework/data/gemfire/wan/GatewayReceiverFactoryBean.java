@@ -15,18 +15,17 @@
  */
 package org.springframework.data.gemfire.wan;
 
-import static java.util.stream.StreamSupport.stream;
-import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeIterable;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.StreamSupport;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
+
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.gemfire.config.annotation.GatewayReceiverConfigurer;
@@ -85,7 +84,7 @@ public class GatewayReceiverFactoryBean extends AbstractWANComponentFactoryBean<
 
 		GatewayReceiverFactory gatewayReceiverFactory = this.cache.createGatewayReceiverFactory();
 
-		stream(nullSafeIterable(this.gatewayReceiverConfigurers).spliterator(), false)
+		StreamSupport.stream(CollectionUtils.nullSafeIterable(this.gatewayReceiverConfigurers).spliterator(), false)
 			.forEach(it -> it.configure(getName(), this));
 
 		Optional.ofNullable(this.bindAddress)

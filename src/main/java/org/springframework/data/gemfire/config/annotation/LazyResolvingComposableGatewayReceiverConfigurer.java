@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import org.springframework.beans.factory.BeanFactory;
@@ -25,14 +24,14 @@ import org.springframework.lang.Nullable;
  * Composition of {@link GatewayReceiverConfigurer}.
  *
  * @author Udo Kohlmeyer
- * @see GatewayReceiverFactoryBean
- * @see GatewayReceiverConfigurer
- * @see AbstractLazyResolvingComposableConfigurer
+ * @see org.springframework.data.gemfire.config.annotation.GatewayReceiverConfigurer
+ * @see org.springframework.data.gemfire.config.annotation.support.AbstractLazyResolvingComposableConfigurer
+ * @see org.springframework.data.gemfire.wan.GatewayReceiverFactoryBean
  * @since 2.2.0
  */
 public class LazyResolvingComposableGatewayReceiverConfigurer
-	extends AbstractLazyResolvingComposableConfigurer<GatewayReceiverFactoryBean, GatewayReceiverConfigurer>
-	implements GatewayReceiverConfigurer {
+		extends AbstractLazyResolvingComposableConfigurer<GatewayReceiverFactoryBean, GatewayReceiverConfigurer>
+		implements GatewayReceiverConfigurer {
 
 	public static LazyResolvingComposableGatewayReceiverConfigurer create() {
 		return create(null);

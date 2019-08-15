@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import java.lang.annotation.Annotation;
@@ -23,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.geode.cache.wan.GatewayReceiver;
+
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanReference;
@@ -44,14 +44,22 @@ import org.springframework.data.gemfire.wan.GatewayReceiverFactoryBean;
  *
  * @author Udo Kohlmeyer
  * @author John Blum
+ * @see java.lang.annotation.Annotation
  * @see org.apache.geode.cache.wan.GatewayReceiver
+ * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
+ * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Configuration
- * @see EnableGatewayReceiver
+ * @see org.springframework.context.annotation.ImportBeanDefinitionRegistrar
+ * @see org.springframework.core.annotation.AnnotationAttributes
+ * @see org.springframework.core.type.AnnotationMetadata
+ * @see org.springframework.data.gemfire.config.annotation.EnableGatewayReceiver
+ * @see org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport
+ * @see org.springframework.data.gemfire.wan.GatewayReceiverFactoryBean
  * @since 2.2.0
  */
 public class GatewayReceiverConfiguration extends AbstractAnnotationConfigSupport
-	implements ImportBeanDefinitionRegistrar {
+		implements ImportBeanDefinitionRegistrar {
 
 	static final boolean DEFAULT_MANUAL_START = GatewayReceiver.DEFAULT_MANUAL_START;
 
@@ -108,7 +116,7 @@ public class GatewayReceiverConfiguration extends AbstractAnnotationConfigSuppor
 	 * @param registry
 	 */
 	private void registerGatewayReceiverBeanDefinition(AnnotationAttributes enableGatewayReceiverAttributes,
-		BeanDefinitionRegistry registry) {
+			BeanDefinitionRegistry registry) {
 
 		BeanDefinitionBuilder gatewayReceiverBeanBuilder =
 			BeanDefinitionBuilder.genericBeanDefinition(GatewayReceiverFactoryBean.class);
@@ -134,7 +142,7 @@ public class GatewayReceiverConfiguration extends AbstractAnnotationConfigSuppor
 	 * @param gatewayReceiverBeanName
 	 */
 	private void configureBeanFromAnnotationAttributes(AnnotationAttributes enableGatewayReceiverAttributes,
-		BeanDefinitionBuilder gatewayReceiverBeanBuilder, String gatewayReceiverBeanName) {
+			BeanDefinitionBuilder gatewayReceiverBeanBuilder, String gatewayReceiverBeanName) {
 
 		gatewayReceiverBeanBuilder.addConstructorArgReference(GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
 
@@ -180,25 +188,8 @@ public class GatewayReceiverConfiguration extends AbstractAnnotationConfigSuppor
 		MutablePropertyValues beanPropertyValues =
 			gatewayReceiverBeanBuilder.getRawBeanDefinition().getPropertyValues();
 
-		gatewayReceiverBeanBuilder.addPropertyValue("gatewayReceiverConfigurers", resolveGatewayReceiverConfigurers());
-
-		configureFromProperties(gatewayReceiverBeanBuilder, START_PORT_LITERAL, START_PORT_PROPERTY_LITERAL,
-			Integer.class, (Integer) beanPropertyValues.getPropertyValue(START_PORT_LITERAL).getValue());
-
-		configureFromProperties(gatewayReceiverBeanBuilder, END_PORT_LITERAL, END_PORT_PROPERTY_LITERAL,
-			Integer.class, (Integer) beanPropertyValues.getPropertyValue(END_PORT_LITERAL).getValue());
-
-		configureFromProperties(gatewayReceiverBeanBuilder, MANUAL_START_LITERAL, MANUAL_START_PROPERTY_LITERAL,
-			Boolean.class, (Boolean) beanPropertyValues.getPropertyValue(MANUAL_START_LITERAL).getValue());
-
-		configureFromProperties(gatewayReceiverBeanBuilder,
-			MAXIMUM_TIME_BETWEEN_PINGS_LITERAL, MAXIMUM_TIME_BETWEEN_PINGS_PROPERTY_LITERAL,
-			Integer.class,
-			(Integer) beanPropertyValues.getPropertyValue(MAXIMUM_TIME_BETWEEN_PINGS_LITERAL).getValue());
-
-		configureFromProperties(gatewayReceiverBeanBuilder,
-			SOCKET_BUFFER_SIZE_LITERAL, SOCKET_BUFFER_SIZE_PROPERTY_LITERAL,
-			Integer.class, (Integer) beanPropertyValues.getPropertyValue(SOCKET_BUFFER_SIZE_LITERAL).getValue());
+		gatewayReceiverBeanBuilder.addPropertyValue("gatewayReceiverConfigurers",
+			resolveGatewayReceiverConfigurers());
 
 		configureFromProperties(gatewayReceiverBeanBuilder, BIND_ADDRESS_LITERAL, BIND_ADDRESS_PROPERTY_LITERAL,
 			String.class, (String) beanPropertyValues.getPropertyValue(BIND_ADDRESS_LITERAL).getValue());
@@ -206,6 +197,23 @@ public class GatewayReceiverConfiguration extends AbstractAnnotationConfigSuppor
 		configureFromProperties(gatewayReceiverBeanBuilder,
 			HOSTNAME_FOR_SENDERS_LITERAL, HOSTNAME_FOR_SENDERS_PROPERTY_LITERAL,
 			String.class, (String) beanPropertyValues.getPropertyValue(HOSTNAME_FOR_SENDERS_LITERAL).getValue());
+
+		configureFromProperties(gatewayReceiverBeanBuilder, MANUAL_START_LITERAL, MANUAL_START_PROPERTY_LITERAL,
+			Boolean.class, (Boolean) beanPropertyValues.getPropertyValue(MANUAL_START_LITERAL).getValue());
+
+		configureFromProperties(gatewayReceiverBeanBuilder,
+			MAXIMUM_TIME_BETWEEN_PINGS_LITERAL, MAXIMUM_TIME_BETWEEN_PINGS_PROPERTY_LITERAL,
+			Integer.class, (Integer) beanPropertyValues.getPropertyValue(MAXIMUM_TIME_BETWEEN_PINGS_LITERAL).getValue());
+
+		configureFromProperties(gatewayReceiverBeanBuilder, START_PORT_LITERAL, START_PORT_PROPERTY_LITERAL,
+			Integer.class, (Integer) beanPropertyValues.getPropertyValue(START_PORT_LITERAL).getValue());
+
+		configureFromProperties(gatewayReceiverBeanBuilder, END_PORT_LITERAL, END_PORT_PROPERTY_LITERAL,
+			Integer.class, (Integer) beanPropertyValues.getPropertyValue(END_PORT_LITERAL).getValue());
+
+		configureFromProperties(gatewayReceiverBeanBuilder,
+			SOCKET_BUFFER_SIZE_LITERAL, SOCKET_BUFFER_SIZE_PROPERTY_LITERAL,
+			Integer.class, (Integer) beanPropertyValues.getPropertyValue(SOCKET_BUFFER_SIZE_LITERAL).getValue());
 
 		String[] filters = resolveProperty(gatewayReceiverProperty(TRANSPORT_FILTERS_PROPERTY_LITERAL), String[].class);
 
@@ -218,7 +226,7 @@ public class GatewayReceiverConfiguration extends AbstractAnnotationConfigSuppor
 	}
 
 	private <T> void configureFromProperties(BeanDefinitionBuilder gatewayReceiverBeanBuilder,
-		String beanPropertyName, String propertyName, Class<T> propertyType, T annotationAttributeValue) {
+			String beanPropertyName, String propertyName, Class<T> propertyType, T annotationAttributeValue) {
 
 		T propertyValue = resolveProperty(gatewayReceiverProperty(propertyName), propertyType,
 			annotationAttributeValue);
@@ -226,8 +234,16 @@ public class GatewayReceiverConfiguration extends AbstractAnnotationConfigSuppor
 		gatewayReceiverBeanBuilder.addPropertyValue(beanPropertyName, propertyValue);
 	}
 
+	private List<GatewayReceiverConfigurer> resolveGatewayReceiverConfigurers() {
+
+		return Optional.ofNullable(this.gatewayReceiverConfigurers)
+			.filter(gatewayReceiverConfigurers -> !gatewayReceiverConfigurers.isEmpty())
+			.orElseGet(() ->
+				Collections.singletonList(LazyResolvingComposableGatewayReceiverConfigurer.create(getBeanFactory())));
+	}
+
 	private ManagedList<BeanReference> resolveGatewayTransportFilterBeanReferences(
-		String[] gatewayTransportFilterBeanNames) {
+			String[] gatewayTransportFilterBeanNames) {
 
 		ManagedList<BeanReference> gatewayTransportFilterBeanReferences = new ManagedList<>();
 
@@ -240,7 +256,7 @@ public class GatewayReceiverConfiguration extends AbstractAnnotationConfigSuppor
 	}
 
 	private void registerGatewayTransportFilterDependencies(AnnotationAttributes annotationAttributes,
-		BeanDefinitionBuilder gatewayReceiverBeanBuilder) {
+			BeanDefinitionBuilder gatewayReceiverBeanBuilder) {
 
 		String[] transportFilters = annotationAttributes.getStringArray(TRANSPORT_FILTERS_LITERAL);
 
@@ -249,18 +265,10 @@ public class GatewayReceiverConfiguration extends AbstractAnnotationConfigSuppor
 	}
 
 	private <T> BeanDefinitionBuilder setPropertyValueIfNotDefault(BeanDefinitionBuilder beanDefinitionBuilder,
-		String propertyName, T value, T defaultValue) {
+			String propertyName, T value, T defaultValue) {
 
 		return value != null
 			? beanDefinitionBuilder.addPropertyValue(propertyName, value)
 			: beanDefinitionBuilder.addPropertyValue(propertyName, defaultValue);
-	}
-
-	private List<GatewayReceiverConfigurer> resolveGatewayReceiverConfigurers() {
-
-		return Optional.ofNullable(this.gatewayReceiverConfigurers)
-			.filter(gatewayReceiverConfigurers -> !gatewayReceiverConfigurers.isEmpty())
-			.orElseGet(() ->
-				Collections.singletonList(LazyResolvingComposableGatewayReceiverConfigurer.create(getBeanFactory())));
 	}
 }
