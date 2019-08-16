@@ -54,6 +54,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.context.Lifecycle;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportAware;
@@ -62,6 +63,7 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport;
 import org.springframework.data.gemfire.config.annotation.support.CacheTypeAwareRegionFactoryBean;
+import org.springframework.data.gemfire.support.CompositeLifecycle;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
@@ -113,6 +115,8 @@ public class CachingDefinedRegionsConfiguration extends AbstractAnnotationConfig
 			.collect(Collectors.toSet());
 
 	private ClientRegionShortcut clientRegionShortcut = ClientRegionShortcut.PROXY;
+
+	private CompositeLifecycle compositeLifecycle = new CompositeLifecycle();
 
 	@Autowired(required = false)
 	private List<RegionConfigurer> regionConfigurers = Collections.emptyList();
@@ -277,7 +281,6 @@ public class CachingDefinedRegionsConfiguration extends AbstractAnnotationConfig
 	}
 
 	@Bean
-	@SuppressWarnings("all")
 	public BeanPostProcessor cachingAnnotationsRegionBeanRegistrar(ConfigurableBeanFactory beanFactory) {
 
 		return new BeanPostProcessor() {
@@ -319,6 +322,8 @@ public class CachingDefinedRegionsConfiguration extends AbstractAnnotationConfig
 
 					regionFactoryBean.afterPropertiesSet();
 
+					this.compositeLifecycle.add(regionFactoryBean);
+
 					Optional.ofNullable(regionFactoryBean.getObject())
 						.ifPresent(region -> beanFactory.registerSingleton(cacheName, region));
 				}
@@ -332,12 +337,17 @@ public class CachingDefinedRegionsConfiguration extends AbstractAnnotationConfig
 		return beanFactory;
 	}
 
-	protected List<RegionConfigurer> resolveRegionConfigurers() {
+	private List<RegionConfigurer> resolveRegionConfigurers() {
 
 		return Optional.ofNullable(this.regionConfigurers)
 			.filter(regionConfigurers -> !regionConfigurers.isEmpty())
 			.orElseGet(() ->
 				Collections.singletonList(LazyResolvingComposableRegionConfigurer.create(getBeanFactory())));
+	}
+
+	@Bean
+	public Lifecycle cachingDefinedRegionsCompositeLifecycleBean() {
+		return this.compositeLifecycle;
 	}
 
 	/**
@@ -373,14 +383,13 @@ public class CachingDefinedRegionsConfiguration extends AbstractAnnotationConfig
 
 		protected abstract Class<? extends Annotation>[] getMethodCacheAnnotationTypes();
 
-		@SuppressWarnings("unchecked")
 		protected Class[] append(Class[] annotationTypes, Class... additionalAnnotationTypes) {
 
 			List<Class> annotationTypeList = new ArrayList<>(Arrays.asList(annotationTypes));
 
 			Collections.addAll(annotationTypeList, additionalAnnotationTypes);
 
-			return annotationTypeList.toArray(new Class[annotationTypeList.size()]);
+			return annotationTypeList.toArray(new Class[0]);
 		}
 
 		protected Set<String> resolveCacheNames(Annotation annotation) {
@@ -402,12 +411,9 @@ public class CachingDefinedRegionsConfiguration extends AbstractAnnotationConfig
 		}
 
 		@Override
-		@SuppressWarnings("unchecked")
 		public Set<String> resolveCacheNames(Class<?> type) {
 
-			Set<String> cacheNames = new HashSet<>();
-
-			cacheNames.addAll(resolveCacheNames(type, getClassCacheAnnotationTypes()));
+			Set<String> cacheNames = new HashSet<>(resolveCacheNames(type, getClassCacheAnnotationTypes()));
 
 			stream(type.getMethods())
 				.filter(method -> isUserLevelMethod(method))
@@ -457,7 +463,6 @@ public class CachingDefinedRegionsConfiguration extends AbstractAnnotationConfig
 		}
 
 		@Override
-		@SuppressWarnings("unchecked")
 		public Set<String> resolveCacheNames(Class<?> type) {
 
 			Set<String> cacheNames = super.resolveCacheNames(type);
