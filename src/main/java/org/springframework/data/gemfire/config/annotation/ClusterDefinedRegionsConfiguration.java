@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import java.lang.annotation.Annotation;
@@ -23,7 +22,7 @@ import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
-import org.apache.shiro.util.Assert;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportAware;
@@ -32,6 +31,7 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.client.GemfireDataSourcePostProcessor;
 import org.springframework.data.gemfire.config.annotation.support.AbstractAnnotationConfigSupport;
 import org.springframework.data.gemfire.util.CacheUtils;
+import org.springframework.util.Assert;
 
 /**
  * The {@link ClusterDefinedRegionsConfiguration} class configures client Proxy-based {@link Region Regions}

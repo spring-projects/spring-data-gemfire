@@ -14,16 +14,16 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.support;
 
 import java.util.Properties;
 
 import org.apache.geode.cache.Declarable;
-import org.apache.shiro.util.Assert;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.wiring.BeanConfigurerSupport;
 import org.springframework.beans.factory.wiring.BeanWiringInfo;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**

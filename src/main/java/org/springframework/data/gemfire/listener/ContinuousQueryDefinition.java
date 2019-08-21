@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.listener;
 
 import java.lang.reflect.Method;
@@ -24,11 +23,12 @@ import org.apache.geode.cache.query.CqAttributes;
 import org.apache.geode.cache.query.CqAttributesFactory;
 import org.apache.geode.cache.query.CqListener;
 import org.apache.geode.cache.query.CqQuery;
-import org.apache.shiro.util.StringUtils;
+
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.gemfire.listener.adapter.ContinuousQueryListenerAdapter;
 import org.springframework.data.gemfire.listener.annotation.ContinuousQuery;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * Class type for defining a {@link CqQuery}.

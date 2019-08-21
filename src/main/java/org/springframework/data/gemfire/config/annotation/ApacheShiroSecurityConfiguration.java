@@ -14,7 +14,6 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
@@ -27,10 +26,12 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.apache.geode.cache.GemFireCache;
+
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.spring.LifecycleBeanPostProcessor;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
