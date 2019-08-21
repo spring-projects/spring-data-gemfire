@@ -18,7 +18,8 @@ package org.springframework.data.gemfire.config.annotation.support;
 import java.util.Properties;
 
 import org.apache.geode.security.AuthInitialize;
-import org.apache.shiro.util.StringUtils;
+
+import org.springframework.util.StringUtils;
 
 /**
  * The {@link AutoConfiguredAuthenticationInitializer} class is an {@link AuthInitialize} implementation,

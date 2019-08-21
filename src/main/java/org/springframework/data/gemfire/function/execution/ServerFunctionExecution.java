@@ -10,13 +10,13 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-
 package org.springframework.data.gemfire.function.execution;
 
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.shiro.util.Assert;
+
+import org.springframework.util.Assert;
 
 /**
  * Constructs an {@link Execution} using {@link FunctionService#onServer(RegionService)}.

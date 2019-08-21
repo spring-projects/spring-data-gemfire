@@ -14,7 +14,6 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.client.support;
 
 import java.net.InetSocketAddress;
@@ -24,7 +23,8 @@ import java.util.function.Supplier;
 
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.query.QueryService;
-import org.apache.shiro.util.CollectionUtils;
+
+import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.data.gemfire.util.SpringUtils;
 import org.springframework.util.Assert;
 

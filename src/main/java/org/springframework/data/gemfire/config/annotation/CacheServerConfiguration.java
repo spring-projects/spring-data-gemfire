@@ -31,7 +31,6 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.apache.geode.cache.server.ServerLoadProbe;
-import org.apache.shiro.util.Assert;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -40,6 +39,7 @@ import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.server.CacheServerFactoryBean;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**

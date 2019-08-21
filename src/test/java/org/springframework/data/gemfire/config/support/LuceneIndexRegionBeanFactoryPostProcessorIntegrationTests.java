@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,9 +23,10 @@ import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.geode.cache.Region;
-import org.apache.shiro.util.Assert;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -38,6 +38,7 @@ import org.springframework.data.gemfire.test.mock.context.GemFireMockObjectsAppl
 import org.springframework.lang.Nullable;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.Assert;
 
 /**
  * Unit tests for {@link LuceneIndexRegionBeanFactoryPostProcessor}.

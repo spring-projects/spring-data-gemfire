@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.cache.config;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
@@ -22,9 +21,10 @@ import javax.annotation.Resource;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
-import org.apache.shiro.util.Assert;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Bean;
@@ -34,6 +34,7 @@ import org.springframework.data.gemfire.config.annotation.PeerCacheApplication;
 import org.springframework.stereotype.Service;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.Assert;
 
 /**
  * Integration tests for {@link EnableGemfireCaching} and {@link GemfireCachingConfiguration}.

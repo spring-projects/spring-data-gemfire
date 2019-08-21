@@ -12,7 +12,6 @@
  */
 package org.springframework.data.gemfire.function.execution;
 
-
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 
 import java.util.Optional;
@@ -23,9 +22,10 @@ import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
-import org.apache.shiro.util.Assert;
+
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.util.CacheUtils;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**

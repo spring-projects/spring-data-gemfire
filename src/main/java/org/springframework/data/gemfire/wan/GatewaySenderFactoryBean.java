@@ -24,10 +24,10 @@ import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
-import org.apache.shiro.util.StringUtils;
 
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.data.gemfire.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * Spring {@link FactoryBean} for creating a parallel or serial Pivotal GemFire {@link GatewaySender}.
