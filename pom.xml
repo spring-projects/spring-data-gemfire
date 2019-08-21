@@ -208,13 +208,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>edu.umd.cs.mtc</groupId>
-			<artifactId>multithreadedtc</artifactId>
-			<version>${multithreadedtc.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
 			<groupId>org.iq80.snappy</groupId>
 			<artifactId>snappy</artifactId>
 			<version>${snappy.version}</version>
@@ -225,6 +218,13 @@
 			<groupId>org.springframework.shell</groupId>
 			<artifactId>spring-shell</artifactId>
 			<version>${spring-shell.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>edu.umd.cs.mtc</groupId>
+			<artifactId>multithreadedtc</artifactId>
+			<version>${multithreadedtc.version}</version>
 			<scope>test</scope>
 		</dependency>
 
