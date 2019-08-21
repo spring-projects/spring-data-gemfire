@@ -21,6 +21,7 @@ import org.apache.geode.cache.query.IndexExistsException;
 import org.apache.geode.cache.query.IndexInvalidException;
 import org.apache.geode.cache.query.IndexMaintenanceException;
 import org.apache.geode.cache.query.IndexNameConflictException;
+
 import org.springframework.dao.DataIntegrityViolationException;
 
 /**

@@ -43,10 +43,12 @@ import javax.enterprise.inject.spi.ProcessBean;
 import javax.inject.Qualifier;
 
 import org.apache.geode.cache.Region;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
 import org.springframework.data.gemfire.mapping.GemfireMappingContext;
 import org.springframework.data.gemfire.repository.GemfireRepository;
 

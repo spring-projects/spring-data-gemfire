@@ -33,11 +33,13 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.QueryService;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.gemfire.IndexType;
 import org.springframework.data.gemfire.config.schema.definitions.IndexDefinition;
 

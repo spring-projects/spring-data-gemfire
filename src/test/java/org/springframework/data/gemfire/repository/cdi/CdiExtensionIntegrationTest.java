@@ -29,6 +29,7 @@ import static org.junit.Assert.assertThat;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;

@@ -24,10 +24,10 @@ import java.io.IOException;
 
 import javax.annotation.Resource;
 
+import org.apache.geode.cache.wan.GatewayReceiver;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import org.apache.geode.cache.wan.GatewayReceiver;
 
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;

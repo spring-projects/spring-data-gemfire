@@ -25,6 +25,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
+
 import org.springframework.data.gemfire.repository.sample.Person;
 import org.springframework.util.Assert;
 

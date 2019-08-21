@@ -19,10 +19,10 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.wan.GatewaySender;
 
+import org.w3c.dom.Element;
+
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
-
-import org.w3c.dom.Element;
 
 /**
  * Abstract Spring XML Parser for peer {@link Region} bean definitions.

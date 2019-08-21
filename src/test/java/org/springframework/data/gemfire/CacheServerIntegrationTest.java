@@ -25,10 +25,12 @@ import java.io.File;
 import javax.annotation.Resource;
 
 import org.apache.geode.cache.server.CacheServer;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 

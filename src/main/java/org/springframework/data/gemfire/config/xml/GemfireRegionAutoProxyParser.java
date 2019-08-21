@@ -15,6 +15,8 @@ package org.springframework.data.gemfire.config.xml;
 
 import java.util.Collections;
 
+import org.w3c.dom.Element;
+
 import org.springframework.aop.config.AopNamespaceUtils;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -24,7 +26,6 @@ import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.serialization.json.JSONRegionAdvice;
 import org.springframework.util.StringUtils;
-import org.w3c.dom.Element;
 
 /**
  * Bean definition parser for the &lt;gfe-data:json-region-auto-proxy&lt; SDG XML namespace (XSD) element.

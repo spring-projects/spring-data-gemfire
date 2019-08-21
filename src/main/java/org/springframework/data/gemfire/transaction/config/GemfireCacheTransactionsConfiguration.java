@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire.transaction.config;
 
 import org.apache.geode.cache.GemFireCache;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.gemfire.transaction.GemfireTransactionManager;

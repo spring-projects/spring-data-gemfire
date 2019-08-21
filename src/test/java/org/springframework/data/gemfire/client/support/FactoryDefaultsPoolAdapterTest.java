@@ -26,9 +26,11 @@ import java.net.InetSocketAddress;
 import java.util.Collections;
 
 import org.apache.geode.cache.client.PoolFactory;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
 import org.springframework.data.gemfire.GemfireUtils;
 
 /**

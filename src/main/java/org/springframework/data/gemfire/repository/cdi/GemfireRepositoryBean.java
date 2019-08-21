@@ -29,6 +29,7 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
 import org.apache.geode.cache.Region;
+
 import org.springframework.data.gemfire.mapping.GemfireMappingContext;
 import org.springframework.data.gemfire.repository.support.GemfireRepositoryFactory;
 import org.springframework.data.repository.cdi.CdiRepositoryBean;

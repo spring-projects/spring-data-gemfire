@@ -25,6 +25,7 @@ import java.lang.annotation.Target;
 
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.control.ResourceManager;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;

@@ -27,6 +27,7 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Test;
 import org.mockito.InOrder;
+
 import org.springframework.data.repository.query.QueryMethod;
 
 /**

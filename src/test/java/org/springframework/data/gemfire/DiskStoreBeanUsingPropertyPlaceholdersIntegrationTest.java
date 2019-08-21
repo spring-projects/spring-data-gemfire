@@ -24,8 +24,10 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.apache.geode.cache.DiskStore;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;

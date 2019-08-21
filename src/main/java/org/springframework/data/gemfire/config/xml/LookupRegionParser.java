@@ -18,12 +18,12 @@ package org.springframework.data.gemfire.config.xml;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.wan.GatewaySender;
 
+import org.w3c.dom.Element;
+
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.LookupRegionFactoryBean;
 import org.springframework.util.xml.DomUtils;
-
-import org.w3c.dom.Element;
 
 /**
  * Bean definition parser for the &lt;gfe:lookup-region&gt; SDG XML namespace (XSD) element.

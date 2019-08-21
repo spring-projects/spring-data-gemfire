@@ -13,6 +13,8 @@
 
 package org.springframework.data.gemfire.config.xml;
 
+import org.w3c.dom.Element;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -20,7 +22,6 @@ import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.function.config.GemfireFunctionBeanPostProcessor;
-import org.w3c.dom.Element;
 
 /**
  * A Spring {@link BeanDefinitionParser} Pivotal GemFire Function annotation support.

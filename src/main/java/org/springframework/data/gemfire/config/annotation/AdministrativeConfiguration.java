@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire.config.annotation;
 
 import org.apache.geode.cache.execute.Function;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.gemfire.config.admin.functions.CreateIndexFunction;

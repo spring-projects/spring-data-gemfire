@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
 import org.apache.geode.cache.Scope;
+
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;

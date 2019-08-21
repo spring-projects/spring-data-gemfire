@@ -15,6 +15,8 @@ package org.springframework.data.gemfire.config.xml;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Element;
+
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -23,7 +25,6 @@ import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.xml.AbstractBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.client.GemfireDataSourcePostProcessor;
-import org.w3c.dom.Element;
 
 /**
  * Bean definition parser for the &lt;gfe-data:datasource&gt; SDG XML namespace (XSD) element.

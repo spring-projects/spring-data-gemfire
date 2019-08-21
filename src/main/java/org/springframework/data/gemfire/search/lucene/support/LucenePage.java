@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 
 import org.apache.geode.cache.lucene.LuceneResultStruct;
 import org.apache.geode.cache.lucene.PageableLuceneQueryResults;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.gemfire.domain.support.AbstractPageSupport;
 import org.springframework.data.gemfire.search.lucene.ProjectingLuceneAccessor;

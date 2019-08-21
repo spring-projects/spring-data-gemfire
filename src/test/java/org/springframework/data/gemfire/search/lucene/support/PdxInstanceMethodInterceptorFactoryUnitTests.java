@@ -19,8 +19,9 @@ package org.springframework.data.gemfire.search.lucene.support;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import org.aopalliance.intercept.MethodInterceptor;
 import org.apache.geode.pdx.PdxInstance;
+
+import org.aopalliance.intercept.MethodInterceptor;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;

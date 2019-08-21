@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.wan;
 
 import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeList;
@@ -30,6 +29,7 @@ import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewaySender;
+
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.util.Assert;
 

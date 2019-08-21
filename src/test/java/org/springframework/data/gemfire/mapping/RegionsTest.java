@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -37,6 +38,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.gemfire.repository.sample.User;
 import org.springframework.data.mapping.context.MappingContext;
 

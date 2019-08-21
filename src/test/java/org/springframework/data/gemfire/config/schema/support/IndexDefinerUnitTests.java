@@ -21,11 +21,13 @@ import static org.mockito.Mockito.when;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.Index;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.gemfire.IndexType;
 import org.springframework.data.gemfire.config.schema.SchemaObjectType;
 import org.springframework.data.gemfire.config.schema.definitions.IndexDefinition;

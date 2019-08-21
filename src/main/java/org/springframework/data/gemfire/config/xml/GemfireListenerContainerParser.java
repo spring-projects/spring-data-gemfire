@@ -18,6 +18,8 @@ package org.springframework.data.gemfire.config.xml;
 
 import java.util.List;
 
+import org.w3c.dom.Element;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedSet;
@@ -28,7 +30,6 @@ import org.springframework.data.gemfire.listener.ContinuousQueryListenerContaine
 import org.springframework.data.gemfire.listener.adapter.ContinuousQueryListenerAdapter;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
-import org.w3c.dom.Element;
 
 /**
  * Bean definition parser for the &lt;gfe:cq-listener-container&gt; element.

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ScannedGenericBeanDefinition;
 import org.springframework.core.type.filter.AssignableTypeFilter;

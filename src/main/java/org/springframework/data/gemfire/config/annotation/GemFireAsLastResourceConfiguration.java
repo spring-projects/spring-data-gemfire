@@ -23,6 +23,8 @@ import java.util.Optional;
 
 import org.apache.geode.cache.GemFireCache;
 
+import org.aspectj.lang.annotation.Aspect;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,8 +34,6 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.config.annotation.support.GemFireAsLastResourceConnectionAcquiringAspect;
 import org.springframework.data.gemfire.config.annotation.support.GemFireAsLastResourceConnectionClosingAspect;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-
-import org.aspectj.lang.annotation.Aspect;
 
 /**
  * The {@link GemFireAsLastResourceConfiguration} class is a Spring {@link Configuration @Configuration}

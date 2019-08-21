@@ -25,8 +25,10 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;

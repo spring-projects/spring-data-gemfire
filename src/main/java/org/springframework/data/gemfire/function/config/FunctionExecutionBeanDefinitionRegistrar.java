@@ -22,6 +22,8 @@ import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newI
 import java.util.Optional;
 import java.util.Set;
 
+import org.w3c.dom.Element;
+
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.xml.ParserContext;
@@ -37,7 +39,6 @@ import org.springframework.data.gemfire.function.annotation.OnServer;
 import org.springframework.data.gemfire.function.annotation.OnServers;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-import org.w3c.dom.Element;
 
 /**
  * {@link ImportBeanDefinitionRegistrar} for {@link EnableGemfireFunctionExecutions}, which scans for interfaces

@@ -23,8 +23,10 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.apache.geode.distributed.Locator;
+
 import org.junit.After;
 import org.junit.Test;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ConfigurableApplicationContext;

@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire.client;
 
 import org.apache.geode.cache.InterestResultPolicy;
+
 import org.springframework.util.Assert;
 
 /**

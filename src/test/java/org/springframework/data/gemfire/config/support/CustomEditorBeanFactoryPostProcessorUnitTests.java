@@ -29,7 +29,9 @@ import org.apache.geode.cache.InterestPolicy;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.Gateway;
+
 import org.junit.Test;
+
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.data.gemfire.IndexMaintenancePolicyConverter;
 import org.springframework.data.gemfire.IndexMaintenancePolicyType;

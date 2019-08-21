@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.apache.geode.cache.query.Index;
+
 import org.springframework.data.gemfire.config.schema.SchemaObjectDefiner;
 import org.springframework.data.gemfire.config.schema.SchemaObjectType;
 import org.springframework.data.gemfire.config.schema.definitions.IndexDefinition;

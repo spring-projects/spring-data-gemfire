@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire.repository.query;
 
 import org.apache.geode.cache.Region;
+
 import org.springframework.data.repository.core.EntityInformation;
 
 /**

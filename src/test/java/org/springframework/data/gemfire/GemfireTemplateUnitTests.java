@@ -42,11 +42,13 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.gemfire.test.support.AbstractUnitAndIntegrationTestsWithMockSupport;
 

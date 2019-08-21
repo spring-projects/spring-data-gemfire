@@ -22,11 +22,11 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Optional;
 
-import org.junit.After;
-import org.junit.Test;
-
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
+
+import org.junit.After;
+import org.junit.Test;
 
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;

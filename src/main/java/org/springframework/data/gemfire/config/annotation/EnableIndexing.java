@@ -26,6 +26,7 @@ import java.lang.annotation.Target;
 
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.query.Index;
+
 import org.springframework.context.annotation.Configuration;
 
 /**

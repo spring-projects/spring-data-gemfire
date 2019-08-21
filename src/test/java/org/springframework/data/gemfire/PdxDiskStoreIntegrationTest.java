@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire;
 
 import static org.junit.Assert.assertEquals;
@@ -26,11 +25,13 @@ import java.io.Serializable;
 import javax.annotation.Resource;
 
 import org.apache.geode.cache.Region;
+
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.data.gemfire.test.support.FileSystemUtils;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;

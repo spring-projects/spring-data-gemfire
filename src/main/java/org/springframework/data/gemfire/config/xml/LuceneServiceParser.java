@@ -17,10 +17,11 @@
 
 package org.springframework.data.gemfire.config.xml;
 
+import org.w3c.dom.Element;
+
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.data.gemfire.search.lucene.LuceneServiceFactoryBean;
-import org.w3c.dom.Element;
 
 /**
  * Spring XML {@link AbstractSingleBeanDefinitionParser parser} for a {@link LuceneServiceFactoryBean} bean definition.

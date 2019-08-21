@@ -16,10 +16,11 @@
  */
 package org.springframework.data.gemfire.function.config;
 
+import org.w3c.dom.Element;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.w3c.dom.Element;
 
 /**
  * Parser for a &lt;function-executions&gt; bean definition.

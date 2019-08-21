@@ -29,8 +29,10 @@ import static org.mockito.Mockito.verify;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.query.CqEvent;
 import org.apache.geode.cache.query.CqQuery;
+
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.data.gemfire.listener.ContinuousQueryListener;
 
 /**

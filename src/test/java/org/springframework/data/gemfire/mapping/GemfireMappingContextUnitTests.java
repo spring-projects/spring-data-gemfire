@@ -21,10 +21,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import org.junit.Test;
-import org.springframework.data.gemfire.mapping.annotation.Region;
-
 import lombok.Data;
+
+import org.junit.Test;
+
+import org.springframework.data.gemfire.mapping.annotation.Region;
 
 /**
  * Unit tests for {@link GemfireMappingContext} class.

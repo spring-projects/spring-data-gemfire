@@ -22,20 +22,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import javax.annotation.Resource;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Region;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * Integration test for {@link WiringDeclarableSupport} and {@link GemfireBeanFactoryLocator}.

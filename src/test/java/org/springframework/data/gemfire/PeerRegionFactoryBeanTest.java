@@ -51,8 +51,10 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+
 import org.junit.After;
 import org.junit.Test;
+
 import org.springframework.data.gemfire.test.support.AbstractRegionFactoryBeanTests;
 import org.springframework.data.gemfire.util.ArrayUtils;
 

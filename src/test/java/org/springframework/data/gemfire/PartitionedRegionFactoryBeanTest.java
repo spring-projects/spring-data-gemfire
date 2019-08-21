@@ -21,10 +21,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import org.junit.Test;
-
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionFactory;
+
+import org.junit.Test;
 
 /**
  * Unit Tests for {@link PartitionedRegionFactoryBean}.

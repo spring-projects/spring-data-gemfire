@@ -45,9 +45,11 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.compression.Compressor;
+
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.SimpleCacheListener;

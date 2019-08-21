@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire.mapping;
 
 import org.apache.geode.pdx.PdxReader;
+
 import org.springframework.data.mapping.model.PropertyValueProvider;
 import org.springframework.util.Assert;
 

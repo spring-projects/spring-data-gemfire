@@ -24,12 +24,12 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.distributed.internal.DistributionConfig;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.distributed.internal.DistributionConfig;
 
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;

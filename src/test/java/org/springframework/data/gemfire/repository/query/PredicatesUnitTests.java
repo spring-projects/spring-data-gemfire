@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import org.junit.Test;
+
 import org.springframework.data.gemfire.repository.query.Predicates.AtomicPredicate;
 import org.springframework.data.repository.query.parser.Part;
 

@@ -23,8 +23,10 @@ import java.util.function.Function;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.Pool;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.function.annotation.OnRegion;

@@ -25,6 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
+
 import org.springframework.data.domain.Sort;
 import org.springframework.data.gemfire.repository.query.support.OqlKeyword;
 import org.springframework.util.Assert;

@@ -28,6 +28,8 @@ import static org.springframework.data.gemfire.util.ArrayUtils.asArray;
 import java.lang.reflect.Proxy;
 import java.util.concurrent.Executor;
 
+import lombok.Data;
+
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
@@ -37,7 +39,9 @@ import org.apache.geode.cache.query.CqAttributes;
 import org.apache.geode.cache.query.CqEvent;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.QueryService;
+
 import org.junit.Test;
+
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -65,8 +69,6 @@ import org.springframework.data.gemfire.test.support.IOUtils;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ErrorHandler;
-
-import lombok.Data;
 
 /**
  * Unit tests for {@link EnableContinuousQueries}, {@link ContinuousQueryConfiguration}, {@link ContinuousQuery}

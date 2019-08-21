@@ -21,6 +21,8 @@ package org.springframework.data.gemfire.config.xml;
 
 import java.util.List;
 
+import org.w3c.dom.Element;
+
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.ParserContext;
@@ -32,8 +34,6 @@ import org.springframework.data.gemfire.client.RegexInterest;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
-
-import org.w3c.dom.Element;
 
 /**
  * Bean definition parser for the &lt;gfe:client-region&gt; SDG XML namespace (XSD) element.

@@ -49,11 +49,13 @@ import org.apache.geode.cache.query.CqState;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.internal.cache.PoolManagerImpl;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;

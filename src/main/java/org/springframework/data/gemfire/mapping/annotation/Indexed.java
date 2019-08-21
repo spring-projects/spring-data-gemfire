@@ -25,6 +25,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.apache.geode.cache.query.Index;
+
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.gemfire.IndexType;
 import org.springframework.data.gemfire.mapping.GemfirePersistentEntity;

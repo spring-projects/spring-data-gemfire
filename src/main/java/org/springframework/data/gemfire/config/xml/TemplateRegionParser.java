@@ -15,12 +15,12 @@
  */
 package org.springframework.data.gemfire.config.xml;
 
+import org.w3c.dom.Element;
+
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.PeerRegionFactoryBean;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
-
-import org.w3c.dom.Element;
 
 /**
  * Bean definition parser for &lt;gfe:*-region-template&gt; SDG XML namespace (XSD) elements.

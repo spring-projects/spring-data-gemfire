@@ -15,6 +15,7 @@ package org.springframework.data.gemfire.repository.sample;
 import javax.annotation.Resource;
 
 import org.apache.geode.cache.Region;
+
 import org.springframework.beans.factory.InitializingBean;
 
 /**

@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.InterestPolicy;
 import org.apache.geode.cache.SubscriptionAttributes;
+
 import org.junit.Test;
 
 /**

@@ -27,6 +27,7 @@ import java.lang.annotation.Target;
 
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
+
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 

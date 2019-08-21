@@ -21,8 +21,10 @@ import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newR
 import javax.naming.NamingException;
 
 import org.apache.geode.ra.GFConnectionFactory;
+
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

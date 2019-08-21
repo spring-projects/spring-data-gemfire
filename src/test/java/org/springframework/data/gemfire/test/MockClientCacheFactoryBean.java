@@ -15,6 +15,7 @@ package org.springframework.data.gemfire.test;
 import java.util.Optional;
 
 import org.apache.geode.cache.GemFireCache;
+
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 
 /**

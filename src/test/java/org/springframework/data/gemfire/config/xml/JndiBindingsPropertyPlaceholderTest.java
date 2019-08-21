@@ -25,8 +25,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.geode.internal.datasource.ConfigProperty;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.CacheFactoryBean;

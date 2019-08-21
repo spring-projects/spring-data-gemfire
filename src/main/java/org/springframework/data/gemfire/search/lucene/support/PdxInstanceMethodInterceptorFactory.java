@@ -19,8 +19,10 @@ package org.springframework.data.gemfire.search.lucene.support;
 
 import static org.springframework.data.gemfire.search.lucene.support.PdxInstanceMethodInterceptor.newPdxInstanceMethodInterceptor;
 
-import org.aopalliance.intercept.MethodInterceptor;
 import org.apache.geode.pdx.PdxInstance;
+
+import org.aopalliance.intercept.MethodInterceptor;
+
 import org.springframework.data.projection.MethodInterceptorFactory;
 
 /**

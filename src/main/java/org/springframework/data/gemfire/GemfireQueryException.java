@@ -19,6 +19,7 @@ package org.springframework.data.gemfire;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.QueryExecutionTimeoutException;
 import org.apache.geode.cache.query.QueryInvalidException;
+
 import org.springframework.dao.InvalidDataAccessResourceUsageException;
 
 /**

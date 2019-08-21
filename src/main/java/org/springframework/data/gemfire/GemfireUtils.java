@@ -18,10 +18,12 @@ package org.springframework.data.gemfire;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.internal.GemFireVersion;
+
+import org.w3c.dom.Element;
+
 import org.springframework.data.gemfire.config.support.GemfireFeature;
 import org.springframework.data.gemfire.util.RegionUtils;
 import org.springframework.util.ClassUtils;
-import org.w3c.dom.Element;
 
 /**
  * {@link GemfireUtils} is an abstract utility class encapsulating common functionality for accessing features

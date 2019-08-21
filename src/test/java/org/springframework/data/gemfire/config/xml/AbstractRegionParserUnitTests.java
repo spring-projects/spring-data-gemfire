@@ -28,13 +28,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.beans.factory.xml.XmlReaderContext;
-
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 /**
  * Unit tests for {@link AbstractRegionParser}.

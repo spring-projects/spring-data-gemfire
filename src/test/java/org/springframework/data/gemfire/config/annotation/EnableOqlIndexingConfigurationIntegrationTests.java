@@ -24,8 +24,10 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.query.Index;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.data.gemfire.GemfireUtils;

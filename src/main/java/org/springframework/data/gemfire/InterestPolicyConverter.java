@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire;
 
 import org.apache.geode.cache.InterestPolicy;
+
 import org.springframework.data.gemfire.support.AbstractPropertyEditorConverterSupport;
 
 /**

@@ -16,10 +16,11 @@
 
 package org.springframework.data.gemfire.config.xml;
 
+import org.w3c.dom.Element;
+
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
-import org.w3c.dom.Element;
 
 /**
  * Bean definition parser for the &lt;gfe:client-cache&gt; SDG XML namespace (XSD) element.

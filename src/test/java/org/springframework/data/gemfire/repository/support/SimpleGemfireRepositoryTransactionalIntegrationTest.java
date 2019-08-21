@@ -29,10 +29,12 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Resource;
 
 import org.apache.geode.cache.Region;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.mapping.GemfireMappingContext;

@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire.client;
 
 import org.apache.geode.cache.client.ClientRegionShortcut;
+
 import org.springframework.core.convert.converter.Converter;
 
 /**

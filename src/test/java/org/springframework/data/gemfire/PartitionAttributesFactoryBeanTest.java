@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionResolver;
+
 import org.junit.Test;
 
 /**

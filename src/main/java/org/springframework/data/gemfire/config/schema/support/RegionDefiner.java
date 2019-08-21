@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+
 import org.springframework.data.gemfire.config.schema.SchemaObjectDefiner;
 import org.springframework.data.gemfire.config.schema.SchemaObjectType;
 import org.springframework.data.gemfire.config.schema.definitions.RegionDefinition;

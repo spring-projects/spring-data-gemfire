@@ -30,11 +30,13 @@ import java.util.Collections;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.Index;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.gemfire.config.schema.SchemaObjectDefinition;
 import org.springframework.data.gemfire.config.schema.SchemaObjectType;
 import org.springframework.data.gemfire.config.schema.definitions.IndexDefinition;

@@ -26,7 +26,9 @@ import java.util.Map;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+
 import org.junit.Test;
+
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.client.GemfireDataSourcePostProcessor;
 

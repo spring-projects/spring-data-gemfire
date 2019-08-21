@@ -29,8 +29,10 @@ import java.util.Properties;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.ServerLauncher;
+
 import org.junit.After;
 import org.junit.Test;
+
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.data.gemfire.GemfireUtils;
 

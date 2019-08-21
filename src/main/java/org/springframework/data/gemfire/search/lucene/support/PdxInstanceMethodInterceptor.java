@@ -20,10 +20,12 @@ package org.springframework.data.gemfire.search.lucene.support;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.WritablePdxInstance;
+
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
+
 import org.springframework.data.projection.Accessor;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;

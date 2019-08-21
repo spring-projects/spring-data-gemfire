@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire;
 
 import org.junit.After;
 import org.junit.Before;
+
 import org.springframework.context.support.GenericXmlApplicationContext;
 
 /**
@@ -32,8 +32,7 @@ public abstract class RecreatingContextTest {
 
 	protected abstract String location();
 
-	protected  void configureContext(){
-	}
+	protected  void configureContext() { }
 
 	@Before
 	public void createCtx() {

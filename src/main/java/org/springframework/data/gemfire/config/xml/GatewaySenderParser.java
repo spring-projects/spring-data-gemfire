@@ -16,6 +16,8 @@
 
 package org.springframework.data.gemfire.config.xml;
 
+import org.w3c.dom.Element;
+
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
@@ -23,7 +25,6 @@ import org.springframework.data.gemfire.util.SpringUtils;
 import org.springframework.data.gemfire.wan.GatewaySenderFactoryBean;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
-import org.w3c.dom.Element;
 
 /**
  * Bean definition parser for the &lt;gfe:gateway-sender&gt; SDG XML namespace (XSD) element.

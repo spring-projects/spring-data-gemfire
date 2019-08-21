@@ -35,10 +35,12 @@ import java.util.Properties;
 
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.LocatorLauncher;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
+
 import org.springframework.data.gemfire.config.annotation.LocatorConfigurer;
 
 /**

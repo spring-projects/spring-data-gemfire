@@ -38,6 +38,7 @@ import org.apache.geode.cache.lucene.LuceneIndexFactory;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
+
 import org.apache.lucene.analysis.Analyzer;
 
 import org.springframework.beans.factory.DisposableBean;

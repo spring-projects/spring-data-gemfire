@@ -20,6 +20,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import org.apache.geode.cache.DataPolicy;
+
 import org.junit.Test;
 
 /**

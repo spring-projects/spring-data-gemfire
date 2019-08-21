@@ -48,12 +48,14 @@ import javax.enterprise.inject.spi.BeanManager;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.data.gemfire.GemfireAccessor;

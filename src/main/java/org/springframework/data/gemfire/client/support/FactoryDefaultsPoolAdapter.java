@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.query.QueryService;
+
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.client.PoolAdapter;
 

@@ -18,6 +18,8 @@ package org.springframework.data.gemfire.config.xml;
 
 import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeList;
 
+import org.w3c.dom.Element;
+
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.ManagedList;
@@ -25,7 +27,6 @@ import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.snapshot.SnapshotServiceFactoryBean;
 import org.springframework.util.xml.DomUtils;
-import org.w3c.dom.Element;
 
 /**
  * Bean definition parser for the &lt;gfe-data:snapshot-service&gt; SDG XML namespace (XSD) element.

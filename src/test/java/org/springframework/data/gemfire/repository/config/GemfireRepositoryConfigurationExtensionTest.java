@@ -33,6 +33,9 @@ import java.util.Collection;
 import java.util.Optional;
 
 import org.junit.Test;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
@@ -50,8 +53,6 @@ import org.springframework.data.gemfire.repository.GemfireRepository;
 import org.springframework.data.gemfire.repository.support.GemfireRepositoryFactoryBean;
 import org.springframework.data.repository.config.AnnotationRepositoryConfigurationSource;
 import org.springframework.data.repository.config.XmlRepositoryConfigurationSource;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 /**
  * Unit tests for {@link GemfireRepositoryConfigurationExtension}.

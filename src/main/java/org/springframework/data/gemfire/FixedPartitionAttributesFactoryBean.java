@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire;
 
 import org.apache.geode.cache.FixedPartitionAttributes;
+
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;

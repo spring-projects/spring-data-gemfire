@@ -27,11 +27,13 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.query.CqEvent;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import org.springframework.data.gemfire.fork.CqCacheServerProcess;
 import org.springframework.data.gemfire.listener.adapter.ContinuousQueryListenerAdapter;
 import org.springframework.data.gemfire.process.ProcessWrapper;

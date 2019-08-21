@@ -23,10 +23,12 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import org.apache.geode.cache.GemFireCache;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.gemfire.DiskStoreFactoryBean;
 import org.springframework.data.gemfire.config.annotation.PeerCacheApplication;

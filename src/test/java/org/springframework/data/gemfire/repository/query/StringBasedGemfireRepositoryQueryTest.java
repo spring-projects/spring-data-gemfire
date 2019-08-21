@@ -39,6 +39,7 @@ import java.util.List;
 
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.internal.ResultsBag;
+
 import org.junit.Test;
 
 /**

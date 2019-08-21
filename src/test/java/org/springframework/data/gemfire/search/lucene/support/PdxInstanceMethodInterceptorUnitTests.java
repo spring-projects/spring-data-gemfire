@@ -30,17 +30,18 @@ import static org.springframework.data.gemfire.search.lucene.support.PdxInstance
 
 import java.lang.reflect.Method;
 
-import org.aopalliance.intercept.MethodInvocation;
+import lombok.Data;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.WritablePdxInstance;
+
+import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import lombok.Data;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
 /**
  * Unit tests for {@link PdxInstanceMethodInterceptor}.

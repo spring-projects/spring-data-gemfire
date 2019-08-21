@@ -23,10 +23,10 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 
+import org.apache.geode.cache.GemFireCache;
+
 import org.junit.After;
 import org.junit.Test;
-
-import org.apache.geode.cache.GemFireCache;
 
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;

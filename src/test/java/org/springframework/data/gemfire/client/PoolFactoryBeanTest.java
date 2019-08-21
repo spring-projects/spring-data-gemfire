@@ -42,9 +42,11 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.query.QueryService;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.support.ConnectionEndpoint;

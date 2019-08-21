@@ -20,6 +20,7 @@ package org.springframework.data.gemfire.search.lucene;
 import java.util.List;
 
 import org.apache.geode.cache.lucene.LuceneQueryProvider;
+
 import org.springframework.data.domain.Page;
 
 /**

@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire.function.sample;
 
 import org.apache.geode.pdx.PdxInstance;
+
 import org.springframework.data.gemfire.function.ClientCacheFunctionExecutionWithPdxIntegrationTest;
 import org.springframework.data.gemfire.function.annotation.OnServer;
 

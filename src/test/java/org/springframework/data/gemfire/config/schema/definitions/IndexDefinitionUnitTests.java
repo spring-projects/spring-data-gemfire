@@ -27,11 +27,13 @@ import java.io.IOException;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.Index;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.gemfire.IndexType;
 import org.springframework.data.gemfire.config.admin.GemfireAdminOperations;
 import org.springframework.data.gemfire.config.schema.SchemaObjectType;

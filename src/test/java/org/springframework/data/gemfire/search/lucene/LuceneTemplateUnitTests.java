@@ -40,6 +40,7 @@ import org.apache.geode.cache.lucene.LuceneQueryProvider;
 import org.apache.geode.cache.lucene.LuceneResultStruct;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.PageableLuceneQueryResults;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

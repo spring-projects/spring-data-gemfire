@@ -25,11 +25,11 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
-
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.ResourcePermission;
+
+import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;

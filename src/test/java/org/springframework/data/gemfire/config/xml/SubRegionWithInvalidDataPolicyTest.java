@@ -20,10 +20,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+import org.xml.sax.SAXParseException;
+
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionStoreException;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.xml.sax.SAXParseException;
 
 /**
  * The SubRegionWithInvalidDataPolicyTest class is a test suite of test cases testing the data-policy and persistent

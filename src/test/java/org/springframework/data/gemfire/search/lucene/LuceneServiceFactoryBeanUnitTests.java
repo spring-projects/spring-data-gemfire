@@ -28,6 +28,7 @@ import static org.mockito.Mockito.verify;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.lucene.LuceneService;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

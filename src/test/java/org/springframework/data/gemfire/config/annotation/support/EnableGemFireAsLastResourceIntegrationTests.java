@@ -32,8 +32,10 @@ import javax.resource.ResourceException;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.ra.GFConnection;
 import org.apache.geode.ra.GFConnectionFactory;
+
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;

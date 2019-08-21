@@ -16,6 +16,8 @@
 
 package org.springframework.data.gemfire.config.xml;
 
+import org.w3c.dom.Element;
+
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -24,7 +26,6 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.function.FunctionServiceFactoryBean;
 import org.springframework.data.gemfire.util.SpringUtils;
 import org.springframework.util.xml.DomUtils;
-import org.w3c.dom.Element;
 
 /**
  * Bean definition parser for the &lt;gfe:function-service&gt; SDG XML namespace (XSD) element.

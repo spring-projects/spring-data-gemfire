@@ -25,6 +25,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
+
 import org.junit.Test;
 
 /**

@@ -19,6 +19,7 @@ package org.springframework.data.gemfire.config.schema;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
+
 import org.springframework.core.Ordered;
 
 /**

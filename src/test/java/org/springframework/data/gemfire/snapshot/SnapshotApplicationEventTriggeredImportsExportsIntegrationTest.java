@@ -30,13 +30,13 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.annotation.Resource;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.snapshot.SnapshotFilter;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.snapshot.SnapshotFilter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;

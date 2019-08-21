@@ -37,6 +37,7 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.compression.Compressor;
+
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.data.gemfire.GemfireUtils;

@@ -18,6 +18,7 @@ package org.springframework.data.gemfire;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionShortcut;
+
 import org.springframework.util.ObjectUtils;
 
 /**

@@ -24,6 +24,7 @@ import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.query.Index;
+
 import org.springframework.data.gemfire.config.schema.SchemaObjectDefinition;
 import org.springframework.data.gemfire.config.schema.definitions.IndexDefinition;
 import org.springframework.data.gemfire.config.schema.definitions.RegionDefinition;

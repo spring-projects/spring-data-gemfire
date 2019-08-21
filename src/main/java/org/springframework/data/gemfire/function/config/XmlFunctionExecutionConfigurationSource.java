@@ -18,12 +18,13 @@ package org.springframework.data.gemfire.function.config;
 
 import java.util.Arrays;
 
+import org.w3c.dom.Element;
+
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.data.gemfire.function.config.TypeFilterParser.Type;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-import org.w3c.dom.Element;
 
 /**
  * @author David Turanski

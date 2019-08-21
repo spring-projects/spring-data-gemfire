@@ -26,10 +26,12 @@ import java.util.Collections;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.mapping.GemfireMappingContext;
 import org.springframework.data.gemfire.repository.sample.PersonRepository;

@@ -47,13 +47,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.junit.After;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.ArgumentMatchers;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.snapshot.CacheSnapshotService;
@@ -61,13 +54,19 @@ import org.apache.geode.cache.snapshot.RegionSnapshotService;
 import org.apache.geode.cache.snapshot.SnapshotFilter;
 import org.apache.geode.cache.snapshot.SnapshotOptions;
 
+import org.junit.After;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentMatchers;
+import org.slf4j.Logger;
+
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.gemfire.snapshot.event.ExportSnapshotApplicationEvent;
 import org.springframework.data.gemfire.snapshot.event.ImportSnapshotApplicationEvent;
 import org.springframework.data.gemfire.snapshot.event.SnapshotApplicationEvent;
 import org.springframework.data.gemfire.test.support.FileSystemUtils;
-
-import org.slf4j.Logger;
 
 /**
  * The SnapshotServiceFactoryBeanTest class is a test suite of test cases testing the contract and functionality

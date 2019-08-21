@@ -27,6 +27,7 @@ import static org.springframework.data.gemfire.client.Interest.newInterest;
 import java.util.List;
 
 import org.apache.geode.cache.InterestResultPolicy;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

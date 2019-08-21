@@ -24,8 +24,10 @@ import org.apache.geode.cache.MembershipAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.ResumptionAction;
 import org.apache.geode.distributed.Role;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.test.GemfireTestApplicationContextInitializer;

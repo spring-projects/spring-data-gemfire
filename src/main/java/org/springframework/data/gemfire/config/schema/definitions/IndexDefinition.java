@@ -25,6 +25,7 @@ import java.util.Optional;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.Index;
+
 import org.springframework.data.gemfire.IndexType;
 import org.springframework.data.gemfire.config.admin.GemfireAdminOperations;
 import org.springframework.data.gemfire.config.schema.SchemaObjectDefinition;

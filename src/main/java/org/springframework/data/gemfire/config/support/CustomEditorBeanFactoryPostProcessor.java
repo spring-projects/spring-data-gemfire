@@ -25,6 +25,7 @@ import org.apache.geode.cache.InterestPolicy;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.Gateway;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -63,7 +64,6 @@ public class CustomEditorBeanFactoryPostProcessor implements BeanFactoryPostProc
 	 * {@inheritDoc}
 	 */
 	@Override
-	@SuppressWarnings("all")
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 
 		beanFactory.registerCustomEditor(ConnectionEndpoint.class, StringToConnectionEndpointConverter.class);
@@ -89,7 +89,6 @@ public class CustomEditorBeanFactoryPostProcessor implements BeanFactoryPostProc
 		 * {@inheritDoc}
 		 */
 		@Override
-		@SuppressWarnings("all")
 		public Iterable convert(ConnectionEndpoint[] source) {
 			return ConnectionEndpointList.from(source);
 		}
@@ -103,7 +102,6 @@ public class CustomEditorBeanFactoryPostProcessor implements BeanFactoryPostProc
 		 * {@inheritDoc}
 		 */
 		@Override
-		@SuppressWarnings("all")
 		public ConnectionEndpoint convert(String source) {
 			return assertConverted(source, ConnectionEndpoint.parse(source), ConnectionEndpoint.class);
 		}
@@ -117,7 +115,6 @@ public class CustomEditorBeanFactoryPostProcessor implements BeanFactoryPostProc
 		 * {@inheritDoc}
 		 */
 		@Override
-		@SuppressWarnings("all")
 		public ConnectionEndpointList convert(String source) {
 			return assertConverted(source, ConnectionEndpointList.parse(0, source.split(",")),
 				ConnectionEndpointList.class);

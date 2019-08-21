@@ -19,12 +19,14 @@ package org.springframework.data.gemfire.config.xml;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.cache.Region;
+
 import org.junit.Test;
+import org.xml.sax.SAXParseException;
+
 import org.springframework.beans.factory.xml.XmlBeanDefinitionStoreException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor;
-import org.xml.sax.SAXParseException;
 
 /**
  * Unit test testing the proper syntax for declaring "custom" expiration attributes on a {@link Region}.

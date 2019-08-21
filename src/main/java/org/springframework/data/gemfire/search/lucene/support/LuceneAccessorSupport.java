@@ -27,6 +27,7 @@ import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneQueryProvider;
 import org.apache.geode.cache.lucene.LuceneResultStruct;
 import org.apache.geode.cache.lucene.PageableLuceneQueryResults;
+
 import org.springframework.data.gemfire.search.lucene.LuceneAccessor;
 import org.springframework.data.gemfire.util.RuntimeExceptionFactory;
 

@@ -29,8 +29,10 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.util.GatewayConflictHelper;
 import org.apache.geode.cache.util.GatewayConflictResolver;
 import org.apache.geode.cache.util.TimestampedEntryEvent;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;

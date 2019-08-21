@@ -18,7 +18,9 @@ import static org.junit.Assert.assertSame;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
+
 import org.junit.Test;
+
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 

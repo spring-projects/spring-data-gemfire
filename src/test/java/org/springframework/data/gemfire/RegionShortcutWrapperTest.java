@@ -22,6 +22,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.RegionShortcut;
+
 import org.junit.Test;
 
 /**

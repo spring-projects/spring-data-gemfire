@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionShortcut;
+
 import org.junit.Test;
 
 /**

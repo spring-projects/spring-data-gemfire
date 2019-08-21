@@ -20,13 +20,13 @@ import static org.mockito.Mockito.mock;
 
 import javax.annotation.Resource;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.springframework.data.gemfire.support.AbstractFactoryBeanSupport;
 import org.springframework.lang.Nullable;

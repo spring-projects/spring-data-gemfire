@@ -18,13 +18,13 @@ package org.springframework.data.gemfire.test.model;
 
 import java.io.Serializable;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.gemfire.mapping.annotation.LuceneIndexed;
-import org.springframework.data.gemfire.mapping.annotation.Region;
-
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.gemfire.mapping.annotation.LuceneIndexed;
+import org.springframework.data.gemfire.mapping.annotation.Region;
 
 /**
  * Abstract Data Type (ADT) modeling a {@literal Book} application domain type.

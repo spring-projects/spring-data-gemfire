@@ -19,6 +19,7 @@ package org.springframework.data.gemfire.config.xml;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+
 import org.springframework.beans.factory.parsing.BeanDefinitionParsingException;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 

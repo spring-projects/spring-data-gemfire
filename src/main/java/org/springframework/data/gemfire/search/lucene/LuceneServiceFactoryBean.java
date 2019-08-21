@@ -22,6 +22,7 @@ import java.util.Optional;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
+
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.gemfire.support.AbstractFactoryBeanSupport;

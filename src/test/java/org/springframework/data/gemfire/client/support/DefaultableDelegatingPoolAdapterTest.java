@@ -36,6 +36,7 @@ import java.util.function.Supplier;
 
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.query.QueryService;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,6 +44,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.gemfire.GemfireUtils;
 
 /**

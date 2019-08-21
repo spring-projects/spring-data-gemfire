@@ -15,12 +15,12 @@
  */
 package org.springframework.data.gemfire.config.xml;
 
+import org.w3c.dom.Element;
+
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.RegionAttributesFactoryBean;
 import org.springframework.data.gemfire.ReplicatedRegionFactoryBean;
-
-import org.w3c.dom.Element;
 
 /**
  * Bean definition parser for the &lt;gfe:replicated-region&gt; SDG XML namespace (XSD) element.

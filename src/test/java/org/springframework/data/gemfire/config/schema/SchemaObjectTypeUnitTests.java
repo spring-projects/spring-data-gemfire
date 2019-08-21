@@ -35,6 +35,7 @@ import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewaySender;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;

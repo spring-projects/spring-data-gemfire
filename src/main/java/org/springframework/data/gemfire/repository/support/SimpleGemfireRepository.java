@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.repository.support;
 
 import java.util.Collection;
@@ -29,6 +28,7 @@ import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.SelectResults;
+
 import org.springframework.data.domain.Sort;
 import org.springframework.data.gemfire.GemfireCallback;
 import org.springframework.data.gemfire.GemfireTemplate;

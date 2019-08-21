@@ -16,6 +16,9 @@
 
 package org.springframework.data.gemfire.config.xml;
 
+import org.w3c.dom.Attr;
+import org.w3c.dom.Element;
+
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -25,8 +28,6 @@ import org.springframework.data.gemfire.server.CacheServerFactoryBean;
 import org.springframework.data.gemfire.util.SpringUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Element;
 
 /**
  * Bean definition parser for the &lt;gfe:cache-server&lt; SDG XML namespace (XSD) element.

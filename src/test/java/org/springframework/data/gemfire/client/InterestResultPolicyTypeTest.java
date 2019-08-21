@@ -22,6 +22,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
 import org.apache.geode.cache.InterestResultPolicy;
+
 import org.junit.Test;
 
 /**

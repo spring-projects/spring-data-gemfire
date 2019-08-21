@@ -34,6 +34,7 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.apache.geode.cache.server.ServerLoadProbe;
+
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
@@ -51,6 +52,7 @@ import org.springframework.util.StringUtils;
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.client.ClientCache
  * @see org.apache.geode.cache.server.CacheServer
+ * @see org.apache.geode.cache.server.ClientSubscriptionConfig
  * @see org.springframework.beans.factory.DisposableBean
  * @see org.springframework.beans.factory.FactoryBean
  * @see org.springframework.beans.factory.InitializingBean

@@ -26,17 +26,19 @@ import static org.springframework.data.gemfire.util.CollectionUtils.asSet;
 
 import java.util.Collections;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 import org.apache.geode.cache.GemFireCache;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.config.schema.SchemaObjectCollector;
 import org.springframework.data.gemfire.config.schema.SchemaObjectType;
-
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
 /**
  * Unit tests for {@link ComposableSchemaObjectCollector}.

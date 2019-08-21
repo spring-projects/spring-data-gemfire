@@ -28,7 +28,9 @@ import static org.mockito.Mockito.when;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.geode.cache.snapshot.SnapshotFilter;
+
 import org.junit.Test;
+
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.snapshot.filter.ComposableSnapshotFilter.Operator;
 

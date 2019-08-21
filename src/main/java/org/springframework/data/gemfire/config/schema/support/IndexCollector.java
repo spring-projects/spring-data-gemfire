@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.query.Index;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.gemfire.config.schema.SchemaObjectCollector;
 

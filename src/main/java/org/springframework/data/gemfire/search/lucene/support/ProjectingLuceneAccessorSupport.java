@@ -22,6 +22,7 @@ import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newU
 import java.util.List;
 
 import org.apache.geode.cache.lucene.LuceneQueryProvider;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.gemfire.search.lucene.ProjectingLuceneAccessor;
 import org.springframework.data.gemfire.util.RuntimeExceptionFactory;

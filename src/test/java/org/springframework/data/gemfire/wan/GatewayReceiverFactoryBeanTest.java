@@ -24,11 +24,11 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 
-import org.junit.Test;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
+
+import org.junit.Test;
 
 /**
  * The GatewayReceiverFactoryBeanTest class is a test suite of test cases testing the contract and functionality

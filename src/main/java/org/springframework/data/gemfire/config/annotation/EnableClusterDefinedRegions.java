@@ -25,6 +25,7 @@ import java.lang.annotation.Target;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 

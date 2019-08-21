@@ -23,8 +23,10 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.QueryService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.data.gemfire.GemfireCacheUtils;
 import org.springframework.data.gemfire.config.schema.definitions.IndexDefinition;
 import org.springframework.data.gemfire.function.annotation.GemfireFunction;

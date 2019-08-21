@@ -51,10 +51,12 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.management.internal.cli.domain.RegionInformation;
 import org.apache.geode.management.internal.cli.functions.GetRegionsFunction;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.data.gemfire.client.function.ListRegionsOnServerFunction;
 import org.springframework.data.gemfire.util.RegionUtils;

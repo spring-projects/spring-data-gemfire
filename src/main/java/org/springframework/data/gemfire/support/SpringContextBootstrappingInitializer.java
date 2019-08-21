@@ -24,8 +24,10 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Declarable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.context.ApplicationListener;

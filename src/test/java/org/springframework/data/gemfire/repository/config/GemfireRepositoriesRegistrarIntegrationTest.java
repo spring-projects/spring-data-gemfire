@@ -18,8 +18,10 @@ package org.springframework.data.gemfire.repository.config;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;

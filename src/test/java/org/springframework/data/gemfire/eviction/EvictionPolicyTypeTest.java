@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import org.apache.geode.cache.EvictionAlgorithm;
+
 import org.junit.Test;
 
 /**

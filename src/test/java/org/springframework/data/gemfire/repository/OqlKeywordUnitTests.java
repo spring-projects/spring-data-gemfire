@@ -24,6 +24,7 @@ import static org.hamcrest.Matchers.nullValue;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
 import org.springframework.data.gemfire.repository.query.support.OqlKeyword;
 
 /**

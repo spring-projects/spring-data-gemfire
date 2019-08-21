@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneQueryProvider;
+
 import org.springframework.data.domain.Page;
 
 /**

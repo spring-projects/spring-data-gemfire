@@ -21,6 +21,7 @@ import static org.springframework.data.gemfire.support.GemfireBeanFactoryLocator
 
 import org.apache.geode.cache.CacheCallback;
 import org.apache.geode.cache.Declarable;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.data.gemfire.PeerRegionFactoryBean;
 

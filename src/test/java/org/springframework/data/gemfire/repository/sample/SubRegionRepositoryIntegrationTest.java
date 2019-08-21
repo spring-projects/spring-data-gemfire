@@ -31,9 +31,11 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.apache.geode.cache.Region;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.gemfire.repository.Wrapper;
 import org.springframework.test.context.ContextConfiguration;

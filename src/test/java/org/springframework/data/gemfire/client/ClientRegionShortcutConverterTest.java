@@ -19,6 +19,7 @@ package org.springframework.data.gemfire.client;
 import static org.junit.Assert.assertEquals;
 
 import org.apache.geode.cache.client.ClientRegionShortcut;
+
 import org.junit.Test;
 
 /**

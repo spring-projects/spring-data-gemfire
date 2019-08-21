@@ -23,9 +23,11 @@ import static org.springframework.data.gemfire.config.annotation.ClusterConfigur
 import static org.springframework.data.gemfire.config.annotation.ClusterConfigurationConfiguration.SchemaObjectContext;
 
 import org.apache.geode.cache.client.ClientCache;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;

@@ -26,6 +26,7 @@ import java.util.concurrent.Executor;
 
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.query.QueryService;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.gemfire.listener.ContinuousQueryListenerContainer;

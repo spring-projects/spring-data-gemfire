@@ -32,10 +32,12 @@ import java.util.Collections;
 import java.util.Optional;
 
 import org.apache.geode.cache.Region;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.data.gemfire.config.schema.SchemaObjectDefiner;
 import org.springframework.data.gemfire.config.schema.SchemaObjectType;
 import org.springframework.data.gemfire.config.schema.definitions.RegionDefinition;

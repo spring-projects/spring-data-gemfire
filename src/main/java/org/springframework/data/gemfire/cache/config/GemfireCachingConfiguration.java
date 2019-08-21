@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire.cache.config;
 
 import org.apache.geode.cache.GemFireCache;
+
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

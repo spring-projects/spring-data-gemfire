@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.test.mock;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -127,9 +126,11 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.pdx.PdxSerializer;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.mockito.ArgumentMatchers;
 import org.mockito.stubbing.Answer;
+
 import org.springframework.data.gemfire.IndexType;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
 import org.springframework.data.gemfire.test.mock.support.MockObjectInvocationException;

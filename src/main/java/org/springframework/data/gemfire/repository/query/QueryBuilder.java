@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire.repository.query;
 
 import org.apache.geode.cache.Region;
+
 import org.springframework.data.gemfire.mapping.GemfirePersistentEntity;
 import org.springframework.data.gemfire.repository.query.support.OqlKeyword;
 import org.springframework.data.repository.query.parser.PartTree;

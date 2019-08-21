@@ -24,8 +24,10 @@ import static org.junit.Assert.assertThat;
 import java.util.Properties;
 
 import org.apache.geode.pdx.PdxSerializer;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.gemfire.TestUtils;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;

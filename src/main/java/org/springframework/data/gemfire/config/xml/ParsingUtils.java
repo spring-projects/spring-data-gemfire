@@ -21,6 +21,8 @@ import org.apache.geode.cache.LossAction;
 import org.apache.geode.cache.MembershipAttributes;
 import org.apache.geode.cache.ResumptionAction;
 
+import org.w3c.dom.Element;
+
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
@@ -36,8 +38,6 @@ import org.springframework.data.gemfire.expiration.ExpirationAttributesFactoryBe
 import org.springframework.data.gemfire.util.SpringUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
-
-import org.w3c.dom.Element;
 
 /**
  * Utilities used by SDG XML Namespace Parsers.

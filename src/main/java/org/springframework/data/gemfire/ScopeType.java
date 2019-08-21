@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire;
 
 import org.apache.geode.cache.Scope;
+
 import org.springframework.util.StringUtils;
 
 /**

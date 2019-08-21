@@ -32,10 +32,12 @@ import javax.resource.ResourceException;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.ra.GFConnection;
 import org.apache.geode.ra.GFConnectionFactory;
+
 import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
