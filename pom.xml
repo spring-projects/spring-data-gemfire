@@ -87,8 +87,8 @@
 			<groupId>javax.enterprise</groupId>
 			<artifactId>cdi-api</artifactId>
 			<version>${cdi}</version>
-			<scope>provided</scope>
 			<optional>true</optional>
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- Core Spring Framework -->
