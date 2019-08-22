@@ -178,6 +178,9 @@ public class ServerApplication {
 
 NOTE: `@EnableRedisServer` can only be used with {data-store-name} server applications.
 
+WARNING: You must explicitly declare the `org.apache.geode:geode-redis` module on your Spring [Boot] application
+classpath.
+
 See {sdg-javadoc}/org/springframework/data/gemfire/config/annotation/EnableRedisServer.html[`@EnableRedisServer` Javadoc].
 
 See <<bootstrap-annotation-config-embedded-services-redis>> for more details.
@@ -615,8 +618,8 @@ class CustomerService {
 }
 ----
 
-Anytime an event occurs changing the `Customer` data to match the predicate in your CQ query, the `process` method
-will be called.
+Anytime an event occurs changing the `Customer` data to match the predicate in your continuous OQL query (CQ),
+the `process` method will be called.
 
 NOTE: {data-store-name} CQ is a client-side feature only.
 
@@ -626,12 +629,49 @@ See {sdg-javadoc}/org/springframework/data/gemfire/listener/annotation/Continuou
 
 See <<apis:continuous-query>> and <<bootstrap-annotation-config-continuous-queries>> for more details.
 
+[[bootstap-annotations-quickstart-cluster-configuration]]
+== Configure Cluster Configuration
+
+When developing Spring Data applications using {data-store-name} as {data-store-name} `ClientCache` applications, it is
+useful during development to configure the server to match the client in a client/server topology.  In fact,
+{data-store-name} expects that when you have a "/Example" PROXY `Region` on the client, that a matching `Region` by name
+(i.e. "Example") exists in the server.
+
+You could use _Gfsh_ to create every Region and Index that your application requires, or, you could simply push
+the configuration meta-data already expressed when developing your Spring Data application using {data-store-name}
+when you run it.
+
+This is as simple as annotation your main application class with `@EnableClusterConfiguration(..)`:
+
+.Using `@EnableClusterConfiguration`
+[source,java]
+----
+@ClientCacheApplication
+@EnableClusterConfiguration(useHttp = true)
+class ClientApplication {
+  ...
+}
+----
+
+NOTE: Most of the time, when using a client/server topology, particularly in production environments, the servers
+of the cluster will be started using _Gfsh_.  In which case, it customary to use HTTP(S) to send the configuration
+metadata (e.g. Region & Index definitions) to the cluster.  When HTTP is used, the configuration metadata is sent
+to the Manager in the cluster and distributed across the server nodes in the cluster consistently.
+
+WARNING: In order to use `@EnableClusterConfiguration` you must declare the `org.springframework:spring-web` dependency
+in your Spring application classpath.
+
+See {sdg-javadoc}/org/springframework/data/gemfire/config/annotation/EnableClusterConfiguration.html[`@EnableClusterConfiguration` Javadoc].
+
+See <<bootstrap-annotation-config-cluster>> for more details.
+
 [[bootstap-annotations-quickstart-gatewayreceiver]]
 == Configure `GatewayReceivers`
 
 The replication of data between different {data-store-name} clusters is an increasingly important fault-tolerance
-and high availability mechanism.  {data-store-name} WAN Replication is a mechanism that allows one {data-store-name}
-cluster to replicate its data to another {data-store-name} cluster in a reliable, fault-tolerant manner.
+and high-availability (HA) mechanism.  {data-store-name} WAN replication is a mechanism that allows one
+{data-store-name} cluster to replicate its data to another {data-store-name} cluster in a reliable and fault-tolerant
+manner.
 
 {data-store-name} WAN replication requires two components to be configured:
 

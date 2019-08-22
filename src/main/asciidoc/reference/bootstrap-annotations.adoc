@@ -2053,50 +2053,54 @@ More details on Spring's Cache Abstraction can be found
 
 This may be the most exciting new feature in {sdg-name}.
 
-When a client application class is annotated with `@EnableClusterConfiguration`, any Regions or indexes defined
-and declared as beans in the Spring container by the client application are "`pushed`" to the cluster of servers
-to which the client is connected. Not only that, but this "`push`" is performed in such a way that {data-store-name}
+When a client application class is annotated with `@EnableClusterConfiguration`, any Regions or Indexes defined
+and declared as beans in the Spring Container by the client application are "`pushed`" to the cluster of servers
+to which the client is connected.  Not only that, but this "`push`" is performed in such a way that {data-store-name}
 remembers the configuration pushed by the client when using HTTP. If all the nodes in the cluster go down, they
 come back up with the same configuration as before. If a new server is added to the cluster, it will acquire
 identical configuration.
 
-In a sense, this feature is not much different than if you were to use _Gfsh_ to manually create the Regions and indexes
+In a sense, this feature is not much different than if you were to use _Gfsh_ to manually create the Regions and Indexes
 on all the servers in the cluster. Except that now, with {sdg-name}, you no longer need to use _Gfsh_ to create Regions
-and indexes.  Your Spring Boot application, enabled with the power of {sdg-name}, already contains all the configuration
-metadata needed to create Regions and indexes for you.
+and Indexes.  Your Spring Boot application, enabled with the power of {sdg-name}, already contains all the configuration
+metadata needed to create Regions and Indexes for you.
 
-When you use the Spring Data Repository abstraction, we know all the Regions (such as those defined by the `@Region` annotated
-entity classes) and indexes (such as those defined by the `@Indexed`-annotated entity fields and properties) that your application
-will need.
+When you use the Spring Data Repository abstraction, we know all the Regions (such as those defined by the `@Region`
+annotated entity classes) and Indexes (such as those defined by the `@Indexed`-annotated entity fields and properties)
+that your application will need.
 
-When you use Spring's Cache Abstraction, we also know all the Regions for all the caches identified in the caching annotations
-needed by the application's service components.
+When you use Spring's Cache Abstraction, we also know all the Regions for all the caches identified in the caching
+annotations needed by your application's service components.
 
-Essentially, you are already telling us everything we need to know simply by developing your application with the Spring Framework
-by using all of its provided services, infrastructure, and other components, whether expressed in annotation metadata, Java, XML
+Essentially, you are already telling us everything we need to know simply by developing your application with the
+Spring Framework simply by using all of its API and features, whether expressed in annotation metadata, Java, XML
 or otherwise, and whether for configuration, mapping, or whatever the purpose.
 
-The point is that you can focus on your application's business logic while using the framework's services
-and supporting infrastructure (such as Spring's Cache Abstraction, Spring Data Repositories, Spring's Transaction Management,
-and so on) and {sdg-name} takes care of all the {data-store-name} plumbing required by those framework services
-on the your behalf.
+The point is, you can focus on your application's business logic while using the framework's features and supporting
+infrastructure (such as Spring's Cache Abstraction, Spring Data Repositories, Spring's Transaction Management,
+and so on) and {sdg-name} takes care of all the {data-store-name} plumbing required by those framework features
+on your behalf.
 
 Pushing configuration from the client to the servers in the cluster and having the cluster remember it is made possible
 in part by the use of {data-store-name}'s {x-data-store-docs}/configuring/cluster_config/gfsh_persist.html[Cluster Configuration]
-service. {data-store-name}'s Cluster Configuration service is also the same service used by _Gfsh_ to record schema-related changes
-(for example, `gfsh> create region --name=Example --type=PARTITION`) issued by the user to the cluster from the shell.
+service. {data-store-name}'s Cluster Configuration service is also the same service used by _Gfsh_ to record
+schema-related changes (for example, `gfsh> create region --name=Example --type=PARTITION`) issued by the user
+to the cluster from the shell.
 
 Of course, since the cluster may "`remember`" the prior configuration pushed by a client from a previous run,
-{sdg-name} is careful not to stomp on any existing Regions and indexes already defined in the servers.
-This is especially important, for instance, when Regions already contain data.
+{sdg-name} is careful not to stomp on any existing Regions and Indexes already defined in the servers.
+This is especially important, for instance, when Regions already contain data!
 
 NOTE: Currently, there is no option to overwrite any existing Region or Index definitions. To re-create a Region
 or Index, you must use _Gfsh_ to first destroy the Region or Index and then restart the client application
 so that configuration is pushed up to the server again. Alternatively, you can use _Gfsh_ to (re-)define the Regions
-and indexes manually.
+and Indexes manually.
 
-NOTE: Unlike _Gfsh_, {sdg-name} supports the creation of Regions and indexes only on the servers from a client.
-For advanced configuration and use cases, you should use _Gfsh_ to manage the cluster.
+NOTE: Unlike _Gfsh_, {sdg-name} supports the creation of Regions and Indexes only on the servers from a client.
+For advanced configuration and use cases, you should use _Gfsh_ to manage the (server-side) cluster.
+
+WARNING: To use this feature you must explicitly declare the `org.springframework:spring-web` dependency on the
+classpath of your Spring, {data-store-name} `ClientCache` application.
 
 Consider the power expressed in the following configuration:
 
@@ -2115,18 +2119,18 @@ class ClientApplication { .. }
 ----
 
 You instantly get a Spring Boot application with a {data-store-name} `ClientCache` instance, Spring Data Repositories,
-Spring's Cache Abstraction with {data-store-name} as the caching provider (where Regions and indexes
+Spring's Cache Abstraction with {data-store-name} as the caching provider (where Regions and Indexes
 are not only created on the client but pushed to the servers in the cluster).
 
 From there, you only need to do the following:
 
 * Define the application's domain model objects annotated with mapping and index annotations.
-* Define Repository interfaces to support basic data access operations and simple queries for each of the entity types.
+* Define Repository interfaces to support basic data access operations and simple queries for each of your entity types.
 * Define the service components containing the business logic transacting the entities.
 * Declare the appropriate annotations on service methods that require caching, transactional behavior, and so on.
 
 Nothing in this case pertains to the infrastructure and plumbing required in the application's back-end services
-(such as {data-store-name}). Database users have similar features. Now Spring and {data-store-name} developers can, too.
+(such as {data-store-name}). Database users have similar features. Now Spring and {data-store-name} developers do too.
 
 When combined with the following {sdg-name} annotations, this application really starts to take flight,
 with very little effort:
