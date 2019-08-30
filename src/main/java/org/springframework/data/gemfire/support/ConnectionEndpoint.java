@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.support;
 
 import java.net.InetSocketAddress;
@@ -77,12 +76,13 @@ public class ConnectionEndpoint implements Cloneable, Comparable<ConnectionEndpo
 	 * @see #ConnectionEndpoint(String, int)
 	 */
 	public static ConnectionEndpoint parse(String hostPort, int defaultPort) {
+
 		Assert.hasText(hostPort, "'hostPort' must be specified");
 
 		String host = StringUtils.trimAllWhitespace(hostPort);
 
 		int port = defaultPort;
-		int portIndex = hostPort.indexOf("[");
+		int portIndex = host.indexOf("[");
 
 		if (portIndex > -1) {
 			port = parsePort(parseDigits(host.substring(portIndex)), defaultPort);
@@ -92,8 +92,8 @@ public class ConnectionEndpoint implements Cloneable, Comparable<ConnectionEndpo
 		return new ConnectionEndpoint(host, port);
 	}
 
-	/* (non-Javadoc) */
 	static String parseDigits(String value) {
+
 		StringBuilder digits = new StringBuilder();
 
 		if (StringUtils.hasText(value)) {
@@ -107,8 +107,8 @@ public class ConnectionEndpoint implements Cloneable, Comparable<ConnectionEndpo
 		return digits.toString();
 	}
 
-	/* (non-Javadoc) */
 	static int parsePort(String port, int defaultPort) {
+
 		try {
 			return Integer.parseInt(port);
 		}
@@ -127,15 +127,15 @@ public class ConnectionEndpoint implements Cloneable, Comparable<ConnectionEndpo
 	 * @see ConnectionEndpoint#DEFAULT_HOST
 	 */
 	public ConnectionEndpoint(String host, int port) {
+
 		Assert.isTrue(isValidPort(port), String.format("port number [%d] must be between 0 and 65535", port));
 
 		this.host = SpringUtils.defaultIfEmpty(host, DEFAULT_HOST);
 		this.port = port;
 	}
 
-	/* (non-Javadoc) */
 	private boolean isValidPort(int port) {
-		return (port >= 0 && port <= 65535);
+		return port >= 0 && port <= 65535;
 	}
 
 	/**
@@ -144,7 +144,7 @@ public class ConnectionEndpoint implements Cloneable, Comparable<ConnectionEndpo
 	 * @return a String value indicating the hostname or IP address in this ConnectionEndpoint.
 	 */
 	public String getHost() {
-		return host;
+		return this.host;
 	}
 
 	/**
@@ -153,7 +153,7 @@ public class ConnectionEndpoint implements Cloneable, Comparable<ConnectionEndpo
 	 * @return an Integer value indicating the (service) port number in this ConnectionEndpoint.
 	 */
 	public int getPort() {
-		return port;
+		return this.port;
 	}
 
 	/**
@@ -168,25 +168,25 @@ public class ConnectionEndpoint implements Cloneable, Comparable<ConnectionEndpo
 		return new InetSocketAddress(getHost(), getPort());
 	}
 
-	/* (non-Javadoc) */
 	@Override
 	@SuppressWarnings("all")
 	protected Object clone() throws CloneNotSupportedException {
 		return new ConnectionEndpoint(this.getHost(), this.getPort());
 	}
 
-	/* (non-Javadoc) */
 	@Override
 	@SuppressWarnings("all")
 	public int compareTo(ConnectionEndpoint connectionEndpoint) {
+
 		int compareValue = getHost().compareTo(connectionEndpoint.getHost());
-		return (compareValue != 0 ? compareValue : getPort() - connectionEndpoint.getPort());
+
+		return compareValue != 0 ? compareValue : getPort() - connectionEndpoint.getPort();
 	}
 
-	/* (non-Javadoc) */
 	@Override
 	public boolean equals(final Object obj) {
-		if (obj == this) {
+
+		if (this == obj) {
 			return true;
 		}
 
@@ -200,16 +200,17 @@ public class ConnectionEndpoint implements Cloneable, Comparable<ConnectionEndpo
 			&& ObjectUtils.nullSafeEquals(this.getPort(), that.getPort());
 	}
 
-	/* (non-Javadoc) */
 	@Override
 	public int hashCode() {
+
 		int hashValue = 17;
+
 		hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(getHost());
 		hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(getPort());
+
 		return hashValue;
 	}
 
-	/* (non-Javadoc) */
 	@Override
 	public String toString() {
 		return String.format("%1$s[%2$d]", getHost(), getPort());
