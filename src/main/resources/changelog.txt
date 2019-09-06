@@ -3,6 +3,22 @@ SPRING DATA GEMFIRE CHANGELOG
 https://www.springsource.org/spring-gemfire
 ===========================================
 
+Changes in version 2.2.0.RC3 (2019-09-06)
+-----------------------------------------
+* SGF-881 - Fix parsing issue that mishandles whitespace in ConnectionEndpoint.parse(..).
+* SGF-880 - Revert spring-web as an optional dependency.
+* SGF-879 - Switch spring-web to be an optional dependency.
+* SGF-878 - Refactor codebase.
+* SGF-877 - Upgrade to JCache API 1.1.1.
+* SGF-876 - Upgrade to Apache Shiro 1.4.1.
+* SGF-875 - Remove unnecessary use of Apache Shiro API.
+* SGF-873 - Correct misspelling in the LazyResolvingComposableContinousQueryListenerContainerConfigurer class name.
+* SGF-872 - Invoke SmartLifecycle callbacks when defining Regions based on Caching annotations.
+* SGF-871 - Refactor GatewayReceiver to use LazyResolvingComposableConfigurers.
+* SGF-870 - Release 2.2 RC3 (Moore).
+* SGF-808 - Allow the JSR-107, JCache API to be an optional dependency when using @EnableCachingDefinedRegions.
+
+
 Changes in version 2.2.0.RC2 (2019-08-05)
 -----------------------------------------
 * SGF-867 - Polish Annotation-based Configuration Model.
