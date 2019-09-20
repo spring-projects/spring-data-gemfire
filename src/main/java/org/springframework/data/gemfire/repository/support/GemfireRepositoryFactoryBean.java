@@ -17,9 +17,11 @@ package org.springframework.data.gemfire.repository.support;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -28,6 +30,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 
 import org.springframework.beans.BeansException;
@@ -73,6 +76,8 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID>
 
 	private ApplicationContext applicationContext;
 
+	private GemFireCache cache;
+
 	private Iterable<Region<?, ?>> regions;
 
 	private MappingContext<? extends GemfirePersistentEntity<?>, GemfirePersistentProperty> mappingContext;
@@ -94,14 +99,19 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID>
 	 * @see org.springframework.context.ApplicationContext
 	 */
 	@Override
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 
 		this.applicationContext = applicationContext;
 
-		this.regions = Collections.unmodifiableSet(applicationContext.getBeansOfType(Region.class).entrySet().stream()
+		Map<String, Region> regionBeans = applicationContext.getBeansOfType(Region.class);
+
+		Set<Region<?, ?>> regions = new HashSet<>(Collections.unmodifiableSet(regionBeans.entrySet().stream()
 			.<Region<?, ?>>map(Map.Entry::getValue)
-			.collect(Collectors.toSet()));
+			.collect(Collectors.toSet())));
+
+		getCache().map(GemFireCache::rootRegions).ifPresent(regions::addAll);
+
+		this.regions = regions;
 	}
 
 	/**
@@ -113,6 +123,26 @@ public class GemfireRepositoryFactoryBean<T extends Repository<S, ID>, S, ID>
 	 */
 	protected Optional<ApplicationContext> getApplicationContext() {
 		return Optional.ofNullable(this.applicationContext);
+	}
+
+	/**
+	 * Set a reference to the {@link GemFireCache}.
+	 *
+	 * @param cache reference to the {@link GemFireCache}.
+	 * @see org.apache.geode.cache.GemFireCache
+	 */
+	public void setCache(GemFireCache cache) {
+		this.cache = cache;
+	}
+
+	/**
+	 * Returns an {@link Optional} reference to the configured {@link GemFireCache}.
+	 *
+	 * @return an {@link Optional} reference to the configured {@link GemFireCache}.
+	 * @see org.apache.geode.cache.GemFireCache
+	 */
+	protected Optional<GemFireCache> getCache() {
+		return Optional.ofNullable(this.cache);
 	}
 
 	/**

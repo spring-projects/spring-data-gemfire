@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,12 +24,16 @@ import javax.annotation.Resource;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.ClientCache;
 
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -41,6 +44,7 @@ import org.springframework.data.gemfire.ReplicatedRegionFactoryBean;
 import org.springframework.data.gemfire.process.ProcessWrapper;
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
 import org.springframework.data.gemfire.test.support.ClientServerIntegrationTestsSupport;
+import org.springframework.data.gemfire.util.CacheUtils;
 import org.springframework.data.gemfire.util.RegionUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -88,6 +92,9 @@ public class EnableClusterDefinedRegionsIntegrationTests extends ClientServerInt
 		stop(gemfireServer);
 	}
 
+	@Autowired
+	private ClientCache cache;
+
 	@Resource(name = "LocalRegion")
 	private Region<?, ?> localClientProxyRegion;
 
@@ -104,6 +111,13 @@ public class EnableClusterDefinedRegionsIntegrationTests extends ClientServerInt
 		assertThat(region.getFullPath()).isEqualTo(RegionUtils.toRegionPath(expectedName));
 		assertThat(region.getAttributes()).isNotNull();
 		assertThat(region.getAttributes().getDataPolicy()).isEqualTo(DataPolicy.EMPTY);
+	}
+
+	@Before
+	public void setup() {
+
+		assertThat(this.cache).isNotNull();
+		assertThat(CacheUtils.isClient(this.cache));
 	}
 
 	@Test
@@ -130,10 +144,14 @@ public class EnableClusterDefinedRegionsIntegrationTests extends ClientServerInt
 			return (bean, clientCacheFactoryBean) -> clientCacheFactoryBean.setServers(
 				Collections.singletonList(new ConnectionEndpoint("localhost", port)));
 		}
+
+		@Bean("TestBean")
+		Object testBean(@Qualifier("LocalRegion") Region<?, ?> localRegion) {
+			return "TEST";
+		}
 	}
 
-	@CacheServerApplication(name = "EnableClusterDefinedRegionsIntegrationTests",
-		logLevel = GEMFIRE_LOG_LEVEL)
+	@CacheServerApplication(name = "EnableClusterDefinedRegionsIntegrationTests", logLevel = GEMFIRE_LOG_LEVEL)
 	static class ServerTestConfiguration {
 
 		public static void main(String[] args) {

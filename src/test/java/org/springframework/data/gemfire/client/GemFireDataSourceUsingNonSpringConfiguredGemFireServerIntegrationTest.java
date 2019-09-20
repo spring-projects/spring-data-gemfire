@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.client;
 
 import java.io.File;
@@ -172,7 +171,6 @@ public class GemFireDataSourceUsingNonSpringConfiguredGemFireServerIntegrationTe
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void clientProxyRegionBeansExist() {
 
 		assertRegion(localRegion, "LocalRegion");

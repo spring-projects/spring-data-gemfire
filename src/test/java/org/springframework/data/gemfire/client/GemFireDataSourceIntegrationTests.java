@@ -10,7 +10,6 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-
 package org.springframework.data.gemfire.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -105,14 +104,11 @@ public class GemFireDataSourceIntegrationTests extends ClientServerIntegrationTe
 		Pool pool = this.applicationContext.getBean("gemfirePool", Pool.class);
 
 		assertThat(pool).isNotNull();
-		assertThat(pool.getSubscriptionEnabled()).isTrue();
 
 		List<String> regionList = Arrays.asList(this.applicationContext.getBeanNamesForType(Region.class));
 
 		assertThat(regionList).hasSize(3);
-		assertThat(regionList.contains("r1")).isTrue();
-		assertThat(regionList.contains("r2")).isTrue();
-		assertThat(regionList.contains("simple")).isTrue();
+		assertThat(regionList).containsExactlyInAnyOrder("r1", "r2", "simple");
 
 		Region<?, ?> simple = this.applicationContext.getBean("simple", Region.class);
 

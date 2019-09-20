@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.repository.config;
 
 import java.lang.annotation.Annotation;
@@ -23,6 +22,7 @@ import java.util.Collections;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.gemfire.mapping.GemfireMappingContext;
 import org.springframework.data.gemfire.mapping.annotation.Region;
 import org.springframework.data.gemfire.repository.GemfireRepository;
@@ -87,6 +87,18 @@ public class GemfireRepositoryConfigurationExtension extends RepositoryConfigura
 	@Override
 	public String getRepositoryFactoryBeanClassName() {
 		return GemfireRepositoryFactoryBean.class.getName();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.data.repository.config.RepositoryConfigurationExtensionSupport#postProcess(BeanDefinitionBuilder, RepositoryConfigurationSource)
+	 */
+	@Override
+	public void postProcess(BeanDefinitionBuilder builder, RepositoryConfigurationSource source) {
+
+		super.postProcess(builder, source);
+
+		builder.addPropertyReference("cache", GemfireConstants.DEFAULT_GEMFIRE_CACHE_NAME);
 	}
 
 	/*

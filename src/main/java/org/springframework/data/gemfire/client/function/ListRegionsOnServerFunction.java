@@ -45,8 +45,10 @@ public class ListRegionsOnServerFunction implements Function {
 	 * @see org.apache.geode.cache.execute.Function#execute(org.apache.geode.cache.execute.FunctionContext)
 	 */
 	@Override
+	@SuppressWarnings("unchecked")
 	public void execute(FunctionContext functionContext) {
-		List<String> regionNames = new ArrayList<String>();
+
+		List<String> regionNames = new ArrayList<>();
 
 		for (Region<?, ?> region : getCache().rootRegions()) {
 			regionNames.add(region.getName());
@@ -55,7 +57,6 @@ public class ListRegionsOnServerFunction implements Function {
 		functionContext.getResultSender().lastResult(regionNames);
 	}
 
-	/* (non-Javadoc) */
 	Cache getCache() {
 		return CacheFactory.getAnyInstance();
 	}

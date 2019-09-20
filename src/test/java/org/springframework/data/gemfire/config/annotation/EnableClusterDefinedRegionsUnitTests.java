@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,11 +23,13 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 
 import org.junit.Test;
 
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.data.gemfire.client.GemfireDataSourcePostProcessor;
 
@@ -93,27 +94,33 @@ public class EnableClusterDefinedRegionsUnitTests {
 	@Test
 	public void configureGemfireDataSourcePostProcessor() {
 
-		ClientCache mockClientCache = mock(ClientCache.class);
+		ConfigurableBeanFactory mockBeanFactory = mock(ConfigurableBeanFactory.class);
 
 		ClusterDefinedRegionsConfiguration configuration = new ClusterDefinedRegionsConfiguration();
 
+		configuration.setBeanFactory(mockBeanFactory);
 		configuration.setClientRegionShortcut(ClientRegionShortcut.CACHING_PROXY);
 
-		GemfireDataSourcePostProcessor postProcessor = configuration.gemfireDataSourcePostProcessor(mockClientCache);
+		GemfireDataSourcePostProcessor postProcessor = configuration.gemfireDataSourcePostProcessor();
 
+		assertThat(postProcessor.getBeanFactory().orElse(null)).isEqualTo(mockBeanFactory);
 		assertThat(postProcessor.getClientRegionShortcut().orElse(null))
 			.isEqualTo(ClientRegionShortcut.CACHING_PROXY);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void configureGemfireDataSourcePostProcessorWithNullCache() {
+	public void configuresSpringApplicationWithGenericCache() {
+
+		GemFireCache mockCache = mock(GemFireCache.class);
 
 		try {
-			new ClusterDefinedRegionsConfiguration().gemfireDataSourcePostProcessor(null);
+			new ClusterDefinedRegionsConfiguration().nullCacheDependentBean(mockCache);
 		}
 		catch (IllegalArgumentException expected) {
 
-			assertThat(expected).hasMessage("GemFireCache must be an instance of ClientCache");
+			assertThat(expected).hasMessage("GemFireCache [%s] must be a %s",
+				mockCache.getClass().getName(), ClientCache.class.getName());
+
 			assertThat(expected).hasNoCause();
 
 			throw expected;
@@ -121,17 +128,33 @@ public class EnableClusterDefinedRegionsUnitTests {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void configureGemfireDataSourcePostProcessorWithPeerCache() {
+	public void configuresSpringApplicationWithNullCache() {
 
 		try {
-
-			Cache mockPeerCache = mock(Cache.class);
-
-			new ClusterDefinedRegionsConfiguration().gemfireDataSourcePostProcessor(mockPeerCache);
+			new ClusterDefinedRegionsConfiguration().nullCacheDependentBean(null);
 		}
 		catch (IllegalArgumentException expected) {
 
-			assertThat(expected).hasMessage("GemFireCache must be an instance of ClientCache");
+			assertThat(expected).hasMessage("GemFireCache [null] must be a %s", ClientCache.class.getName());
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void configuresSpringApplicationWithPeerCache() {
+
+		Cache mockCache = mock(Cache.class);
+
+		try {
+			new ClusterDefinedRegionsConfiguration().nullCacheDependentBean(mockCache);
+		}
+		catch (IllegalArgumentException expected) {
+
+			assertThat(expected).hasMessage("GemFireCache [%s] must be a %s",
+				mockCache.getClass().getName(), ClientCache.class.getName());
+
 			assertThat(expected).hasNoCause();
 
 			throw expected;

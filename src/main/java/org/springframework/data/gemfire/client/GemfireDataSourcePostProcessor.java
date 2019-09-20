@@ -29,11 +29,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.TypeMismatchException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.data.gemfire.client.function.ListRegionsOnServerFunction;
 import org.springframework.data.gemfire.function.execution.GemfireOnServersFunctionTemplate;
-import org.springframework.util.Assert;
+import org.springframework.lang.Nullable;
 import org.springframework.util.ObjectUtils;
 
 /**
@@ -56,48 +60,43 @@ import org.springframework.util.ObjectUtils;
  * @see ListRegionsOnServerFunction
  * @since 1.2.0
  */
-public class GemfireDataSourcePostProcessor implements BeanFactoryPostProcessor {
+public class GemfireDataSourcePostProcessor implements BeanFactoryAware, BeanPostProcessor {
 
 	private static final ClientRegionShortcut DEFAULT_CLIENT_REGION_SHORTCUT = ClientRegionShortcut.PROXY;
 
-	private final ClientCache clientCache;
+	private ClientRegionShortcut clientRegionShortcut;
 
-	private ClientRegionShortcut clientRegionShortcut = DEFAULT_CLIENT_REGION_SHORTCUT;
+	private ConfigurableBeanFactory beanFactory;
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	/**
-<<<<<<< HEAD
-	 * Constructs an instance of the GemfireDataSourcePostProcessor BeanFactoryPostProcessor class initialized
-	 * with the specified Pivotal GemFire ClientCache instance for creating client PROXY Regions for all data Regions
-	 * configured in the Pivotal GemFire cluster.
+	 * Set a reference to the {@link BeanFactory}.
 	 *
-	 * @param clientCache the Pivotal GemFire ClientCache instance.
-=======
-	 * Constructs an instance of the {@link GemfireDataSourcePostProcessor} {@link BeanFactoryPostProcessor} class
-	 * initialized * with the specified {@link ClientCache} instance for creating client {@link Region Regions}
-	 * for all data {@link Region Regions} configured in the cluster.
-	 *
-	 * @param clientCache reference to the {@link ClientCache} instance.
-	 * @throws IllegalArgumentException if {@link ClientCache} is {@literal null}.
->>>>>>> 847c11b8... DATAGEODE-142 - Add annotation configuration support to create client Regions from Cluster-defined Regions.
-	 * @see org.apache.geode.cache.client.ClientCache
+	 * @param beanFactory reference to the {@link BeanFactory}.
+	 * @throws BeansException if the {@link BeanFactory} is not a {@link ConfigurableBeanFactory}.
+	 * @see org.springframework.beans.factory.config.ConfigurableBeanFactory
+	 * @see org.springframework.beans.factory.BeanFactory
 	 */
-	public GemfireDataSourcePostProcessor(ClientCache clientCache) {
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 
-		Assert.notNull(clientCache, "ClientCache must not be null");
-
-		this.clientCache = clientCache;
+		if (beanFactory instanceof ConfigurableBeanFactory) {
+			this.beanFactory = (ConfigurableBeanFactory) beanFactory;
+		}
+		else {
+			throw new TypeMismatchException(beanFactory, ConfigurableBeanFactory.class);
+		}
 	}
 
 	/**
-	 * Returns a reference to the {@link ClientCache}.
+	 * Returns a reference to the configured {@link ConfigurableBeanFactory}.
 	 *
-	 * @return a reference to the {@link ClientCache}.
-	 * @see org.apache.geode.cache.client.ClientCache
+	 * @return a reference to the configured {@link ConfigurableBeanFactory}.
+	 * @see org.springframework.beans.factory.config.ConfigurableBeanFactory
 	 */
-	protected ClientCache getClientCache() {
-		return this.clientCache;
+	public Optional<ConfigurableBeanFactory> getBeanFactory() {
+		return Optional.ofNullable(this.beanFactory);
 	}
 
 	/**
@@ -124,6 +123,17 @@ public class GemfireDataSourcePostProcessor implements BeanFactoryPostProcessor 
 	}
 
 	/**
+	 * Resolves the {@link ClientRegionShortcut} used to configure and create client {@link Region Regions}.
+	 *
+	 * @return the resolved {@link ClientRegionShortcut}.
+	 * @see org.apache.geode.cache.client.ClientRegionShortcut
+	 * @see #getClientRegionShortcut()
+	 */
+	protected ClientRegionShortcut resolveClientRegionShortcut() {
+		return getClientRegionShortcut().orElse(DEFAULT_CLIENT_REGION_SHORTCUT);
+	}
+
+	/**
 	 * Returns a reference to the configured {@link Logger} used to log messages.
 	 *
 	 * @return a reference to the configured {@link Logger}.
@@ -133,27 +143,31 @@ public class GemfireDataSourcePostProcessor implements BeanFactoryPostProcessor 
 		return this.logger;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.beans.factory.config.BeanFactoryPostProcessor
-	 *   #postProcessBeanFactory(org.springframework.beans.factory.config.ConfigurableListableBeanFactory)
-	 */
-	@Override
-	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-		createClientProxyRegions(beanFactory, regionNames());
+	@Nullable @Override
+	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+
+		if (bean instanceof ClientCache) {
+
+			ClientCache clientCache = (ClientCache) bean;
+
+			getBeanFactory().ifPresent(it -> createClientProxyRegions(it, clientCache, regionNames(clientCache)));
+		}
+
+		return bean;
 	}
 
+
 	// TODO: remove this logic and delegate to o.s.d.g.config.remote.GemfireAdminOperations
-	Iterable<String> regionNames() {
+	Iterable<String> regionNames(ClientCache clientCache) {
 
 		try {
-			return execute(new ListRegionsOnServerFunction());
+			return execute(clientCache, new ListRegionsOnServerFunction());
 		}
 		catch (Exception ignore) {
 
 			try {
 
-				Object results = execute(new GetRegionsFunction());
+				Object results = execute(clientCache, new GetRegionsFunction());
 
 				List<String> regionNames = Collections.emptyList();
 
@@ -171,15 +185,14 @@ public class GemfireDataSourcePostProcessor implements BeanFactoryPostProcessor 
 				return regionNames;
 			}
 			catch (Exception cause) {
-				logDebug("Failed to determine the Regions available on the Server: %n%1$s", cause);
+				logDebug("Failed to determine the Regions available on the Server: %n%s", cause);
 				return Collections.emptyList();
 			}
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	<T> T execute(Function gemfireFunction, Object... arguments) {
-		return new GemfireOnServersFunctionTemplate(getClientCache()).executeAndExtract(gemfireFunction, arguments);
+	<T> T execute(ClientCache clientCache, Function gemfireFunction, Object... arguments) {
+		return new GemfireOnServersFunctionTemplate(clientCache).executeAndExtract(gemfireFunction, arguments);
 	}
 
 	boolean containsRegionInformation(Object results) {
@@ -188,15 +201,15 @@ public class GemfireDataSourcePostProcessor implements BeanFactoryPostProcessor 
 			&& ((Object[]) results)[0] instanceof RegionInformation;
 	}
 
-	void createClientProxyRegions(ConfigurableListableBeanFactory beanFactory, Iterable<String> regionNames) {
+	void createClientProxyRegions(ConfigurableBeanFactory beanFactory, ClientCache clientCache,
+			Iterable<String> regionNames) {
 
 		if (regionNames.iterator().hasNext()) {
 
-			ClientRegionShortcut resolvedClientRegionShortcut = getClientRegionShortcut()
-				.orElse(DEFAULT_CLIENT_REGION_SHORTCUT);
+			ClientRegionShortcut resolvedClientRegionShortcut = resolveClientRegionShortcut();
 
 			ClientRegionFactory<?, ?> clientRegionFactory =
-				this.clientCache.createClientRegionFactory(resolvedClientRegionShortcut);
+				clientCache.createClientRegionFactory(resolvedClientRegionShortcut);
 
 			for (String regionName : regionNames) {
 
@@ -243,7 +256,16 @@ public class GemfireDataSourcePostProcessor implements BeanFactoryPostProcessor 
 	}
 
 	public GemfireDataSourcePostProcessor using(ClientRegionShortcut clientRegionShortcut) {
+
 		setClientRegionShortcut(clientRegionShortcut);
+
+		return this;
+	}
+
+	public GemfireDataSourcePostProcessor using(BeanFactory beanFactory) {
+
+		setBeanFactory(beanFactory);
+
 		return this;
 	}
 }

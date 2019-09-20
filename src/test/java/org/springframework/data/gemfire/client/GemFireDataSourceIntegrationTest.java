@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -85,8 +84,7 @@ public class GemFireDataSourceIntegrationTest extends ClientServerIntegrationTes
 		arguments.add(GemFireDataSourceIntegrationTest.class.getName()
 			.replace(".", "/").concat("-server-context.xml"));
 
-		gemfireServer = run(serverWorkingDirectory, ServerProcess.class,
-			arguments.toArray(new String[arguments.size()]));
+		gemfireServer = run(serverWorkingDirectory, ServerProcess.class, arguments.toArray(new String[0]));
 
 		waitForServerToStart(DEFAULT_HOSTNAME, availablePort);
 
@@ -138,7 +136,6 @@ public class GemFireDataSourceIntegrationTest extends ClientServerIntegrationTes
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
 	public void clientProxyRegionBeansExist() {
 
 		assertRegion(clientOnlyRegion, "ClientOnlyRegion");
