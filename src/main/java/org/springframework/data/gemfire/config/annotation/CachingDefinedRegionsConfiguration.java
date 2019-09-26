@@ -44,6 +44,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -447,7 +448,7 @@ public class CachingDefinedRegionsConfiguration extends AbstractAnnotationConfig
 		@Override
 		@SuppressWarnings("unchecked")
 		protected Class<? extends Annotation>[] getClassCacheAnnotationTypes() {
-			return append(getMethodCacheAnnotationTypes(), Caching.class);
+			return append(getMethodCacheAnnotationTypes(), CacheConfig.class, Caching.class);
 		}
 
 		@Override
