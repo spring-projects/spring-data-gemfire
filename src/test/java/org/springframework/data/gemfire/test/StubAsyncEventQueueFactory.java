@@ -151,6 +151,11 @@ public class StubAsyncEventQueueFactory implements AsyncEventQueueFactory {
 	}
 
 	@Override
+	public AsyncEventQueueFactory pauseEventDispatching() {
+		return this;
+	}
+
+	@Override
 	public AsyncEventQueueFactory removeGatewayEventFilter(final GatewayEventFilter gatewayEventFilter) {
 		gatewayEventFilters.remove(gatewayEventFilter);
 		return this;
