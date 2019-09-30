@@ -39,7 +39,7 @@ pipeline {
 		stage('Release to artifactory') {
 			when {
 				anyOf {
-					branch '2.2.x`'
+					branch '2.2.x'
 					not { triggeredBy 'UpstreamCause' }
 				}
 			}
