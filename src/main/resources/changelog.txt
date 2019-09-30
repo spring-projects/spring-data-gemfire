@@ -3,6 +3,13 @@ SPRING DATA GEMFIRE CHANGELOG
 https://www.springsource.org/spring-gemfire
 ===========================================
 
+Changes in version 2.2.0.RELEASE (2019-09-30)
+---------------------------------------------
+* SGF-884 - Upgrade to Pivotal GemFire 9.8.4.
+* SGF-883 - Add support for @CacheConfig in @EnableCachingDefinedRegions.
+* SGF-869 - Release 2.2 GA (Moore).
+
+
 Changes in version 2.1.11.RELEASE (2019-09-30)
 ----------------------------------------------
 * SGF-881 - Fix parsing issue that mishandles whitespace in ConnectionEndpoint.parse(..).
