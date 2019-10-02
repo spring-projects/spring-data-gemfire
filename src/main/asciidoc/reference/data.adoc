@@ -306,6 +306,45 @@ JSON : [{"id":"MSG0000000000","message":"SENT"}] ]
 2017-Jun-22 11:11:37 TRACE GemFireAsLastResourceConnectionClosingAspect - Closed {data-store-name} Connection @ [Reference [...]]
 ----
 
+When using transactions, it may be desirable to register a listener to perform certain actions before or after the
+transaction commits, or after a rollback occurs. {sdg-name} makes it easy to create listeners that will be invoked
+during specific phases of a transaction with the `@TransactionalEventListener` annotation. Methods annotated with
+`@TransactionalEventListener` (as shown below) will be notified of events published from transactional methods, during
+the specified `phase`.
+
+[source,java]
+----
+@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+public void handleAfterCommit(MyEvent event) {
+    // do something after transaction is committed
+}
+----
+
+Inorder for the above method to be invoked, you must publish an event from within your transaction, like below.
+
+[source,java]
+----
+@Service
+class MyTransactionalService ... {
+
+  @Autowired
+  private final ApplicationEventPublisher publisher;
+
+  @Transactional
+  public <Return-Type> someTransactionalServiceMethod() {
+    // perform business logic interacting with and accessing multiple JTA resources atomically, here
+    publisher.publishEvent(new MyEvent(...));
+  }
+
+  ...
+}
+----
+
+The `@TransactionalEventListener` annotation allows you to specify the transaction `phase` at which it will be invoked;
+the options are `AFTER_COMMIT`, `AFTER_COMPLETION`, `AFTER_ROLLBACK`, and `BEFORE_COMMIT`. If not specified, `phase`
+defaults to `AFTER_COMMIT`. If you wish the listener to be called even when no transaction is running, you may set
+`fallbackExecution` to true.
+
 For more details on using {data-store-name} in JTA transactions,
 see https://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html[here].
 
