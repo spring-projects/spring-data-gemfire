@@ -43,6 +43,7 @@ import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
  * Unit tests for {@link ClientCacheParser}.
  *
  * @author John Blum
+ * @author Patrick Johnson
  * @see org.junit.Test
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
@@ -122,21 +123,5 @@ public class ClientCacheParserUnitTests {
 		verify(mockElement, times(1)).getAttribute(eq("keep-alive"));
 		verify(mockElement, times(1)).getAttribute(eq("pool-name"));
 		verify(mockElement, times(1)).getAttribute(eq("ready-for-events"));
-	}
-
-	@Test
-	public void postProcessDynamicRegionSupportParsesPoolName() {
-		when(mockElement.getAttribute(eq("pool-name"))).thenReturn("TestPool");
-
-		BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition();
-
-		new ClientCacheParser().postProcessDynamicRegionSupport(mockElement, builder);
-
-		BeanDefinition beanDefinition = builder.getBeanDefinition();
-
-		assertThat(beanDefinition).isNotNull();
-		assertPropertyValueEquals(beanDefinition, "poolName", "TestPool");
-
-		verify(mockElement, times(1)).getAttribute(eq("pool-name"));
 	}
 }

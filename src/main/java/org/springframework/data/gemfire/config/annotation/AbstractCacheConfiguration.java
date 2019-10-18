@@ -16,7 +16,6 @@
  */
 package org.springframework.data.gemfire.config.annotation;
 
-import static org.springframework.data.gemfire.CacheFactoryBean.DynamicRegionSupport;
 import static org.springframework.data.gemfire.CacheFactoryBean.JndiDataSource;
 import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeList;
 
@@ -58,6 +57,7 @@ import org.springframework.util.StringUtils;
  * and {@link org.apache.geode.cache.client.ClientCache client caches}.
  *
  * @author John Blum
+ * @author Patrick Johnson
  * @see java.lang.annotation.Annotation
  * @see java.util.Properties
  * @see org.apache.geode.cache.Cache
@@ -108,8 +108,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 	private boolean close = DEFAULT_CLOSE;
 	private boolean copyOnRead = DEFAULT_COPY_ON_READ;
 	private boolean useBeanFactoryLocator = DEFAULT_USE_BEAN_FACTORY_LOCATOR;
-
-	private DynamicRegionSupport dynamicRegionSupport;
 
 	private Integer mcastPort = DEFAULT_MCAST_PORT;
 
@@ -346,7 +344,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		gemfireCache.setCopyOnRead(getCopyOnRead());
 		gemfireCache.setCriticalHeapPercentage(getCriticalHeapPercentage());
 		gemfireCache.setCriticalOffHeapPercentage(getCriticalOffHeapPercentage());
-		gemfireCache.setDynamicRegionSupport(getDynamicRegionSupport());
 		gemfireCache.setEvictionHeapPercentage(getEvictionHeapPercentage());
 		gemfireCache.setEvictionOffHeapPercentage(getEvictionOffHeapPercentage());
 		gemfireCache.setGatewayConflictResolver(getGatewayConflictResolver());
@@ -498,14 +495,6 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 
 	protected Float getCriticalOffHeapPercentage() {
 		return this.criticalOffHeapPercentage;
-	}
-
-	void setDynamicRegionSupport(DynamicRegionSupport dynamicRegionSupport) {
-		this.dynamicRegionSupport = dynamicRegionSupport;
-	}
-
-	protected DynamicRegionSupport getDynamicRegionSupport() {
-		return this.dynamicRegionSupport;
 	}
 
 	void setEvictionHeapPercentage(Float evictionHeapPercentage) {

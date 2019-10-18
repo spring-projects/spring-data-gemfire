@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire;
 
 import static java.util.stream.StreamSupport.stream;
@@ -41,7 +40,6 @@ import org.apache.geode.GemFireException;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.TransactionListener;
@@ -87,11 +85,11 @@ import org.springframework.util.StringUtils;
  * @author Costin Leau
  * @author David Turanski
  * @author John Blum
+ * @author Patrick Johnson
  * @see java.util.Properties
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.CacheFactory
  * @see org.apache.geode.cache.GemFireCache
- * @see org.apache.geode.cache.DynamicRegionFactory
  * @see org.apache.geode.cache.RegionService
  * @see org.apache.geode.distributed.DistributedMember
  * @see org.apache.geode.distributed.DistributedSystem
@@ -126,8 +124,6 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 	private CacheFactoryInitializer<?> cacheFactoryInitializer;
 
 	private GemFireCache cache;
-
-	private DynamicRegionSupport dynamicRegionSupport;
 
 	private Float criticalHeapPercentage;
 	private Float criticalOffHeapPercentage;
@@ -320,7 +316,6 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 		catch (CacheClosedException cause) {
 
 			this.cacheResolutionMessagePrefix = "Created new";
-			initDynamicRegionFactory();
 
 			return (T) createCache(postProcess(configureFactory(initializeFactory(createFactory(resolveProperties())))));
 		}
@@ -339,17 +334,6 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 	@SuppressWarnings("unchecked")
 	protected <T extends GemFireCache> T fetchCache() {
 		return (T) Optional.ofNullable(getCache()).orElseGet(CacheFactory::getAnyInstance);
-	}
-
-	/**
-	 * If Pivotal GemFire/Apache Geode Dynamic Regions are enabled, create and initialize a {@link DynamicRegionFactory}
-	 * before creating the {@link Cache}.
-	 *
-	 * @see org.springframework.data.gemfire.CacheFactoryBean.DynamicRegionSupport#initDynamicRegionFactory()
-	 * @see #getDynamicRegionSupport()
-	 */
-	private void initDynamicRegionFactory() {
-		Optional.ofNullable(getDynamicRegionSupport()).ifPresent(DynamicRegionSupport::initializeDynamicRegionFactory);
 	}
 
 	/**
@@ -947,23 +931,10 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 	}
 
 	/**
-	 * Sets an instance of the DynamicRegionSupport to support Dynamic Regions in this Pivotal GemFire Cache.
-	 *
-	 * @param dynamicRegionSupport the DynamicRegionSupport class to setup Dynamic Regions in this Cache.
-	 */
-	public void setDynamicRegionSupport(DynamicRegionSupport dynamicRegionSupport) {
-		this.dynamicRegionSupport = dynamicRegionSupport;
-	}
-
-	/**
-	 * @return the dynamicRegionSupport
-	 */
-	public DynamicRegionSupport getDynamicRegionSupport() {
-		return dynamicRegionSupport;
-	}
-
-	/**
 	 * Controls whether auto-reconnect functionality introduced in Pivotal GemFire 8 is enabled or not.
+=======
+	 * Controls whether auto-reconnect functionality introduced in GemFire 8 is enabled or not.
+>>>>>>> 1a012c99... DATAGEODE-1 - Remove support for DynamicRegionFactory.
 	 *
 	 * @param enableAutoReconnect a boolean value to enable/disable auto-reconnect functionality.
 	 * @since Pivotal GemFire 8.0
@@ -1363,58 +1334,6 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 		 */
 		T initialize(T cacheFactory);
 
-	}
-
-	public static class DynamicRegionSupport {
-
-		private Boolean persistent = Boolean.TRUE;
-		private Boolean registerInterest = Boolean.TRUE;
-
-		private String diskDirectory;
-		private String poolName;
-
-		public void setDiskDir(String diskDirectory) {
-			this.diskDirectory = diskDirectory;
-		}
-
-		public String getDiskDir() {
-			return diskDirectory;
-		}
-
-		public void setPersistent(Boolean persistent) {
-			this.persistent = persistent;
-		}
-
-		public Boolean getPersistent() {
-			return persistent;
-		}
-
-		public void setPoolName(String poolName) {
-			this.poolName = poolName;
-		}
-
-		public String getPoolName() {
-			return poolName;
-		}
-
-		public void setRegisterInterest(Boolean registerInterest) {
-			this.registerInterest = registerInterest;
-		}
-
-		public Boolean getRegisterInterest() {
-			return registerInterest;
-		}
-
-		public void initializeDynamicRegionFactory() {
-
-			File localDiskDirectory = this.diskDirectory != null ? new File(this.diskDirectory) : null;
-
-			DynamicRegionFactory.Config config =
-				new DynamicRegionFactory.Config(localDiskDirectory, this.poolName, this.persistent,
-					this.registerInterest);
-
-			DynamicRegionFactory.get().open(config);
-		}
 	}
 
 	public static class JndiDataSource {

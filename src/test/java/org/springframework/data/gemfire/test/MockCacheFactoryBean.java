@@ -24,6 +24,7 @@ import org.springframework.data.gemfire.CacheFactoryBean;
  *
  * @author David Turanski
  * @author John Blum
+ * @author Patrick Johnson
  * @see org.springframework.data.gemfire.CacheFactoryBean
  */
 public class MockCacheFactoryBean extends CacheFactoryBean {
@@ -43,7 +44,6 @@ public class MockCacheFactoryBean extends CacheFactoryBean {
 			setCopyOnRead(it.getCopyOnRead());
 			setCriticalHeapPercentage(it.getCriticalHeapPercentage());
 			setCriticalOffHeapPercentage(it.getCriticalOffHeapPercentage());
-			setDynamicRegionSupport(it.getDynamicRegionSupport());
 			setEnableAutoReconnect(it.getEnableAutoReconnect());
 			setEvictionHeapPercentage(it.getEvictionHeapPercentage());
 			setEvictionOffHeapPercentage(it.getEvictionOffHeapPercentage());

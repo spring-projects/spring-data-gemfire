@@ -29,6 +29,7 @@ import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
  * @author David Turanski
  * @author Lyndon Adams
  * @author John Blum
+ * @author Patrick Johnson
  * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
  * @see CacheParser
  */
@@ -55,13 +56,5 @@ class ClientCacheParser extends CacheParser {
 		ParsingUtils.setPropertyValue(element, clientCacheBuilder, "keep-alive");
 		ParsingUtils.setPropertyValue(element, clientCacheBuilder, "pool-name");
 		ParsingUtils.setPropertyValue(element, clientCacheBuilder, "ready-for-events");
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	protected void postProcessDynamicRegionSupport(Element element, BeanDefinitionBuilder dynamicRegionSupport) {
-		ParsingUtils.setPropertyValue(element, dynamicRegionSupport, "pool-name");
 	}
 }

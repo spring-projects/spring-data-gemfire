@@ -21,6 +21,7 @@ import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 /**
  * @author David Turanski
  * @author John Blum
+ * @author Patrick Johnson
  */
 public class MockClientCacheFactoryBean extends ClientCacheFactoryBean {
 
@@ -38,7 +39,6 @@ public class MockClientCacheFactoryBean extends ClientCacheFactoryBean {
 			setCriticalHeapPercentage(it.getCriticalHeapPercentage());
 			setDurableClientId(it.getDurableClientId());
 			setDurableClientTimeout(it.getDurableClientTimeout());
-			setDynamicRegionSupport(it.getDynamicRegionSupport());
 			setEvictionHeapPercentage(it.getEvictionHeapPercentage());
 			setGatewayConflictResolver(it.getGatewayConflictResolver());
 			setJndiDataSources(it.getJndiDataSources());

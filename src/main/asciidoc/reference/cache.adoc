@@ -121,9 +121,7 @@ or child elements, as the following listing shows:
 
   <gfe:gateway-conflict-resolver ref="myGatewayConflictResolver"/> <!--7-->
 
-  <gfe:dynamic-region-factory/> <!--8-->
-
-  <gfe:jndi-binding jndi-name="myDataSource" type="ManagedDataSource"/> <!--9-->
+  <gfe:jndi-binding jndi-name="myDataSource" type="ManagedDataSource"/> <!--8-->
 
 </gfe:cache>
 ----
@@ -157,9 +155,8 @@ must implement {x-data-store-javadoc}/org/apache/geode/cache/util/GatewayConflic
 [GatewayConflictResolver].
 A `GatewayConflictResolver` is a `Cache`-level plugin that is called upon to decide what to do with events
 that originate in other systems and arrive through the WAN Gateway.
-<8> Enables {data-store-name}'s {x-data-store-docs}/developing/region_options/dynamic_region_creation.html[DynamicRegionFactory],
 which provides a distributed Region creation service.
-<9> Declares a JNDI binding to enlist an external DataSource in a {data-store-name} transaction.
+<8> Declares a JNDI binding to enlist an external DataSource in a {data-store-name} transaction.
 
 [[bootstrap:cache:pdx-serialization]]
 === Enabling PDX Serialization

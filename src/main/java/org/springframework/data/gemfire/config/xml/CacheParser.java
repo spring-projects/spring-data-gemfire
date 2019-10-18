@@ -49,6 +49,7 @@ import org.springframework.util.xml.DomUtils;
  * @author Oliver Gierke
  * @author David Turanski
  * @author John Blum
+ * @author Patrick Johnson
  * @see org.springframework.beans.factory.support.AbstractBeanDefinition
  * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
  * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
@@ -129,7 +130,6 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 				gatewayConflictResolver, parserContext, cacheBuilder));
 		}
 
-		parseDynamicRegionFactory(element, cacheBuilder);
 		parseJndiBindings(element, cacheBuilder);
 	}
 
@@ -172,56 +172,6 @@ class CacheParser extends AbstractSingleBeanDefinitionParser {
 
 		return builder.getBeanDefinition();
 	}
-
-	private void parseDynamicRegionFactory(Element element, BeanDefinitionBuilder cacheBuilder) {
-
-		Element dynamicRegionFactory =
-			DomUtils.getChildElementByTagName(element, "dynamic-region-factory");
-
-		if (dynamicRegionFactory != null) {
-
-			BeanDefinitionBuilder dynamicRegionSupport = buildDynamicRegionSupport(dynamicRegionFactory);
-
-			postProcessDynamicRegionSupport(element, dynamicRegionSupport);
-			cacheBuilder.addPropertyValue("dynamicRegionSupport", dynamicRegionSupport.getBeanDefinition());
-		}
-	}
-
-	private BeanDefinitionBuilder buildDynamicRegionSupport(Element dynamicRegionFactory) {
-
-		if (dynamicRegionFactory != null) {
-
-			BeanDefinitionBuilder dynamicRegionSupport =
-				BeanDefinitionBuilder.genericBeanDefinition(CacheFactoryBean.DynamicRegionSupport.class);
-
-			String diskDirectory = dynamicRegionFactory.getAttribute("disk-dir");
-
-			if (StringUtils.hasText(diskDirectory)) {
-				dynamicRegionSupport.addPropertyValue("diskDir", diskDirectory);
-			}
-
-			String persistent = dynamicRegionFactory.getAttribute("persistent");
-
-			if (StringUtils.hasText(persistent)) {
-				dynamicRegionSupport.addPropertyValue("persistent", persistent);
-			}
-
-			String registerInterest = dynamicRegionFactory.getAttribute("register-interest");
-
-			if (StringUtils.hasText(registerInterest)) {
-				dynamicRegionSupport.addPropertyValue("registerInterest", registerInterest);
-			}
-
-			return dynamicRegionSupport;
-		}
-
-		return null;
-	}
-
-	/**
-	 * @param dynamicRegionSupport {@link BeanDefinitionBuilder} for &lt;gfe:dynamic-region-factory&gt; element.
-	 */
-	protected void postProcessDynamicRegionSupport(Element element, BeanDefinitionBuilder dynamicRegionSupport) { }
 
 	private void parseJndiBindings(Element element, BeanDefinitionBuilder cacheBuilder) {
 
