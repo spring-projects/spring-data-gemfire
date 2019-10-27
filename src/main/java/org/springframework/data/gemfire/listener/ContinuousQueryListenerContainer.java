@@ -16,9 +16,6 @@
 
 package org.springframework.data.gemfire.listener;
 
-import static java.util.stream.StreamSupport.stream;
-import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
-import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeIterable;
 import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeList;
 import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeSet;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
@@ -33,6 +30,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
+import java.util.stream.StreamSupport;
 
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.Pool;
@@ -63,6 +61,8 @@ import org.springframework.data.gemfire.client.support.DefaultableDelegatingPool
 import org.springframework.data.gemfire.client.support.DelegatingPoolAdapter;
 import org.springframework.data.gemfire.config.annotation.ContinuousQueryListenerContainerConfigurer;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
+import org.springframework.data.gemfire.util.ArrayUtils;
+import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ErrorHandler;
 import org.springframework.util.StringUtils;
@@ -159,8 +159,10 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	protected void applyContinuousQueryListenerContainerConfigurers(
 			ContinuousQueryListenerContainerConfigurer... configurers) {
 
-		applyContinuousQueryListenerContainerConfigurers(Arrays.asList(
-			nullSafeArray(configurers, ContinuousQueryListenerContainerConfigurer.class)));
+		List<ContinuousQueryListenerContainerConfigurer> configurerList =
+			Arrays.asList(ArrayUtils.nullSafeArray(configurers, ContinuousQueryListenerContainerConfigurer.class));
+
+		applyContinuousQueryListenerContainerConfigurers(configurerList);
 	}
 
 	/**
@@ -174,7 +176,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	protected void applyContinuousQueryListenerContainerConfigurers(
 			Iterable<ContinuousQueryListenerContainerConfigurer> configurers) {
 
-		stream(nullSafeIterable(configurers).spliterator(), false)
+		StreamSupport.stream(CollectionUtils.nullSafeIterable(configurers).spliterator(), false)
 			.forEach(configurer -> configurer.configure(getBeanName(), this));
 	}
 
@@ -454,7 +456,7 @@ public class ContinuousQueryListenerContainer implements BeanFactoryAware, BeanN
 	 */
 	public void setContinuousQueryListenerContainerConfigurers(ContinuousQueryListenerContainerConfigurer... configurers) {
 		setContinuousQueryListenerContainerConfigurers(Arrays.asList(
-			nullSafeArray(configurers, ContinuousQueryListenerContainerConfigurer.class)));
+			ArrayUtils.nullSafeArray(configurers, ContinuousQueryListenerContainerConfigurer.class)));
 	}
 
 	/**
