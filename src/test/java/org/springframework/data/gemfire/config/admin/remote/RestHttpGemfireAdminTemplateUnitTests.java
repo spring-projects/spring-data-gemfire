@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -32,19 +33,21 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.query.Index;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
+
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.query.Index;
 
 import org.springframework.data.gemfire.IndexType;
 import org.springframework.data.gemfire.config.schema.definitions.IndexDefinition;
 import org.springframework.data.gemfire.config.schema.definitions.RegionDefinition;
+import org.springframework.data.gemfire.config.support.RestTemplateConfigurer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -104,7 +107,8 @@ public class RestHttpGemfireAdminTemplateUnitTests {
 			@Override
 			@SuppressWarnings("unchecked")
 			protected <T extends RestOperations> T newRestOperations(ClientHttpRequestFactory clientHttpRequestFactory,
-					List<ClientHttpRequestInterceptor> clientHttpRequestInterceptors) {
+					List<ClientHttpRequestInterceptor> clientHttpRequestInterceptors,
+					List<RestTemplateConfigurer> restTemplateConfigurers) {
 
 				return (T) mockRestOperations;
 			}
@@ -225,7 +229,8 @@ public class RestHttpGemfireAdminTemplateUnitTests {
 		ClientHttpRequestInterceptor mockInterceptorTwo = mock(ClientHttpRequestInterceptor.class);
 
 		RestTemplate restTemplate = new RestHttpGemfireAdminTemplate(this.mockClientCache)
-			.newRestOperations(mockClientHttpRequestFactory, Arrays.asList(mockInterceptorOne, mockInterceptorTwo));
+			.newRestOperations(mockClientHttpRequestFactory, Arrays.asList(mockInterceptorOne, mockInterceptorTwo),
+				Collections.emptyList());
 
 		assertThat(restTemplate).isNotNull();
 		assertThat(restTemplate.getInterceptors()).containsExactly(mockInterceptorOne, mockInterceptorTwo);
@@ -239,11 +244,41 @@ public class RestHttpGemfireAdminTemplateUnitTests {
 		ClientHttpRequestFactory mockClientHttpRequestFactory = mock(ClientHttpRequestFactory.class);
 
 		RestTemplate restTemplate = new RestHttpGemfireAdminTemplate(this.mockClientCache)
-			.newRestOperations(mockClientHttpRequestFactory, Collections.emptyList());
+			.newRestOperations(mockClientHttpRequestFactory, Collections.emptyList(), Collections.emptyList());
 
 		assertThat(restTemplate).isNotNull();
 		assertThat(restTemplate.getInterceptors()).isEmpty();
 		assertThat(restTemplate.getRequestFactory()).isSameAs(mockClientHttpRequestFactory);
+	}
+
+	@Test
+	public void newRestOperationsWithRestTemplateConfigurersApplied() {
+
+		ClientHttpRequestFactory mockClientHttpRequestFactory = mock(ClientHttpRequestFactory.class);
+
+		RestTemplateConfigurer mockRestTemplateConfigurerOne = mock(RestTemplateConfigurer.class);
+		RestTemplateConfigurer mockRestTemplateConfigurerTwo = mock(RestTemplateConfigurer.class);
+
+		Answer answer = invocation -> {
+
+			assertThat(invocation.getArgument(0, RestTemplate.class)).isInstanceOf(RestTemplate.class);
+
+			return null;
+		};
+
+		doAnswer(answer).when(mockRestTemplateConfigurerOne).configure(isA(RestTemplate.class));
+		doAnswer(answer).when(mockRestTemplateConfigurerTwo).configure(isA(RestTemplate.class));
+
+		List<RestTemplateConfigurer> mockRestTemplateConfigurers =
+			Arrays.asList(mockRestTemplateConfigurerOne, null, mockRestTemplateConfigurerTwo);
+
+		RestTemplate restTemplate = new RestHttpGemfireAdminTemplate(this.mockClientCache)
+			.newRestOperations(mockClientHttpRequestFactory, Collections.emptyList(), mockRestTemplateConfigurers);
+
+		assertThat(restTemplate).isNotNull();
+
+		verify(mockRestTemplateConfigurerOne, times(1)).configure(eq(restTemplate));
+		verify(mockRestTemplateConfigurerTwo, times(1)).configure(eq(restTemplate));
 	}
 
 	@Test
