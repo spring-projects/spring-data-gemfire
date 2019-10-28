@@ -63,6 +63,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.mockito.ArgumentMatchers;
+import org.mockito.stubbing.Answer;
+
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -128,8 +131,6 @@ import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.pdx.PdxSerializer;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.mockito.ArgumentMatchers;
-import org.mockito.stubbing.Answer;
 
 import org.springframework.data.gemfire.IndexType;
 import org.springframework.data.gemfire.server.SubscriptionEvictionPolicy;
@@ -640,6 +641,7 @@ public abstract class GemFireMockObjectsSupport extends MockObjectsSupport {
 		AtomicBoolean diskSynchronous = new AtomicBoolean(true);
 		AtomicBoolean forwardExpirationDestroy = new AtomicBoolean(false);
 		AtomicBoolean parallel = new AtomicBoolean(false);
+		AtomicBoolean pauseEventDispatching = new AtomicBoolean(false);
 		AtomicBoolean persistent = new AtomicBoolean(false);
 
 		AtomicInteger batchSize = new AtomicInteger(100);
@@ -697,6 +699,9 @@ public abstract class GemFireMockObjectsSupport extends MockObjectsSupport {
 			return mockAsyncEventQueueFactory;
 		});
 
+		doAnswer(newSetter(pauseEventDispatching, true, mockAsyncEventQueueFactory))
+			.when(mockAsyncEventQueueFactory).pauseEventDispatching();
+
 		when(mockAsyncEventQueueFactory.removeGatewayEventFilter(any(GatewayEventFilter.class))).thenAnswer(invocation -> {
 
 			gatewayEventFilters.remove(invocation.<GatewayEventFilter>getArgument(0));
@@ -714,6 +719,7 @@ public abstract class GemFireMockObjectsSupport extends MockObjectsSupport {
 
 			when(mockAsyncEventQueue.isBatchConflationEnabled()).thenAnswer(newGetter(batchConflationEnabled));
 			when(mockAsyncEventQueue.isDiskSynchronous()).thenAnswer(newGetter(diskSynchronous));
+			when(mockAsyncEventQueue.isDispatchingPaused()).thenAnswer(newGetter(pauseEventDispatching));
 			when(mockAsyncEventQueue.isForwardExpirationDestroy()).thenAnswer(newGetter(forwardExpirationDestroy));
 			when(mockAsyncEventQueue.isParallel()).thenAnswer(newGetter(parallel));
 			when(mockAsyncEventQueue.isPersistent()).thenAnswer(newGetter(persistent));
@@ -729,6 +735,11 @@ public abstract class GemFireMockObjectsSupport extends MockObjectsSupport {
 			when(mockAsyncEventQueue.getId()).thenReturn(asyncEventQueueId);
 			when(mockAsyncEventQueue.getMaximumQueueMemory()).thenAnswer(newGetter(maximumQueueMemory));
 			when(mockAsyncEventQueue.getOrderPolicy()).thenAnswer(newGetter(orderPolicy));
+
+			doAnswer(resumeEventDispatchingInvocation -> {
+				pauseEventDispatching.set(false);
+				return null;
+			}).when(mockAsyncEventQueue).resumeEventDispatching();
 
 			when(mockAsyncEventQueue.size()).thenReturn(0);
 

@@ -14,7 +14,6 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,6 +32,7 @@ import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newR
 
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -48,7 +48,7 @@ import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 /**
- * Unit tests for {@link SpringUtils}.
+ * Unit Tests for {@link SpringUtils}.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -68,38 +68,39 @@ public class SpringUtilsUnitTests {
 	@Test
 	public void addDependsOnToExistingDependencies() {
 
-		when(mockBeanDefinition.getDependsOn()).thenReturn(asArray("testBeanNameOne", "testBeanNameTwo"));
+		when(this.mockBeanDefinition.getDependsOn())
+			.thenReturn(asArray("testBeanNameOne", "testBeanNameTwo"));
 
-		assertThat(SpringUtils.addDependsOn(mockBeanDefinition, "testBeanNameThree"))
-			.isSameAs(mockBeanDefinition);
+		assertThat(SpringUtils.addDependsOn(this.mockBeanDefinition, "testBeanNameThree"))
+			.isSameAs(this.mockBeanDefinition);
 
-		verify(mockBeanDefinition, times(1)).getDependsOn();
-		verify(mockBeanDefinition, times(1))
+		verify(this.mockBeanDefinition, times(1)).getDependsOn();
+		verify(this.mockBeanDefinition, times(1))
 			.setDependsOn("testBeanNameOne", "testBeanNameTwo", "testBeanNameThree");
 	}
 
 	@Test
 	public void addDependsOnToNonExistingDependencies() {
 
-		when(mockBeanDefinition.getDependsOn()).thenReturn(null);
+		when(this.mockBeanDefinition.getDependsOn()).thenReturn(null);
 
-		assertThat(SpringUtils.addDependsOn(mockBeanDefinition, "testBeanName"))
-			.isSameAs(mockBeanDefinition);
+		assertThat(SpringUtils.addDependsOn(this.mockBeanDefinition, "testBeanName"))
+			.isSameAs(this.mockBeanDefinition);
 
-		verify(mockBeanDefinition, times(1)).getDependsOn();
-		verify(mockBeanDefinition, times(1)).setDependsOn("testBeanName");
+		verify(this.mockBeanDefinition, times(1)).getDependsOn();
+		verify(this.mockBeanDefinition, times(1)).setDependsOn("testBeanName");
 	}
 
 	@Test
-	public void addDependsOnWithMultipleDependenciesWithExistingDependencies() {
+	public void addDependsOnWithMultipleDependenciesToExistingDependencies() {
 
-		when(mockBeanDefinition.getDependsOn()).thenReturn(asArray("testBeanNameOne", "testBeanNameTwo"));
+		when(this.mockBeanDefinition.getDependsOn()).thenReturn(asArray("testBeanNameOne", "testBeanNameTwo"));
 
-		assertThat(SpringUtils.addDependsOn(mockBeanDefinition, "testBeanNameThree", "testBeanNameFour"))
-			.isSameAs(mockBeanDefinition);
+		assertThat(SpringUtils.addDependsOn(this.mockBeanDefinition, "testBeanNameThree", "testBeanNameFour"))
+			.isSameAs(this.mockBeanDefinition);
 
-		verify(mockBeanDefinition, times(1)).getDependsOn();
-		verify(mockBeanDefinition, times(1))
+		verify(this.mockBeanDefinition, times(1)).getDependsOn();
+		verify(this.mockBeanDefinition, times(1))
 			.setDependsOn("testBeanNameOne", "testBeanNameTwo", "testBeanNameThree", "testBeanNameFour");
 	}
 
@@ -109,12 +110,12 @@ public class SpringUtilsUnitTests {
 		MutablePropertyValues propertyValues =
 			new MutablePropertyValues(Collections.singletonMap("testProperty", "testValue"));
 
-		when(mockBeanDefinition.getPropertyValues()).thenReturn(propertyValues);
+		when(this.mockBeanDefinition.getPropertyValues()).thenReturn(propertyValues);
 
-		assertThat(SpringUtils.getPropertyValue(mockBeanDefinition, "testProperty").orElse(null))
+		assertThat(SpringUtils.getPropertyValue(this.mockBeanDefinition, "testProperty").orElse(null))
 			.isEqualTo("testValue");
 
-		verify(mockBeanDefinition, times(1)).getPropertyValues();
+		verify(this.mockBeanDefinition, times(1)).getPropertyValues();
 	}
 
 	@Test
@@ -124,13 +125,13 @@ public class SpringUtilsUnitTests {
 
 		PropertyValue testPropertyValue = spy(new PropertyValue("testProperty", null));
 
-		when(mockBeanDefinition.getPropertyValues()).thenReturn(testPropertyValues);
+		when(this.mockBeanDefinition.getPropertyValues()).thenReturn(testPropertyValues);
 		doReturn(testPropertyValue).when(testPropertyValues).getPropertyValue(anyString());
 
-		assertThat(SpringUtils.getPropertyValue(mockBeanDefinition, "testProperty").orElse(null))
+		assertThat(SpringUtils.getPropertyValue(this.mockBeanDefinition, "testProperty").orElse(null))
 			.isNull();
 
-		verify(mockBeanDefinition, times(1)).getPropertyValues();
+		verify(this.mockBeanDefinition, times(1)).getPropertyValues();
 		verify(testPropertyValues, times(1)).getPropertyValue(eq("testProperty"));
 		verify(testPropertyValue, times(1)).getValue();
 	}
@@ -140,24 +141,24 @@ public class SpringUtilsUnitTests {
 
 		MutablePropertyValues testPropertyValues = spy(new MutablePropertyValues());
 
-		when(mockBeanDefinition.getPropertyValues()).thenReturn(testPropertyValues);
+		when(this.mockBeanDefinition.getPropertyValues()).thenReturn(testPropertyValues);
 
-		assertThat(SpringUtils.getPropertyValue(mockBeanDefinition, "testProperty").orElse(null))
+		assertThat(SpringUtils.getPropertyValue(this.mockBeanDefinition, "testProperty").orElse(null))
 			.isNull();
 
-		verify(mockBeanDefinition, times(1)).getPropertyValues();
+		verify(this.mockBeanDefinition, times(1)).getPropertyValues();
 		verify(testPropertyValues, times(1)).getPropertyValue(eq("testProperty"));
 	}
 
 	@Test
 	public void getPropertyValueWithNullPropertyValuesReturnsNull() {
 
-		when(mockBeanDefinition.getPropertyValues()).thenReturn(null);
+		when(this.mockBeanDefinition.getPropertyValues()).thenReturn(null);
 
-		assertThat(SpringUtils.getPropertyValue(mockBeanDefinition, "testProperty").orElse(null))
+		assertThat(SpringUtils.getPropertyValue(this.mockBeanDefinition, "testProperty").orElse(null))
 			.isNull();
 
-		verify(mockBeanDefinition, times(1)).getPropertyValues();
+		verify(this.mockBeanDefinition, times(1)).getPropertyValues();
 	}
 
 	@Test
@@ -170,15 +171,13 @@ public class SpringUtilsUnitTests {
 	@SuppressWarnings("all")
 	public void setBeanDefinitionPropertyReference() {
 
-		BeanDefinition mockBeanDefinition = mock(BeanDefinition.class);
-
 		MutablePropertyValues mutablePropertyValues = new MutablePropertyValues();
 
-		when(mockBeanDefinition.getPropertyValues()).thenReturn(mutablePropertyValues);
+		when(this.mockBeanDefinition.getPropertyValues()).thenReturn(mutablePropertyValues);
 
 		assertThat(mutablePropertyValues.size()).isEqualTo(0);
 
-		SpringUtils.setPropertyReference(mockBeanDefinition, "testProperty", "testBean");
+		SpringUtils.setPropertyReference(this.mockBeanDefinition, "testProperty", "testBean");
 
 		assertThat(mutablePropertyValues.size()).isEqualTo(1);
 		assertThat(mutablePropertyValues.getPropertyValue("testProperty")).isNotNull();
@@ -192,15 +191,13 @@ public class SpringUtilsUnitTests {
 	@SuppressWarnings("all")
 	public void setBeanDefinitionPropertyValue() {
 
-		BeanDefinition mockBeanDefinition = mock(BeanDefinition.class);
-
 		MutablePropertyValues mutablePropertyValues = new MutablePropertyValues();
 
-		when(mockBeanDefinition.getPropertyValues()).thenReturn(mutablePropertyValues);
+		when(this.mockBeanDefinition.getPropertyValues()).thenReturn(mutablePropertyValues);
 
 		assertThat(mutablePropertyValues.size()).isEqualTo(0);
 
-		SpringUtils.setPropertyValue(mockBeanDefinition, "testProperty", "testValue");
+		SpringUtils.setPropertyValue(this.mockBeanDefinition, "testProperty", "testValue");
 
 		assertThat(mutablePropertyValues.size()).isEqualTo(1);
 		assertThat(mutablePropertyValues.getPropertyValue("testProperty")).isNotNull();
@@ -291,6 +288,7 @@ public class SpringUtilsUnitTests {
 	}
 
 	@Test
+	@SuppressWarnings("all")
 	public void equalsIgnoreNullIsFalse() {
 
 		assertThat(SpringUtils.equalsIgnoreNull(null, "null")).isFalse();
@@ -312,6 +310,7 @@ public class SpringUtilsUnitTests {
 	}
 
 	@Test
+	@SuppressWarnings("all")
 	public void nullOrEqualsWithNullIsTrue() {
 		assertThat(SpringUtils.nullOrEquals(null, "test")).isTrue();
 	}
@@ -327,6 +326,7 @@ public class SpringUtilsUnitTests {
 	}
 
 	@Test
+	@SuppressWarnings("all")
 	public void nullSafeEqualsWithNullObjectsIsFalse() {
 		assertThat(SpringUtils.nullSafeEquals(null, "test")).isFalse();
 		assertThat(SpringUtils.nullSafeEquals("test", null)).isFalse();
@@ -335,6 +335,20 @@ public class SpringUtilsUnitTests {
 	@Test
 	public void nullSafeEqualsWithUnequalObjectsIsFalse() {
 		assertThat(SpringUtils.nullSafeEquals("test", "mock")).isFalse();
+	}
+
+	@Test
+	public void safeDoOperationWithNonThrowingOperation() {
+
+		AtomicReference<Object> operationValue = new AtomicReference<>();
+
+		assertThat(SpringUtils.safeDoOperation(() -> operationValue.set("TEST"))).isTrue();
+		assertThat(operationValue.get()).isEqualTo("TEST");
+	}
+
+	@Test
+	public void safeDoOperationWithThrowingOperation() {
+		assertThat(SpringUtils.safeDoOperation(() -> { throw new RuntimeException("TEST"); })).isFalse();
 	}
 
 	@Test

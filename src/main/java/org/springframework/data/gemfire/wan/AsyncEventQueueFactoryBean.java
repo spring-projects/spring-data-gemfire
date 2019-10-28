@@ -15,14 +15,12 @@
  */
 package org.springframework.data.gemfire.wan;
 
-import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeList;
-
 import java.util.List;
 import java.util.Optional;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
@@ -31,6 +29,8 @@ import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewaySender;
 
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.data.gemfire.util.CollectionUtils;
+import org.springframework.data.gemfire.util.SpringUtils;
 import org.springframework.util.Assert;
 
 /**
@@ -56,6 +56,7 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	private Boolean forwardExpirationDestroy;
 	private Boolean parallel;
 	private Boolean persistent;
+	private Boolean pauseEventDispatching;
 
 	private Integer batchSize;
 	private Integer batchTimeInterval;
@@ -106,10 +107,11 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	@Override
 	protected void doInit() {
 
-		Assert.state(this.asyncEventListener != null, "AsyncEventListener must not be null");
+		AsyncEventListener listener = getAsyncEventListener();
 
-		AsyncEventQueueFactory asyncEventQueueFactory =
-			this.factory != null ? (AsyncEventQueueFactory) this.factory : this.cache.createAsyncEventQueueFactory();
+		Assert.state(listener != null, "AsyncEventListener must not be null");
+
+		AsyncEventQueueFactory asyncEventQueueFactory = resolveAsyncEventQueueFactory();
 
 		Optional.ofNullable(this.batchConflationEnabled).ifPresent(asyncEventQueueFactory::setBatchConflationEnabled);
 		Optional.ofNullable(this.batchSize).ifPresent(asyncEventQueueFactory::setBatchSize);
@@ -122,9 +124,11 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 		Optional.ofNullable(this.maximumQueueMemory).ifPresent(asyncEventQueueFactory::setMaximumQueueMemory);
 		Optional.ofNullable(this.persistent).ifPresent(asyncEventQueueFactory::setPersistent);
 
-		asyncEventQueueFactory.setParallel(isParallelEventQueue());
+		if (isPauseEventDispatching()) {
+			asyncEventQueueFactory.pauseEventDispatching();
+		}
 
-		nullSafeList(this.gatewayEventFilters).forEach(asyncEventQueueFactory::addGatewayEventFilter);
+		asyncEventQueueFactory.setParallel(isParallelEventQueue());
 
 		if (this.orderPolicy != null) {
 
@@ -133,21 +137,31 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 			asyncEventQueueFactory.setOrderPolicy(this.orderPolicy);
 		}
 
-		setAsyncEventQueue(asyncEventQueueFactory.create(getName(), this.asyncEventListener));
+		CollectionUtils.nullSafeList(this.gatewayEventFilters).forEach(asyncEventQueueFactory::addGatewayEventFilter);
+
+		setAsyncEventQueue(asyncEventQueueFactory.create(getName(), listener));
+	}
+
+	private AsyncEventQueueFactory resolveAsyncEventQueueFactory() {
+		return this.factory != null ? (AsyncEventQueueFactory) this.factory : this.cache.createAsyncEventQueueFactory();
 	}
 
 	@Override
-	public void destroy() throws Exception {
+	public void destroy() {
 
-		if (!this.cache.isClosed()) {
-			try {
-				this.asyncEventListener.close();
-			}
-			catch (CacheClosedException ignore) {
-			}
+		if (!getCache().isClosed()) {
+			SpringUtils.safeDoOperation(() -> this.asyncEventListener.close());
 		}
 	}
 
+	/**
+	 * Configures the {@link AsyncEventListener} called when {@link AsyncEvent AsyncEvents} are enqueued into
+	 * the {@link AsyncEventQueue} created by this {@link FactoryBean}.
+	 *
+	 * @param listener the configured {@link AsyncEventListener}.
+	 * @throws IllegalStateException if the {@link AsyncEventQueue} has already bean created.
+	 * @see org.apache.geode.cache.asyncqueue.AsyncEventListener
+	 */
 	public final void setAsyncEventListener(AsyncEventListener listener) {
 
 		Assert.state(this.asyncEventQueue == null,
@@ -157,13 +171,35 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 	}
 
 	/**
+	 * Returns the configured {@link AsyncEventListener} for the {@link AsyncEventQueue}
+	 * returned by this {@link FactoryBean}.
+	 *
+	 * @return the configured {@link AsyncEventListener}.
+	 * @see org.apache.geode.cache.asyncqueue.AsyncEventListener
+	 * @see #setAsyncEventListener(AsyncEventListener)
+	 */
+	public AsyncEventListener getAsyncEventListener() {
+		return this.asyncEventListener;
+	}
+
+	/**
 	 * Configures the {@link AsyncEventQueue} returned by this {@link FactoryBean}.
 	 *
-	 * @param asyncEventQueue overrides {@link AsyncEventQueue} returned by this {@link FactoryBean}.
+	 * @param asyncEventQueue overrides the {@link AsyncEventQueue} returned by this {@link FactoryBean}.
 	 * @see org.apache.geode.cache.asyncqueue.AsyncEventQueue
 	 */
 	public void setAsyncEventQueue(AsyncEventQueue asyncEventQueue) {
 		this.asyncEventQueue = asyncEventQueue;
+	}
+
+	/**
+	 * Returns the {@link AsyncEventQueue} created by this {@link FactoryBean}.
+	 *
+	 * @return a reference to the {@link AsyncEventQueue} created by this {@link FactoryBean}.
+	 * @see org.apache.geode.cache.asyncqueue.AsyncEventQueue
+	 */
+	public AsyncEventQueue getAsyncEventQueue() {
+		return this.asyncEventQueue;
 	}
 
 	/**
@@ -266,15 +302,23 @@ public class AsyncEventQueueFactoryBean extends AbstractWANComponentFactoryBean<
 		this.parallel = parallel;
 	}
 
-	public boolean isSerialEventQueue() {
-		return !isParallelEventQueue();
-	}
-
 	public boolean isParallelEventQueue() {
 		return Boolean.TRUE.equals(parallel);
 	}
 
+	public void setPauseEventDispatching(Boolean pauseEventDispatching) {
+		this.pauseEventDispatching = pauseEventDispatching;
+	}
+
+	public boolean isPauseEventDispatching() {
+		return Boolean.TRUE.equals(this.pauseEventDispatching);
+	}
+
 	public void setPersistent(Boolean persistent) {
 		this.persistent = persistent;
+	}
+
+	public boolean isSerialEventQueue() {
+		return !isParallelEventQueue();
 	}
 }

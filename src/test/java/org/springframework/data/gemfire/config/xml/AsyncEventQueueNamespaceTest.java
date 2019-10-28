@@ -14,18 +14,17 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.config.xml;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
@@ -35,10 +34,6 @@ import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -68,22 +63,26 @@ public class AsyncEventQueueNamespaceTest {
 	@Resource(name = "TestAsyncEventQueueWithFilters")
 	private AsyncEventQueue asyncEventQueueWithFilters;
 
+	@Resource(name = "TestPausedAsyncEventQueue")
+	private AsyncEventQueue pausedAsyncEventQueue;
+
 	@Test
 	public void asyncEventQueueIsConfiguredProperly() {
 
-		Assert.assertThat(asyncEventQueue, is(notNullValue(AsyncEventQueue.class)));
-		Assert.assertThat(asyncEventQueue.getId(), is(equalTo("TestAsyncEventQueue")));
-		Assert.assertThat(asyncEventQueue.isBatchConflationEnabled(), is(true));
-		Assert.assertThat(asyncEventQueue.getBatchSize(), is(equalTo(100)));
-		Assert.assertThat(asyncEventQueue.getBatchTimeInterval(), is(equalTo(30)));
-		Assert.assertThat(asyncEventQueue.getDiskStoreName(), is(equalTo("TestDiskStore")));
-		Assert.assertThat(asyncEventQueue.isDiskSynchronous(), is(true));
-		Assert.assertThat(asyncEventQueue.getDispatcherThreads(), is(equalTo(4)));
-		Assert.assertThat(asyncEventQueue.isForwardExpirationDestroy(), is(true));
-		Assert.assertThat(asyncEventQueue.getMaximumQueueMemory(), is(equalTo(50)));
-		Assert.assertThat(asyncEventQueue.getOrderPolicy(), is(equalTo(GatewaySender.OrderPolicy.KEY)));
-		Assert.assertThat(asyncEventQueue.isParallel(), is(false));
-		Assert.assertThat(asyncEventQueue.isPersistent(), is(true));
+		assertThat(asyncEventQueue).isNotNull();
+		assertThat(asyncEventQueue.getId()).isEqualTo("TestAsyncEventQueue");
+		assertThat(asyncEventQueue.isBatchConflationEnabled()).isTrue();
+		assertThat(asyncEventQueue.getBatchSize()).isEqualTo(100);
+		assertThat(asyncEventQueue.getBatchTimeInterval()).isEqualTo(30);
+		assertThat(asyncEventQueue.getDiskStoreName()).isEqualTo("TestDiskStore");
+		assertThat(asyncEventQueue.isDiskSynchronous()).isTrue();
+		assertThat(asyncEventQueue.getDispatcherThreads()).isEqualTo(4);
+		assertThat(asyncEventQueue.isDispatchingPaused()).isFalse();
+		assertThat(asyncEventQueue.isForwardExpirationDestroy()).isTrue();
+		assertThat(asyncEventQueue.getMaximumQueueMemory()).isEqualTo(50);
+		assertThat(asyncEventQueue.getOrderPolicy()).isEqualTo(GatewaySender.OrderPolicy.KEY);
+		assertThat(asyncEventQueue.isParallel()).isFalse();
+		assertThat(asyncEventQueue.isPersistent()).isTrue();
 	}
 
 	@Test
@@ -91,8 +90,8 @@ public class AsyncEventQueueNamespaceTest {
 
 		AsyncEventListener asyncEventListener = asyncEventQueue.getAsyncEventListener();
 
-		Assert.assertThat(asyncEventListener, is(notNullValue(AsyncEventListener.class)));
-		Assert.assertThat(asyncEventListener.toString(), is(equalTo("TestAeqListener")));
+		assertThat(asyncEventListener).isNotNull();
+		assertThat(asyncEventListener.toString()).isEqualTo("TestAeqListener");
 	}
 
 	@Test
@@ -100,6 +99,7 @@ public class AsyncEventQueueNamespaceTest {
 
 		assertThat(asyncEventQueueWithFilters).isNotNull();
 		assertThat(asyncEventQueueWithFilters.getId()).isEqualTo("TestAsyncEventQueueWithFilters");
+		assertThat(asyncEventQueueWithFilters.isDispatchingPaused()).isFalse();
 
 		AsyncEventListener listener = asyncEventQueueWithFilters.getAsyncEventListener();
 
@@ -118,6 +118,14 @@ public class AsyncEventQueueNamespaceTest {
 
 		assertThat(gatewayEventSubstitutionFilter).isNotNull();
 		assertThat(gatewayEventSubstitutionFilter.toString()).isEqualTo("GatewayEventSubstitutionFilterOne");
+	}
+
+	@Test
+	public void pausedAsyncEventQueueIsConfiguredProperly() {
+
+		assertThat(pausedAsyncEventQueue).isNotNull();
+		assertThat(pausedAsyncEventQueue.getId()).isEqualTo("TestPausedAsyncEventQueue");
+		assertThat(pausedAsyncEventQueue.isDispatchingPaused()).isTrue();
 	}
 
 	public static class TestAsyncEventListener implements AsyncEventListener {
@@ -180,6 +188,7 @@ public class AsyncEventQueueNamespaceTest {
 		public TestGatewayEventSubstitutionFilter(String name) {
 			this.name = name;
 		}
+
 		@Override
 		public Object getSubstituteValue(EntryEvent<Object, Object> event) {
 			return null;
