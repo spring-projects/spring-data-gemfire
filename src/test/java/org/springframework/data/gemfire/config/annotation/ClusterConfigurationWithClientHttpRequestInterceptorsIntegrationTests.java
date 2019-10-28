@@ -26,10 +26,12 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.geode.cache.client.ClientCache;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.apache.geode.cache.client.ClientCache;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -38,6 +40,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.gemfire.config.admin.GemfireAdminOperations;
 import org.springframework.data.gemfire.config.admin.remote.RestHttpGemfireAdminTemplate;
+import org.springframework.data.gemfire.config.support.RestTemplateConfigurer;
 import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockObjects;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.InterceptingClientHttpRequestFactory;
@@ -89,6 +92,20 @@ public class ClusterConfigurationWithClientHttpRequestInterceptorsIntegrationTes
 	@Autowired
 	private List<ClientHttpRequestInterceptor> clientHttpRequestInterceptors;
 
+	@Autowired
+	private List<RestTemplateConfigurer> restTemplateConfigurers;
+
+	private RestTemplate theRestTemplate;
+
+	@Autowired
+	@Qualifier("testRestTemplateConfigurerOne")
+	private RestTemplateConfigurer restTemplateConfigurerOne;
+
+	@Autowired
+	@Qualifier("testRestTemplateConfigurerTwo")
+	private RestTemplateConfigurer restTemplateConfigurerTwo;
+
+	// TODO: Replace with STDG
 	@SuppressWarnings("unchecked")
 	private <T> T getFieldValue(Object target, String fieldName) throws NoSuchFieldException {
 
@@ -106,7 +123,7 @@ public class ClusterConfigurationWithClientHttpRequestInterceptorsIntegrationTes
 	}
 
 	@Before
-	public void setup() {
+	public void setupIsCorrect() {
 
 		assertThat(this.clientCache).isNotNull();
 		assertThat(this.configuration).isNotNull();
@@ -117,17 +134,18 @@ public class ClusterConfigurationWithClientHttpRequestInterceptorsIntegrationTes
 		assertThat(this.clientHttpRequestInterceptors).hasSize(2);
 		assertThat(this.clientHttpRequestInterceptors)
 			.containsExactly(this.mockClientHttpRequestInterceptorTwo, this.mockClientHttpRequestInterceptorOne);
+		assertThat(this.restTemplateConfigurerOne).isInstanceOf(TestRestTemplateConfigurer.class);
+		assertThat(this.restTemplateConfigurerTwo).isInstanceOf(TestRestTemplateConfigurer.class);
+		assertThat(this.restTemplateConfigurers).isNotNull();
+		assertThat(this.restTemplateConfigurers).hasSize(2);
+		assertThat(this.restTemplateConfigurers)
+			.containsExactlyInAnyOrder(this.restTemplateConfigurerOne, restTemplateConfigurerTwo);
 	}
 
-	@Test
-	public void configurationWasAutowiredWithUserDefinedClientHttpRequestInterceptors() {
+	@Before
+	public void restTemplateWasConfiguredCorrectly() throws Exception {
 
-		assertThat(this.configuration.resolveClientHttpRequestInterceptors())
-			.isEqualTo(this.clientHttpRequestInterceptors);
-	}
-
-	@Test
-	public void clientHttpRequestInterceptorsRegistered() throws Exception {
+		assertThat(this.initializer).isNotNull();
 
 		SchemaObjectContext schemaObjectContext = this.initializer.getSchemaObjectContext();
 
@@ -138,12 +156,43 @@ public class ClusterConfigurationWithClientHttpRequestInterceptorsIntegrationTes
 
 		RestHttpGemfireAdminTemplate template = schemaObjectContext.getGemfireAdminOperations();
 
-		RestTemplate restTemplate = getFieldValue(template, "restTemplate");
+		this.theRestTemplate = getFieldValue(template, "restTemplate");
 
-		assertThat(restTemplate).isNotNull();
-		assertThat(restTemplate.getInterceptors())
-			.containsExactly(this.mockClientHttpRequestInterceptorTwo, this.mockClientHttpRequestInterceptorOne);
-		assertThat(restTemplate.getRequestFactory()).isInstanceOf(InterceptingClientHttpRequestFactory.class);
+		assertThat(this.theRestTemplate).isNotNull();
+	}
+
+	@Test
+	public void assertRestTemplateConfigurersVisitedAndConfiguredTheClusterConfigurationRestTemplate() {
+
+		assertThat(((TestRestTemplateConfigurer) restTemplateConfigurerOne).getRestTemplate())
+			.isEqualTo(this.theRestTemplate);
+
+		assertThat(((TestRestTemplateConfigurer) restTemplateConfigurerTwo).getRestTemplate())
+			.isEqualTo(this.theRestTemplate);
+	}
+
+	@Test
+	public void assertUserDefinedCustomClientHttpRequestInterceptorsAreNotRegisteredByDefault() {
+
+		assertThat(this.theRestTemplate.getInterceptors())
+			.doesNotContain(this.mockClientHttpRequestInterceptorTwo, this.mockClientHttpRequestInterceptorOne);
+
+		assertThat(this.theRestTemplate.getRequestFactory())
+			.isNotInstanceOf(InterceptingClientHttpRequestFactory.class);
+	}
+
+	@Test
+	public void configurationWasAutowiredWithUserDefinedClientHttpRequestInterceptors() {
+
+		assertThat(this.configuration.resolveClientHttpRequestInterceptors(true))
+			.isEqualTo(this.clientHttpRequestInterceptors);
+	}
+
+	@Test
+	public void configurationWasAutowiredWithUserDefinedRestTemplateConfigurers() {
+
+		assertThat(this.configuration.resolveRestTemplateConfigurers())
+			.isEqualTo(this.restTemplateConfigurers);
 	}
 
 	@ClientCacheApplication
@@ -183,6 +232,30 @@ public class ClusterConfigurationWithClientHttpRequestInterceptorsIntegrationTes
 		@Order(1)
 		ClientHttpRequestInterceptor mockClientHttpRequestInterceptorTwo() {
 			return mock(ClientHttpRequestInterceptor.class);
+		}
+
+		@Bean
+		TestRestTemplateConfigurer testRestTemplateConfigurerOne() {
+			return new TestRestTemplateConfigurer();
+		}
+
+		@Bean
+		TestRestTemplateConfigurer testRestTemplateConfigurerTwo() {
+			return new TestRestTemplateConfigurer();
+		}
+	}
+
+	private static final class TestRestTemplateConfigurer implements RestTemplateConfigurer {
+
+		private volatile RestTemplate restTemplate;
+
+		RestTemplate getRestTemplate() {
+			return this.restTemplate;
+		}
+
+		@Override
+		public void configure(RestTemplate restTemplate) {
+			this.restTemplate = restTemplate;
 		}
 	}
 }

@@ -33,10 +33,12 @@ import java.net.URI;
 import java.util.Optional;
 import java.util.Properties;
 
-import org.apache.geode.management.internal.security.ResourceConstants;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.apache.geode.management.internal.security.ResourceConstants;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -52,7 +54,6 @@ import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockOb
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
-import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.InterceptingClientHttpRequestFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.test.context.ContextConfiguration;
@@ -93,16 +94,12 @@ public class EnableClusterConfigurationWithSecurityIntegrationTests {
 	private Authenticator authenticator;
 
 	@Autowired
-	@Qualifier("loggingAwareClientHttpRequestInterceptor")
-	private ClientHttpRequestInterceptor loggingAwareClientHttpRequestInterceptor;
-
-	@Autowired
-	@Qualifier("securityAwareClientHttpRequestInterceptor")
-	private ClientHttpRequestInterceptor securityAwareClientHttpRequestInterceptor;
+	private AutoConfiguredAuthenticationConfiguration configuration;
 
 	@Autowired
 	private ClusterSchemaObjectInitializer initializer;
 
+	// TODO: Replace with STDG.
 	@SuppressWarnings("unchecked")
 	private <T> T getFieldValue(Object target, String fieldName) throws NoSuchFieldException {
 
@@ -121,11 +118,8 @@ public class EnableClusterConfigurationWithSecurityIntegrationTests {
 
 	@Before
 	public void setup() {
-
 		assertThat(this.authenticator).isNotNull();
 		assertThat(this.initializer).isNotNull();
-		assertThat(this.loggingAwareClientHttpRequestInterceptor).isNotNull();
-		assertThat(this.securityAwareClientHttpRequestInterceptor).isNotNull();
 	}
 
 	@Test
@@ -154,8 +148,7 @@ public class EnableClusterConfigurationWithSecurityIntegrationTests {
 		RestTemplate restTemplate = getFieldValue(template, "restTemplate");
 
 		assertThat(restTemplate).isNotNull();
-		assertThat(restTemplate.getInterceptors()).containsExactly(this.securityAwareClientHttpRequestInterceptor,
-			this.loggingAwareClientHttpRequestInterceptor);
+		assertThat(restTemplate.getInterceptors()).hasSize(2);
 		assertThat(restTemplate.getRequestFactory()).isInstanceOf(InterceptingClientHttpRequestFactory.class);
 	}
 
@@ -176,7 +169,7 @@ public class EnableClusterConfigurationWithSecurityIntegrationTests {
 		when(mockHttpRequest.getHeaders()).thenReturn(httpHeaders);
 		when(mockHttpRequest.getURI()).thenReturn(uri);
 
-		this.securityAwareClientHttpRequestInterceptor.intercept(mockHttpRequest, body, mockClientHttpRequestExecution);
+		this.configuration.securityAwareClientHttpRequestInterceptor().intercept(mockHttpRequest, body, mockClientHttpRequestExecution);
 
 		assertThat(httpHeaders).containsKeys(ResourceConstants.USER_NAME, ResourceConstants.PASSWORD);
 		assertThat(httpHeaders.getFirst(ResourceConstants.USER_NAME)).isEqualTo("skeletor");
