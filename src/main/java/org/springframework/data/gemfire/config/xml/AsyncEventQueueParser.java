@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.xml;
 
 import org.w3c.dom.Element;
@@ -21,6 +20,7 @@ import org.w3c.dom.Element;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
+import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.util.SpringUtils;
 import org.springframework.data.gemfire.wan.AsyncEventQueueFactoryBean;
@@ -28,10 +28,12 @@ import org.springframework.util.StringUtils;
 import org.springframework.util.xml.DomUtils;
 
 /**
- * Bean definition parser for the &lt;gfe:async-event-queue&gt; SDG XML namespace (XSD) element.
+ * {@link BeanDefinitionParser} for &lt;gfe:async-event-queue&gt; SDG XML Namespace (XSD) Elements.
  *
  * @author David Turanski
  * @author John Blum
+ * @see org.w3c.dom.Element
+ * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
  * @see org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser
  * @see org.springframework.data.gemfire.wan.AsyncEventQueueFactoryBean
  */
@@ -67,6 +69,7 @@ class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 		ParsingUtils.setPropertyValue(element, builder, "maximum-queue-memory");
 		ParsingUtils.setPropertyValue(element, builder, "order-policy");
 		ParsingUtils.setPropertyValue(element, builder, "parallel");
+		ParsingUtils.setPropertyValue(element, builder, "pause-event-dispatching");
 		ParsingUtils.setPropertyValue(element, builder, "persistent");
 
 		Element eventFilterElement = DomUtils.getChildElementByTagName(element, "event-filter");
@@ -122,7 +125,6 @@ class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 		}
 	}
 
-	/* (non-Javadoc) */
 	private void parseCache(Element element, BeanDefinitionBuilder builder) {
 
 		String cacheRefAttribute = element.getAttribute("cache-ref");
@@ -131,7 +133,6 @@ class AsyncEventQueueParser extends AbstractSingleBeanDefinitionParser {
 		builder.addConstructorArgReference(cacheName);
 	}
 
-	/* (non-Javadoc) */
 	private void parseDiskStore(Element element, BeanDefinitionBuilder builder) {
 
 		ParsingUtils.setPropertyValue(element, builder, "disk-store-ref");

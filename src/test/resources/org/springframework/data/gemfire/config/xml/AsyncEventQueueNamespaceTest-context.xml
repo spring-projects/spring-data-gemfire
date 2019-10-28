@@ -12,7 +12,7 @@
 	   	http://www.springframework.org/schema/util https://www.springframework.org/schema/util/spring-util.xsd
 ">
 
-	<bean class="org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor"/>
+	<bean class="org.springframework.data.gemfire.test.mock.config.GemFireMockObjectsBeanPostProcessor"/>
 
 	<util:properties id="gemfireProperties">
 		<prop key="name">AsyncEventQueueNamespaceTest</prop>
@@ -38,10 +38,10 @@
 						   maximum-queue-memory="50"
 						   order-policy="KEY"
 						   parallel="false"
+						   pause-event-dispatching="false"
 						   persistent="true">
 		<gfe:async-event-listener>
-			<bean c:name="TestAeqListener"
-				  class="org.springframework.data.gemfire.config.xml.AsyncEventQueueNamespaceTest.TestAsyncEventListener"/>
+			<bean class="org.springframework.data.gemfire.config.xml.AsyncEventQueueNamespaceTest.TestAsyncEventListener" c:name="TestAeqListener"/>
 		</gfe:async-event-listener>
 	</gfe:async-event-queue>
 
@@ -58,6 +58,12 @@
 			<bean class="org.springframework.data.gemfire.config.xml.AsyncEventQueueNamespaceTest.TestGatewayEventSubstitutionFilter"
 				  c:name="GatewayEventSubstitutionFilterOne"/>
 		</gfe:event-substitution-filter>
+	</gfe:async-event-queue>
+
+	<gfe:async-event-queue id="TestPausedAsyncEventQueue" pause-event-dispatching="true">
+		<gfe:async-event-listener>
+			<bean class="org.springframework.data.gemfire.config.xml.AsyncEventQueueNamespaceTest.TestAsyncEventListener" c:name="TestAeqListener"/>
+		</gfe:async-event-listener>
 	</gfe:async-event-queue>
 
 </beans>

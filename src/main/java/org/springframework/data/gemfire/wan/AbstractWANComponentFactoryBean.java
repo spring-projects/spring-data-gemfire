@@ -29,14 +29,14 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * Abstract base class for WAN Gateway components.
+ * Abstract base class for WAN Gateway objects.
  *
  * @author David Turanski
  * @author John Blum
  * @author Udo Kohlmeyer
  * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.GemFireCache
  * @see org.springframework.beans.factory.DisposableBean
- * @see org.springframework.beans.factory.FactoryBean
  * @see org.springframework.beans.factory.InitializingBean
  * @see org.springframework.data.gemfire.support.AbstractFactoryBeanSupport
  */
@@ -64,6 +64,10 @@ public abstract class AbstractWANComponentFactoryBean<T> extends AbstractFactory
 		this.beanName = beanName;
 	}
 
+	public Cache getCache() {
+		return this.cache;
+	}
+
 	public void setCache(Cache cache) {
 		this.cache = cache;
 	}
@@ -77,16 +81,13 @@ public abstract class AbstractWANComponentFactoryBean<T> extends AbstractFactory
 	}
 
 	public String getName() {
-
-		return StringUtils.hasText(this.name)
-			? this.name
-			: this.beanName;
+		return StringUtils.hasText(this.name) ? this.name : this.beanName;
 	}
 
 	@Override
 	public final void afterPropertiesSet() throws Exception {
 
-		Assert.notNull(this.cache, "Cache must not be null");
+		Assert.notNull(getCache(), "Cache must not be null");
 		Assert.notNull(getName(), "Name must not be null");
 
 		doInit();
@@ -95,6 +96,6 @@ public abstract class AbstractWANComponentFactoryBean<T> extends AbstractFactory
 	protected abstract void doInit() throws Exception;
 
 	@Override
-	public void destroy() throws Exception { }
+	public void destroy() { }
 
 }

@@ -14,7 +14,6 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.util;
 
 import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
@@ -23,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -35,26 +35,29 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.util.StringUtils;
 
 /**
- * Abstract utility class encapsulating common functionality on {@link Object Objects}
- * and other {@link Class Class types}.
+ * Abstract utility class encapsulating functionality common to {@link Object Objects}, {@link Class Class types}
+ * and Spring beans.
  *
  * @author John Blum
+ * @see java.lang.Class
+ * @see java.lang.Object
  * @see org.springframework.beans.factory.BeanFactory
  * @see org.springframework.beans.factory.config.BeanDefinition
+ * @see org.springframework.beans.factory.config.RuntimeBeanReference
  * @since 1.8.0
  */
 @SuppressWarnings("unused")
 public abstract class SpringUtils {
 
-	public static BeanDefinition addDependsOn(BeanDefinition bean, String... beanNames) {
+	public static BeanDefinition addDependsOn(BeanDefinition beanDefinition, String... beanNames) {
 
 		List<String> dependsOnList = new ArrayList<>();
 
-		Collections.addAll(dependsOnList, nullSafeArray(bean.getDependsOn(), String.class));
+		Collections.addAll(dependsOnList, nullSafeArray(beanDefinition.getDependsOn(), String.class));
 		dependsOnList.addAll(Arrays.asList(nullSafeArray(beanNames, String.class)));
-		bean.setDependsOn(dependsOnList.toArray(new String[0]));
+		beanDefinition.setDependsOn(dependsOnList.toArray(new String[0]));
 
-		return bean;
+		return beanDefinition;
 	}
 
 	public static Optional<Object> getPropertyValue(BeanDefinition beanDefinition, String propertyName) {
@@ -102,7 +105,7 @@ public abstract class SpringUtils {
 	}
 
 	public static boolean equalsIgnoreNull(Object obj1, Object obj2) {
-		return obj1 == null ? obj2 == null : obj1.equals(obj2);
+		return Objects.equals(obj1, obj2);
 	}
 
 	public static boolean nullOrEquals(Object obj1, Object obj2) {
@@ -119,6 +122,17 @@ public abstract class SpringUtils {
 
 	public static String nullSafeSimpleName(Class<?> type) {
 		return type != null ? type.getSimpleName() : null;
+	}
+
+	public static boolean safeDoOperation(VoidReturningThrowableOperation operation) {
+
+		try {
+			operation.run();
+			return true;
+		}
+		catch (Throwable cause) {
+			return false;
+		}
 	}
 
 	public static <T> T safeGetValue(Supplier<T> valueSupplier) {
@@ -143,11 +157,11 @@ public abstract class SpringUtils {
 		}
 	}
 
-	public static void safeRunOperation(VoidReturningExceptionThrowingOperation operation) {
+	public static void safeRunOperation(VoidReturningThrowableOperation operation) {
 		safeRunOperation(operation, cause -> new InvalidDataAccessApiUsageException("Failed to run operation", cause));
 	}
 
-	public static void safeRunOperation(VoidReturningExceptionThrowingOperation operation,
+	public static void safeRunOperation(VoidReturningThrowableOperation operation,
 			Function<Throwable, RuntimeException> exceptionConverter) {
 
 		try {
@@ -158,8 +172,14 @@ public abstract class SpringUtils {
 		}
 	}
 
+	/**
+	 * @deprecated use {@link VoidReturningThrowableOperation}.
+	 */
+	@Deprecated
+	public interface VoidReturningExceptionThrowingOperation extends VoidReturningThrowableOperation { }
+
 	@FunctionalInterface
-	public interface VoidReturningExceptionThrowingOperation {
+	public interface VoidReturningThrowableOperation {
 		void run() throws Throwable;
 	}
 }
