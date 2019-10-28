@@ -38,6 +38,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.data.gemfire.config.annotation.support.AutoConfiguredAuthenticationInitializer;
+import org.springframework.data.gemfire.config.support.RestTemplateConfigurer;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -106,9 +107,7 @@ public class AutoConfiguredAuthenticationConfiguration {
 		return authenticator;
 	}
 
-	@Bean
-	@Order(Ordered.LOWEST_PRECEDENCE)
-	public ClientHttpRequestInterceptor loggingAwareClientHttpRequestInterceptor() {
+	ClientHttpRequestInterceptor loggingAwareClientHttpRequestInterceptor() {
 
 		return (request, body, execution) -> {
 
@@ -142,8 +141,12 @@ public class AutoConfiguredAuthenticationConfiguration {
 	}
 
 	@Bean
-	@Order(Ordered.HIGHEST_PRECEDENCE)
-	public ClientHttpRequestInterceptor securityAwareClientHttpRequestInterceptor(Authenticator authenticator) {
+	@Order(Ordered.LOWEST_PRECEDENCE)
+	public RestTemplateConfigurer loggingAwareRestTemplateConfigurer() {
+		return restTemplate ->  restTemplate.getInterceptors().add(loggingAwareClientHttpRequestInterceptor());
+	}
+
+	ClientHttpRequestInterceptor securityAwareClientHttpRequestInterceptor() {
 
 		return (request, body, execution) -> {
 
@@ -166,6 +169,12 @@ public class AutoConfiguredAuthenticationConfiguration {
 
 			return execution.execute(request, body);
 		};
+	}
+
+	@Bean
+	@Order(Ordered.HIGHEST_PRECEDENCE)
+	public RestTemplateConfigurer securityAwareRestTemplateConfigurer(Authenticator authenticator) {
+		return restTemplate -> restTemplate.getInterceptors().add(securityAwareClientHttpRequestInterceptor());
 	}
 
 	private boolean isAuthenticationEnabled(String username, char[] password) {

@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.geode.cache.client.ClientCache;
@@ -30,6 +31,7 @@ import org.apache.geode.cache.execute.Function;
 import org.springframework.data.gemfire.config.admin.GemfireAdminOperations;
 import org.springframework.data.gemfire.config.schema.definitions.IndexDefinition;
 import org.springframework.data.gemfire.config.schema.definitions.RegionDefinition;
+import org.springframework.data.gemfire.config.support.RestTemplateConfigurer;
 import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.data.gemfire.util.NetworkUtils;
@@ -100,7 +102,7 @@ public class RestHttpGemfireAdminTemplate extends FunctionGemfireAdminTemplate {
 
 	/**
 	 * Constructs a new instance of {@link RestHttpGemfireAdminTemplate} initialized with the given {@link ClientCache}
-	 * and configured with the default host and port when accessing the Apache Geode or Pivotal GemFire
+	 * and configured with the default HTTP schema, host and port when accessing the Apache Geode or Pivotal GemFire
 	 * Management REST API interface.
 	 *
 	 * @param clientCache reference to the {@link ClientCache}.
@@ -117,8 +119,8 @@ public class RestHttpGemfireAdminTemplate extends FunctionGemfireAdminTemplate {
 	/**
 	 * Constructs a new instance of {@link RestHttpGemfireAdminTemplate} initialized with the given {@link ClientCache}
 	 * and configured with the specified HTTP scheme, host, port, redirects and
-	 * {@link ClientHttpRequestInterceptor ClientHttpRequestInterceptors} when
-	 * accessing the Apache Geode or Pivotal GemFire Management REST API interface.
+	 * {@link ClientHttpRequestInterceptor ClientHttpRequestInterceptors}
+	 * when accessing the Apache Geode or Pivotal GemFire Management REST API interface.
 	 *
 	 * @param clientCache reference to the {@link ClientCache}
 	 * @param scheme {@link String} specifying the HTTP scheme to use (e.g. HTTP or HTTPS).
@@ -131,19 +133,47 @@ public class RestHttpGemfireAdminTemplate extends FunctionGemfireAdminTemplate {
 	 * @throws IllegalArgumentException if the {@link ClientCache} reference is {@literal null}.
 	 * @see org.springframework.http.client.ClientHttpRequestInterceptor
 	 * @see org.apache.geode.cache.client.ClientCache
-	 * @see #newClientHttpRequestFactory(boolean)
-	 * @see #newRestOperations(ClientHttpRequestFactory, List)
-	 * @see #resolveManagementRestApiUrl(String, String, int)
 	 */
 	public RestHttpGemfireAdminTemplate(ClientCache clientCache, String scheme, String host, int port,
 			boolean followRedirects, List<ClientHttpRequestInterceptor> clientHttpRequestInterceptors) {
+
+		this(clientCache, scheme, host, port, followRedirects, clientHttpRequestInterceptors, Collections.emptyList());
+	}
+
+	/**
+	 * Constructs a new instance of {@link RestHttpGemfireAdminTemplate} initialized with the given {@link ClientCache}
+	 * and configured with the specified HTTP scheme, host, port, redirects and
+	 * {@link ClientHttpRequestInterceptor ClientHttpRequestInterceptors}
+	 * when accessing the Apache Geode or Pivotal GemFire Management REST API interface.
+	 *
+	 * @param clientCache reference to the {@link ClientCache}
+	 * @param scheme {@link String} specifying the HTTP scheme to use (e.g. HTTP or HTTPS).
+	 * @param host {@link String} containing the hostname of the GemFire/Geode Manager.
+	 * @param port integer value specifying the port on which the GemFire/Geode Manager HTTP Service is listening
+	 * for HTTP clients.
+	 * @param followRedirects boolean indicating whether HTTP Redirects (with HTTP Status Code 3xx) should be followed.
+	 * @param clientHttpRequestInterceptors {@link List} of {@link ClientHttpRequestInterceptor} used to intercept
+	 * and decorate the HTTP request and HTTP response.
+	 * @throws IllegalArgumentException if the {@link ClientCache} reference is {@literal null}.
+	 * @see org.apache.geode.cache.client.ClientCache
+	 * @see org.springframework.data.gemfire.config.support.RestTemplateConfigurer
+	 * @see org.springframework.http.client.ClientHttpRequestInterceptor
+	 * @see #newClientHttpRequestFactory(boolean)
+	 * @see #newRestOperations(ClientHttpRequestFactory, List, List)
+	 * @see #resolveManagementRestApiUrl(String, String, int)
+	 */
+	public RestHttpGemfireAdminTemplate(ClientCache clientCache, String scheme, String host, int port,
+			boolean followRedirects, List<ClientHttpRequestInterceptor> clientHttpRequestInterceptors,
+			List<RestTemplateConfigurer> restTemplateConfigurers) {
 
 		super(clientCache);
 
 		ClientHttpRequestFactory clientHttpRequestFactory = newClientHttpRequestFactory(followRedirects);
 
 		this.managementRestApiUrl = resolveManagementRestApiUrl(scheme, host, port);
-		this.restTemplate = newRestOperations(clientHttpRequestFactory, clientHttpRequestInterceptors);
+
+		this.restTemplate =
+			newRestOperations(clientHttpRequestFactory, clientHttpRequestInterceptors, restTemplateConfigurers);
 	}
 
 	/**
@@ -173,12 +203,17 @@ public class RestHttpGemfireAdminTemplate extends FunctionGemfireAdminTemplate {
 	 */
 	@SuppressWarnings("unchecked")
 	protected <T extends RestOperations> T newRestOperations(ClientHttpRequestFactory clientHttpRequestFactory,
-			List<ClientHttpRequestInterceptor> clientHttpRequestInterceptors) {
+			List<ClientHttpRequestInterceptor> clientHttpRequestInterceptors,
+			List<RestTemplateConfigurer> restTemplateConfigurers) {
 
 		RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory);
 
 		Optional.ofNullable(clientHttpRequestInterceptors)
 			.ifPresent(restTemplate.getInterceptors()::addAll);
+
+		CollectionUtils.nullSafeList(restTemplateConfigurers).stream()
+			.filter(Objects::nonNull)
+			.forEach(configurer -> configurer.configure(restTemplate));
 
 		return (T) restTemplate;
 	}
@@ -283,6 +318,7 @@ public class RestHttpGemfireAdminTemplate extends FunctionGemfireAdminTemplate {
 		private ClientCache clientCache;
 
 		private final List<ClientHttpRequestInterceptor> clientHttpRequestInterceptors = new ArrayList<>();
+		private final List<RestTemplateConfigurer> restTemplateConfigurers = new ArrayList<>();
 
 		private String hostname = DEFAULT_HOST;
 		private String scheme = DEFAULT_SCHEME;
@@ -324,15 +360,47 @@ public class RestHttpGemfireAdminTemplate extends FunctionGemfireAdminTemplate {
 			return this;
 		}
 
+		/**
+		 * @deprecated use {@link #withInterceptors(ClientHttpRequestInterceptor...)}.
+		 */
+		@Deprecated
 		public Builder with(ClientHttpRequestInterceptor... clientHttpRequestInterceptors) {
-
-			clientHttpRequestInterceptors =
-				ArrayUtils.nullSafeArray(clientHttpRequestInterceptors, ClientHttpRequestInterceptor.class);
-
-			return with(Arrays.asList(clientHttpRequestInterceptors));
+			return withInterceptors(clientHttpRequestInterceptors);
 		}
 
+		/**
+		 * @deprecated use {@link #withInterceptors(List)}.
+		 */
+		@Deprecated
 		public Builder with(List<ClientHttpRequestInterceptor> clientHttpRequestInterceptors) {
+			return withInterceptors(clientHttpRequestInterceptors);
+		}
+
+		public Builder withConfigurers(RestTemplateConfigurer... restTemplateConfigurers) {
+
+			List<RestTemplateConfigurer> restTemplateConfigurerList =
+				Arrays.asList(ArrayUtils.nullSafeArray(restTemplateConfigurers, RestTemplateConfigurer.class));
+
+			return withConfigurers(restTemplateConfigurerList);
+		}
+
+		public Builder withConfigurers(List<RestTemplateConfigurer> restTemplateConfigurers) {
+
+			this.restTemplateConfigurers.addAll(CollectionUtils.nullSafeList(restTemplateConfigurers));
+
+			return this;
+		}
+
+		public Builder withInterceptors(ClientHttpRequestInterceptor... clientHttpRequestInterceptors) {
+
+			List<ClientHttpRequestInterceptor> clientHttpRequestInterceptorList =
+				Arrays.asList(ArrayUtils.nullSafeArray(clientHttpRequestInterceptors,
+					ClientHttpRequestInterceptor.class));
+
+			return withInterceptors(clientHttpRequestInterceptorList);
+		}
+
+		public Builder withInterceptors(List<ClientHttpRequestInterceptor> clientHttpRequestInterceptors) {
 
 			this.clientHttpRequestInterceptors.addAll(CollectionUtils.nullSafeList(clientHttpRequestInterceptors));
 
@@ -342,7 +410,7 @@ public class RestHttpGemfireAdminTemplate extends FunctionGemfireAdminTemplate {
 		public RestHttpGemfireAdminTemplate build() {
 
 			return new RestHttpGemfireAdminTemplate(this.clientCache, this.scheme, this.hostname, this.port,
-				this.followRedirects, this.clientHttpRequestInterceptors);
+				this.followRedirects, this.clientHttpRequestInterceptors, this.restTemplateConfigurers);
 		}
 	}
 

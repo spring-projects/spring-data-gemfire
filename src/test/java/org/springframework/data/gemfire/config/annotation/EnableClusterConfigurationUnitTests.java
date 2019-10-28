@@ -18,7 +18,6 @@ package org.springframework.data.gemfire.config.annotation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -41,12 +40,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.junit.After;
+import org.junit.Test;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
-
-import org.junit.After;
-import org.junit.Test;
 
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
@@ -64,7 +63,7 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * Unit tests for {@link EnableClusterConfiguration} annotation and the {@link ClusterConfigurationConfiguration} class.
+ * Unit Tests for {@link EnableClusterConfiguration} annotation and the {@link ClusterConfigurationConfiguration} class.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -88,6 +87,7 @@ public class EnableClusterConfigurationUnitTests {
 		System.clearProperty(ClusterConfigurationConfiguration.HTTP_FOLLOW_REDIRECTS_PROPERTY);
 	}
 
+	// TODO: Replace with STDG!
 	private <T> ClusterConfigurationConfiguration autowire(ClusterConfigurationConfiguration target,
 			String fieldName, T dependency) throws NoSuchFieldException {
 
@@ -130,6 +130,8 @@ public class EnableClusterConfigurationUnitTests {
 
 		annotationAttributes.put("host", "skullbox");
 		annotationAttributes.put("port", 12345);
+		annotationAttributes.put("enableInterceptors", true);
+		annotationAttributes.put("followRedirects", true);
 		annotationAttributes.put("requireHttps", false);
 		annotationAttributes.put("serverRegionShortcut", RegionShortcut.PARTITION_PERSISTENT);
 		annotationAttributes.put("useHttp", true);
@@ -145,6 +147,8 @@ public class EnableClusterConfigurationUnitTests {
 
 		assertThat(configuration.getManagementHttpHost().orElse(null)).isEqualTo("skullbox");
 		assertThat(configuration.getManagementHttpPort().orElse(0)).isEqualTo(12345);
+		assertThat(configuration.getManagementHttpEnableInterceptors().orElse(false)).isTrue();
+		assertThat(configuration.getManagementHttpFollowRedirects().orElse(false)).isTrue();
 		assertThat(configuration.getManagementRequireHttps().orElse(true)).isFalse();
 		assertThat(configuration.getManagementUseHttp().orElse(false)).isTrue();
 		assertThat(configuration.getServerRegionShortcut().orElse(null)).isEqualTo(RegionShortcut.PARTITION_PERSISTENT);
@@ -165,6 +169,8 @@ public class EnableClusterConfigurationUnitTests {
 
 		annotationAttributes.put("host", "skullbox");
 		annotationAttributes.put("port", 12345);
+		annotationAttributes.put("enableInterceptors", false);
+		annotationAttributes.put("followRedirects", false);
 		annotationAttributes.put("requireHttps", true);
 		annotationAttributes.put("serverRegionShortcut", RegionShortcut.PARTITION_PERSISTENT);
 		annotationAttributes.put("useHttp", false);
@@ -179,6 +185,8 @@ public class EnableClusterConfigurationUnitTests {
 		when(mockEnvironment.containsProperty(eq("spring.data.gemfire.cluster.region.type"))).thenReturn(true);
 		when(mockEnvironment.containsProperty(eq("spring.data.gemfire.management.http.host"))).thenReturn(true);
 		when(mockEnvironment.containsProperty(eq("spring.data.gemfire.management.http.port"))).thenReturn(true);
+		when(mockEnvironment.containsProperty(eq("spring.data.gemfire.management.http.enable-interceptors"))).thenReturn(true);
+		when(mockEnvironment.containsProperty(eq("spring.data.gemfire.management.http.follow-redirects"))).thenReturn(true);
 		when(mockEnvironment.containsProperty(eq("spring.data.gemfire.management.require-https"))).thenReturn(true);
 		when(mockEnvironment.containsProperty(eq("spring.data.gemfire.management.use-http"))).thenReturn(true);
 
@@ -190,6 +198,12 @@ public class EnableClusterConfigurationUnitTests {
 
 		when(mockEnvironment.getProperty(eq("spring.data.gemfire.management.http.port"), eq(Integer.class), any(Integer.class)))
 			.thenReturn(11235);
+
+		when(mockEnvironment.getProperty(eq("spring.data.gemfire.management.http.enable-interceptors"), eq(Boolean.class), any(Boolean.class)))
+			.thenReturn(true);
+
+		when(mockEnvironment.getProperty(eq("spring.data.gemfire.management.http.follow-redirects"), eq(Boolean.class), any(Boolean.class)))
+			.thenReturn(true);
 
 		when(mockEnvironment.getProperty(eq("spring.data.gemfire.management.require-https"), eq(Boolean.class), any(Boolean.class)))
 			.thenReturn(false);
@@ -207,6 +221,8 @@ public class EnableClusterConfigurationUnitTests {
 
 		assertThat(configuration.getManagementHttpHost().orElse(null)).isEqualTo("cardboardBox");
 		assertThat(configuration.getManagementHttpPort().orElse(0)).isEqualTo(11235);
+		assertThat(configuration.getManagementHttpEnableInterceptors().orElse(false)).isTrue();
+		assertThat(configuration.getManagementHttpFollowRedirects().orElse(false)).isTrue();
 		assertThat(configuration.getManagementRequireHttps().orElse(true)).isFalse();
 		assertThat(configuration.getManagementUseHttp().orElse(false)).isTrue();
 		assertThat(configuration.getServerRegionShortcut().orElse(null)).isEqualTo(RegionShortcut.LOCAL);
@@ -227,6 +243,12 @@ public class EnableClusterConfigurationUnitTests {
 			.containsProperty(eq("spring.data.gemfire.management.http.port"));
 
 		verify(mockEnvironment, times(1))
+			.containsProperty(eq("spring.data.gemfire.management.http.enable-interceptors"));
+
+		verify(mockEnvironment, times(1))
+			.containsProperty(eq("spring.data.gemfire.management.http.follow-redirects"));
+
+		verify(mockEnvironment, times(1))
 			.containsProperty(eq("spring.data.gemfire.management.require-https"));
 
 		verify(mockEnvironment, times(1))
@@ -237,10 +259,16 @@ public class EnableClusterConfigurationUnitTests {
 				eq(RegionShortcut.PARTITION_PERSISTENT));
 
 		verify(mockEnvironment, times(1))
-			.getProperty(eq("spring.data.gemfire.management.http.host"), eq(String.class), anyString());
+			.getProperty(eq("spring.data.gemfire.management.http.host"), eq(String.class), eq("skullbox"));
 
 		verify(mockEnvironment, times(1))
-			.getProperty(eq("spring.data.gemfire.management.http.port"), eq(Integer.class), anyInt());
+			.getProperty(eq("spring.data.gemfire.management.http.port"), eq(Integer.class), eq(12345));
+
+		verify(mockEnvironment, times(1))
+			.getProperty(eq("spring.data.gemfire.management.http.enable-interceptors"), eq(Boolean.class), eq(false));
+
+		verify(mockEnvironment, times(1))
+			.getProperty(eq("spring.data.gemfire.management.http.follow-redirects"), eq(Boolean.class), eq(false));
 
 		verify(mockEnvironment, times(1))
 			.getProperty(eq("spring.data.gemfire.management.require-https"), eq(Boolean.class), eq(true));
@@ -258,6 +286,8 @@ public class EnableClusterConfigurationUnitTests {
 
 		annotationAttributes.put("host", "postOfficeBox");
 		annotationAttributes.put("port", 10101);
+		annotationAttributes.put("enableInterceptors", false);
+		annotationAttributes.put("followRedirects", false);
 		annotationAttributes.put("requireHttps", false);
 		annotationAttributes.put("serverRegionShortcut", RegionShortcut.REPLICATE);
 		annotationAttributes.put("useHttp", true);
@@ -272,8 +302,13 @@ public class EnableClusterConfigurationUnitTests {
 		when(mockEnvironment.containsProperty(eq("spring.data.gemfire.cluster.region.type"))).thenReturn(false);
 		when(mockEnvironment.containsProperty(eq("spring.data.gemfire.management.http.host"))).thenReturn(true);
 		when(mockEnvironment.containsProperty(eq("spring.data.gemfire.management.http.port"))).thenReturn(true);
+		when(mockEnvironment.containsProperty(eq("spring.data.gemfire.management.http.enable-interceptors"))).thenReturn(false);
+		when(mockEnvironment.containsProperty(eq("spring.data.gemfire.management.http.follow-redirects"))).thenReturn(true);
 		when(mockEnvironment.containsProperty(eq("spring.data.gemfire.management.require-https"))).thenReturn(false);
 		when(mockEnvironment.containsProperty(eq("spring.data.gemfire.management.use-http"))).thenReturn(false);
+
+		when(mockEnvironment.getProperty(eq("spring.data.gemfire.management.http.follow-redirects"), eq(Boolean.class), any(Boolean.class)))
+			.thenReturn(true);
 
 		when(mockEnvironment.getProperty(eq("spring.data.gemfire.management.http.host"), eq(String.class), any(String.class)))
 			.thenReturn("shoebox");
@@ -291,6 +326,8 @@ public class EnableClusterConfigurationUnitTests {
 
 		assertThat(configuration.getManagementHttpHost().orElse(null)).isEqualTo("shoebox");
 		assertThat(configuration.getManagementHttpPort().orElse(0)).isEqualTo(12480);
+		assertThat(configuration.getManagementHttpEnableInterceptors().orElse(true)).isFalse();
+		assertThat(configuration.getManagementHttpFollowRedirects().orElse(false)).isTrue();
 		assertThat(configuration.getManagementRequireHttps().orElse(true)).isFalse();
 		assertThat(configuration.getManagementUseHttp().orElse(false)).isTrue();
 		assertThat(configuration.getServerRegionShortcut().orElse(null)).isEqualTo(RegionShortcut.REPLICATE);
@@ -321,10 +358,16 @@ public class EnableClusterConfigurationUnitTests {
 				any(RegionShortcut.class));
 
 		verify(mockEnvironment, times(1))
-			.getProperty(eq("spring.data.gemfire.management.http.host"), eq(String.class), anyString());
+			.getProperty(eq("spring.data.gemfire.management.http.host"), eq(String.class), eq("postOfficeBox"));
 
 		verify(mockEnvironment, times(1))
-			.getProperty(eq("spring.data.gemfire.management.http.port"), eq(Integer.class), anyInt());
+			.getProperty(eq("spring.data.gemfire.management.http.port"), eq(Integer.class), eq(10101));
+
+		verify(mockEnvironment, never())
+			.getProperty(eq("spring.data.gemfire.management.http.enable-interceptors"), eq(Boolean.class), anyBoolean());
+
+		verify(mockEnvironment, times(1))
+			.getProperty(eq("spring.data.gemfire.management.http.follow-redirects"), eq(Boolean.class), eq(false));
 
 		verify(mockEnvironment, never())
 			.getProperty(eq("spring.data.gemfire.management.require-https"), eq(Boolean.class), anyBoolean());
@@ -364,9 +407,10 @@ public class EnableClusterConfigurationUnitTests {
 		assertThat(schemaObjectContext.getSchemaObjectCollector()).isInstanceOf(ComposableSchemaObjectCollector.class);
 		assertThat(schemaObjectContext.getSchemaObjectDefiner()).isInstanceOf(ComposableSchemaObjectDefiner.class);
 
-		verify(configuration, never()).resolveClientHttpRequestInterceptors();
 		verify(configuration, times(1))
 			.resolveGemfireAdminOperations(eq(mockEnvironment), eq(mockClientCache));
+		verify(configuration, never()).resolveClientHttpRequestInterceptors(anyBoolean());
+		verify(configuration, never()).resolveRestTemplateConfigurers();
 	}
 
 	@Test
@@ -407,7 +451,8 @@ public class EnableClusterConfigurationUnitTests {
 		configuration = autowire(configuration, "clientHttpRequestInterceptors", clientHttpRequestInterceptors);
 		configuration.setBeanFactory(mockBeanFactory);
 
-		assertThat(configuration.resolveClientHttpRequestInterceptors()).isEqualTo(clientHttpRequestInterceptors);
+		assertThat(configuration.resolveClientHttpRequestInterceptors(true))
+			.isEqualTo(clientHttpRequestInterceptors);
 
 		verifyZeroInteractions(mockBeanFactory);
 	}
@@ -433,7 +478,7 @@ public class EnableClusterConfigurationUnitTests {
 		configuration.setBeanFactory(mockBeanFactory);
 
 		List<ClientHttpRequestInterceptor> actualClientHttpRequestInterceptors =
-			configuration.resolveClientHttpRequestInterceptors();
+			configuration.resolveClientHttpRequestInterceptors(true);
 
 		assertThat(actualClientHttpRequestInterceptors).isNotNull();
 		assertThat(actualClientHttpRequestInterceptors).hasSize(expectedClientHttpRequestInterceptors.size());
@@ -455,7 +500,7 @@ public class EnableClusterConfigurationUnitTests {
 		configuration.setBeanFactory(mockBeanFactory);
 
 		List<ClientHttpRequestInterceptor> clientHttpRequestInterceptors =
-			configuration.resolveClientHttpRequestInterceptors();
+			configuration.resolveClientHttpRequestInterceptors(true);
 
 		assertThat(clientHttpRequestInterceptors).isNotNull();
 		assertThat(clientHttpRequestInterceptors).isEmpty();
@@ -496,13 +541,14 @@ public class EnableClusterConfigurationUnitTests {
 
 		ClientCache mockClientCache = mock(ClientCache.class);
 
+		ClusterConfigurationConfiguration configuration = spy(new ClusterConfigurationConfiguration());
+
+		doReturn(Collections.emptyList()).when(configuration).resolveClientHttpRequestInterceptors(anyBoolean());
+		doReturn(Collections.emptyList()).when(configuration).resolveRestTemplateConfigurers();
+
 		Environment mockEnvironment = mock(Environment.class);
 
 		when(mockEnvironment.getProperty(anyString(), eq(Boolean.class), anyBoolean())).thenReturn(false);
-
-		ClusterConfigurationConfiguration configuration = spy(new ClusterConfigurationConfiguration());
-
-		doReturn(Collections.emptyList()).when(configuration).resolveClientHttpRequestInterceptors();
 
 		configuration.setManagementUseHttp(true);
 
@@ -528,29 +574,26 @@ public class EnableClusterConfigurationUnitTests {
 		assertThat(clientHttpRequestFactory.isFollowRedirects()).isFalse();
 
 		verifyZeroInteractions(mockClientCache);
-
-		verify(configuration, times(1)).resolveClientHttpRequestInterceptors();
-
-		verify(mockEnvironment, times(1))
-			.getProperty(eq(ClusterConfigurationConfiguration.HTTP_FOLLOW_REDIRECTS_PROPERTY), eq(Boolean.class),
-				eq(ClusterConfigurationConfiguration.DEFAULT_HTTP_FOLLOW_REDIRECTS));
+		verify(configuration, times(1)).resolveClientHttpRequestInterceptors(eq(false));
+		verify(configuration, times(1)).resolveRestTemplateConfigurers();
 	}
 
 	@Test
 	public void resolvesNewRestHttpGemfireAdminOperationsSetsFollowRedirectsWithProperty() throws Exception {
 
-		System.setProperty(ClusterConfigurationConfiguration.HTTP_FOLLOW_REDIRECTS_PROPERTY, Boolean.TRUE.toString());
-
 		ClientCache mockClientCache = mock(ClientCache.class);
-
-		Environment environment = spy(new StandardEnvironment());
 
 		ClusterConfigurationConfiguration configuration = spy(new ClusterConfigurationConfiguration());
 
-		doReturn(Collections.emptyList()).when(configuration).resolveClientHttpRequestInterceptors();
+		doReturn(Collections.emptyList()).when(configuration).resolveClientHttpRequestInterceptors(anyBoolean());
+		doReturn(Collections.emptyList()).when(configuration).resolveRestTemplateConfigurers();
 
+		Environment environment = spy(new StandardEnvironment());
+
+		configuration.setManagementHttpFollowRedirects(true);
 		configuration.setManagementUseHttp(true);
 
+		assertThat(configuration.resolveManagementHttpFollowRedirects()).isTrue();
 		assertThat(configuration.resolveManagementRequireHttps()).isTrue();
 		assertThat(configuration.resolveManagementUseHttp()).isTrue();
 
@@ -572,12 +615,8 @@ public class EnableClusterConfigurationUnitTests {
 		assertThat(clientHttpRequestFactory.isFollowRedirects()).isTrue();
 
 		verifyZeroInteractions(mockClientCache);
-
-		verify(configuration, times(1)).resolveClientHttpRequestInterceptors();
-
-		verify(environment, times(1))
-			.getProperty(eq(ClusterConfigurationConfiguration.HTTP_FOLLOW_REDIRECTS_PROPERTY), eq(Boolean.class),
-				eq(ClusterConfigurationConfiguration.DEFAULT_HTTP_FOLLOW_REDIRECTS));
+		verify(configuration, times(1)).resolveClientHttpRequestInterceptors(eq(false));
+		verify(configuration, times(1)).resolveRestTemplateConfigurers();
 	}
 
 	@Test
@@ -591,13 +630,16 @@ public class EnableClusterConfigurationUnitTests {
 		ClientHttpRequestInterceptor mockInterceptorOne = mock(ClientHttpRequestInterceptor.class);
 		ClientHttpRequestInterceptor mockInterceptorTwo = mock(ClientHttpRequestInterceptor.class);
 
-		Environment environment = spy(new StandardEnvironment());
-
 		ClusterConfigurationConfiguration configuration = spy(new ClusterConfigurationConfiguration());
 
-		doReturn(Arrays.asList(mockInterceptorOne, mockInterceptorTwo))
-			.when(configuration).resolveClientHttpRequestInterceptors();
+		Environment environment = spy(new StandardEnvironment());
 
+		doReturn(Arrays.asList(mockInterceptorOne, mockInterceptorTwo))
+			.when(configuration).resolveClientHttpRequestInterceptors(anyBoolean());
+
+		doReturn(Collections.emptyList()).when(configuration).resolveRestTemplateConfigurers();
+
+		configuration.setManagementHttpEnableInterceptors(true);
 		configuration.setManagementRequireHttps(false);
 		configuration.setManagementUseHttp(true);
 
@@ -622,12 +664,8 @@ public class EnableClusterConfigurationUnitTests {
 		assertThat(clientHttpRequestFactory.isFollowRedirects()).isTrue();
 
 		verifyZeroInteractions(mockClientCache);
-
-		verify(configuration, times(1)).resolveClientHttpRequestInterceptors();
-
-		verify(environment, times(1))
-			.getProperty(eq(ClusterConfigurationConfiguration.HTTP_FOLLOW_REDIRECTS_PROPERTY), eq(Boolean.class),
-				eq(ClusterConfigurationConfiguration.DEFAULT_HTTP_FOLLOW_REDIRECTS));
+		verify(configuration, times(1)).resolveClientHttpRequestInterceptors(eq(true));
+		verify(configuration, times(1)).resolveRestTemplateConfigurers();
 	}
 
 	@Test
@@ -635,13 +673,14 @@ public class EnableClusterConfigurationUnitTests {
 
 		ClientCache mockClientCache = mock(ClientCache.class);
 
+		ClusterConfigurationConfiguration configuration = spy(new ClusterConfigurationConfiguration());
+
+		doReturn(Collections.emptyList()).when(configuration).resolveClientHttpRequestInterceptors(anyBoolean());
+		doReturn(Collections.emptyList()).when(configuration).resolveRestTemplateConfigurers();
+
 		Environment environment = mock(Environment.class);
 
 		when(environment.getProperty(anyString(), eq(Boolean.class), anyBoolean())).thenReturn(false);
-
-		ClusterConfigurationConfiguration configuration = spy(new ClusterConfigurationConfiguration());
-
-		doReturn(Collections.emptyList()).when(configuration).resolveClientHttpRequestInterceptors();
 
 		configuration.setManagementHttpHost("skullbox");
 		configuration.setManagementHttpPort(-1);
@@ -661,11 +700,7 @@ public class EnableClusterConfigurationUnitTests {
 			.isEqualTo("https://skullbox/gemfire/v1");
 
 		verifyZeroInteractions(mockClientCache);
-
-		verify(configuration, times(1)).resolveClientHttpRequestInterceptors();
-
-		verify(environment, times(1))
-			.getProperty(eq(ClusterConfigurationConfiguration.HTTP_FOLLOW_REDIRECTS_PROPERTY), eq(Boolean.class),
-				eq(ClusterConfigurationConfiguration.DEFAULT_HTTP_FOLLOW_REDIRECTS));
+		verify(configuration, times(1)).resolveClientHttpRequestInterceptors(eq(false));
+		verify(configuration, times(1)).resolveRestTemplateConfigurers();
 	}
 }

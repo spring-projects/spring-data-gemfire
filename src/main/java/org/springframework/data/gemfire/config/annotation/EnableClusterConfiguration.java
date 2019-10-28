@@ -28,6 +28,8 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 
 import org.springframework.context.annotation.Import;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * The {@link EnableClusterConfiguration} annotation enables Apache Geode / Pivotal GemFire schema object definitions
@@ -77,6 +79,29 @@ public @interface EnableClusterConfiguration {
 	 * Defaults to {@literal 7070}.
 	 */
 	int port() default ClusterConfigurationConfiguration.DEFAULT_MANAGEMENT_HTTP_PORT;
+
+	/**
+	 * Configures whether to enable {@link ClientHttpRequestInterceptor} bean lookup.
+	 *
+	 * If {@link ClientHttpRequestInterceptor} beans are found in the Spring context, then they will be added to
+	 * the Interceptors on the {@link RestTemplate} when using HTTP.
+	 *
+	 * Alternatively, you can configure this setting using the
+	 * {@literal spring.data.gemfire.management.http.enable-interceptors} property in {@literal application.properties}.
+	 *
+	 * Defaults to {@literal false}.
+	 */
+	boolean enableInterceptors() default ClusterConfigurationConfiguration.DEFAULT_HTTP_REQUEST_INTERCEPTORS_ENABLED;
+
+	/**
+	 * Configures whether to follow HTTP redirects when using HTTP.
+	 *
+	 * Alternatively, you can configure this setting using the
+	 * {@literal spring.data.gemfire.management.http.follow-redirects} property in {@literal application.properties}.
+	 *
+	 * Defaults to {@literal false}.
+	 */
+	boolean followRedirects() default ClusterConfigurationConfiguration.DEFAULT_HTTP_FOLLOW_REDIRECTS;
 
 	/**
 	 * Configures whether the HTTP connection between Spring and Apache Geode or Pivotal GemFire should be secure.

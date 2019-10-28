@@ -57,6 +57,7 @@ import org.springframework.data.gemfire.config.schema.support.IndexCollector;
 import org.springframework.data.gemfire.config.schema.support.IndexDefiner;
 import org.springframework.data.gemfire.config.schema.support.RegionDefiner;
 import org.springframework.data.gemfire.config.support.AbstractSmartLifecycle;
+import org.springframework.data.gemfire.config.support.RestTemplateConfigurer;
 import org.springframework.data.gemfire.util.CacheUtils;
 import org.springframework.data.gemfire.util.NetworkUtils;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -93,6 +94,7 @@ import org.springframework.util.StringUtils;
 public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigSupport implements ImportAware {
 
 	protected static final boolean DEFAULT_HTTP_FOLLOW_REDIRECTS = false;
+	protected static final boolean DEFAULT_HTTP_REQUEST_INTERCEPTORS_ENABLED = false;
 	protected static final boolean DEFAULT_MANAGEMENT_USE_HTTP = false;
 	protected static final boolean DEFAULT_MANAGEMENT_REQUIRE_HTTPS = true;
 
@@ -105,6 +107,8 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 
 	private static final RegionShortcut DEFAULT_SERVER_REGION_SHORTCUT = RegionDefinition.DEFAULT_REGION_SHORTCUT;
 
+	private Boolean enableInterceptors = DEFAULT_HTTP_REQUEST_INTERCEPTORS_ENABLED;
+	private Boolean followRedirects = DEFAULT_HTTP_FOLLOW_REDIRECTS;
 	private Boolean requireHttps = DEFAULT_MANAGEMENT_REQUIRE_HTTPS;
 	private Boolean useHttp = DEFAULT_MANAGEMENT_USE_HTTP;
 
@@ -115,6 +119,9 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 
 	@Autowired(required = false)
 	private List<ClientHttpRequestInterceptor> clientHttpRequestInterceptors;
+
+	@Autowired(required = false)
+	private List<RestTemplateConfigurer> restTemplateConfigurers;
 
 	private RegionShortcut serverRegionShortcut;
 
@@ -147,6 +154,30 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 
 	protected int resolveManagementHttpPort() {
 		return getManagementHttpPort().orElse(DEFAULT_MANAGEMENT_HTTP_PORT);
+	}
+
+	protected void setManagementHttpEnableInterceptors(Boolean enableInterceptors) {
+		this.enableInterceptors = enableInterceptors;
+	}
+
+	protected Optional<Boolean> getManagementHttpEnableInterceptors() {
+		return Optional.ofNullable(this.enableInterceptors);
+	}
+
+	protected boolean resolveManagementHttpEnableInterceptors() {
+		return getManagementHttpEnableInterceptors().orElse(DEFAULT_HTTP_REQUEST_INTERCEPTORS_ENABLED);
+	}
+
+	protected void setManagementHttpFollowRedirects(Boolean followRedirects) {
+		this.followRedirects = followRedirects;
+	}
+
+	protected Optional<Boolean> getManagementHttpFollowRedirects() {
+		return Optional.ofNullable(this.followRedirects);
+	}
+
+	protected boolean resolveManagementHttpFollowRedirects() {
+		return getManagementHttpFollowRedirects().orElse(DEFAULT_HTTP_FOLLOW_REDIRECTS);
 	}
 
 	protected void setManagementRequireHttps(Boolean requireHttps) {
@@ -198,6 +229,12 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 			setManagementHttpPort(resolveProperty(managementProperty("http.port"),
 				enableClusterConfigurationAttributes.<Integer>getNumber("port")));
 
+			setManagementHttpEnableInterceptors(resolveProperty(managementProperty("http.enable-interceptors"),
+				enableClusterConfigurationAttributes.getBoolean("enableInterceptors")));
+
+			setManagementHttpFollowRedirects(resolveProperty(managementProperty("http.follow-redirects"),
+				enableClusterConfigurationAttributes.getBoolean("followRedirects")));
+
 			setManagementRequireHttps(resolveProperty(managementProperty("require-https"),
 				enableClusterConfigurationAttributes.getBoolean("requireHttps")));
 
@@ -228,32 +265,47 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 			.orElse(null);
 	}
 
+	private <T> List<T> resolveBeansOfType(List<T> objects, Class<T> type) {
+
+		return Optional.ofNullable(objects).orElseGet(() ->
+			Optional.of(getBeanFactory())
+				.filter(ListableBeanFactory.class::isInstance)
+				.map(ListableBeanFactory.class::cast)
+				.map(beanFactory -> {
+
+					Map<String, T> beansOfType = beanFactory.getBeansOfType(type, true, false);
+
+					return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
+
+				})
+				.orElseGet(Collections::emptyList));
+	}
+
 	/**
 	 * Attempts to resolve a {@link List} of {@link ClientHttpRequestInterceptor} beans in the Spring
 	 * {@link ApplicationContext}.
 	 *
 	 * @return a {@link List} of declared and registered {@link ClientHttpRequestInterceptor} beans.
 	 * @see org.springframework.http.client.ClientHttpRequestInterceptor
-	 * @see #getBeanFactory()
 	 * @see java.util.List
 	 */
-	protected List<ClientHttpRequestInterceptor> resolveClientHttpRequestInterceptors() {
+	protected List<ClientHttpRequestInterceptor> resolveClientHttpRequestInterceptors(boolean enableInterceptors) {
 
-		return Optional.ofNullable(this.clientHttpRequestInterceptors)
-			.orElseGet(() ->
+		return enableInterceptors
+			? resolveBeansOfType(this.clientHttpRequestInterceptors, ClientHttpRequestInterceptor.class)
+			: Collections.emptyList();
+	}
 
-				Optional.of(getBeanFactory())
-					.filter(ListableBeanFactory.class::isInstance)
-					.map(ListableBeanFactory.class::cast)
-					.map(beanFactory -> {
-
-						Map<String, ClientHttpRequestInterceptor> beansOfType = beanFactory
-							.getBeansOfType(ClientHttpRequestInterceptor.class, true, false);
-
-						return nullSafeMap(beansOfType).values().stream().collect(Collectors.toList());
-
-					})
-					.orElseGet(Collections::emptyList));
+	/**
+	 * Attempts to resolve a {@link List} of {@link RestTemplateConfigurer} beans in the Spring
+	 * {@link ApplicationContext}.
+	 *
+	 * @return a {@link List} of declared and registered {@link RestTemplateConfigurer} beans.
+	 * @see org.springframework.data.gemfire.config.support.RestTemplateConfigurer
+	 * @see java.util.List
+	 */
+	protected List<RestTemplateConfigurer> resolveRestTemplateConfigurers() {
+		return resolveBeansOfType(this.restTemplateConfigurers, RestTemplateConfigurer.class);
 	}
 
 	/**
@@ -287,7 +339,7 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 	 * on a Pivotal GemFire system.
 	 * @see org.springframework.data.gemfire.config.admin.GemfireAdminOperations
 	 * @see org.apache.geode.cache.client.ClientCache
-	 * @see #resolveClientHttpRequestInterceptors()
+	 * @see #resolveClientHttpRequestInterceptors(boolean)
 	 * @see #resolveManagementHttpHost()
 	 * @see #resolveManagementHttpPort()
 	 * @see #resolveManagementRequireHttps()
@@ -297,11 +349,10 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 
 		if (resolveManagementUseHttp()) {
 
-			boolean setFollowRedirects =
-				environment.getProperty(HTTP_FOLLOW_REDIRECTS_PROPERTY, Boolean.class, DEFAULT_HTTP_FOLLOW_REDIRECTS);
-
+			boolean enableInterceptors = resolveManagementHttpEnableInterceptors();
+			boolean followRedirects = resolveManagementHttpFollowRedirects();
 			boolean requireHttps = resolveManagementRequireHttps();
-			boolean followRedirects = !requireHttps || setFollowRedirects;
+			boolean resolvedFollowRedirects = !requireHttps || followRedirects;
 
 			int port = resolveManagementHttpPort();
 
@@ -309,11 +360,12 @@ public class ClusterConfigurationConfiguration extends AbstractAnnotationConfigS
 			String scheme = requireHttps ? HTTPS_SCHEME : HTTP_SCHEME;
 
 			return configurePort(new RestHttpGemfireAdminTemplate.Builder()
-				.with(resolveClientHttpRequestInterceptors())
+				.withConfigurers(resolveRestTemplateConfigurers())
+				.withInterceptors(resolveClientHttpRequestInterceptors(enableInterceptors))
 				.with(clientCache)
 				.using(scheme)
 				.on(host)
-				.followRedirects(followRedirects), port)
+				.followRedirects(resolvedFollowRedirects), port)
 				.build();
 		}
 		else {
