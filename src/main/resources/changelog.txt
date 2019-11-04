@@ -3,6 +3,13 @@ SPRING DATA GEMFIRE CHANGELOG
 https://www.springsource.org/spring-gemfire
 ===========================================
 
+Changes in version 2.2.1.RELEASE (2019-11-04)
+---------------------------------------------
+* SGF-890 - Add support for AEQ pauseEventDispatching.
+* SGF-889 - Introduce RestTemplateConfigurer to configure the RestTemplate used when sending configuration metadata from client to server.
+* SGF-886 - Release 2.2.1 (Moore SR1).
+
+
 Changes in version 2.1.12.RELEASE (2019-11-04)
 ----------------------------------------------
 * SGF-889 - Introduce RestTemplateConfigurer to configure the RestTemplate used when sending configuration metadata from client to server.
