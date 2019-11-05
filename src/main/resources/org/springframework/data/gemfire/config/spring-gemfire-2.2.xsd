@@ -89,6 +89,38 @@ use inner bean declarations.
 					</xsd:attribute>
 				</xsd:complexType>
 			</xsd:element>
+			<xsd:element name="dynamic-region-factory" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+Enables Dynamic Regions and specifies their configuration.
+            ]]></xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:attribute name="disk-dir" type="xsd:string">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+Specifies the directory path for disk persistence for dynamic regions.
+            ]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="persistent" type="xsd:string"
+								   default="true">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+Enables persistence for dynamic regions.
+            ]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="register-interest" type="xsd:string"
+								   default="true">
+						<xsd:annotation>
+							<xsd:documentation><![CDATA[
+Specifies whether dynamic regions register interest in all keys in a corresponding server region.
+            ]]></xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+				</xsd:complexType>
+			</xsd:element>
 			<xsd:element name="jndi-binding" type="jndiBindingType" minOccurs="0" maxOccurs="unbounded">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[

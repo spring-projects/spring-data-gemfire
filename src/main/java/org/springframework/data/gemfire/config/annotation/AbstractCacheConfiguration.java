@@ -80,6 +80,7 @@ import org.springframework.util.StringUtils;
  * @see org.springframework.data.gemfire.config.support.CustomEditorBeanFactoryPostProcessor
  * @see org.springframework.data.gemfire.config.support.DefinedIndexesApplicationListener
  * @see org.springframework.data.gemfire.config.support.DiskStoreDirectoryBeanPostProcessor
+ * @see org.springframework.data.gemfire.util.PropertiesBuilder
  * @since 1.9.0
  */
 @Configuration
@@ -141,7 +142,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 	 *
 	 * {@literal mcast-port} is set to {@literal 0} and {@literal locators} is set to an {@link String empty String},
 	 * which is necessary for {@link ClientCache cache client}-based applications.  These values can be changed
-	 * and set accoridingly for {@link Cache peer cache} and {@link CacheServer cache server} applications.
+	 * and set accordingly for {@link Cache peer cache} and {@link CacheServer cache server} applications.
 	 *
 	 * Finally, the {@literal log-level} property defaults to {@literal config}.
 	 *
@@ -153,6 +154,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 	 * @see #logLevel()
 	 * @see #mcastPort()
 	 * @see #name()
+	 * @see #startLocator()
 	 */
 	@Bean
 	protected Properties gemfireProperties() {
@@ -306,7 +308,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 	 * @see #newCacheFactoryBean()
 	 */
 	protected <T extends CacheFactoryBean> T constructCacheFactoryBean() {
-		return configureCacheFactoryBean(this.<T>newCacheFactoryBean());
+		return configureCacheFactoryBean(this.newCacheFactoryBean());
 	}
 
 	/**
@@ -355,7 +357,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		return gemfireCache;
 	}
 
-	// REVIEW JAVADOC FROM HERE
+	// TODO: REVIEW JAVADOC FROM HERE
 
 	/**
 	 * Determines whether this is a Pivotal GemFire {@link org.apache.geode.cache.server.CacheServer} application,
@@ -437,7 +439,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 	 * @see #isPeerCacheApplication(AnnotationMetadata)
 	 */
 	protected boolean isCacheServerOrPeerCacheApplication(AnnotationMetadata importMetadata) {
-		return (isCacheServerApplication(importMetadata) || isPeerCacheApplication(importMetadata));
+		return isCacheServerApplication(importMetadata) || isPeerCacheApplication(importMetadata);
 	}
 
 	/**
@@ -453,8 +455,10 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 	 * @see #isPeerCacheApplication(AnnotationMetadata)
 	 */
 	protected boolean isClientPeerOrServerCacheApplication(AnnotationMetadata importMetadata) {
-		return (isCacheServerApplication(importMetadata) || isClientCacheApplication(importMetadata)
-			|| isPeerCacheApplication(importMetadata));
+
+		return isCacheServerApplication(importMetadata)
+			|| isClientCacheApplication(importMetadata)
+			|| isPeerCacheApplication(importMetadata);
 	}
 
 	void setCacheXml(Resource cacheXml) {

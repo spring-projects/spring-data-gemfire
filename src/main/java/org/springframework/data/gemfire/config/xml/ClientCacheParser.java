@@ -13,25 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.xml;
 
 import org.w3c.dom.Element;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.data.gemfire.client.ClientCacheFactoryBean;
 
 /**
- * Bean definition parser for the &lt;gfe:client-cache&gt; SDG XML namespace (XSD) element.
+ * {@link BeanDefinitionParser} for the &lt;gfe:client-cache&gt; SDG XML Namespace (XSD) element.
  *
  * @author Costin Leau
  * @author David Turanski
  * @author Lyndon Adams
  * @author John Blum
  * @author Patrick Johnson
+ * @see org.w3c.dom.Element
+ * @see org.springframework.beans.factory.support.BeanDefinitionBuilder
+ * @see org.springframework.beans.factory.xml.BeanDefinitionParser
+ * @see org.springframework.beans.factory.xml.ParserContext
  * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
- * @see CacheParser
+ * @see org.springframework.data.gemfire.config.xml.CacheParser
  */
 class ClientCacheParser extends CacheParser {
 

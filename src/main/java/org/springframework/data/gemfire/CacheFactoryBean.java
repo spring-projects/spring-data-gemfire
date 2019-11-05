@@ -91,6 +91,7 @@ import org.springframework.util.StringUtils;
  * @see org.apache.geode.cache.CacheFactory
  * @see org.apache.geode.cache.GemFireCache
  * @see org.apache.geode.cache.RegionService
+ * @see org.apache.geode.cache.client.ClientCacheFactory
  * @see org.apache.geode.distributed.DistributedMember
  * @see org.apache.geode.distributed.DistributedSystem
  * @see org.apache.geode.cache.pdx.PdxSerializer
@@ -194,6 +195,7 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 
 			gemfireProperties.setProperty("use-cluster-configuration",
 				String.valueOf(Boolean.TRUE.equals(getUseClusterConfiguration())));
+
 		};
 
 		this.peerCacheConfigurers.add(autoReconnectClusterConfigurationConfigurer);
@@ -612,14 +614,13 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 	/**
 	 * Destroys the {@link Cache} bean on Spring container shutdown.
 	 *
-	 * @throws Exception if an error occurs while closing the cache.
 	 * @see org.springframework.beans.factory.DisposableBean#destroy()
 	 * @see #destroyBeanFactoryLocator()
 	 * @see #close(GemFireCache)
 	 * @see #isClose()
 	 */
 	@Override
-	public void destroy() throws Exception {
+	public void destroy() {
 
 		if (isClose()) {
 			close(fetchCache());
@@ -648,7 +649,6 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 	 * @see org.springframework.dao.DataAccessException
 	 */
 	@Override
-	@SuppressWarnings("all")
 	public DataAccessException translateExceptionIfPossible(RuntimeException exception) {
 
 		if (exception instanceof IllegalArgumentException) {
@@ -758,15 +758,8 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 	 * @return boolean value indicating whether a {@link Resource cache.xml} {@link File} is present.
 	 * @see #getCacheXmlFile()
 	 */
-	@SuppressWarnings("all")
 	private boolean isCacheXmlAvailable() {
-
-		try {
-			return getCacheXmlFile() != null;
-		}
-		catch (Throwable ignore) {
-			return false;
-		}
+		return SpringUtils.safeGetValue(() -> getCacheXml() != null, false);
 	}
 
 	/**
@@ -778,11 +771,8 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 	 * @see #getCache()
 	 */
 	@Override
-	@SuppressWarnings("all")
 	public GemFireCache getObject() throws Exception {
-
-		return Optional.<GemFireCache>ofNullable(getCache())
-			.orElseGet(this::init);
+		return Optional.<GemFireCache>ofNullable(getCache()).orElseGet(this::init);
 	}
 
 	/**
