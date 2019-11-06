@@ -79,24 +79,28 @@ about _Spring's Transaction Management_ infrastructure as it offers a consistent
 transparently across multiple APIs and can be configured either programmatically or declaratively
 (the most popular choice).
 
-For {data-store-name}, {sdg-name} provides a dedicated, per-cache, `PlatformTransactionManager` that,
-once declared, allows Region operations to be executed atomically through Spring:
+For {data-store-name}, {sdg-name} provides a dedicated, per-cache, `PlatformTransactionManager` that, once declared,
+allows Region operations to be executed atomically through Spring:
 
+.Enable Transaction Management using XML
 [source,xml]
 ----
 <gfe:transaction-manager id="txManager" cache-ref="myCache"/>
 ----
 
-NOTE: The example above can be simplified even further by eliminating the `cache-ref` attribute if the {data-store-name} cache
-is defined under the default name, `gemfireCache`. As with the other {sdg-name} namespace elements,
-if the cache bean name is not configured, the aforementioned naming convention will be used.
-Additionally, the transaction manager name is "`gemfireTransactionManager`" if not explicitly specified.
+NOTE: The example above can be simplified even further by eliminating the `cache-ref` attribute if the {data-store-name}
+cache is defined under the default name, `gemfireCache`. As with the other {sdg-name} namespace elements, if the cache
+bean name is not configured, the aforementioned naming convention will be used. Additionally, the transaction manager
+name is "`gemfireTransactionManager`" if not explicitly specified.
 
 Currently, {data-store-name} supports optimistic transactions with *read committed* isolation. Furthermore, to guarantee
 this isolation, developers should avoid making *in-place* changes that manually modify values present in the cache.
 To prevent this from happening, the transaction manager configures the cache to use *copy on read* semantics by default,
 meaning a clone of the actual value is created each time a read is performed. This behavior can be disabled if needed
 through the `copyOnRead` property.
+
+Since a copy of the value for a given key is made when *copy on read* is enabled, you must subsequently call
+`Region.put(key, value)` inorder for the value to be updated, transactionally.
 
 For more information on the semantics and behavior of the underlying Geode transaction manager, please refer to the Geode
 {x-data-store-javadoc}/org/apache/geode/cache/CacheTransactionManager.html[CacheTransactionManager Javadoc]
@@ -105,76 +109,54 @@ as well as the {x-data-store-docs}/developing/transactions/chapter_overview.html
 [[apis:global-transaction-management]]
 == Global, JTA Transaction Management
 
-It is also possible for {data-store-name} to participate in a Global, JTA based transaction, such as a transaction managed
-by an Java EE Application Server (e.g. WebSphere Application Server, a.k.a. WAS) using Container Managed Transactions
+It is also possible for {data-store-name} to participate in Global, JTA-based transactions, such as a transaction
+managed by an Java EE Application Server (e.g. WebSphere Application Server (WAS)) using Container Managed Transactions
 (CMT) along with other JTA resources.
 
 However, unlike many other JTA "compliant" resources (e.g. JMS Message Brokers like ActiveMQ), {data-store-name} is *not*
 an XA compliant resource.  Therefore, {data-store-name} must be positioned as the "_Last Resource_" in a JTA transaction
-(_prepare phase_) since it does not implement the 2-phase commit protocol, or rather does not handle
-distributed transactions.
+(_prepare phase_) since it does not implement the 2-phase commit protocol, or rather does not handle distributed
+transactions.
 
-Many managed environments with CMT maintain support for "_Last Resource_", non-XA compliant resources in JTA transactions
-though it is not actually required in the JTA spec.  More information on what a non-XA compliant, "_Last Resource_" means
-can be found in Red Hat's https://access.redhat.com/documentation/en-US/JBoss_Enterprise_Application_Platform/5/html/Administration_And_Configuration_Guide/lrco-overview.html[documentation].
+Many managed environments capable of CMT maintain support for "_Last Resource_", non-XA compliant resources in JTA-based
+transactions, though it is not actually required in the JTA spec.  More information on what a non-XA compliant,
+"_Last Resource_" means can be found in Red Hat's https://access.redhat.com/documentation/en-US/JBoss_Enterprise_Application_Platform/5/html/Administration_And_Configuration_Guide/lrco-overview.html[documentation].
 In fact, Red Hat's JBoss project, https://narayana.io/[Narayana] is one such LGPL Open Source implementation.  _Narayana_
-refers to this as "_Last Resource Commit Optimization_" (LRCO).  More details can be found
-https://narayana.io//docs/project/index.html#d0e1859[here].
+refers to this as "_Last Resource Commit Optimization_" (LRCO).  More details can be found https://narayana.io//docs/project/index.html#d0e1859[here].
 
-However, whether you are using {data-store-name} in a standalone environment with an Open Source JTA Transaction Management
-implementation that supports "_Last Resource_", or a managed environment (e.g. Java EE AS such as WAS),
-_Spring Data Geode_ has you covered.
+However, whether you are using {data-store-name} in a standalone environment with an Open Source JTA Transaction
+Management implementation that supports "_Last Resource_", or a managed environment (e.g. Java EE AS such as WAS),
+{sdg-name} has you covered.
 
-There are a series of steps you must complete to properly use {data-store-name} as a "_Last Resource_" in a JTA transaction
-involving more than 1 transactional resource.  Additionally, there can only be 1 non-XA compliant resource
+There are a series of steps you must complete to properly use {data-store-name} as a "_Last Resource_" in a JTA
+transaction involving more than 1 transactional resource.  Additionally, there can only be 1 non-XA compliant resource
 (e.g. {data-store-name}) in such an arrangement.
 
 1) First, you must complete Steps 1-4 in {data-store-name}'s documentation
-https://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[here].
+{apache-geode-docs}/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[here].
 
-NOTE: #1 above is independent of your Spring [Boot] and/or [Data for {data-store-name}] application
-and must be completed successfully.
+NOTE: #1 above is independent of your Spring [Boot] and/or [Data for {data-store-name}] application and must be
+completed successfully.
 
-2) Referring to Step 5 in {data-store-name}'s https://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[documentation],
+2) Referring to Step 5 in {data-store-name}'s {apache-geode-docs}/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[documentation],
 {sdg-name}'s Annotation support will attempt to set the `GemFireCache`, {x-data-store-javadoc}/org/apache/geode/cache/GemFireCache.html#setCopyOnRead-boolean-[`copyOnRead`]
 property for you when using the `@EnableGemFireAsLastResource` annotation.
 
-However, if SDG's auto-configuration is unsuccessful then you must explicitly set the `copy-on-read` attribute on the
-`<gfe:cache>` or `<gfe:client-cache>` element in XML or the `copyOnRead` property of the SDG `CacheFactoryBean` class
-in JavaConfig to *true*.  For example...
+However, if SDG's auto-configuration is unsuccessful in this regard, then you must explicitly set the `copy-on-read`
+attribute in the `<gfe:cache>` or `<gfe:client-cache>` XML element or set the `copyOnRead` property of
+the `CacheFactoryBean` class in JavaConfig to *true*.  For example:
 
-Peer Cache XML:
+`ClientCache` XML:
 
-[source,xml]
-----
-<gfe:cache ... copy-on-read="true"/>
-----
-
-Peer Cache JavaConfig:
-
-[source,java]
-----
-@Bean
-CacheFactoryBean gemfireCache() {
-
-  CacheFactoryBean gemfireCache = new CacheFactoryBean();
-
-  gemfireCache.setClose(true);
-  gemfireCache.setCopyOnRead(true);
-
-  return gemfireCache;
-}
-----
-
-Client Cache XML:
-
+.Set copy-on-read using XML (client)
 [source,xml]
 ----
 <gfe:client-cache ... copy-on-read="true"/>
 ----
 
-Client Cache JavaConfig:
+`ClientCache` _JavaConfig_:
 
+.Set copyOnRead using JavaConfig (client)
 [source,java]
 ----
 @Bean
@@ -182,21 +164,44 @@ ClientCacheFactoryBean gemfireCache() {
 
   ClientCacheFactoryBean gemfireCache = new ClientCacheFactoryBean();
 
-  gemfireCache.setClose(true);
   gemfireCache.setCopyOnRead(true);
 
   return gemfireCache;
 }
 ----
 
-NOTE: explicitly setting the `copy-on-read` attribute or optionally the `copyOnRead` property
-really should not be necessary.
+Peer `Cache` XML:
 
-3) At this point, you *skip* Steps 6-8 in {data-store-name}'s https://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[documentation]
-and let _Spring Data Geode_ work its magic.  All you need do is annotate your Spring `@Configuration` class
+.Set copy-on-read using XML (server)
+[source,xml]
+----
+<gfe:cache ... copy-on-read="true"/>
+----
+
+Peer `Cache` _JavaConfig_:
+
+.Set copyOnRead using JavaConfig (server)
+[source,java]
+----
+@Bean
+CacheFactoryBean gemfireCache() {
+
+  CacheFactoryBean gemfireCache = new CacheFactoryBean();
+
+  gemfireCache.setCopyOnRead(true);
+
+  return gemfireCache;
+}
+----
+
+NOTE: Explicitly setting the `copy-on-read` attribute or the `copyOnRead` property is really not necessary.  Enabling
+transaction management takes case of copying on reads.
+
+3) At this point, you *skip* Steps 6-8 in {data-store-name}'s {apache-geode-docs}/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[documentation]
+and let _Spring Data Geode_ work its magic.  All you need to do is annotate your Spring `@Configuration` class
 with {sdg-name}'s *new* `@EnableGemFireAsLastResource` annotation and a combination of Spring's
-https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction[Transaction Management]
-infrastructure and {sdg-name}'s `@EnableGemFireAsLastResource` configuration does the trick.
+{spring-framework-docs}/#transaction[Transaction Management] infrastructure and {sdg-name}'s
+`@EnableGemFireAsLastResource` annotation configuration does the trick.
 
 The configuration looks like this...
 
@@ -206,7 +211,6 @@ The configuration looks like this...
 @EnableGemFireAsLastResource
 @EnableTransactionManagement(order = 1)
 class GeodeConfiguration {
-
   ...
 }
 ----
@@ -220,7 +224,7 @@ where Spring's `@EnableTransactionManagement` annotation is also specified.
 that is not `Integer.MAX_VALUE` or `Integer.MIN_VALUE` (defaults to `Integer.MAX_VALUE`).
 
 Of course, hopefully you are aware that you also need to configure Spring's `JtaTransactionManager`
-when using JTA Transactions like so..
+when using JTA transactions like so..
 
 [source,java]
 ----
@@ -236,18 +240,18 @@ public JtaTransactionManager transactionManager(UserTransaction userTransaction)
 ----
 
 NOTE: The configuration in section <<apis:transaction-management>> does *not* apply here.
-The use of {sdg-name}'s `GemfireTransactionManager` is applicable only in "Local", Cache Transactions,
+The use of {sdg-name}'s `GemfireTransactionManager` is applicable in "Local-only", Cache Transactions,
 *not* "Global", JTA Transactions.  Therefore, you do *not* configure the SDG `GemfireTransactionManager` in this case.
 You configure Spring's `JtaTransactionManager` as shown above.
 
 For more details on using _Spring's Transaction Management_ with JTA,
-see https://docs.spring.io/spring/docs/current/spring-framework-reference/htmlsingle/#transaction-application-server-integration[here].
+see {spring-framework-docs}/#transaction-application-server-integration[here].
 
 Effectively, {sdg-name}'s `@EnableGemFireAsLastResource` annotation imports configuration containing 2 Aspect
 bean definitions that handles the {data-store-name} `o.a.g.ra.GFConnectionFactory.getConnection()`
 and `o.a.g.ra.GFConnection.close()` operations at the appropriate points during the transactional operation.
 
-Specifically, the correct sequence of events are...
+Specifically, the correct sequence of events follow:
 
 1. `jtaTransation.begin()`
 
@@ -261,19 +265,20 @@ Specifically, the correct sequence of events are...
 
 This is consistent with how you, as the application developer, would code this manually if you had to use the JTA API
 + {data-store-name} API yourself, as shown in the
-{data-store-name} https://gemfire90.docs.pivotal.io/geode/developing/transactions/jca_adapter_example.html#concept_swv_z2p_wk[example].
+{data-store-name} {apache-geode-docs}/developing/transactions/jca_adapter_example.html#concept_swv_z2p_wk[example].
 
-Thankfully, Spring does the heavy lifting for you and all you need do after applying the appropriate configuration
-(shown above) is...
+Thankfully, Spring does the heavy lifting for you and all you need to do after applying the appropriate configuration
+(shown above) is:
 
+.Declaring a service method as @Transactional
 [source,java]
 ----
 @Service
-class MyTransactionalService ... {
+class MyTransactionalService {
 
   @Transactional
   public <Return-Type> someTransactionalServiceMethod() {
-    // perform business logic interacting with and accessing multiple JTA resources atomically, here
+    // perform business logic interacting with and accessing multiple JTA resources atomically
   }
 
   ...
@@ -281,7 +286,7 @@ class MyTransactionalService ... {
 ----
 
 #1 & #4 above are appropriately handled for you by Spring's JTA based `PlatformTransactionManager` once the
-`@Transactional` boundary is entered by your application (i.e. when the `MyTransactionSerivce.someTransactionalServiceMethod()`
+`@Transactional` boundary is entered by your application (i.e. when the `MyTransactionService.someTransactionalServiceMethod()`
 is called).
 
 #2 & #3 are handled by {sdg-name}'s new Aspects enabled with the `@EnableGemFireAsLastResource` annotation.
@@ -290,6 +295,7 @@ is called).
 
 Indeed, with the appropriate logging configured, you will see the correct sequence of events...
 
+.Transaction Log Output
 [source,xml]
 ----
 2017-Jun-22 11:11:37 TRACE TransactionInterceptor - Getting transaction for [example.app.service.MessageService.send]
@@ -306,12 +312,25 @@ JSON : [{"id":"MSG0000000000","message":"SENT"}] ]
 2017-Jun-22 11:11:37 TRACE GemFireAsLastResourceConnectionClosingAspect - Closed {data-store-name} Connection @ [Reference [...]]
 ----
 
-When using transactions, it may be desirable to register a listener to perform certain actions before or after the
-transaction commits, or after a rollback occurs. {sdg-name} makes it easy to create listeners that will be invoked
-during specific phases of a transaction with the `@TransactionalEventListener` annotation. Methods annotated with
-`@TransactionalEventListener` (as shown below) will be notified of events published from transactional methods, during
-the specified `phase`.
+For more details on using {data-store-name} cache-level transactions, see <<apis:transaction-management,here>>.
 
+For more details on using {data-store-name} in JTA transactions,
+see https://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html[here].
+
+For more details on configuring {data-store-name} as a "_Last Resource_",
+see https://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[here].
+
+[[apis:transaction-event-listener]]
+== TransactionEventListener
+
+When using transactions, it may be desirable to register a listener to perform certain actions before or after the
+transaction commits, or after a rollback occurs.
+
+{sdg-name} makes it easy to create listeners that will be invoked during specific phases of a transaction with the
+`@TransactionalEventListener` annotation. Methods annotated with `@TransactionalEventListener` (as shown below) will be
+notified of events published from transactional methods, during the specified `phase`.
+
+.After Transaction Commit Event Listener
 [source,java]
 ----
 @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -320,36 +339,33 @@ public void handleAfterCommit(MyEvent event) {
 }
 ----
 
-Inorder for the above method to be invoked, you must publish an event from within your transaction, like below.
+Inorder for the above method to be invoked, you must publish an event from within your transaction, like below:
 
+.Publishing a Transactional Event
 [source,java]
 ----
 @Service
-class MyTransactionalService ... {
+class MyTransactionalService {
 
   @Autowired
-  private final ApplicationEventPublisher publisher;
+  private final ApplicationEventPublisher applicationEventPublisher;
 
   @Transactional
   public <Return-Type> someTransactionalServiceMethod() {
-    // perform business logic interacting with and accessing multiple JTA resources atomically, here
-    publisher.publishEvent(new MyEvent(...));
+
+    // Perform business logic interacting with and accessing multiple transactional resources atomically, then...
+
+    applicationEventPublisher.publishEvent(new MyEvent(...));
   }
 
   ...
 }
 ----
 
-The `@TransactionalEventListener` annotation allows you to specify the transaction `phase` at which it will be invoked;
-the options are `AFTER_COMMIT`, `AFTER_COMPLETION`, `AFTER_ROLLBACK`, and `BEFORE_COMMIT`. If not specified, `phase`
-defaults to `AFTER_COMMIT`. If you wish the listener to be called even when no transaction is running, you may set
-`fallbackExecution` to true.
-
-For more details on using {data-store-name} in JTA transactions,
-see https://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html[here].
-
-For more details on configuring {data-store-name} as a "_Last Resource_",
-see https://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[here].
+The `@TransactionalEventListener` annotation allows you to specify the transaction `phase` in which the event handler
+method will be invoked. Options include: `AFTER_COMMIT`, `AFTER_COMPLETION`, `AFTER_ROLLBACK`, and `BEFORE_COMMIT`.
+If not specified, the `phase` defaults to `AFTER_COMMIT`. If you wish the listener to be called even when no transaction
+is present, you may set `fallbackExecution` to `true`.
 
 :leveloffset: +1
 
