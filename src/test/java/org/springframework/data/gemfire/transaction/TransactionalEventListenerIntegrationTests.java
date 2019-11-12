@@ -41,6 +41,7 @@ import org.springframework.data.gemfire.mapping.GemfireMappingContext;
 import org.springframework.data.gemfire.mapping.annotation.Region;
 import org.springframework.data.gemfire.repository.support.GemfireRepositoryFactoryBean;
 import org.springframework.data.gemfire.transaction.config.EnableGemfireCacheTransactions;
+import org.springframework.data.gemfire.transaction.event.TransactionApplicationEvent;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -66,7 +67,7 @@ import lombok.RequiredArgsConstructor;
  * @see org.springframework.context.ApplicationEventPublisher
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.data.gemfire.config.annotation.ClientCacheApplication
- * @see org.springframework.data.gemfire.transaction.TransactionApplicationEvent
+ * @see TransactionApplicationEvent
  * @see org.springframework.data.gemfire.transaction.config.EnableGemfireCacheTransactions
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringRunner
