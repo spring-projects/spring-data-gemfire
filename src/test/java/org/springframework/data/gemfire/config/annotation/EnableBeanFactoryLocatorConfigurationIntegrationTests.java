@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,15 +25,17 @@ import org.junit.Test;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.data.gemfire.CacheFactoryBean;
+import org.springframework.data.gemfire.support.GemfireBeanFactoryLocator;
 import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockObjects;
 
 /**
- * Integration test for {@link EnableBeanFactoryLocator} and {@link BeanFactoryLocatorConfiguration}.
+ * Integration Tests for {@link EnableBeanFactoryLocator} and {@link BeanFactoryLocatorConfiguration}.
  *
  * @author John Blum
  * @see org.junit.Test
  * @see org.springframework.context.ConfigurableApplicationContext
  * @see org.springframework.data.gemfire.CacheFactoryBean
+ * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.BeanFactoryLocatorConfiguration
  * @see org.springframework.data.gemfire.config.annotation.EnableBeanFactoryLocator
  * @see org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockObjects
@@ -46,33 +47,27 @@ public class EnableBeanFactoryLocatorConfigurationIntegrationTests {
 
 	@After
 	public void tearDown() {
-		Optional.ofNullable(this.applicationContext).ifPresent(ConfigurableApplicationContext::close);
+
+		Optional.ofNullable(this.applicationContext).
+			ifPresent(ConfigurableApplicationContext::close);
+
+		GemfireBeanFactoryLocator.clear();
 	}
 
 	private ConfigurableApplicationContext newApplicationContext(Class<?>... annotatedClasses) {
-		ConfigurableApplicationContext applicationContext = new AnnotationConfigApplicationContext(annotatedClasses);
+
+		ConfigurableApplicationContext applicationContext =
+			new AnnotationConfigApplicationContext(annotatedClasses);
+
 		applicationContext.registerShutdownHook();
+
 		return applicationContext;
 	}
 
-	@Test
-	public void gemfireBeanFactoryLocatorIsDisabled() {
+	private <T extends CacheFactoryBean> void testGemFireCacheBeanFactoryLocator(Class<?> configuration,
+			Class<T> cacheFactoryBeanType, boolean beanFactoryLocatorEnabled) {
 
-		this.applicationContext = newApplicationContext(TestBeanFactoryLocatorDisabledConfiguration.class);
-
-		assertThat(this.applicationContext).isNotNull();
-		assertThat(this.applicationContext.containsBean("gemfireCache")).isTrue();
-
-		CacheFactoryBean gemfireCache = this.applicationContext.getBean("&gemfireCache", CacheFactoryBean.class);
-
-		assertThat(gemfireCache).isNotNull();
-		assertThat(gemfireCache.isUseBeanFactoryLocator()).isFalse();
-	}
-
-	@Test
-	public void gemfireBeanFactoryLocatorIsEnabled() {
-
-		this.applicationContext = newApplicationContext(TestBeanFactoryLocatorEnabledConfiguration.class);
+		this.applicationContext = newApplicationContext(configuration);
 
 		assertThat(this.applicationContext).isNotNull();
 		assertThat(this.applicationContext.containsBean("gemfireCache")).isTrue();
@@ -80,17 +75,50 @@ public class EnableBeanFactoryLocatorConfigurationIntegrationTests {
 		CacheFactoryBean gemfireCache = this.applicationContext.getBean("&gemfireCache", CacheFactoryBean.class);
 
 		assertThat(gemfireCache).isNotNull();
-		assertThat(gemfireCache.isUseBeanFactoryLocator()).isTrue();
+		assertThat(gemfireCache).isInstanceOf(cacheFactoryBeanType);
+		assertThat(gemfireCache.isUseBeanFactoryLocator()).isEqualTo(beanFactoryLocatorEnabled);
 	}
+
+	@Test
+	public void gemfireClientCacheBeanFactoryLocatorIsDisabled() {
+		testGemFireCacheBeanFactoryLocator(TestClientCacheBeanFactoryLocatorDisabledConfiguration.class,
+			CacheFactoryBean.class, false);
+	}
+
+	@Test
+	public void gemfireClientCacheBeanFactoryLocatorIsEnabled() {
+		testGemFireCacheBeanFactoryLocator(TestClientCacheBeanFactoryLocatorEnabledConfiguration.class,
+			CacheFactoryBean.class, true);
+	}
+
+	@Test
+	public void gemfirePeerCacheBeanFactoryLocatorIsDisabled() {
+		testGemFireCacheBeanFactoryLocator(TestPeerCacheBeanFactoryLocatorDisabledConfiguration.class,
+			CacheFactoryBean.class, false);
+	}
+
+	@Test
+	public void gemfirePeerCacheBeanFactoryLocatorIsEnabled() {
+		testGemFireCacheBeanFactoryLocator(TestPeerCacheBeanFactoryLocatorEnabledConfiguration.class,
+			CacheFactoryBean.class, true);
+	}
+
+	@ClientCacheApplication
+	@EnableGemFireMockObjects
+	static class TestClientCacheBeanFactoryLocatorDisabledConfiguration { }
+
+	@ClientCacheApplication
+	@EnableBeanFactoryLocator
+	@EnableGemFireMockObjects
+	static class TestClientCacheBeanFactoryLocatorEnabledConfiguration { }
 
 	@EnableGemFireMockObjects
 	@PeerCacheApplication
-	static class TestBeanFactoryLocatorDisabledConfiguration {
-	}
+	static class TestPeerCacheBeanFactoryLocatorDisabledConfiguration { }
 
 	@EnableGemFireMockObjects
 	@EnableBeanFactoryLocator
 	@PeerCacheApplication
-	static class TestBeanFactoryLocatorEnabledConfiguration {
-	}
+	static class TestPeerCacheBeanFactoryLocatorEnabledConfiguration { }
+
 }

@@ -21,12 +21,12 @@ import static org.mockito.Mockito.mock;
 import java.util.Optional;
 import java.util.Properties;
 
+import org.junit.After;
+import org.junit.Test;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.pdx.PdxSerializer;
-
-import org.junit.After;
-import org.junit.Test;
 
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -38,14 +38,16 @@ import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockOb
 import org.springframework.mock.env.MockPropertySource;
 
 /**
- * Integration tests for {@link PeerCacheApplication}.
+ * Integration Tests for {@link PeerCacheApplication}.
  *
  * @author John Blum
  * @see java.util.Properties
  * @see org.junit.Test
+ * @see org.apache.geode.cache.Cache
  * @see org.springframework.context.ConfigurableApplicationContext
  * @see org.springframework.context.annotation.AnnotationConfigApplicationContext
  * @see org.springframework.core.env.PropertySource
+ * @see org.springframework.data.gemfire.CacheFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.PeerCacheApplication
  * @see org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockObjects
  * @see org.springframework.mock.env.MockPropertySource
@@ -58,9 +60,7 @@ public class PeerCachePropertiesIntegrationTests {
 
 	@After
 	public void tearDown() {
-
-		Optional.ofNullable(this.applicationContext)
-			.ifPresent(ConfigurableApplicationContext::close);
+		Optional.ofNullable(this.applicationContext).ifPresent(ConfigurableApplicationContext::close);
 	}
 
 	private ConfigurableApplicationContext newApplicationContext(PropertySource<?> testPropertySource,
@@ -175,7 +175,7 @@ public class PeerCachePropertiesIntegrationTests {
 		assertThat(resourceManager.getEvictionHeapPercentage()).isEqualTo(80.0f);
 	}
 
-	//TODO add more tests
+	// TODO add more tests
 
 	@EnableGemFireMockObjects
 	@EnablePdx(ignoreUnreadFields = true, readSerialized = true, serializerBeanName = "mockPdxSerializer")

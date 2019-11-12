@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,14 +21,14 @@ import static org.mockito.Mockito.mock;
 import java.util.Optional;
 import java.util.Properties;
 
+import org.junit.After;
+import org.junit.Test;
+
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.pdx.PdxSerializer;
-
-import org.junit.After;
-import org.junit.Test;
 
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -41,11 +40,13 @@ import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockOb
 import org.springframework.mock.env.MockPropertySource;
 
 /**
- * Integration tests for {@link ClientCacheApplication}.
+ * Integration Tests for {@link ClientCacheApplication}.
  *
  * @author John Blum
  * @see java.util.Properties
  * @see org.junit.Test
+ * @see org.apache.geode.cache.client.ClientCache
+ * @see org.apache.geode.cache.client.Pool
  * @see org.springframework.core.env.PropertySource
  * @see org.springframework.data.gemfire.client.ClientCacheFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.ClientCacheApplication
@@ -103,6 +104,12 @@ public class ClientCachePropertiesIntegrationTests {
 		assertThat(this.applicationContext.containsBean("gemfireCache")).isTrue();
 		assertThat(this.applicationContext.containsBean("mockPdxSerializer")).isTrue();
 
+		ClientCacheFactoryBean testClientCacheFactoryBean =
+			this.applicationContext.getBean("&gemfireCache", ClientCacheFactoryBean.class);
+
+		assertThat(testClientCacheFactoryBean).isNotNull();
+		assertThat(testClientCacheFactoryBean.isUseBeanFactoryLocator()).isFalse();
+
 		ClientCache testClientCache = this.applicationContext.getBean("gemfireCache", ClientCache.class);
 
 		assertThat(testClientCache).isNotNull();
@@ -153,6 +160,7 @@ public class ClientCachePropertiesIntegrationTests {
 	public void dynamicClientCacheConfiguration() {
 
 		MockPropertySource testPropertySource = new MockPropertySource()
+			.withProperty("spring.data.gemfire.use-bean-factory-locator", true)
 			.withProperty("spring.data.gemfire.cache.copy-on-read", true)
 			.withProperty("spring.data.gemfire.cache.critical-heap-percentage", 90.0f)
 			.withProperty("spring.data.gemfire.cache.eviction-heap-percentage", 75.0f)
@@ -191,19 +199,24 @@ public class ClientCachePropertiesIntegrationTests {
 		assertThat(this.applicationContext.containsBean("gemfireCache")).isTrue();
 		assertThat(this.applicationContext.containsBean("mockPdxSerializer")).isTrue();
 
-		PdxSerializer mockPdxSerializer = this.applicationContext.getBean("mockPdxSerializer", PdxSerializer.class);
-
 		ClientCacheFactoryBean clientCacheFactoryBean =
 			this.applicationContext.getBean("&gemfireCache", ClientCacheFactoryBean.class);
 
+		assertThat(clientCacheFactoryBean).isNotNull();
+
 		ClientCache clientCache = this.applicationContext.getBean("gemfireCache", ClientCache.class);
 
+		assertThat(clientCache).isNotNull();
+
+		PdxSerializer mockPdxSerializer = this.applicationContext.getBean("mockPdxSerializer", PdxSerializer.class);
+
 		assertThat(mockPdxSerializer).isNotNull();
-		assertThat(clientCacheFactoryBean).isNotNull();
 		assertThat(clientCacheFactoryBean.getDurableClientId()).isEqualTo("123");
 		assertThat(clientCacheFactoryBean.getDurableClientTimeout()).isEqualTo(600);
+		assertThat(clientCacheFactoryBean.getUseClusterConfiguration()).isFalse();
 		assertThat(clientCacheFactoryBean.isKeepAlive()).isTrue();
 		assertThat(clientCacheFactoryBean.isReadyForEvents()).isTrue();
+		assertThat(clientCacheFactoryBean.isUseBeanFactoryLocator()).isTrue();
 		assertThat(clientCache).isNotNull();
 		assertThat(clientCache.getCopyOnRead()).isTrue();
 		assertThat(clientCache.getDistributedSystem()).isNotNull();
@@ -249,7 +262,7 @@ public class ClientCachePropertiesIntegrationTests {
 		assertThat(resourceManager.getEvictionHeapPercentage()).isEqualTo(75.0f);
 	}
 
-	// TODO add more tests!
+	// TODO add more tests
 
 	@EnableGemFireMockObjects
 	@ClientCacheApplication(name = "TestClientCache", copyOnRead = true,
