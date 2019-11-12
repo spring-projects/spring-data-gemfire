@@ -12,9 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
-
 package org.springframework.data.gemfire.transaction;
 
 import static org.springframework.data.gemfire.transaction.GemfireTransactionManager.CacheHolder.newCacheHolder;
@@ -89,8 +87,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	/**
 	 * Constructs an instance of the {@link GemfireTransactionManager}.
 	 */
-	public GemfireTransactionManager() {
-	}
+	public GemfireTransactionManager() { }
 
 	/**
 	 * Constructs an instance of the {@link GemfireTransactionManager} initialized with
@@ -101,7 +98,9 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	 * @see #afterPropertiesSet()
 	 */
 	public GemfireTransactionManager(GemFireCache cache) {
+
 		this.cache = cache;
+
 		afterPropertiesSet();
 	}
 
@@ -110,7 +109,9 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	 */
 	@Override
 	public void afterPropertiesSet() {
+
 		Assert.notNull(this.cache, "Cache is required");
+
 		this.cache.setCopyOnRead(isCopyOnRead());
 	}
 
@@ -136,8 +137,11 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	 */
 	@Override
 	protected void doBegin(Object transaction, TransactionDefinition definition) throws TransactionException {
+
 		try {
+
 			CacheTransactionObject cacheTransaction = (CacheTransactionObject) transaction;
+
 			GemFireCache cache = getCache();
 
 			if (logger.isDebugEnabled()) {
@@ -156,10 +160,10 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 					cacheTransaction.setAndGetHolder(newCacheHolder(transactionId)));
 			}
 		}
-		catch (IllegalStateException e) {
+		catch (Exception cause) {
 			throw new CannotCreateTransactionException(String.format("%1$s; %2$s",
-				"An existing, ongoing transaction is already associated with the current thread",
-				"are multiple transaction managers present?"), e);
+				"An existing, ongoing transaction is already associated with the current thread.",
+				" Are multiple transaction managers present?"), cause);
 		}
 	}
 
@@ -168,6 +172,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	 */
 	@Override
 	protected void doCommit(DefaultTransactionStatus status) throws TransactionException {
+
 		try {
 			if (status.isDebug()) {
 				logger.debug("Committing local cache transaction");
@@ -175,13 +180,13 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 
 			getCacheTransactionManager().commit();
 		}
-		catch (IllegalStateException e) {
-			throw new NoTransactionException(
-				"No transaction is associated with the current thread; are multiple transaction managers present?", e);
-		}
-		catch (org.apache.geode.cache.TransactionException e) {
+		catch (org.apache.geode.cache.TransactionException cause) {
 			throw new GemfireTransactionCommitException(
-				"Unexpected failure occurred on commit of local cache transaction", e);
+				"Unexpected failure occurred on commit of local cache transaction", cause);
+		}
+		catch (Exception cause) {
+			throw new NoTransactionException(
+				"No transaction is associated with the current thread; are multiple transaction managers present?", cause);
 		}
 	}
 
@@ -190,6 +195,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	 */
 	@Override
 	protected Object doSuspend(Object transaction) throws TransactionException {
+
 		if (getCacheTransactionManager().suspend() != null) {
 			TransactionSynchronizationManager.unbindResource(getCache());
 			return ((CacheTransactionObject) transaction).setAndGetExistingHolder(null);
@@ -203,13 +209,14 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	 */
 	@Override
 	protected void doResume(Object transaction, Object suspendedResources) throws TransactionException {
+
 		if (suspendedResources instanceof CacheHolder) {
+
 			CacheHolder holder = (CacheHolder) suspendedResources;
 
-			boolean resumeSuccessful = (isResumeWaitTimeSet()
-				? getCacheTransactionManager().tryResume(holder.getTransactionId(),
-				getResumeWaitTime(), getResumeWaitTimeUnit())
-				: getCacheTransactionManager().tryResume(holder.getTransactionId()));
+			boolean resumeSuccessful = isResumeWaitTimeSet()
+				? getCacheTransactionManager().tryResume(holder.getTransactionId(), getResumeWaitTime(), getResumeWaitTimeUnit())
+				: getCacheTransactionManager().tryResume(holder.getTransactionId());
 
 			if (resumeSuccessful) {
 				TransactionSynchronizationManager.bindResource(getCache(),
@@ -223,6 +230,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	 */
 	@Override
 	protected void doRollback(DefaultTransactionStatus status) throws TransactionException {
+
 		try {
 			if (status.isDebug()) {
 				logger.debug("Rolling back local cache transaction");
@@ -230,9 +238,12 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 
 			getCacheTransactionManager().rollback();
 		}
-		catch (IllegalStateException e) {
-			throw new NoTransactionException(
-				"No transaction is associated with the current thread; are multiple transaction managers present?", e);
+		catch (Exception cause) {
+
+			String exceptionMessage =
+				"No transaction is associated with the current thread. Are multiple transaction managers present?";
+
+			throw new NoTransactionException(exceptionMessage, cause);
 		}
 	}
 
@@ -311,7 +322,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	 * @see #setCopyOnRead(boolean)
 	 */
 	public boolean isCopyOnRead() {
-		return copyOnRead;
+		return this.copyOnRead;
 	}
 
 	/**
@@ -324,7 +335,9 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	 * @see org.apache.geode.cache.Region
 	 */
 	public <K, V> void setRegion(Region<K, V> region) {
+
 		Assert.notNull(region, "Region must not be null");
+
 		this.cache = (GemFireCache) region.getRegionService();
 	}
 
@@ -365,8 +378,10 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 	 * @see #getResumeWaitTime()
 	 */
 	protected boolean isResumeWaitTimeSet() {
+
 		Long resumeWaitTime = getResumeWaitTime();
-		return (resumeWaitTime != null && resumeWaitTime > 0);
+
+		return resumeWaitTime != null && resumeWaitTime > 0;
 	}
 
 	/**
@@ -401,39 +416,33 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 
 		private CacheHolder cacheHolder;
 
-		/* (non-Javadoc) */
 		static CacheTransactionObject newCacheTransactionObject(CacheHolder cacheHolder) {
 			CacheTransactionObject transactionObject = new CacheTransactionObject();
 			transactionObject.setHolder(cacheHolder);
 			return transactionObject;
 		}
 
-		/* (non-Javadoc) */
-		boolean isHolding() {
-			return (getHolder() != null);
-		}
-
-		/* (non-Javadoc) */
-		CacheHolder getHolder() {
-			return this.cacheHolder;
-		}
-
-		/* (non-Javadoc) */
-		void setHolder(CacheHolder holder) {
-			this.cacheHolder = holder;
-		}
-
-		/* (non-Javadoc) */
 		CacheHolder setAndGetExistingHolder(CacheHolder cacheHolder) {
 			CacheHolder existingHolder = getHolder();
 			setHolder(cacheHolder);
 			return existingHolder;
 		}
 
-		/* (non-Javadoc) */
 		CacheHolder setAndGetHolder(CacheHolder holder) {
 			setHolder(holder);
 			return getHolder();
+		}
+
+		void setHolder(CacheHolder cacheHolder) {
+			this.cacheHolder = cacheHolder;
+		}
+
+		CacheHolder getHolder() {
+			return this.cacheHolder;
+		}
+
+		boolean isHolding() {
+			return getHolder() != null;
 		}
 	}
 
@@ -446,24 +455,20 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 
 		private TransactionId transactionId;
 
-		/* (non-Javadoc) */
 		static CacheHolder newCacheHolder(TransactionId transactionId) {
 			CacheHolder cacheHolder = new CacheHolder();
 			cacheHolder.transactionId = transactionId;
 			return cacheHolder;
 		}
 
-		/* (non-Javadoc) */
-		boolean isRollbackOnly() {
-			return this.rollbackOnly;
-		}
-
-		/* (non-Javadoc) */
 		void setRollbackOnly() {
 			this.rollbackOnly = true;
 		}
 
-		/* (non-Javadoc) */
+		boolean isRollbackOnly() {
+			return this.rollbackOnly;
+		}
+
 		TransactionId getTransactionId() {
 			return this.transactionId;
 		}
