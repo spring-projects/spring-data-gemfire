@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,11 +21,13 @@ import static org.mockito.Mockito.mock;
 import java.util.Optional;
 import java.util.Properties;
 
+import org.junit.After;
+import org.junit.Test;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.pdx.PdxSerializer;
-import org.junit.After;
-import org.junit.Test;
+
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -37,10 +38,18 @@ import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockOb
 import org.springframework.mock.env.MockPropertySource;
 
 /**
- * Integration tests for {@link PeerCacheApplication}.
+ * Integration Tests for {@link PeerCacheApplication}.
  *
  * @author John Blum
  * @see org.junit.Test
+<<<<<<< HEAD
+=======
+ * @see org.apache.geode.cache.Cache
+ * @see org.springframework.context.ConfigurableApplicationContext
+ * @see org.springframework.context.annotation.AnnotationConfigApplicationContext
+ * @see org.springframework.core.env.PropertySource
+ * @see org.springframework.data.gemfire.CacheFactoryBean
+>>>>>>> 2ee3037b... SGF-896 - Cannot enable the BeanFactoryLocator for a ClientCache instance using SDG property.
  * @see org.springframework.data.gemfire.config.annotation.PeerCacheApplication
  * @since 2.0.0
  */
@@ -165,7 +174,7 @@ public class PeerCachePropertiesIntegrationTests {
 		assertThat(resourceManager.getEvictionHeapPercentage()).isEqualTo(80.0f);
 	}
 
-	//TODO add more tests
+	// TODO add more tests
 
 	@EnableGemFireMockObjects
 	@EnablePdx(ignoreUnreadFields = true, readSerialized = true, serializerBeanName = "mockPdxSerializer")
