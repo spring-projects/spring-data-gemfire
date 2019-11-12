@@ -13,19 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
 
+import org.junit.After;
+import org.junit.Test;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.client.ClientCache;
-
-import org.junit.After;
-import org.junit.Test;
 
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -35,7 +34,7 @@ import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockOb
 import org.springframework.mock.env.MockPropertySource;
 
 /**
- * Integration tests for {@link AbstractCacheConfiguration}.
+ * Integration Tests for {@link AbstractCacheConfiguration}.
  *
  * @author John Blum
  * @see org.junit.Test
@@ -75,8 +74,8 @@ public class AbstractCacheConfigurationIntegrationTests {
 			propertySources.addFirst(testPropertySource);
 		});
 
-		applicationContext.registerShutdownHook();
 		applicationContext.register(annotatedClasses);
+		applicationContext.registerShutdownHook();
 		applicationContext.refresh();
 
 		return applicationContext;
@@ -130,11 +129,10 @@ public class AbstractCacheConfigurationIntegrationTests {
 
 	@ClientCacheApplication
 	@EnableGemFireMockObjects
-	static class TestClientCacheConfiguration {
-	}
+	static class TestClientCacheConfiguration { }
 
-	@PeerCacheApplication(name = "TestPeerCacheApp")
 	@EnableGemFireMockObjects
-	static class TestPeerCacheConfiguration {
-	}
+	@PeerCacheApplication(name = "TestPeerCacheApp")
+	static class TestPeerCacheConfiguration { }
+
 }

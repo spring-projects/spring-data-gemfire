@@ -90,7 +90,6 @@ public class PeerCacheConfiguration extends AbstractCacheConfiguration {
         gemfireCache.setMessageSyncInterval(messageSyncInterval());
         gemfireCache.setPeerCacheConfigurers(resolvePeerCacheConfigurers());
         gemfireCache.setSearchTimeout(searchTimeout());
-        gemfireCache.setUseBeanFactoryLocator(useBeanFactoryLocator());
         gemfireCache.setUseClusterConfiguration(useClusterConfiguration());
 
         return gemfireCache;

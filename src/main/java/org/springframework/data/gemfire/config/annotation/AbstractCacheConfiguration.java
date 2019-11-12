@@ -354,6 +354,7 @@ public abstract class AbstractCacheConfiguration extends AbstractAnnotationConfi
 		gemfireCache.setProperties(gemfireProperties());
 		gemfireCache.setTransactionListeners(getTransactionListeners());
 		gemfireCache.setTransactionWriter(getTransactionWriter());
+		gemfireCache.setUseBeanFactoryLocator(useBeanFactoryLocator());
 
 		return gemfireCache;
 	}

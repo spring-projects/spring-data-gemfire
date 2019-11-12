@@ -105,7 +105,6 @@ public class CacheServerFactoryBean extends AbstractFactoryBeanSupport<CacheServ
 	 * {@inheritDoc}
 	 */
 	@Override
-	@SuppressWarnings("deprecation")
 	public void afterPropertiesSet() throws IOException {
 
 		applyCacheServerConfigurers();
