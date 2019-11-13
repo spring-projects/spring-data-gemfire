@@ -320,8 +320,8 @@ see https://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transact
 For more details on configuring {data-store-name} as a "_Last Resource_",
 see https://gemfire90.docs.pivotal.io/geode/developing/transactions/JTA_transactions.html#concept_csy_vfb_wk[here].
 
-[[apis:transaction-event-listener]]
-== TransactionEventListener
+[[apis:using-transactional-event-listener]]
+== Using @TransactionalEventListener
 
 When using transactions, it may be desirable to register a listener to perform certain actions before or after the
 transaction commits, or after a rollback occurs.
@@ -355,7 +355,7 @@ class MyTransactionalService {
 
     // Perform business logic interacting with and accessing multiple transactional resources atomically, then...
 
-    applicationEventPublisher.publishEvent(new MyEvent(...));
+    applicationEventPublisher.publishEvent(new MyApplicationEvent(...));
   }
 
   ...
@@ -366,6 +366,55 @@ The `@TransactionalEventListener` annotation allows you to specify the transacti
 method will be invoked. Options include: `AFTER_COMMIT`, `AFTER_COMPLETION`, `AFTER_ROLLBACK`, and `BEFORE_COMMIT`.
 If not specified, the `phase` defaults to `AFTER_COMMIT`. If you wish the listener to be called even when no transaction
 is present, you may set `fallbackExecution` to `true`.
+
+[[apis:auto-transaction-event-publishing]]
+== Auto Transaction Event Publishing
+
+As of {sdg-name} `Neumann/2.3`, it is now possible to enable auto transaction event publishing.
+
+Using the `@EnableGemfireCacheTransactions` annotation, set the `enableAutoTransactionEventPublishing` attribute
+to *true*.  The default is *false*.
+
+.Enable auto transaction event publishing
+[source,java]
+----
+@EnableGemfireCacheTransactions(enableAutoTransactionEventPublishing = true)
+class GeodeConfiguration { ... }
+----
+
+Then you can create `@TransactionalEventListener` annotated POJO methods to handle transaction events during either
+the `AFTER_COMMIT` or `AFTER_ROLLBACK` transaction phases.
+
+[source,java]
+----
+@Component
+class TransactionEventListeners {
+
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	public void handleAfterCommit(TransactionApplicationEvent event) {
+		...
+	}
+
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_ROLLBACK)
+	public void handleAfterRollback(TransactionApplicationEvent event) {
+		...
+	}
+}
+----
+
+WARNING: Only `TransactionPhase.AFTER_COMMIT` and `TransactionPhase.AFTER_ROLLBACK` are supported.
+`TransactionPhase.BEFORE_COMMIT` is not supported because 1) SDG adapts {data-store-name}'s `TransactionListener`
+and `TransactionWriter` interfaces to implement auto transaction event publishing, and 2) when {data-store-name}'s
+`TransactionWriter.beforeCommit(:TransactionEvent)` is called, it is already after the
+`AbstractPlatformTransactionManager.triggerBeforeCommit(:TransactionStatus)` call where `@TranactionalEventListener`
+annotated POJO methods are called during the transaction lifecycle.
+
+With auto transaction event publishing, you do not need to explicitly call the
+`applicationEventPublisher.publishEvent(..)` method inside your application `@Transactional` `@Service` methods.
+
+However, if you still want to receive transaction events "_before commit_", then you must still call the
+`applicationEventPublisher.publishEvent(..)` method within your application `@Transactional` `@Service` methods.
+See the *note* above for more details.
 
 :leveloffset: +1
 
