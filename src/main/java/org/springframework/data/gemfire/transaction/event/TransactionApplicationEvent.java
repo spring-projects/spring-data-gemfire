@@ -37,12 +37,37 @@ public class TransactionApplicationEvent extends ApplicationEvent {
 
 	protected static final String TIMESTAMP_PATTERN = "yyyy-MM-dd-hh:mm:ss.S";
 
+	/**
+	 * Factory method used to construct a new instance of {@link TransactionApplicationEvent} initialized with
+	 * the given {@link Object source}.
+	 *
+	 * @param source {@link Object} defined as the source of this {@link TransactionApplicationEvent}.
+	 * @return a new instance of {@link TransactionApplicationEvent}.
+	 * @see #TransactionApplicationEvent(Object)
+	 */
+	public static TransactionApplicationEvent of(Object source) {
+		return new TransactionApplicationEvent(source);
+	}
+
 	private String details;
 
+	/**
+	 * Constructs a new instance of {@link TransactionApplicationEvent} initialized with the given {@link Object source}
+	 * of this transaction event.
+	 *
+	 * @param source {@link Object} defined as the source of this {@link TransactionApplicationEvent}.
+	 */
 	public TransactionApplicationEvent(Object source) {
 		this(source, null);
 	}
 
+	/**
+	 * Constructs a new instance of {@link TransactionApplicationEvent} initialized with the given {@link Object source}
+	 * of this transaction event and {@link String details} describing the transaction event.
+	 *
+	 * @param source {@link Object} defined as the source of this {@link TransactionApplicationEvent}.
+	 * @param details {@link String} describing the transaction event.
+	 */
 	public TransactionApplicationEvent(Object source, String details) {
 
 		super(source);
@@ -72,5 +97,10 @@ public class TransactionApplicationEvent extends ApplicationEvent {
 		return getDetails()
 			.map(details -> String.format("%s - %s", getTimestampAsString(), details))
 			.orElse(String.format("%s[%s]", getClass().getSimpleName(), getTimestampAsString()));
+	}
+
+	public TransactionApplicationEvent with(String details) {
+		this.details = details;
+		return this;
 	}
 }

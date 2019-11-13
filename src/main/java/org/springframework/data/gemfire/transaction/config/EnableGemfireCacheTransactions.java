@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.transaction.config;
 
 import java.lang.annotation.Documented;
@@ -24,6 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.springframework.context.annotation.Import;
+import org.springframework.data.gemfire.transaction.event.TransactionApplicationEvent;
 
 /**
  * The {@link EnableGemfireCacheTransactions} annotation enables Pivotal GemFire or Apache Geode Cache Transactions
@@ -48,5 +48,13 @@ import org.springframework.context.annotation.Import;
 @Import(GemfireCacheTransactionsConfiguration.class)
 @SuppressWarnings("unused")
 public @interface EnableGemfireCacheTransactions {
+
+	/**
+	 * Configures whether {@link TransactionApplicationEvent} objects are automatically fired by the framework.
+	 *
+	 * @return a boolean value indicating whether transactional events are automatically fired by the framework
+	 * without the need to manually publish transaction events.  Defaults to {@literal false}.
+	 */
+	boolean enableAutoTransactionEventPublishing() default false;
 
 }

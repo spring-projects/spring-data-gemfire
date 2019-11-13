@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 the original author or authors.
+ * Copyright 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,30 @@
 package org.springframework.data.gemfire.transaction;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.EventListener;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.runner.RunWith;
 
-import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.TransactionEvent;
+import org.apache.geode.cache.TransactionWriter;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.gemfire.config.annotation.ClientCacheApplication;
 import org.springframework.data.gemfire.config.annotation.EnableEntityDefinedRegions;
+import org.springframework.data.gemfire.config.annotation.PeerCacheApplication;
+import org.springframework.data.gemfire.config.annotation.PeerCacheConfigurer;
 import org.springframework.data.gemfire.transaction.config.EnableGemfireCacheTransactions;
 import org.springframework.data.gemfire.transaction.event.TransactionApplicationEvent;
 import org.springframework.stereotype.Component;
@@ -44,21 +50,18 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 /**
  * Integration Tests for the Spring {@link TransactionalEventListener} in the context of Apache Geode
- * cache transactions.
+ * cache transactions when auto-publishing of transaction events is enabled.
  *
  * @author John Blum
  * @see org.junit.Test
- * @see org.springframework.context.ApplicationEvent
- * @see org.springframework.context.ApplicationEventPublisher
  * @see org.springframework.context.annotation.Bean
  * @see org.springframework.context.annotation.Import
- * @see org.springframework.data.gemfire.config.annotation.ClientCacheApplication
- * @see org.springframework.data.gemfire.transaction.AbstractTransactionalEventListenerIntegrationTests
+ * @see org.springframework.data.gemfire.config.annotation.PeerCacheApplication
+ * @see org.springframework.data.gemfire.config.annotation.PeerCacheConfigurer
  * @see org.springframework.data.gemfire.transaction.config.EnableGemfireCacheTransactions
  * @see org.springframework.data.gemfire.transaction.event.TransactionApplicationEvent
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringRunner
- * @see org.springframework.transaction.annotation.Transactional
  * @see org.springframework.transaction.event.TransactionPhase
  * @see org.springframework.transaction.event.TransactionalEventListener
  * @since 2.3.0
@@ -66,66 +69,73 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @RunWith(SpringRunner.class)
 @ContextConfiguration
 @SuppressWarnings("unused")
-public class TransactionalEventListenerIntegrationTests extends AbstractTransactionalEventListenerIntegrationTests {
+public class AutoTransactionalEventListenerIntegrationTests extends AbstractTransactionalEventListenerIntegrationTests {
 
 	@Autowired
 	private TestTransactionEventListener transactionEventListener;
 
-	@Override
-	protected void assertTransactionEventListenerOnSuccess() {
+	@Autowired
+	@Qualifier("MockTransactionWriter")
+	private TransactionWriter mockTransactionWriter;
 
-		assertThat(this.transactionEventListener.getAndClearTransactionDetails()).containsExactly("1");
+	@Override
+	protected void assertTransactionEventListenerOnSuccess() throws Exception {
+
+		assertThat(this.transactionEventListener.isBeforeCommitInvoked()).isFalse();
 
 		assertThat(this.transactionEventListener.getAndClearTransactionPhases())
-			.containsExactly(TransactionPhase.BEFORE_COMMIT, TransactionPhase.AFTER_COMMIT);
+			.containsExactly(TransactionPhase.AFTER_COMMIT);
+
+		verify(this.mockTransactionWriter, times(1)).beforeCommit(any(TransactionEvent.class));
 	}
 
 	@Override
 	protected void assertTransactionEventListenerOnFailure() {
 
-		assertThat(this.transactionEventListener.getAndClearTransactionDetails()).containsExactly("2");
+		assertThat(this.transactionEventListener.isBeforeCommitInvoked()).isFalse();
 
 		assertThat(this.transactionEventListener.getAndClearTransactionPhases())
 			.containsExactly(TransactionPhase.AFTER_ROLLBACK);
 	}
 
-	@ClientCacheApplication(logLevel = GEMFIRE_LOG_LEVEL)
+	@PeerCacheApplication(logLevel = GEMFIRE_LOG_LEVEL)
 	@EnableEntityDefinedRegions(
 		basePackageClasses = Customer.class,
-		clientRegionShortcut = ClientRegionShortcut.LOCAL
+		serverRegionShortcut = RegionShortcut.LOCAL
 	)
-	@EnableGemfireCacheTransactions
+	@EnableGemfireCacheTransactions(enableAutoTransactionEventPublishing = true)
 	@Import(CustomerRepositoryConfiguration.class)
 	static class TestConfiguration {
 
 		@Bean
-		CustomerService customerService(ApplicationEventPublisher eventPublisher,
-				CustomerRepository customerRepository) {
-
-			return new TransactionEventPublishingCustomerService(eventPublisher, customerRepository);
+		CustomerService customerService(CustomerRepository customerRepository) {
+			return new CustomerService(customerRepository);
 		}
 
 		@Bean
 		TestTransactionEventListener testTransactionEventListener() {
 			return new TestTransactionEventListener();
 		}
+
+		@Bean("MockTransactionWriter")
+		TransactionWriter mockTransactionWriter() {
+			return mock(TransactionWriter.class);
+		}
+
+		@Bean
+		PeerCacheConfigurer transactionWriterRegisteringCacheConfigurer(
+				@Qualifier("MockTransactionWriter") TransactionWriter transactionWriter) {
+
+			return (beanName, bean) -> bean.setTransactionWriter(transactionWriter);
+		}
 	}
 
 	@Component
-	public static class TestTransactionEventListener {
+	public static class TestTransactionEventListener implements EventListener {
 
-		private final List<TransactionPhase> transactionPhases = new ArrayList<>();
+		private AtomicBoolean beforeCommitInvoked = new AtomicBoolean(false);
 
-		private final Set<String> transactionDetails = new HashSet<>();
-
-		public Set<String> getAndClearTransactionDetails() {
-
-			Set<String> copy = new HashSet<>(this.transactionDetails);
-
-			this.transactionDetails.clear();
-
-			return copy;
-		}
+		private List<TransactionPhase> transactionPhases = new ArrayList<>();
 
 		public List<TransactionPhase> getAndClearTransactionPhases() {
 
@@ -136,35 +146,32 @@ public class TransactionalEventListenerIntegrationTests extends AbstractTransact
 			return copy;
 		}
 
-		private void appendTransactionPhase(TransactionPhase transactionPhase) {
-			Optional.ofNullable(transactionPhase).ifPresent(this.transactionPhases::add);
+		private boolean isBeforeCommitInvoked() {
+			return this.beforeCommitInvoked.getAndSet(false);
 		}
 
-		private void extractTransactionDetails(ApplicationEvent event) {
+		private void handleTransactionEvent(TransactionApplicationEvent event, TransactionPhase transactionPhase) {
 
 			Optional.ofNullable(event)
-				.filter(TransactionApplicationEvent.class::isInstance)
-				.map(TransactionApplicationEvent.class::cast)
-				.flatMap(TransactionApplicationEvent::getDetails)
-				.ifPresent(this.transactionDetails::add);
+				.map(TransactionApplicationEvent::getSource)
+				.filter(TransactionEvent.class::isInstance)
+				.ifPresent(transactionEvent -> this.transactionPhases.add(transactionPhase));
 		}
 
 		@TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
-		public void handleTransactionBeforeCommit(ApplicationEvent event) {
-			appendTransactionPhase(TransactionPhase.BEFORE_COMMIT);
-			extractTransactionDetails(event);
+		public void handleTransactionBeforeCommit(TransactionApplicationEvent event) {
+			this.beforeCommitInvoked.set(true);
+			handleTransactionEvent(event, TransactionPhase.BEFORE_COMMIT);
 		}
 
 		@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-		public void handleTransactionAfterCommit(ApplicationEvent event) {
-			appendTransactionPhase(TransactionPhase.AFTER_COMMIT);
-			extractTransactionDetails(event);
+		public void handleTransactionAfterCommit(TransactionApplicationEvent event) {
+			handleTransactionEvent(event, TransactionPhase.AFTER_COMMIT);
 		}
 
 		@TransactionalEventListener(phase = TransactionPhase.AFTER_ROLLBACK)
-		public void handleTransactionAfterRollback(ApplicationEvent event) {
-			appendTransactionPhase(TransactionPhase.AFTER_ROLLBACK);
-			extractTransactionDetails(event);
+		public void handleTransactionAfterRollback(TransactionApplicationEvent event) {
+			handleTransactionEvent(event, TransactionPhase.AFTER_ROLLBACK);
 		}
 	}
 }

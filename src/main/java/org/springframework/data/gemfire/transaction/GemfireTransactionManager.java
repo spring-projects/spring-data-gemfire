@@ -187,7 +187,8 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 		}
 		catch (Exception cause) {
 			throw new NoTransactionException(
-				"No transaction is associated with the current thread; are multiple transaction managers present?", cause);
+				"No transaction is associated with the current thread. Are multiple transaction managers present?",
+					cause);
 		}
 	}
 
@@ -274,7 +275,8 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 
 	/**
 	 * Sets a reference to the {@link GemFireCache} for which this transaction manager
-	 * will manage local cache transactions.
+	 * manages local cache transactions.
+	 *
 	 * @param cache reference to the {@link GemFireCache}.
 	 * @see org.apache.geode.cache.GemFireCache
 	 */
@@ -284,7 +286,7 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 
 	/**
 	 * Returns a reference to the {@link GemFireCache} for which this transaction manager
-	 * will manage local cache transactions.
+	 * manages local cache transactions.
 	 *
 	 * @return a reference to the {@link GemFireCache}.
 	 * @see org.apache.geode.cache.GemFireCache
@@ -293,6 +295,14 @@ public class GemfireTransactionManager extends AbstractPlatformTransactionManage
 		return this.cache;
 	}
 
+	/**
+	 * Returns a reference to the {@link CacheTransactionManager} used by Apache Geode to manage local,
+	 * cache transactions.
+	 *
+	 * @return a reference to the {@link CacheTransactionManager}.
+	 * @see org.apache.geode.cache.CacheTransactionManager
+	 * @see #getCache()
+	 */
 	protected CacheTransactionManager getCacheTransactionManager() {
 		return getCache().getCacheTransactionManager();
 	}
