@@ -22,6 +22,8 @@ import org.apache.geode.cache.TransactionEvent;
 import org.apache.geode.cache.TransactionWriter;
 import org.apache.geode.cache.TransactionWriterException;
 
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -45,8 +47,8 @@ public class ComposableTransactionWriter implements TransactionWriter {
 	 * the composition of both {@link TransactionWriter} one and {@link TransactionWriter} two.
 	 * @see org.apache.geode.cache.TransactionWriter
 	 */
-	public static TransactionWriter compose(TransactionWriter transactionWriterOne,
-			TransactionWriter transactionWriterTwo) {
+	public static @Nullable TransactionWriter compose(@Nullable TransactionWriter transactionWriterOne,
+			@Nullable TransactionWriter transactionWriterTwo) {
 
 		return transactionWriterOne == null ? transactionWriterTwo
 			: transactionWriterTwo == null ? transactionWriterOne
@@ -56,7 +58,8 @@ public class ComposableTransactionWriter implements TransactionWriter {
 	private final TransactionWriter transactionWriterOne;
 	private final TransactionWriter transactionWriterTwo;
 
-	private ComposableTransactionWriter(TransactionWriter transactionWriterOne, TransactionWriter transactionWriterTwo) {
+	private ComposableTransactionWriter(@NonNull TransactionWriter transactionWriterOne,
+			@NonNull TransactionWriter transactionWriterTwo) {
 
 		Assert.notNull(transactionWriterOne, "TransactionWriter one must not be null");
 		Assert.notNull(transactionWriterTwo, "TransactionWriter two must not be null");
@@ -66,13 +69,33 @@ public class ComposableTransactionWriter implements TransactionWriter {
 	}
 
 	/**
+	 * Returns a reference to the first {@link TransactionWriter} in the composition.
+	 *
+	 * @return a reference to the first {@link TransactionWriter} in the composition.
+	 * @see org.apache.geode.cache.TransactionWriter
+	 */
+	protected TransactionWriter getTransactionWriterOne() {
+		return this.transactionWriterOne;
+	}
+
+	/**
+	 * Returns a reference to the second {@link TransactionWriter} in the composition.
+	 *
+	 * @return a reference to the second {@link TransactionWriter} in the composition.
+	 * @see org.apache.geode.cache.TransactionWriter
+	 */
+	protected TransactionWriter getTransactionWriterTwo() {
+		return this.transactionWriterTwo;
+	}
+
+	/**
 	 * @inheritDoc
 	 */
 	@Override
 	public void beforeCommit(TransactionEvent event) throws TransactionWriterException {
 
-		this.transactionWriterOne.beforeCommit(event);
-		this.transactionWriterTwo.beforeCommit(event);
+		getTransactionWriterOne().beforeCommit(event);
+		getTransactionWriterTwo().beforeCommit(event);
 	}
 
 	/**
@@ -81,8 +104,8 @@ public class ComposableTransactionWriter implements TransactionWriter {
 	@Override
 	public void close() {
 
-		this.transactionWriterOne.close();
-		this.transactionWriterTwo.close();
+		getTransactionWriterOne().close();
+		getTransactionWriterTwo().close();
 	}
 
 	/**
@@ -91,8 +114,8 @@ public class ComposableTransactionWriter implements TransactionWriter {
 	@Override
 	public void init(Properties properties) {
 
-		this.transactionWriterOne.init(properties);
-		this.transactionWriterTwo.init(properties);
+		getTransactionWriterOne().init(properties);
+		getTransactionWriterTwo().init(properties);
 	}
 
 	/**
@@ -101,7 +124,7 @@ public class ComposableTransactionWriter implements TransactionWriter {
 	@Override
 	public void initialize(Cache cache, Properties properties) {
 
-		this.transactionWriterOne.initialize(cache, properties);
-		this.transactionWriterTwo.initialize(cache, properties);
+		getTransactionWriterOne().initialize(cache, properties);
+		getTransactionWriterTwo().initialize(cache, properties);
 	}
 }

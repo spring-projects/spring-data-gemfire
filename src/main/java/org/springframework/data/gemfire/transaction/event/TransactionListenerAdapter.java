@@ -21,6 +21,7 @@ import org.apache.geode.cache.TransactionWriter;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
 /**
@@ -58,6 +59,16 @@ public class TransactionListenerAdapter implements TransactionListener, Transact
 	}
 
 	/**
+	 * Returns a reference to the configured {@link ApplicationEventPublisher}.
+	 *
+	 * @return a reference to the configured {@link ApplicationEventPublisher}.
+	 * @see org.springframework.context.ApplicationEventPublisher
+	 */
+	protected @NonNull ApplicationEventPublisher getApplicationEventPublisher() {
+		return this.applicationEventPublisher;
+	}
+
+	/**
 	 * @inheritDoc
 	 */
 	@Override
@@ -68,7 +79,7 @@ public class TransactionListenerAdapter implements TransactionListener, Transact
 		// all application @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT) annotated transaction
 		// event handler methods are invoked.
 
-		//this.applicationEventPublisher.publishEvent(TransactionApplicationEvent.of(event));
+		//getApplicationEventPublisher().publishEvent(TransactionApplicationEvent.of(event));
 	}
 
 	/**
@@ -76,7 +87,7 @@ public class TransactionListenerAdapter implements TransactionListener, Transact
 	 */
 	@Override
 	public void afterCommit(TransactionEvent event) {
-		this.applicationEventPublisher.publishEvent(TransactionApplicationEvent.of(event));
+		getApplicationEventPublisher().publishEvent(TransactionApplicationEvent.of(event));
 	}
 
 	/**
@@ -90,6 +101,6 @@ public class TransactionListenerAdapter implements TransactionListener, Transact
 	 */
 	@Override
 	public void afterRollback(TransactionEvent event) {
-		this.applicationEventPublisher.publishEvent(TransactionApplicationEvent.of(event));
+		getApplicationEventPublisher().publishEvent(TransactionApplicationEvent.of(event));
 	}
 }
