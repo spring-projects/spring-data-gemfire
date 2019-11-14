@@ -793,6 +793,9 @@ or `@CacheServerApplication` annotated class, as follows:
 public class ServerApplication { .. }
 ----
 
+WARNING: You must explicitly declare the `org.apache.geode:geode-redis` module on your Spring [Boot] application
+classpath.
+
 More details on {data-store-name}'s Redis adapter can be found
 {x-data-store-docs}/tools_modules/redis_adapter.html[here].
 
