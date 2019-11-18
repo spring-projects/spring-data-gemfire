@@ -3,6 +3,14 @@ SPRING DATA GEMFIRE CHANGELOG
 https://www.springsource.org/spring-gemfire
 ===========================================
 
+Changes in version 2.2.2.RELEASE (2019-11-18)
+---------------------------------------------
+* SGF-896 - Cannot enable the BeanFactoryLocator for a ClientCache instance using SDG property.
+* SGF-895 - Include geode redis module due to upgrading geode to 1.9.0.
+* SGF-894 - Confirm that @TransactionalEventListener will work for @Transactional services.
+* SGF-892 - Release 2.2.2 (Moore SR2).
+
+
 Changes in version 2.1.13.RELEASE (2019-11-18)
 ----------------------------------------------
 * SGF-896 - Cannot enable the BeanFactoryLocator for a ClientCache instance using SDG property.
