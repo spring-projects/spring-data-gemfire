@@ -3,6 +3,11 @@ SPRING DATA GEMFIRE CHANGELOG
 https://www.springsource.org/spring-gemfire
 ===========================================
 
+Changes in version 2.1.14.RELEASE (2019-12-04)
+----------------------------------------------
+* SGF-898 - Release 2.1.14 (Lovelace SR14).
+
+
 Changes in version 2.2.2.RELEASE (2019-11-18)
 ---------------------------------------------
 * SGF-896 - Cannot enable the BeanFactoryLocator for a ClientCache instance using SDG property.
@@ -1572,3 +1577,4 @@ General
 * GemFire Template for exception translation
 * Declarative transaction management
 * Auto-generation of non-reflection based GemFire instantiators
+
