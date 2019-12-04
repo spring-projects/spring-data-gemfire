@@ -3,6 +3,11 @@ SPRING DATA GEMFIRE CHANGELOG
 https://www.springsource.org/spring-gemfire
 ===========================================
 
+Changes in version 2.2.3.RELEASE (2019-12-04)
+---------------------------------------------
+* SGF-899 - Release 2.2.3 (Moore SR3).
+
+
 Changes in version 2.1.14.RELEASE (2019-12-04)
 ----------------------------------------------
 * SGF-898 - Release 2.1.14 (Lovelace SR14).
@@ -1577,4 +1582,5 @@ General
 * GemFire Template for exception translation
 * Declarative transaction management
 * Auto-generation of non-reflection based GemFire instantiators
+
 
