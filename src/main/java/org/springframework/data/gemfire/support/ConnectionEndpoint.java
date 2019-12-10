@@ -82,7 +82,7 @@ public class ConnectionEndpoint implements Cloneable, Comparable<ConnectionEndpo
 		String host = StringUtils.trimAllWhitespace(hostPort);
 
 		int port = defaultPort;
-		int portIndex = host.indexOf("[");
+		int portIndex = indexOfPort(host);
 
 		if (portIndex > -1) {
 			port = parsePort(parseDigits(host.substring(portIndex)), defaultPort);
@@ -90,6 +90,16 @@ public class ConnectionEndpoint implements Cloneable, Comparable<ConnectionEndpo
 		}
 
 		return new ConnectionEndpoint(host, port);
+	}
+
+	static int indexOfPort(String host) {
+		for (int i = 0; i < host.length(); ++i) {
+			char c = host.charAt(i);
+			if (':' == c || '[' == c) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	static String parseDigits(String value) {

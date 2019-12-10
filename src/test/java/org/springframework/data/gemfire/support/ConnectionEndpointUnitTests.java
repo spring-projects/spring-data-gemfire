@@ -61,6 +61,22 @@ public class ConnectionEndpointUnitTests {
 	}
 
 	@Test
+	public void parseUsingDefaultHostAndDefaultPortWithColon() {
+
+		ConnectionEndpoint connectionEndpoint = ConnectionEndpoint.parse(":");
+
+		assertThat(connectionEndpoint).isNotNull();
+		assertThat(connectionEndpoint.getHost()).isEqualTo(ConnectionEndpoint.DEFAULT_HOST);
+		assertThat(connectionEndpoint.getPort()).isEqualTo(ConnectionEndpoint.DEFAULT_PORT);
+
+		connectionEndpoint = ConnectionEndpoint.parse(":", 1234);
+
+		assertThat(connectionEndpoint).isNotNull();
+		assertThat(connectionEndpoint.getHost()).isEqualTo(ConnectionEndpoint.DEFAULT_HOST);
+		assertThat(connectionEndpoint.getPort()).isEqualTo(1234);
+	}
+
+	@Test
 	public void parseWithHostPort() {
 
 		ConnectionEndpoint connectionEndpoint = ConnectionEndpoint.parse("skullbox[12345]", 80);
@@ -83,9 +99,41 @@ public class ConnectionEndpointUnitTests {
 	}
 
 	@Test
+	public void parseWithHostPortWithColon() {
+
+		ConnectionEndpoint connectionEndpoint = ConnectionEndpoint.parse("skullbox:12345", 80);
+
+		assertThat(connectionEndpoint).isNotNull();
+		assertThat(connectionEndpoint.getHost()).isEqualTo("skullbox");
+		assertThat(connectionEndpoint.getPort()).isEqualTo(12345);
+
+		connectionEndpoint = ConnectionEndpoint.parse("localhost:0", 8080);
+
+		assertThat(connectionEndpoint).isNotNull();
+		assertThat(connectionEndpoint.getHost()).isEqualTo("localhost");
+		assertThat(connectionEndpoint.getPort()).isEqualTo(0);
+
+		connectionEndpoint = ConnectionEndpoint.parse("jambox:1O1O1", 443);
+
+		assertThat(connectionEndpoint).isNotNull();
+		assertThat(connectionEndpoint.getHost()).isEqualTo("jambox");
+		assertThat(connectionEndpoint.getPort()).isEqualTo(111);
+	}
+
+	@Test
 	public void parseWithHostPortHavingSpacing() {
 
 		ConnectionEndpoint connectionEndpoint = ConnectionEndpoint.parse(" saturn  [1  23 4 ]");
+
+		assertThat(connectionEndpoint).isNotNull();
+		assertThat(connectionEndpoint.getHost()).isEqualTo("saturn");
+		assertThat(connectionEndpoint.getPort()).isEqualTo(1234);
+	}
+
+	@Test
+	public void parseWithHostPortHavingSpacingWithColon() {
+
+		ConnectionEndpoint connectionEndpoint = ConnectionEndpoint.parse(" saturn  :1  23 4 ");
 
 		assertThat(connectionEndpoint).isNotNull();
 		assertThat(connectionEndpoint.getHost()).isEqualTo("saturn");
@@ -140,9 +188,66 @@ public class ConnectionEndpointUnitTests {
 	}
 
 	@Test
+	public void parseWithHostUsingDefaultPortWithColon() {
+
+		ConnectionEndpoint connectionEndpoint =
+			ConnectionEndpoint.parse("mercury:oneTwoThreeFourFive", 80);
+
+		assertThat(connectionEndpoint).isNotNull();
+		assertThat(connectionEndpoint.getHost()).isEqualTo("mercury");
+		assertThat(connectionEndpoint.getPort()).isEqualTo(80);
+
+		connectionEndpoint = ConnectionEndpoint.parse("venus:OxCAFEBABE", 443);
+
+		assertThat(connectionEndpoint).isNotNull();
+		assertThat(connectionEndpoint.getHost()).isEqualTo("venus");
+		assertThat(connectionEndpoint.getPort()).isEqualTo(443);
+
+		connectionEndpoint = ConnectionEndpoint.parse("jupiter:#(^$)*!", 21);
+
+		assertThat(connectionEndpoint).isNotNull();
+		assertThat(connectionEndpoint.getHost()).isEqualTo("jupiter");
+		assertThat(connectionEndpoint.getPort()).isEqualTo(21);
+
+		connectionEndpoint = ConnectionEndpoint.parse("saturn:", 22);
+
+		assertThat(connectionEndpoint).isNotNull();
+		assertThat(connectionEndpoint.getHost()).isEqualTo("saturn");
+		assertThat(connectionEndpoint.getPort()).isEqualTo(22);
+
+		connectionEndpoint = ConnectionEndpoint.parse("uranis:", 23);
+
+		assertThat(connectionEndpoint).isNotNull();
+		assertThat(connectionEndpoint.getHost()).isEqualTo("uranis");
+		assertThat(connectionEndpoint.getPort()).isEqualTo(23);
+
+		connectionEndpoint = ConnectionEndpoint.parse("neptune", 25);
+
+		assertThat(connectionEndpoint).isNotNull();
+		assertThat(connectionEndpoint.getHost()).isEqualTo("neptune");
+		assertThat(connectionEndpoint.getPort()).isEqualTo(25);
+
+		connectionEndpoint = ConnectionEndpoint.parse("pluto");
+
+		assertThat(connectionEndpoint).isNotNull();
+		assertThat(connectionEndpoint.getHost()).isEqualTo("pluto");
+		assertThat(connectionEndpoint.getPort()).isEqualTo(ConnectionEndpoint.DEFAULT_PORT);
+	}
+
+	@Test
 	public void parseWithPortUsingDefaultHost() {
 
 		ConnectionEndpoint connectionEndpoint = ConnectionEndpoint.parse("[12345]", 80);
+
+		assertThat(connectionEndpoint).isNotNull();
+		assertThat(connectionEndpoint.getHost()).isEqualTo(ConnectionEndpoint.DEFAULT_HOST);
+		assertThat(connectionEndpoint.getPort()).isEqualTo(12345);
+	}
+
+	@Test
+	public void parseWithPortUsingDefaultHostWithColon() {
+
+		ConnectionEndpoint connectionEndpoint = ConnectionEndpoint.parse(":12345", 80);
 
 		assertThat(connectionEndpoint).isNotNull();
 		assertThat(connectionEndpoint.getHost()).isEqualTo(ConnectionEndpoint.DEFAULT_HOST);
@@ -207,6 +312,24 @@ public class ConnectionEndpointUnitTests {
 
 			throw expected;
 		}
+	}
+
+	@Test
+	public void indexOfPort() {
+		assertThat(ConnectionEndpoint.indexOfPort("")).isEqualTo(-1);
+		assertThat(ConnectionEndpoint.indexOfPort("a")).isEqualTo(-1);
+		assertThat(ConnectionEndpoint.indexOfPort(":")).isEqualTo(0);
+		assertThat(ConnectionEndpoint.indexOfPort("a:")).isEqualTo(1);
+		assertThat(ConnectionEndpoint.indexOfPort(":a")).isEqualTo(0);
+		assertThat(ConnectionEndpoint.indexOfPort("a:b")).isEqualTo(1);
+		assertThat(ConnectionEndpoint.indexOfPort("ab:")).isEqualTo(2);
+		assertThat(ConnectionEndpoint.indexOfPort("ab:c")).isEqualTo(2);
+	}
+
+	@SuppressWarnings("all")
+	@Test(expected = NullPointerException.class)
+	public void indexOfPortWithNullThrowsException() {
+		ConnectionEndpoint.indexOfPort(null);
 	}
 
 	@Test
