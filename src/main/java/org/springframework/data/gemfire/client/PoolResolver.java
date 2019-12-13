@@ -32,7 +32,7 @@ import org.springframework.util.StringUtils;
  * as an SPI for different strategies when resolving a {@link Pool}.
  *
  * @author John Blum
- * @see java.lang.FunctionalInterface
+ * @see FunctionalInterface
  * @see org.apache.geode.cache.Region
  * @see org.apache.geode.cache.client.Pool
  * @since 2.3.0

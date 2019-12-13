@@ -22,7 +22,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
@@ -42,7 +42,7 @@ import org.apache.geode.cache.client.Pool;
  * @see org.junit.Test
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
- * @see org.mockito.junit.MockitoJUnitRunner
+ * @see MockitoJUnitRunner
  * @see org.apache.geode.cache.Region
  * @see org.apache.geode.cache.client.Pool
  * @since 2.3.0
@@ -73,7 +73,7 @@ public class PoolResolverUnitTests {
 
 		assertThat(this.testPoolResolver.resolve(mockRegion)).isEqualTo(mockPool);
 
-		verifyNoInteractions(mockPool);
+		verifyZeroInteractions(mockPool);
 		verify(mockRegion, times(1)).getAttributes();
 		verify(mockRegionAttributes, times(1)).getPoolName();
 		verify(this.testPoolResolver, times(1)).resolve(eq("TestPool"));

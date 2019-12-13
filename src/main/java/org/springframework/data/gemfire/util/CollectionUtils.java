@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.util;
 
 import static java.util.stream.StreamSupport.stream;
@@ -39,7 +38,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
- * {@link CollectionUtils} is a utility class for working with the Java Collections Framework and classes.
+ * {@link CollectionUtils} is an abstract utility class for working with the Java Collections Framework and classes.
  *
  * @author John Blum
  * @see java.util.Collection
@@ -322,7 +321,7 @@ public abstract class CollectionUtils extends org.springframework.util.Collectio
 	}
 
 	/**
-	 * Sors the elements of the given {@link List} by their natural, {@link Comparable} ordering.
+	 * Sorts the elements of the given {@link List} by their natural, {@link Comparable} ordering.
 	 *
 	 * @param <T> {@link Comparable} class type of the collection elements.
 	 * @param list {@link List} of elements to sort.

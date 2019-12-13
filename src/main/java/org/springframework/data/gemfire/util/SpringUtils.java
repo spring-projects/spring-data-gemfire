@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2020 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,23 @@ import org.springframework.util.StringUtils;
  */
 @SuppressWarnings("unused")
 public abstract class SpringUtils {
+
+	/**
+	 * Determines whether a given bean registered in the {@link BeanFactory Spring container} matches by
+	 * both {@link String name} and {@link Class type}.
+	 *
+	 * @param beanFactory {@link BeanFactory Spring container} in which to resolve the bean.
+	 * @param beanName {@link String name} of the bean.
+	 * @param beanType {@link Class type} of the bean.
+	 * @return a boolean value indicating whether the {@link BeanFactory Spring container} contains a bean
+	 * matching by both {@link String name} as well as {@link Class type}.
+	 * @see BeanFactory
+	 * @see Class
+	 * @see String
+	 */
+	public static boolean isMatchingBean(BeanFactory beanFactory, String beanName, Class<?> beanType) {
+		return beanFactory.containsBean(beanName) && beanFactory.isTypeMatch(beanName, beanType);
+	}
 
 	public static BeanDefinition addDependsOn(BeanDefinition beanDefinition, String... beanNames) {
 

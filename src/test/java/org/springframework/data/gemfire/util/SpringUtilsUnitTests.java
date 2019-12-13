@@ -17,6 +17,7 @@
 package org.springframework.data.gemfire.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -41,8 +42,11 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import org.apache.geode.cache.client.Pool;
+
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -64,6 +68,47 @@ public class SpringUtilsUnitTests {
 
 	@Mock
 	private BeanDefinition mockBeanDefinition;
+
+	@Test
+	public void isMatchingBeanReturnsTrue() {
+
+		BeanFactory mockBeanFactory = mock(BeanFactory.class);
+
+		when(mockBeanFactory.containsBean(anyString())).thenReturn(true);
+		when(mockBeanFactory.isTypeMatch(anyString(), any(Class.class))).thenReturn(true);
+
+		assertThat(SpringUtils.isMatchingBean(mockBeanFactory, "TestPool", Pool.class)).isTrue();
+
+		verify(mockBeanFactory, times(1)).containsBean(eq("TestPool"));
+		verify(mockBeanFactory, times(1)).isTypeMatch(eq("TestPool"), eq(Pool.class));
+	}
+
+	@Test
+	public void isMatchingBeanReturnsFalseWhenBeanFactoryDoesNotContainBeanByName() {
+
+		BeanFactory mockBeanFactory = mock(BeanFactory.class);
+
+		when(mockBeanFactory.containsBean(anyString())).thenReturn(false);
+
+		assertThat(SpringUtils.isMatchingBean(mockBeanFactory, "TestPool", Pool.class)).isFalse();
+
+		verify(mockBeanFactory, times(1)).containsBean(eq("TestPool"));
+		verify(mockBeanFactory, never()).isTypeMatch(anyString(), any(Class.class));
+	}
+
+	@Test
+	public void isMatchingBeanReturnsFalseWhenBeanIsNotATypeMatch() {
+
+		BeanFactory mockBeanFactory = mock(BeanFactory.class);
+
+		when(mockBeanFactory.containsBean(anyString())).thenReturn(true);
+		when(mockBeanFactory.isTypeMatch(anyString(), any(Class.class))).thenReturn(false);
+
+		assertThat(SpringUtils.isMatchingBean(mockBeanFactory, "TestPool", Pool.class)).isFalse();
+
+		verify(mockBeanFactory, times(1)).containsBean(eq("TestPool"));
+		verify(mockBeanFactory, times(1)).isTypeMatch(eq("TestPool"), eq(Pool.class));
+	}
 
 	@Test
 	public void addDependsOnToExistingDependencies() {
