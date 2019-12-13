@@ -13,39 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.client;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.eq;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 
 import java.net.InetSocketAddress;
 import java.util.Collections;
-import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.junit.Test;
 
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.query.QueryService;
-
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.data.gemfire.TestUtils;
@@ -54,21 +46,23 @@ import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.data.util.ReflectionUtils;
 
 /**
- * Unit tests for {@link PoolFactoryBean}.
+ * Unit Tests for {@link PoolFactoryBean}.
  *
  * @author John Blum
- * @see org.junit.Rule
+ * @see java.net.InetSocketAddress
  * @see org.junit.Test
- * @see org.junit.rules.ExpectedException
+ * @see org.mockito.Mock
  * @see org.mockito.Mockito
+ * @see org.apache.geode.cache.client.ClientCache
  * @see org.apache.geode.cache.client.Pool
+ * @see org.apache.geode.cache.client.PoolFactory
+ * @see org.springframework.beans.factory.BeanFactory
  * @see org.springframework.data.gemfire.client.PoolFactoryBean
+ * @see org.springframework.data.gemfire.client.PoolResolver
+ * @see org.springframework.data.gemfire.support.ConnectionEndpoint
  * @since 1.7.0
  */
-public class PoolFactoryBeanTest {
-
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
+public class PoolFactoryBeanUnitTests {
 
 	private ConnectionEndpoint newConnectionEndpoint(String host, int port) {
 		return new ConnectionEndpoint(host, port);
@@ -80,7 +74,7 @@ public class PoolFactoryBeanTest {
 
 	@Test
 	@SuppressWarnings("deprecation")
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSetCreatesPool() throws Exception {
 
 		BeanFactory mockBeanFactory = mock(BeanFactory.class);
 
@@ -88,20 +82,15 @@ public class PoolFactoryBeanTest {
 
 		PoolFactory mockPoolFactory = mock(PoolFactory.class);
 
+		PoolResolver mockPoolResolver = mock(PoolResolver.class);
+
 		when(mockPoolFactory.create(eq("GemFirePool"))).thenReturn(mockPool);
+		when(mockPoolResolver.resolve(anyString())).thenReturn(null);
 
-		PoolFactoryBean poolFactoryBean = new PoolFactoryBean() {
+		PoolFactoryBean poolFactoryBean = spy(new PoolFactoryBean());
 
-			@Override
-			protected PoolFactory createPoolFactory() {
-				return mockPoolFactory;
-			}
-
-			@Override
-			boolean isClientCachePresent() {
-				return false;
-			}
-		};
+		doReturn(mockPoolFactory).when(poolFactoryBean).createPoolFactory();
+		doReturn(false).when(poolFactoryBean).isClientCachePresent();
 
 		poolFactoryBean.setBeanFactory(mockBeanFactory);
 		poolFactoryBean.setBeanName("GemFirePool");
@@ -115,6 +104,7 @@ public class PoolFactoryBeanTest {
 		poolFactoryBean.setMinConnections(5);
 		poolFactoryBean.setMultiUserAuthentication(false);
 		poolFactoryBean.setPingInterval(5000L);
+		poolFactoryBean.setPoolResolver(mockPoolResolver);
 		poolFactoryBean.setPrSingleHopEnabled(true);
 		poolFactoryBean.setReadTimeout(30000);
 		poolFactoryBean.setRetryAttempts(10);
@@ -130,8 +120,9 @@ public class PoolFactoryBeanTest {
 		poolFactoryBean.setThreadLocalConnections(false);
 		poolFactoryBean.afterPropertiesSet();
 
-		assertThat(poolFactoryBean.getBeanFactory(), is(equalTo(mockBeanFactory)));
-		assertThat(poolFactoryBean.getObject(), is(sameInstance(mockPool)));
+		assertThat(poolFactoryBean.getBeanFactory()).isEqualTo(mockBeanFactory);
+		assertThat(poolFactoryBean.getObject()).isSameAs(mockPool);
+		assertThat(poolFactoryBean.getPoolResolver()).isSameAs(mockPoolResolver);
 
 		verify(mockBeanFactory, times(1)).getBean(eq(ClientCache.class));
 		verify(mockPoolFactory, times(1)).setFreeConnectionTimeout(eq(60000));
@@ -156,10 +147,11 @@ public class PoolFactoryBeanTest {
 		verify(mockPoolFactory, times(1)).addLocator(eq("localhost"), eq(54321));
 		verify(mockPoolFactory, times(1)).addServer(eq("localhost"), eq(12345));
 		verify(mockPoolFactory, times(1)).create(eq("GemFirePool"));
+		verify(mockPoolResolver, times(2)).resolve(eq("GemFirePool"));
 	}
 
-	@Test
 	@SuppressWarnings("all")
+	@Test(expected = IllegalArgumentException.class)
 	public void afterPropertiesSetWithUnspecifiedName() throws Exception {
 
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
@@ -167,17 +159,22 @@ public class PoolFactoryBeanTest {
 		poolFactoryBean.setBeanName(null);
 		poolFactoryBean.setName(null);
 
-		assertThat(poolFactoryBean.getName(), is(nullValue()));
+		assertThat(poolFactoryBean.getBeanName()).isNull();
+		assertThat(poolFactoryBean.getName()).isNull();
 
-		exception.expect(IllegalArgumentException.class);
-		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("Pool name is required");
+		try {
+			poolFactoryBean.afterPropertiesSet();
+		}
+		catch (IllegalArgumentException expected) {
 
-		poolFactoryBean.afterPropertiesSet();
+			assertThat(expected).hasMessage("Pool name is required");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
 	}
 
 	@Test
-	@SuppressWarnings("deprecation")
 	public void afterPropertiesSetUsesName() throws Exception {
 
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
@@ -185,33 +182,35 @@ public class PoolFactoryBeanTest {
 		poolFactoryBean.setBeanName("gemfirePool");
 		poolFactoryBean.setName("TestPool");
 
-		assertThat(poolFactoryBean.getLocators().isEmpty(), is(true));
-		assertThat(poolFactoryBean.getServers().isEmpty(), is(true));
+		assertThat(poolFactoryBean.getBeanName()).isEqualTo("gemfirePool");
+		assertThat(poolFactoryBean.getName()).isEqualTo("TestPool");
+		assertThat(poolFactoryBean.getLocators()).isEmpty();
+		assertThat(poolFactoryBean.getServers()).isEmpty();
 
 		poolFactoryBean.afterPropertiesSet();
 
-		assertThat(poolFactoryBean.getName(), is(equalTo("TestPool")));
+		assertThat(poolFactoryBean.getName()).isEqualTo("TestPool");
 	}
 
 	@Test
-	@SuppressWarnings("deprecation")
 	public void afterPropertiesSetDefaultsToBeanName() throws Exception {
 
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
 
 		poolFactoryBean.setBeanName("swimPool");
 
-		assertThat(poolFactoryBean.getName(), is(nullValue()));
-		assertThat(poolFactoryBean.getLocators().isEmpty(), is(true));
-		assertThat(poolFactoryBean.getServers().isEmpty(), is(true));
+		assertThat(poolFactoryBean.getBeanName()).isEqualTo("swimPool");
+		assertThat(poolFactoryBean.getName()).isNull();
+		assertThat(poolFactoryBean.getLocators()).isEmpty();
+		assertThat(poolFactoryBean.getServers()).isEmpty();
 
 		poolFactoryBean.afterPropertiesSet();
 
-		assertThat(poolFactoryBean.getName(), is(equalTo("swimPool")));
+		assertThat(poolFactoryBean.getName()).isEqualTo("swimPool");
 	}
 
 	@Test
-	public void destroy() throws Exception {
+	public void destroyDestroysPool() throws Exception {
 
 		Pool mockPool = mock(Pool.class);
 
@@ -222,14 +221,15 @@ public class PoolFactoryBeanTest {
 		poolFactoryBean.setPool(mockPool);
 		poolFactoryBean.destroy();
 
-		assertThat(TestUtils.readField("pool", poolFactoryBean), is(nullValue()));
+		assertThat(TestUtils.<Pool>readField("pool", poolFactoryBean)).isNull();
 
+		verify(mockPool, times(1)).isDestroyed();
 		verify(mockPool, times(1)).releaseThreadLocalConnection();
 		verify(mockPool, times(1)).destroy(eq(false));
 	}
 
 	@Test
-	public void destroyWithNonSpringBasedPool() throws Exception {
+	public void destroyNonSpringManagedPool() throws Exception {
 
 		Pool mockPool = mock(Pool.class);
 
@@ -245,7 +245,7 @@ public class PoolFactoryBeanTest {
 	}
 
 	@Test
-	public void destroyWithUninitializedPool() throws Exception {
+	public void destroyUninitializedPool() throws Exception {
 
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
 
@@ -255,12 +255,12 @@ public class PoolFactoryBeanTest {
 
 	@Test
 	public void getObjectType() {
-		assertEquals(Pool.class, new PoolFactoryBean().getObjectType());
+		assertThat(new PoolFactoryBean().getObjectType()).isEqualTo(Pool.class);
 	}
 
 	@Test
 	public void isSingleton() {
-		assertTrue(new PoolFactoryBean().isSingleton());
+		assertThat(new PoolFactoryBean().isSingleton()).isTrue();
 	}
 
 	@Test
@@ -268,35 +268,35 @@ public class PoolFactoryBeanTest {
 
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
 
-		assertThat(poolFactoryBean.getLocators(), is(notNullValue()));
-		assertThat(poolFactoryBean.getLocators().isEmpty(), is(true));
+		assertThat(poolFactoryBean.getLocators()).isNotNull();
+		assertThat(poolFactoryBean.getLocators().isEmpty()).isTrue();
 
 		ConnectionEndpoint localhost = newConnectionEndpoint("localhost", 21668);
 
 		poolFactoryBean.addLocators(localhost);
 
-		assertThat(poolFactoryBean.getLocators().size(), is(equalTo(1)));
-		assertThat(poolFactoryBean.getLocators().findOne("localhost"), is(equalTo(localhost)));
+		assertThat(poolFactoryBean.getLocators().size()).isEqualTo(1);
+		assertThat(poolFactoryBean.getLocators().findOne("localhost")).isEqualTo(localhost);
 
 		ConnectionEndpoint skullbox = newConnectionEndpoint("skullbox", 10334);
 		ConnectionEndpoint boombox = newConnectionEndpoint("boombox", 10334);
 
 		poolFactoryBean.addLocators(skullbox, boombox);
 
-		assertThat(poolFactoryBean.getLocators().size(), is(equalTo(3)));
-		assertThat(poolFactoryBean.getLocators().findOne("localhost"), is(equalTo(localhost)));
-		assertThat(poolFactoryBean.getLocators().findOne("skullbox"), is(equalTo(skullbox)));
-		assertThat(poolFactoryBean.getLocators().findOne("boombox"), is(equalTo(boombox)));
+		assertThat(poolFactoryBean.getLocators().size()).isEqualTo(3);
+		assertThat(poolFactoryBean.getLocators().findOne("localhost")).isEqualTo(localhost);
+		assertThat(poolFactoryBean.getLocators().findOne("skullbox")).isEqualTo(skullbox);
+		assertThat(poolFactoryBean.getLocators().findOne("boombox")).isEqualTo(boombox);
 
 		poolFactoryBean.setLocators(ArrayUtils.asArray(localhost));
 
-		assertThat(poolFactoryBean.getLocators().size(), is(equalTo(1)));
-		assertThat(poolFactoryBean.getLocators().findOne("localhost"), is(equalTo(localhost)));
+		assertThat(poolFactoryBean.getLocators().size()).isEqualTo(1);
+		assertThat(poolFactoryBean.getLocators().findOne("localhost")).isEqualTo(localhost);
 
 		poolFactoryBean.setLocators(Collections.emptyList());
 
-		assertThat(poolFactoryBean.getLocators(), is(notNullValue()));
-		assertThat(poolFactoryBean.getLocators().isEmpty(), is(true));
+		assertThat(poolFactoryBean.getLocators()).isNotNull();
+		assertThat(poolFactoryBean.getLocators().isEmpty()).isTrue();
 	}
 
 	@Test
@@ -304,39 +304,39 @@ public class PoolFactoryBeanTest {
 
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
 
-		assertThat(poolFactoryBean.getServers(), is(notNullValue()));
-		assertThat(poolFactoryBean.getServers().isEmpty(), is(true));
+		assertThat(poolFactoryBean.getServers()).isNotNull();
+		assertThat(poolFactoryBean.getServers().isEmpty()).isTrue();
 
 		ConnectionEndpoint localhost = newConnectionEndpoint("localhost", 21668);
 
 		poolFactoryBean.addServers(localhost);
 
-		assertThat(poolFactoryBean.getServers().size(), is(equalTo(1)));
-		assertThat(poolFactoryBean.getServers().findOne("localhost"), is(equalTo(localhost)));
+		assertThat(poolFactoryBean.getServers().size()).isEqualTo(1);
+		assertThat(poolFactoryBean.getServers().findOne("localhost")).isEqualTo(localhost);
 
 		ConnectionEndpoint skullbox = newConnectionEndpoint("skullbox", 10334);
 		ConnectionEndpoint boombox = newConnectionEndpoint("boombox", 10334);
 
 		poolFactoryBean.addServers(skullbox, boombox);
 
-		assertThat(poolFactoryBean.getServers().size(), is(equalTo(3)));
-		assertThat(poolFactoryBean.getServers().findOne("localhost"), is(equalTo(localhost)));
-		assertThat(poolFactoryBean.getServers().findOne("skullbox"), is(equalTo(skullbox)));
-		assertThat(poolFactoryBean.getServers().findOne("boombox"), is(equalTo(boombox)));
+		assertThat(poolFactoryBean.getServers().size()).isEqualTo(3);
+		assertThat(poolFactoryBean.getServers().findOne("localhost")).isEqualTo(localhost);
+		assertThat(poolFactoryBean.getServers().findOne("skullbox")).isEqualTo(skullbox);
+		assertThat(poolFactoryBean.getServers().findOne("boombox")).isEqualTo(boombox);
 
 		poolFactoryBean.setServers(ArrayUtils.asArray(localhost));
 
-		assertThat(poolFactoryBean.getServers().size(), is(equalTo(1)));
-		assertThat(poolFactoryBean.getServers().findOne("localhost"), is(equalTo(localhost)));
+		assertThat(poolFactoryBean.getServers().size()).isEqualTo(1);
+		assertThat(poolFactoryBean.getServers().findOne("localhost")).isEqualTo(localhost);
 
 		poolFactoryBean.setServers(Collections.emptyList());
 
-		assertThat(poolFactoryBean.getServers(), is(notNullValue()));
-		assertThat(poolFactoryBean.getServers().isEmpty(), is(true));
+		assertThat(poolFactoryBean.getServers()).isNotNull();
+		assertThat(poolFactoryBean.getServers().isEmpty()).isTrue();
 	}
 
 	@Test
-	public void getPoolWhenPoolIsSetIsThePool() {
+	public void getPoolWhenPoolIsSet() {
 
 		Pool mockPool = mock(Pool.class);
 
@@ -344,11 +344,11 @@ public class PoolFactoryBeanTest {
 
 		poolFactoryBean.setPool(mockPool);
 
-		assertThat(poolFactoryBean.getPool(), is(sameInstance(mockPool)));
+		assertThat(poolFactoryBean.getPool()).isSameAs(mockPool);
 	}
 
 	@Test
-	public void getPoolWhenPoolIsUnsetIsThePoolFactoryBean() {
+	public void getPoolWhenPoolIsUnset() {
 
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
 
@@ -377,31 +377,31 @@ public class PoolFactoryBeanTest {
 
 		Pool pool = poolFactoryBean.getPool();
 
-		assertThat(pool, is(instanceOf(PoolAdapter.class)));
-		assertThat(pool.isDestroyed(), is(false));
-		assertThat(pool.getFreeConnectionTimeout(), is(equalTo(5000)));
-		assertThat(pool.getIdleTimeout(), is(equalTo(120000L)));
-		assertThat(pool.getLoadConditioningInterval(), is(equalTo(300000)));
-		assertThat(pool.getLocators(), is(equalTo(Collections.singletonList(newSocketAddress("skullbox", 11235)))));
-		assertThat(pool.getMaxConnections(), is(equalTo(500)));
-		assertThat(pool.getMinConnections(), is(equalTo(50)));
-		assertThat(pool.getMultiuserAuthentication(), is(equalTo(true)));
-		assertThat(pool.getName(), is(nullValue()));
-		assertThat(pool.getPingInterval(), is(equalTo(15000L)));
-		assertThat(pool.getPRSingleHopEnabled(), is(equalTo(true)));
-		assertThat(pool.getReadTimeout(), is(equalTo(30000)));
-		assertThat(pool.getRetryAttempts(), is(equalTo(1)));
-		assertThat(pool.getServerGroup(), is(equalTo("TestGroup")));
-		assertThat(pool.getServers(), is(equalTo(Collections.singletonList(newSocketAddress("boombox", 12480)))));
-		assertThat(pool.getSocketBufferSize(), is(equalTo(16384)));
-		assertThat(pool.getSocketConnectTimeout(), is(equalTo(5000)));
-		assertThat(pool.getStatisticInterval(), is(equalTo(500)));
-		assertThat(pool.getSubscriptionAckInterval(), is(equalTo(200)));
-		assertThat(pool.getSubscriptionEnabled(), is(equalTo(true)));
-		assertThat(pool.getSubscriptionMessageTrackingTimeout(), is(equalTo(20000)));
-		assertThat(pool.getSubscriptionRedundancy(), is(equalTo(2)));
-		assertThat(pool.getSubscriptionTimeoutMultiplier(), is(equalTo(4)));
-		assertThat(pool.getThreadLocalConnections(), is(equalTo(false)));
+		assertThat(pool).isInstanceOf(PoolAdapter.class);
+		assertThat(pool.isDestroyed()).isFalse();
+		assertThat(pool.getFreeConnectionTimeout()).isEqualTo(5000);
+		assertThat(pool.getIdleTimeout()).isEqualTo(120000L);
+		assertThat(pool.getLoadConditioningInterval()).isEqualTo(300000);
+		assertThat(pool.getLocators()).isEqualTo(Collections.singletonList(newSocketAddress("skullbox", 11235)));
+		assertThat(pool.getMaxConnections()).isEqualTo(500);
+		assertThat(pool.getMinConnections()).isEqualTo(50);
+		assertThat(pool.getMultiuserAuthentication()).isTrue();
+		assertThat(pool.getName()).isNull();
+		assertThat(pool.getPingInterval()).isEqualTo(15000L);
+		assertThat(pool.getPRSingleHopEnabled()).isTrue();
+		assertThat(pool.getReadTimeout()).isEqualTo(30000);
+		assertThat(pool.getRetryAttempts()).isEqualTo(1);
+		assertThat(pool.getServerGroup()).isEqualTo("TestGroup");
+		assertThat(pool.getServers()).isEqualTo(Collections.singletonList(newSocketAddress("boombox", 12480)));
+		assertThat(pool.getSocketBufferSize()).isEqualTo(16384);
+		assertThat(pool.getSocketConnectTimeout()).isEqualTo(5000);
+		assertThat(pool.getStatisticInterval()).isEqualTo(500);
+		assertThat(pool.getSubscriptionAckInterval()).isEqualTo(200);
+		assertThat(pool.getSubscriptionEnabled()).isTrue();
+		assertThat(pool.getSubscriptionMessageTrackingTimeout()).isEqualTo(20000);
+		assertThat(pool.getSubscriptionRedundancy()).isEqualTo(2);
+		assertThat(pool.getSubscriptionTimeoutMultiplier()).isEqualTo(4);
+		assertThat(pool.getThreadLocalConnections()).isFalse();
 	}
 
 	@Test
@@ -412,7 +412,7 @@ public class PoolFactoryBeanTest {
 		poolFactoryBean.setBeanName("PoolBean");
 		poolFactoryBean.setName(null);
 
-		assertThat(poolFactoryBean.getPool().getName(), is(equalTo("PoolBean")));
+		assertThat(poolFactoryBean.getPool().getName()).isEqualTo("PoolBean");
 	}
 
 	@Test
@@ -423,7 +423,7 @@ public class PoolFactoryBeanTest {
 		poolFactoryBean.setBeanName("PoolBean");
 		poolFactoryBean.setName("TestPool");
 
-		assertThat(poolFactoryBean.getPool().getName(), is(equalTo("TestPool")));
+		assertThat(poolFactoryBean.getPool().getName()).isEqualTo("TestPool");
 	}
 
 	@Test
@@ -437,24 +437,29 @@ public class PoolFactoryBeanTest {
 
 		Pool pool = poolFactoryBean.getPool();
 
-		assertThat(pool, is(not(sameInstance(mockPool))));
-		assertThat(pool, is(instanceOf(PoolAdapter.class)));
+		assertThat(pool).isNotSameAs(mockPool);
+		assertThat(pool).isInstanceOf(PoolAdapter.class);
 
 		poolFactoryBean.setPool(mockPool);
 
-		assertThat(pool.getPendingEventCount(), is(equalTo(2)));
+		assertThat(pool.getPendingEventCount()).isEqualTo(2);
 
 		verify(mockPool, times(1)).getPendingEventCount();
 	}
 
-	@Test
+	@Test(expected = IllegalStateException.class)
 	public void getPoolPendingEventCountWithoutPoolThrowsIllegalStateException() {
 
-		exception.expect(IllegalStateException.class);
-		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("Pool [null] has not been initialized");
+		try {
+			new PoolFactoryBean().getPool().getPendingEventCount();
+		}
+		catch (IllegalStateException expected) {
 
-		new PoolFactoryBean().getPool().getPendingEventCount();
+			assertThat(expected).hasMessage("Pool [null] has not been initialized");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
 	}
 
 	@Test
@@ -469,41 +474,44 @@ public class PoolFactoryBeanTest {
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
 		Pool pool = poolFactoryBean.getPool();
 
-		assertThat(pool, is(not(sameInstance(mockPool))));
-		assertThat(pool, is(instanceOf(PoolAdapter.class)));
+		assertThat(pool).isNotSameAs(mockPool);
+		assertThat(pool).isInstanceOf(PoolAdapter.class);
 
 		poolFactoryBean.setPool(mockPool);
 
-		assertThat(pool.getQueryService(), is(equalTo(mockQueryService)));
+		assertThat(pool.getQueryService()).isEqualTo(mockQueryService);
 
 		verify(mockPool, times(1)).getQueryService();
 	}
 
-	@Test
+	@Test(expected = IllegalStateException.class)
 	public void getPoolQueryServiceWithoutPoolThrowsIllegalStateException() {
 
-		exception.expect(IllegalStateException.class);
-		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("Pool [null] has not been initialized");
+		try {
+			new PoolFactoryBean().getPool().getQueryService();
+		}
+		catch (IllegalStateException expected) {
 
-		new PoolFactoryBean().getPool().getQueryService();
+			assertThat(expected).hasMessage("Pool [null] has not been initialized");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
 	}
 
 	@Test
-	public void getPoolAndDestroyWithPool() {
+	public void getPoolAndDestroyWithPool() throws Exception {
 
 		Pool mockPool = mock(Pool.class);
 
-		PoolFactoryBean poolFactoryBean = new PoolFactoryBean() {
-			@Override public void destroy() throws Exception {
-				throw new IllegalStateException("test");
-			}
-		};
+		PoolFactoryBean poolFactoryBean = spy(new PoolFactoryBean());
+
+		doThrow(newIllegalStateException("test")).when(poolFactoryBean).destroy();
 
 		Pool pool = poolFactoryBean.getPool();
 
-		assertThat(pool, is(not(sameInstance(mockPool))));
-		assertThat(pool, is(instanceOf(PoolAdapter.class)));
+		assertThat(pool).isNotSameAs(mockPool);
+		assertThat(pool).isInstanceOf(PoolAdapter.class);
 
 		poolFactoryBean.setPool(mockPool);
 		pool.destroy();
@@ -514,31 +522,20 @@ public class PoolFactoryBeanTest {
 	}
 
 	@Test
-	public void getPoolAndDestroyWithoutPool() {
+	public void getPoolAndDestroyWithoutPool() throws Exception {
 
-		AtomicBoolean destroyCalled = new AtomicBoolean(false);
+		PoolFactoryBean poolFactoryBean = spy(new PoolFactoryBean());;
 
-		PoolFactoryBean poolFactoryBean = new PoolFactoryBean() {
-
-			@Override
-			public void destroy() throws Exception {
-				destroyCalled.set(true);
-				throw new IllegalStateException("test");
-			}
-		};
+		doThrow(newIllegalStateException("test")).when(poolFactoryBean).destroy();
 
 		Pool pool = poolFactoryBean.getPool();
 
-		assertThat(pool, is(instanceOf(PoolAdapter.class)));
+		assertThat(pool).isInstanceOf(PoolAdapter.class);
 
 		pool.destroy();
-
-		assertThat(destroyCalled.get(), is(true));
-
-		destroyCalled.set(false);
 		pool.destroy(true);
 
-		assertThat(destroyCalled.get(), is(true));
+		verify(poolFactoryBean, times(2)).destroy();
 	}
 
 	@Test
@@ -549,8 +546,8 @@ public class PoolFactoryBeanTest {
 		Pool pool = poolFactoryBean.getPool();
 		Pool mockPool = mock(Pool.class);
 
-		assertThat(pool, is(not(sameInstance(mockPool))));
-		assertThat(pool, is(instanceOf(PoolAdapter.class)));
+		assertThat(pool).isNotSameAs(mockPool);
+		assertThat(pool).isInstanceOf(PoolAdapter.class);
 
 		poolFactoryBean.setPool(mockPool);
 		pool.releaseThreadLocalConnection();
@@ -558,19 +555,42 @@ public class PoolFactoryBeanTest {
 		verify(mockPool, times(1)).releaseThreadLocalConnection();
 	}
 
-	@Test
+	@Test(expected = IllegalStateException.class)
 	public void getPoolAndReleaseThreadLocalConnectionWithoutPool() {
 
 		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
 
 		Pool pool = poolFactoryBean.getPool();
 
-		assertThat(pool, is(instanceOf(PoolAdapter.class)));
+		assertThat(pool).isInstanceOf(PoolAdapter.class);
 
-		exception.expect(IllegalStateException.class);
-		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("Pool [null] has not been initialized");
+		try {
+			pool.releaseThreadLocalConnection();
+		}
+		catch (IllegalStateException expected) {
 
-		pool.releaseThreadLocalConnection();
+			assertThat(expected).hasMessage("Pool [null] has not been initialized");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
+	}
+
+	@Test
+	public void setAndGetPoolResolver() {
+
+		PoolResolver mockPoolResolver = mock(PoolResolver.class);
+
+		PoolFactoryBean poolFactoryBean = new PoolFactoryBean();
+
+		assertThat(poolFactoryBean.getPoolResolver()).isEqualTo(PoolFactoryBean.DEFAULT_POOL_RESOLVER);
+
+		poolFactoryBean.setPoolResolver(mockPoolResolver);
+
+		assertThat(poolFactoryBean.getPoolResolver()).isSameAs(mockPoolResolver);
+
+		poolFactoryBean.setPoolResolver(null);
+
+		assertThat(poolFactoryBean.getPoolResolver()).isEqualTo(PoolFactoryBean.DEFAULT_POOL_RESOLVER);
 	}
 }

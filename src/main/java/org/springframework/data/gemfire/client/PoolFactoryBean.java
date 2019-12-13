@@ -39,6 +39,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.gemfire.GemfireUtils;
+import org.springframework.data.gemfire.client.support.PoolManagerPoolResolver;
 import org.springframework.data.gemfire.config.annotation.PoolConfigurer;
 import org.springframework.data.gemfire.support.AbstractFactoryBeanSupport;
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
@@ -65,6 +66,7 @@ import org.springframework.util.StringUtils;
  * @see org.apache.geode.distributed.DistributedSystem
  * @see org.springframework.beans.factory.DisposableBean
  * @see org.springframework.beans.factory.InitializingBean
+ * @see org.springframework.data.gemfire.client.PoolResolver
  * @see org.springframework.data.gemfire.config.annotation.PoolConfigurer
  * @see org.springframework.data.gemfire.support.AbstractFactoryBeanSupport
  * @see org.springframework.data.gemfire.support.ConnectionEndpoint
@@ -75,6 +77,8 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 
 	protected static final int DEFAULT_LOCATOR_PORT = DistributedSystemUtils.DEFAULT_LOCATOR_PORT;
 	protected static final int DEFAULT_SERVER_PORT = DistributedSystemUtils.DEFAULT_CACHE_SERVER_PORT;
+
+	protected static final PoolResolver DEFAULT_POOL_RESOLVER = new PoolManagerPoolResolver();
 
 	// Indicates whether the Pool has been created by this FactoryBean, or not
 	volatile boolean springManagedPool = true;
@@ -115,6 +119,8 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 
 	private PoolFactoryInitializer poolFactoryInitializer;
 
+	private PoolResolver poolResolver = DEFAULT_POOL_RESOLVER;
+
 	private String name;
 	private String serverGroup = PoolFactory.DEFAULT_SERVER_GROUP;
 
@@ -128,7 +134,7 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 	 */
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		init(Optional.ofNullable(find(resolvePoolName())));
+		init(Optional.ofNullable(resolvePool(resolvePoolName())));
 	}
 
 	@SuppressWarnings("all")
@@ -150,6 +156,10 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 		}
 	}
 
+	private Pool resolvePool(String name) {
+		return getPoolResolver().resolve(name);
+	}
+
 	private String resolvePoolName() {
 
 		if (!StringUtils.hasText(getName())) {
@@ -161,10 +171,13 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 		return getName();
 	}
 
-	private Pool find(String name) {
-		return PoolManager.find(name);
-	}
-
+	/**
+	 * Applies the composite {@link PoolConfigurer} object to customize the configuration
+	 * of this {@link PoolFactoryBean}.
+	 *
+	 * @see #applyPoolConfigurers(PoolConfigurer...)
+	 * @see #getCompositePoolConfigurer()
+	 */
 	private void applyPoolConfigurers() {
 		applyPoolConfigurers(getCompositePoolConfigurer());
 	}
@@ -204,7 +217,7 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 	public void destroy() throws Exception {
 
 		Optional.ofNullable(this.pool)
-			.filter(pool -> this.springManagedPool)
+			.filter(this::isSpringManagedPool)
 			.filter(pool -> !pool.isDestroyed())
 			.ifPresent(pool -> {
 				pool.releaseThreadLocalConnection();
@@ -212,6 +225,10 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 				setPool(null);
 				logDebug("Destroyed Pool [%s]", pool.getName());
 			});
+	}
+
+	private boolean isSpringManagedPool(Pool pool) {
+		return this.springManagedPool;
 	}
 
 	/**
@@ -228,7 +245,7 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 
 			eagerlyInitializeClientCache();
 
-			Pool namedPool = find(getName());
+			Pool namedPool = resolvePool(getName());
 
 			this.pool = namedPool != null ? namedPool
 				: postProcess(create(postProcess(configure(initialize(createPoolFactory()))), getName()));
@@ -380,7 +397,6 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
 	public Class<?> getObjectType() {
 		return this.pool != null ? this.pool.getClass() : Pool.class;
 	}
@@ -687,6 +703,28 @@ public class PoolFactoryBean extends AbstractFactoryBeanSupport<Pool> implements
 	 */
 	public void setPoolFactoryInitializer(PoolFactoryInitializer poolFactoryInitializer) {
 		this.poolFactoryInitializer = poolFactoryInitializer;
+	}
+
+	/**
+	 * Configures the {@link PoolResolver} to resolve {@link Pool} objects by {@link String name}
+	 * from the Apache Geode cache.
+	 *
+	 * @param poolResolver the configured {@link PoolResolver} used to resolve {@link Pool} objects
+	 * by {@link String name}.
+	 * @see org.springframework.data.gemfire.client.PoolResolver
+	 */
+	public void setPoolResolver(PoolResolver poolResolver) {
+		this.poolResolver = poolResolver;
+	}
+
+	/**
+	 * Returns the configured {@link PoolResolver} used to resolve {@link Pool} object by {@link String name}.
+	 *
+	 * @return the configured {@link PoolResolver}.
+	 * @see org.springframework.data.gemfire.client.PoolResolver
+	 */
+	public PoolResolver getPoolResolver() {
+		return this.poolResolver != null ? this.poolResolver : DEFAULT_POOL_RESOLVER;
 	}
 
 	public void setPrSingleHopEnabled(boolean prSingleHopEnabled) {
