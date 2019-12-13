@@ -37,6 +37,8 @@ public class ConnectionEndpoint implements Cloneable, Comparable<ConnectionEndpo
 	protected static final int DEFAULT_PORT = 0; // ephemeral port
 
 	protected static final String DEFAULT_HOST = "localhost";
+	protected static final String GEMFIRE_HOST_PORT_SEPARATOR = "[";
+	protected static final String STANDARD_HOST_PORT_SEPARATOR = ":";
 
 	private final int port;
 	private final String host;
@@ -93,13 +95,10 @@ public class ConnectionEndpoint implements Cloneable, Comparable<ConnectionEndpo
 	}
 
 	static int indexOfPort(String host) {
-		for (int i = 0; i < host.length(); ++i) {
-			char c = host.charAt(i);
-			if (':' == c || '[' == c) {
-				return i;
-			}
-		}
-		return -1;
+
+		int indexOfPort = host.indexOf(GEMFIRE_HOST_PORT_SEPARATOR);
+
+		return indexOfPort > -1 ? indexOfPort : host.indexOf(STANDARD_HOST_PORT_SEPARATOR);
 	}
 
 	static String parseDigits(String value) {

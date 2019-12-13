@@ -99,7 +99,7 @@ public class ConnectionEndpointUnitTests {
 	}
 
 	@Test
-	public void parseWithHostPortWithColon() {
+	public void parseWithHostPortSeparatedByColon() {
 
 		ConnectionEndpoint connectionEndpoint = ConnectionEndpoint.parse("skullbox:12345", 80);
 
@@ -131,7 +131,7 @@ public class ConnectionEndpointUnitTests {
 	}
 
 	@Test
-	public void parseWithHostPortHavingSpacingWithColon() {
+	public void parseWithHostPortHavingSpacingSeparatedByColon() {
 
 		ConnectionEndpoint connectionEndpoint = ConnectionEndpoint.parse(" saturn  :1  23 4 ");
 
@@ -188,7 +188,7 @@ public class ConnectionEndpointUnitTests {
 	}
 
 	@Test
-	public void parseWithHostUsingDefaultPortWithColon() {
+	public void parseWithHostUsingDefaultPortSeparatedByColon() {
 
 		ConnectionEndpoint connectionEndpoint =
 			ConnectionEndpoint.parse("mercury:oneTwoThreeFourFive", 80);
@@ -245,7 +245,7 @@ public class ConnectionEndpointUnitTests {
 	}
 
 	@Test
-	public void parseWithPortUsingDefaultHostWithColon() {
+	public void parseWithPortUsingDefaultHostSeparatedByColon() {
 
 		ConnectionEndpoint connectionEndpoint = ConnectionEndpoint.parse(":12345", 80);
 
@@ -316,7 +316,9 @@ public class ConnectionEndpointUnitTests {
 
 	@Test
 	public void indexOfPort() {
+
 		assertThat(ConnectionEndpoint.indexOfPort("")).isEqualTo(-1);
+		assertThat(ConnectionEndpoint.indexOfPort("  ")).isEqualTo(-1);
 		assertThat(ConnectionEndpoint.indexOfPort("a")).isEqualTo(-1);
 		assertThat(ConnectionEndpoint.indexOfPort(":")).isEqualTo(0);
 		assertThat(ConnectionEndpoint.indexOfPort("a:")).isEqualTo(1);
@@ -434,3 +436,4 @@ public class ConnectionEndpointUnitTests {
 		assertThat(socketAddress.getPort()).isEqualTo(connectionEndpoint.getPort());
 	}
 }
+
