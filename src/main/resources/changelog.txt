@@ -3,6 +3,16 @@ SPRING DATA GEMFIRE CHANGELOG
 https://www.springsource.org/spring-gemfire
 ===========================================
 
+Changes in version 2.2.4.RELEASE (2020-01-15)
+---------------------------------------------
+* SGF-908 - ConnectionEndpoint should support standard "host:port" format.
+* SGF-907 - Refactor PoolFactoryBean to use PoolResolver.
+* SGF-906 - Refactor ContinuousQueryListenerContainer to use PoolResolver.
+* SGF-905 - Introduce a PoolResolver strategy interface to resolve Pool instances and provide a layer of indirection between SDG and Apache Geode's static PoolManager class.
+* SGF-903 - Update copyright year to 2020.
+* SGF-902 - Release 2.2.4 (Moore SR4).
+
+
 Changes in version 2.1.15.RELEASE (2020-01-15)
 ----------------------------------------------
 * SGF-903 - Update copyright year to 2020.
@@ -1588,6 +1598,7 @@ General
 * GemFire Template for exception translation
 * Declarative transaction management
 * Auto-generation of non-reflection based GemFire instantiators
+
 
 
 
