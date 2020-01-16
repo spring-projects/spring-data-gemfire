@@ -468,40 +468,6 @@ public class MappingPdxSerializerUnitTests {
 	}
 
 	@Test
-	public void resolveEntityInstantiatorForManagedPersistentEntityWithEntityInstantiator() {
-
-		EntityInstantiator mockEntityInstantiator = mock(EntityInstantiator.class);
-
-		PersistentEntity mockEntity = mock(PersistentEntity.class);
-
-		when(mockEntity.getType()).thenReturn(Person.class);
-
-		this.pdxSerializer.setEntityInstantiators(Collections.singletonMap(Person.class, mockEntityInstantiator));
-
-		assertThat(this.pdxSerializer.resolveEntityInstantiator(mockEntity)).isEqualTo(mockEntityInstantiator);
-
-		verify(mockEntity, atLeast(1)).getType();
-		verifyZeroInteractions(mockEntityInstantiator);
-	}
-
-	@Test
-	public void resolveEntityInstantiatorForNonManagedPersistentEntityWithNoEntityInstantiator() {
-
-		EntityInstantiator mockEntityInstantiator = mock(EntityInstantiator.class);
-
-		PersistentEntity mockEntity = mock(PersistentEntity.class);
-
-		when(mockEntity.getType()).thenReturn(Address.class);
-
-		this.pdxSerializer.setEntityInstantiators(Collections.singletonMap(Person.class, mockEntityInstantiator));
-
-		assertThat(this.pdxSerializer.resolveEntityInstantiator(mockEntity)).isNotEqualTo(mockEntityInstantiator);
-
-		verify(mockEntity, atLeast(1)).getType();
-		verifyZeroInteractions(mockEntityInstantiator);
-	}
-
-	@Test
 	public void resolveTypeWithNonNullType() {
 		assertThat(this.pdxSerializer.resolveType("test")).isEqualTo(String.class);
 	}
