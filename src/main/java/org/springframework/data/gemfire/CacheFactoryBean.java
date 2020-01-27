@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire;
 
 import static java.util.stream.StreamSupport.stream;
@@ -54,6 +53,7 @@ import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.security.SecurityManager;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
@@ -61,6 +61,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.Phased;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 import org.springframework.data.gemfire.config.annotation.PeerCacheConfigurer;
 import org.springframework.data.gemfire.support.AbstractFactoryBeanSupport;
@@ -583,7 +584,13 @@ public class CacheFactoryBean extends AbstractFactoryBeanSupport<GemFireCache>
 					type, Arrays.toString(JndiDataSourceType.values())));
 
 			jndiDataSource.getAttributes().put("type", jndiDataSourceType.getName());
-			JNDIInvoker.mapDatasource(jndiDataSource.getAttributes(), jndiDataSource.getProps());
+
+			try {
+				JNDIInvoker.mapDatasource(jndiDataSource.getAttributes(), jndiDataSource.getProps());
+			}
+			catch (Exception cause) {
+				throw new InvalidDataAccessApiUsageException("Failed to run operation", cause);
+			}
 		});
 
 		return cache;
