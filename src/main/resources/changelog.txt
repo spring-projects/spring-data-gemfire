@@ -3,6 +3,11 @@ SPRING DATA GEMFIRE CHANGELOG
 https://www.springsource.org/spring-gemfire
 ===========================================
 
+Changes in version 2.1.16.RELEASE (2020-02-26)
+----------------------------------------------
+* SGF-909 - Release 2.1.16 (Lovelace SR16).
+
+
 Changes in version 2.2.4.RELEASE (2020-01-15)
 ---------------------------------------------
 * SGF-908 - ConnectionEndpoint should support standard "host:port" format.
@@ -1598,6 +1603,7 @@ General
 * GemFire Template for exception translation
 * Declarative transaction management
 * Auto-generation of non-reflection based GemFire instantiators
+
 
 
 
