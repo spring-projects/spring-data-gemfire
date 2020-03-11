@@ -44,7 +44,7 @@ enum PdxReaderPropertyAccessor implements PropertyAccessor {
 	 * @see org.springframework.expression.PropertyAccessor#canRead(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.String)
 	 */
 	@Override
-	public boolean canRead(EvaluationContext context, Object target, String name) {
+	public boolean canRead(EvaluationContext evaluationContext, Object target, String name) {
 		return ((PdxReader) target).hasField(name);
 	}
 
@@ -53,9 +53,11 @@ enum PdxReaderPropertyAccessor implements PropertyAccessor {
 	 * @see org.springframework.expression.PropertyAccessor#read(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.String)
 	 */
 	@Override
-	public TypedValue read(EvaluationContext context, Object target, String name) {
+	public TypedValue read(EvaluationContext evaluationContext, Object target, String name) {
+
 		Object object = ((PdxReader) target).readObject(name);
-		return object == null ? TypedValue.NULL : new TypedValue(object);
+
+		return object != null ? new TypedValue(object) : TypedValue.NULL;
 	}
 
 	/*
@@ -63,7 +65,7 @@ enum PdxReaderPropertyAccessor implements PropertyAccessor {
 	 * @see org.springframework.expression.PropertyAccessor#canWrite(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.String)
 	 */
 	@Override
-	public boolean canWrite(EvaluationContext context, Object target, String name) {
+	public boolean canWrite(EvaluationContext evaluationContext, Object target, String name) {
 		return false;
 	}
 
@@ -72,7 +74,7 @@ enum PdxReaderPropertyAccessor implements PropertyAccessor {
 	 * @see org.springframework.expression.PropertyAccessor#write(org.springframework.expression.EvaluationContext, java.lang.Object, java.lang.String, java.lang.Object)
 	 */
 	@Override
-	public void write(EvaluationContext context, Object target, String name, Object newValue) {
+	public void write(EvaluationContext evaluationContext, Object target, String name, Object newValue) {
 		throw new UnsupportedOperationException();
 	}
 }
