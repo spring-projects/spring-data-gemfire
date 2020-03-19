@@ -22,11 +22,6 @@ import java.net.URI;
 import java.util.Optional;
 import java.util.Properties;
 
-import org.apache.geode.management.internal.security.ResourceConstants;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
@@ -44,6 +39,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.util.StringUtils;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The {@link AutoConfiguredAuthenticationConfiguration} class is a Spring {@link Configuration @Configuration} class
@@ -78,7 +76,9 @@ public class AutoConfiguredAuthenticationConfiguration {
 	protected static final String DEFAULT_PASSWORD = DEFAULT_USERNAME;
 	protected static final String HTTP_PROTOCOL = "HTTP";
 	protected static final String SECURITY_CLIENT_AUTH_INIT = "security-client-auth-init";
+	protected static final String SECURITY_PASSWORD = "security-password";
 	protected static final String SECURITY_PEER_AUTH_INIT = "security-peer-auth-init";
+	protected static final String SECURITY_USERNAME = "security-username";
 
 	private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -113,28 +113,23 @@ public class AutoConfiguredAuthenticationConfiguration {
 
 			logger.debug("HTTP Request URI [{}]", request.getURI());
 
-			Optional.ofNullable(request.getHeaders())
-				.ifPresent(httpHeaders -> {
+			HttpHeaders httpHeaders = request.getHeaders();
 
-					CollectionUtils.nullSafeSet(httpHeaders.keySet()).forEach(httpHeaderName -> {
-						logger.debug("HTTP Request Header Name [{}] Value [{}]",
-							httpHeaderName, httpHeaders.get(httpHeaderName));
-					});
-				});
+			CollectionUtils.nullSafeSet(httpHeaders.keySet()).forEach(httpHeaderName ->
+				logger.debug("HTTP Request Header Name [{}] Value [{}]",
+					httpHeaderName, httpHeaders.get(httpHeaderName)));
 
 			ClientHttpResponse response = execution.execute(request, body);
 
-			Optional.ofNullable(response)
-				.ifPresent(it -> {
-
-					try {
-						logger.debug("HTTP Response Status Code [{}] Message [{}]",
-							it.getRawStatusCode(), it.getStatusText());
-					}
-					catch (IOException cause) {
-						logger.debug("Error occurred getting HTTP Response Status Code and Message", cause);
-					}
-				});
+			if (this.logger.isDebugEnabled()) {
+				try {
+					this.logger.debug("HTTP Response Status Code [{}] Message [{}]",
+						response.getRawStatusCode(), response.getStatusText());
+				}
+				catch (IOException cause) {
+					this.logger.debug("Error occurred getting HTTP Response Status Code and Message", cause);
+				}
+			}
 
 			return response;
 		};
@@ -163,8 +158,8 @@ public class AutoConfiguredAuthenticationConfiguration {
 
 				HttpHeaders requestHeaders = request.getHeaders();
 
-				requestHeaders.add(ResourceConstants.USER_NAME, username);
-				requestHeaders.add(ResourceConstants.PASSWORD, String.valueOf(password));
+				requestHeaders.add(SECURITY_USERNAME, username);
+				requestHeaders.add(SECURITY_PASSWORD, String.valueOf(password));
 			}
 
 			return execution.execute(request, body);
@@ -211,9 +206,19 @@ public class AutoConfiguredAuthenticationConfiguration {
 
 	public static class AutoConfiguredAuthenticationCondition implements Condition {
 
+		public static final String SPRING_DATA_GEMFIRE_SECURITY_AUTH_ENABLED =
+			"spring.data.gemfire.security.auth.auto-configure.enabled";
+
+		private static boolean isEnabled(Environment environment) {
+			return environment.getProperty(SPRING_DATA_GEMFIRE_SECURITY_AUTH_ENABLED, Boolean.class, true);
+		}
+
 		@Override
 		public boolean matches(ConditionContext conditionContext, AnnotatedTypeMetadata annotatedTypeMetadata) {
-			return isMatch(conditionContext.getEnvironment());
+
+			Environment environment = conditionContext.getEnvironment();
+
+			return isEnabled(environment) && isMatch(environment);
 		}
 	}
 }
