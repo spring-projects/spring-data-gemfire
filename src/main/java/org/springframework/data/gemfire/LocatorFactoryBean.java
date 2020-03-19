@@ -95,28 +95,38 @@ public class LocatorFactoryBean extends AbstractFactoryBeanSupport<Locator> impl
 
 	public void init() {
 
-		LocatorLauncher.Builder locatorBuilder = configureGemfireProperties(newLocatorLauncherBuilder());
+		ClassLoader currentThreadContextClassLoader = Thread.currentThread().getContextClassLoader();
 
-		getBindAddress().ifPresent(locatorBuilder::setBindAddress);
-		getHostnameForClients().ifPresent(locatorBuilder::setHostnameForClients);
-		getName().ifPresent(locatorBuilder::setMemberName);
+		try {
 
-		locatorBuilder.set(LOG_LEVEL_PROPERTY, getLogLevel());
-		locatorBuilder.setPort(getPort());
+			Thread.currentThread().setContextClassLoader(getBeanClassLoader());
 
-		locatorBuilder = postProcess(locatorBuilder);
+			LocatorLauncher.Builder locatorBuilder = configureGemfireProperties(newLocatorLauncherBuilder());
 
-		this.locatorLauncher = postProcess(locatorBuilder.build());
+			getBindAddress().ifPresent(locatorBuilder::setBindAddress);
+			getHostnameForClients().ifPresent(locatorBuilder::setHostnameForClients);
+			getName().ifPresent(locatorBuilder::setMemberName);
 
-		LocatorLauncher.LocatorState locatorState = this.locatorLauncher.start();
+			locatorBuilder.set(LOG_LEVEL_PROPERTY, getLogLevel());
+			locatorBuilder.setPort(getPort());
 
-		/*
-		if (LocatorLauncher.Status.ONLINE.equals(locatorState.getStatus())) {
-			// log warning
+			locatorBuilder = postProcess(locatorBuilder);
+
+			this.locatorLauncher = postProcess(locatorBuilder.build());
+
+			LocatorLauncher.LocatorState locatorState = this.locatorLauncher.start();
+
+			/*
+			if (LocatorLauncher.Status.ONLINE.equals(locatorState.getStatus())) {
+				// log warning
+			}
+			*/
+
+			this.locator = this.locatorLauncher.getLocator();
 		}
-		*/
-
-		this.locator = this.locatorLauncher.getLocator();
+		finally {
+			Thread.currentThread().setContextClassLoader(currentThreadContextClassLoader);
+		}
 	}
 
 	protected LocatorLauncher.Builder configureGemfireProperties(LocatorLauncher.Builder locatorBuilder) {
