@@ -10,17 +10,9 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-
 package org.springframework.data.gemfire.function.execution;
 
-import static org.assertj.core.api.Java6Assertions.assertThat;
-
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.cache.client.ClientRegionShortcut;
-import org.apache.geode.cache.client.Pool;
-import org.apache.geode.cache.client.PoolManager;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -28,7 +20,15 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.Pool;
+
 import org.springframework.data.gemfire.GemfireUtils;
+import org.springframework.data.gemfire.client.PoolResolver;
+import org.springframework.data.gemfire.client.support.PoolManagerPoolResolver;
 import org.springframework.data.gemfire.fork.FunctionCacheServerProcess;
 import org.springframework.data.gemfire.process.ProcessWrapper;
 import org.springframework.data.gemfire.test.support.ClientServerIntegrationTestsSupport;
@@ -45,6 +45,8 @@ public class GemfireFunctionTemplateIntegrationTests extends ClientServerIntegra
 	private ClientCache gemfireCache = null;
 
 	private Pool gemfirePool = null;
+
+	private PoolResolver poolResolver = new PoolManagerPoolResolver();
 
 	private Region<String, String> gemfireRegion = null;
 
@@ -86,7 +88,7 @@ public class GemfireFunctionTemplateIntegrationTests extends ClientServerIntegra
 		assertThat(this.gemfireRegion).isNotNull();
 		assertThat(this.gemfireRegion.getName()).isEqualTo("test-function");
 
-		this.gemfirePool = PoolManager.find("DEFAULT");
+		this.gemfirePool = this.poolResolver.resolve("DEFAULT");
 
 		assertThat(this.gemfirePool).isNotNull();
 		assertThat(this.gemfirePool.getName()).isEqualTo("DEFAULT");

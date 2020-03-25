@@ -12,7 +12,6 @@
  */
 package org.springframework.data.gemfire.function.execution;
 
-
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 
 import java.util.Optional;
@@ -20,11 +19,12 @@ import java.util.Optional;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.Pool;
-import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 
 import org.springframework.data.gemfire.GemfireUtils;
+import org.springframework.data.gemfire.client.PoolResolver;
+import org.springframework.data.gemfire.client.support.PoolManagerPoolResolver;
 import org.springframework.data.gemfire.util.CacheUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -45,7 +45,11 @@ import org.springframework.util.StringUtils;
 @SuppressWarnings("unused")
 public class GemfireOnServersFunctionTemplate extends AbstractFunctionTemplate {
 
+	protected static final PoolResolver DEFAULT_POOL_RESOLVER = new PoolManagerPoolResolver();
+
 	private Pool pool;
+
+	private PoolResolver poolResolver = DEFAULT_POOL_RESOLVER;
 
 	private final RegionService cache;
 
@@ -76,6 +80,17 @@ public class GemfireOnServersFunctionTemplate extends AbstractFunctionTemplate {
 		this.poolName = poolName;
 	}
 
+	public void setPoolResolver(PoolResolver poolResolver) {
+		this.poolResolver = poolResolver;
+	}
+
+	protected PoolResolver getPoolResolver() {
+
+		PoolResolver poolResolver = this.poolResolver;
+
+		return poolResolver != null ? poolResolver : DEFAULT_POOL_RESOLVER;
+	}
+
 	@Override
 	protected AbstractFunctionExecution getFunctionExecution() {
 
@@ -98,14 +113,14 @@ public class GemfireOnServersFunctionTemplate extends AbstractFunctionTemplate {
 
 	protected Pool resolveDefaultPool() {
 
-		return Optional.ofNullable(PoolManager.find(GemfireUtils.DEFAULT_POOL_NAME))
+		return Optional.ofNullable(getPoolResolver().resolve(GemfireUtils.DEFAULT_POOL_NAME))
 			.orElseThrow(() -> newIllegalStateException("No Pool was configured"));
 	}
 
 	protected Pool resolveNamedPool() {
 
 		if (StringUtils.hasText(this.poolName)) {
-			this.pool = Optional.ofNullable(PoolManager.find(this.poolName))
+			this.pool = Optional.ofNullable(getPoolResolver().resolve(this.poolName))
 				.orElseThrow(() -> newIllegalStateException("No Pool with name [%s] exists",
 					this.poolName));
 		}

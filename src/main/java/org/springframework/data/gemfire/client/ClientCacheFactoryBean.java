@@ -33,7 +33,6 @@ import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.Pool;
-import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.distributed.DistributedSystem;
 
 import org.springframework.context.ApplicationContext;
@@ -44,12 +43,16 @@ import org.springframework.data.gemfire.CacheFactoryBean;
 import org.springframework.data.gemfire.GemfireUtils;
 import org.springframework.data.gemfire.client.support.DefaultableDelegatingPoolAdapter;
 import org.springframework.data.gemfire.client.support.DelegatingPoolAdapter;
+import org.springframework.data.gemfire.client.support.PoolManagerPoolResolver;
 import org.springframework.data.gemfire.config.annotation.ClientCacheConfigurer;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.gemfire.support.ConnectionEndpoint;
 import org.springframework.data.gemfire.support.ConnectionEndpointList;
 import org.springframework.data.gemfire.util.SpringUtils;
+import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
+
+import lombok.NonNull;
 
 /**
  * Spring {@link org.springframework.beans.factory.FactoryBean} used to create a Pivotal GemFire/Apache Geode
@@ -77,6 +80,8 @@ import org.springframework.util.StringUtils;
  */
 @SuppressWarnings("unused")
 public class ClientCacheFactoryBean extends CacheFactoryBean implements ApplicationListener<ContextRefreshedEvent> {
+
+	protected static final PoolResolver DEFAULT_POOL_RESOLVER = new PoolManagerPoolResolver();
 
 	private Boolean keepAlive = false;
 	private Boolean multiUserAuthentication;
@@ -108,6 +113,8 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	private Long pingInterval;
 
 	private Pool pool;
+
+	private PoolResolver poolResolver;
 
 	private String durableClientId;
 	private String poolName;
@@ -327,11 +334,10 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	 * Resolves the {@link Pool} used to configure the {@link ClientCache}, {@literal DEFAULT} {@link Pool}.
 	 *
 	 * @return the resolved {@link Pool} used to configure the {@link ClientCache}, {@literal DEFAULT} {@link Pool}.
-	 * @see org.apache.geode.cache.client.PoolManager#find(String)
 	 * @see org.apache.geode.cache.client.Pool
-	 * @see #getPoolName()
 	 * @see #getPool()
 	 * @see #findPool(String)
+	 * @see #resolvePoolName()
 	 * @see #isPoolNameResolvable(String)
 	 */
 	Pool resolvePool() {
@@ -366,7 +372,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	}
 
 	Pool findPool(String name) {
-		return PoolManager.find(name);
+		return getPoolResolver().resolve(name);
 	}
 
 	private boolean isPoolNameResolvable(String poolName) {
@@ -401,6 +407,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	 * @see #fetchCache()
 	 */
 	@Override
+	@SuppressWarnings("all")
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 
 		if (isReadyForEvents()) {
@@ -433,7 +440,7 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	 * @see org.springframework.beans.factory.FactoryBean#getObjectType()
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Class<? extends GemFireCache> getObjectType() {
 		return Optional.ofNullable(getCache()).map(Object::getClass).orElse((Class) ClientCache.class);
 	}
@@ -633,43 +640,72 @@ public class ClientCacheFactoryBean extends CacheFactoryBean implements Applicat
 	}
 
 	/**
-	 * Sets the {@link Pool} used by this cache client to obtain connections to the Pivotal GemFire cluster.
+	 * Sets the {@link Pool} used by this {@link ClientCache} to obtain connections to the Apache Geode cluster.
 	 *
-	 * @param pool the Pivotal GemFire {@link Pool} used by this {@link ClientCache} to obtain connections
-	 * to the Pivotal GemFire cluster.
-	 * @throws IllegalArgumentException if the {@link Pool} is null.
+	 * @param pool {@link Pool} used by this {@link ClientCache} to obtain connections to the Apache Geode cluster.
+	 * @see org.apache.geode.cache.client.Pool
 	 */
 	public void setPool(Pool pool) {
 		this.pool = pool;
 	}
 
 	/**
-	 * Gets the {@link Pool} used by this cache client to obtain connections to the Pivotal GemFire cluster.
+	 * Gets the {@link Pool} used by this {@link ClientCache} to obtain connections to the Apache Geode cluster.
 	 *
-	 * @return the Pivotal GemFire {@link Pool} used by this {@link ClientCache} to obtain connections
-	 * to the Pivotal GemFire cluster.
+	 * @return {@link Pool} used by this {@link ClientCache} to obtain connections to the Apache Geode cluster.
+	 * @see org.apache.geode.cache.client.Pool
 	 */
 	public Pool getPool() {
 		return this.pool;
 	}
 
 	/**
-	 * Sets the name of the {@link Pool} used by this cache client to obtain connections to the Pivotal GemFire cluster.
+	 * Sets the {@link String name} of the {@link Pool} used by this {@link ClientCache} to obtain connections to
+	 * the Apache Geode cluster.
 	 *
-	 * @param poolName set the name of the Pivotal GemFire {@link Pool} used by this Pivotal GemFire {@link ClientCache}.
-	 * @throws IllegalArgumentException if the {@link Pool} name is unspecified.
+	 * @param poolName {@link String name} of the {@link Pool} used by this {@link ClientCache} to obtain connections to
+	 * the Apache Geode cluster.
 	 */
 	public void setPoolName(String poolName) {
 		this.poolName = poolName;
 	}
 
 	/**
-	 * Gets the name of the Pivotal GemFire {@link Pool} used by this Pivotal GemFire cache client.
+	 * Gets the {@link String name} of the {@link Pool} used by this {@link ClientCache} to obtain connections to
+	 * the Apache Geode cluster.
 	 *
-	 * @return the name of the Pivotal GemFire {@link Pool} used by this Pivotal GemFire cache client.
+	 * @return {@link String name} of the {@link Pool} used by this {@link ClientCache} to obtain connections to
+	 * the Apache Geode cluster.
 	 */
 	public String getPoolName() {
 		return this.poolName;
+	}
+
+	/**
+	 * Sets (configures) the {@link PoolResolver} used by this {@link ClientCache} to resolve {@link Pool} objects.
+	 *
+	 * The {@link Pool} objects may be managed or un-managed depending on the {@link PoolResolver} implementation.
+	 *
+	 * @param poolResolver {@link PoolResolver} used to resolve the configured {@link Pool}.
+	 * @see org.springframework.data.gemfire.client.PoolResolver
+	 */
+	public void setPoolResolver(@Nullable PoolResolver poolResolver) {
+		this.poolResolver = poolResolver;
+	}
+
+	/**
+	 * Gets the configured {@link PoolResolver} used by this {@link ClientCache} to resolve {@link Pool} objects.
+	 *
+	 * @return the configured {@link PoolResolver}.  If no {@link PoolResolver} was configured, then return the default,
+	 * {@link PoolManagerPoolResolver}.
+	 * @see org.springframework.data.gemfire.client.PoolResolver
+	 * @see org.springframework.data.gemfire.client.support.PoolManagerPoolResolver
+	 */
+	public @NonNull PoolResolver getPoolResolver() {
+
+		PoolResolver poolResolver = this.poolResolver;
+
+		return poolResolver != null ? poolResolver : DEFAULT_POOL_RESOLVER;
 	}
 
 	public void setPingInterval(Long pingInterval) {

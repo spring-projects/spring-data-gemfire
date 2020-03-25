@@ -36,21 +36,24 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
-import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.compression.Compressor;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.data.gemfire.ConfigurableRegionFactoryBean;
 import org.springframework.data.gemfire.GemfireUtils;
+import org.springframework.data.gemfire.client.support.PoolManagerPoolResolver;
 import org.springframework.data.gemfire.config.xml.GemfireConstants;
 import org.springframework.data.gemfire.eviction.EvictingRegionFactoryBean;
 import org.springframework.data.gemfire.expiration.ExpiringRegionFactoryBean;
 import org.springframework.data.gemfire.support.SmartLifecycleSupport;
 import org.springframework.data.gemfire.util.RegionUtils;
 import org.springframework.data.gemfire.util.SpringUtils;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+
+import lombok.NonNull;
 
 /**
  * Spring {@link FactoryBean} used to construct, configure and initialize a client {@link Region}.
@@ -80,6 +83,8 @@ public class ClientRegionFactoryBean<K, V> extends ConfigurableRegionFactoryBean
 
 	public static final String DEFAULT_POOL_NAME = "DEFAULT";
 	public static final String GEMFIRE_POOL_NAME = GemfireConstants.DEFAULT_GEMFIRE_POOL_NAME;
+
+	protected static final PoolResolver DEFAULT_POOL_RESOLVER = new PoolManagerPoolResolver();
 
 	private boolean close = false;
 	private boolean destroy = false;
@@ -121,6 +126,8 @@ public class ClientRegionFactoryBean<K, V> extends ConfigurableRegionFactoryBean
 	private Interest<K>[] interests;
 
 	private Float loadFactor;
+
+	private PoolResolver poolResolver = DEFAULT_POOL_RESOLVER;
 
 	private RegionAttributes<K, V> attributes;
 
@@ -257,7 +264,7 @@ public class ClientRegionFactoryBean<K, V> extends ConfigurableRegionFactoryBean
 	@SuppressWarnings("all")
 	private boolean eagerlyInitializePool(String poolName) {
 
-		return Optional.ofNullable(PoolManager.find(poolName))
+		return Optional.ofNullable(getPoolResolver().resolve(poolName))
 			.map(it -> true)
 			.orElseGet(() ->
 				SpringUtils.safeGetValue(() ->
@@ -676,6 +683,33 @@ public class ClientRegionFactoryBean<K, V> extends ConfigurableRegionFactoryBean
 	 */
 	public Optional<String> getPoolName() {
 		return Optional.ofNullable(this.poolName);
+	}
+
+	/**
+	 * Sets (configures) the {@link PoolResolver} used by this {@link ClientCache} to resolve {@link Pool} objects.
+	 *
+	 * The {@link Pool} objects may be managed or un-managed depending on the {@link PoolResolver} implementation.
+	 *
+	 * @param poolResolver {@link PoolResolver} used to resolve the configured {@link Pool}.
+	 * @see org.springframework.data.gemfire.client.PoolResolver
+	 */
+	public void setPoolResolver(@Nullable PoolResolver poolResolver) {
+		this.poolResolver = poolResolver;
+	}
+
+	/**
+	 * Gets the configured {@link PoolResolver} used by this {@link ClientCache} to resolve {@link Pool} objects.
+	 *
+	 * @return the configured {@link PoolResolver}.  If no {@link PoolResolver} was configured, then return the default,
+	 * {@link PoolManagerPoolResolver}.
+	 * @see org.springframework.data.gemfire.client.PoolResolver
+	 * @see org.springframework.data.gemfire.client.support.PoolManagerPoolResolver
+	 */
+	public @NonNull PoolResolver getPoolResolver() {
+
+		PoolResolver poolResolver = this.poolResolver;
+
+		return poolResolver != null ? poolResolver : DEFAULT_POOL_RESOLVER;
 	}
 
 	public void setRegionIdleTimeout(ExpirationAttributes regionIdleTimeout) {
