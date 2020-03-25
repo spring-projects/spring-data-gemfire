@@ -3,6 +3,12 @@ SPRING DATA GEMFIRE CHANGELOG
 https://www.springsource.org/spring-gemfire
 ===========================================
 
+Changes in version 2.2.6.RELEASE (2020-03-25)
+---------------------------------------------
+* SGF-918 - Upgrade to Pivotal GemFire 9.8.7.
+* SGF-916 - Release 2.2.6 (Moore SR6).
+
+
 Changes in version 2.2.5.RELEASE (2020-02-26)
 ---------------------------------------------
 * SGF-913 - Upgrade to Pivotal GemFire 9.8.6.
@@ -1609,6 +1615,7 @@ General
 * GemFire Template for exception translation
 * Declarative transaction management
 * Auto-generation of non-reflection based GemFire instantiators
+
 
 
 
