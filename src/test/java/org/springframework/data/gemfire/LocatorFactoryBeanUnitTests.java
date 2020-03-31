@@ -33,13 +33,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.LocatorLauncher;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
+
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.LocatorLauncher;
 
 import org.springframework.data.gemfire.config.annotation.LocatorConfigurer;
 
@@ -145,6 +145,7 @@ public class LocatorFactoryBeanUnitTests {
 		this.locatorFactoryBean.setBeanName("TestLocatorBean");
 		this.locatorFactoryBean.setBindAddress(testBindAddress);
 		this.locatorFactoryBean.setHostnameForClients("skullbox");
+		this.locatorFactoryBean.setLocators("host1[1234],host2[6789]");
 		this.locatorFactoryBean.setName("TestMember");
 		this.locatorFactoryBean.setPort(54321);
 		this.locatorFactoryBean.init();
@@ -152,6 +153,7 @@ public class LocatorFactoryBeanUnitTests {
 		assertThat(this.locatorFactoryBean.getLocator()).isEqualTo(mockLocator);
 		assertThat(this.locatorFactoryBean.getLocatorLauncher()).isEqualTo(mockLocatorLauncher);
 
+		verify(locatorBuilderSpy, times(1)).set(eq("locators"), eq("host1[1234],host2[6789]"));
 		verify(locatorBuilderSpy, times(1)).set(eq("log-level"), eq("config"));
 		verify(locatorBuilderSpy, times(1)).setBindAddress(eq(testBindAddress));
 		verify(locatorBuilderSpy, times(1)).setHostnameForClients(eq("skullbox"));
@@ -317,6 +319,30 @@ public class LocatorFactoryBeanUnitTests {
 
 		verify(mockLocatorConfigurerTwo, times(1))
 			.configure(eq("TestLocator"), eq(this.locatorFactoryBean));
+	}
+
+	@Test
+	public void setAndGetLocators() {
+
+		this.locatorFactoryBean.setLocators("skullbox[11235]");
+
+		assertThat(this.locatorFactoryBean.getLocators().orElse(null)).isEqualTo("skullbox[11235]");
+
+		this.locatorFactoryBean.setLocators(null);
+
+		assertThat(this.locatorFactoryBean.getLocators().orElse(null)).isNull();
+
+		this.locatorFactoryBean.setLocators("");
+
+		assertThat(this.locatorFactoryBean.getLocators().orElse(null)).isNull();
+
+		this.locatorFactoryBean.setLocators("  ");
+
+		assertThat(this.locatorFactoryBean.getLocators().orElse(null)).isNull();
+
+		this.locatorFactoryBean.setLocators("host1[1234],host2[6789]");
+
+		assertThat(this.locatorFactoryBean.getLocators().orElse(null)).isEqualTo("host1[1234],host2[6789]");
 	}
 
 	@Test

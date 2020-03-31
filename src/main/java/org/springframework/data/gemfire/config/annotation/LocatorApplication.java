@@ -73,6 +73,14 @@ public @interface LocatorApplication {
 	String hostnameForClients() default "";
 
 	/**
+	 * Configures the list of {@link Locator Locators} defining the cluster to which this Spring {@link Locator}
+	 * application will connect.
+	 *
+	 * Use {@literal spring.data.gemfire.locators} property in {@literal application.properties}.
+	 */
+	String locators() default "";
+
+	/**
 	 * Configures the log level used to output log messages at Apache Geode / Pivotal GemFire {@link Locator} runtime.
 	 *
 	 * Defaults to {@literal config}.

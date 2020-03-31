@@ -88,6 +88,7 @@ public class LocatorApplicationConfiguration extends AbstractAnnotationConfigSup
 
 	private String bindAddress;
 	private String hostnameForClients;
+	private String locators;
 	private String logLevel;
 	private String name;
 
@@ -147,6 +148,9 @@ public class LocatorApplicationConfiguration extends AbstractAnnotationConfigSup
 			setHostnameForClients(resolveProperty(locatorProperty("hostname-for-clients"),
 				locatorApplicationAnnotationAttributes.getString("hostnameForClients")));
 
+			setLocators(resolveProperty(propertyName("locators"),
+				locatorApplicationAnnotationAttributes.getString("locators")));
+
 			setLogLevel(resolveProperty(locatorProperty("log-level"),
 				locatorApplicationAnnotationAttributes.getString("logLevel")));
 
@@ -166,6 +170,7 @@ public class LocatorApplicationConfiguration extends AbstractAnnotationConfigSup
 		locatorFactoryBean.setBindAddress(getBindAddress());
 		locatorFactoryBean.setHostnameForClients(getHostnameForClients());
 		locatorFactoryBean.setLocatorConfigurers(resolveLocatorConfigurers());
+		locatorFactoryBean.setLocators(getLocators());
 		locatorFactoryBean.setLogLevel(getLogLevel());
 		locatorFactoryBean.setName(getName());
 		locatorFactoryBean.setPort(getPort());
@@ -195,6 +200,14 @@ public class LocatorApplicationConfiguration extends AbstractAnnotationConfigSup
 
 	public String getHostnameForClients() {
 		return this.hostnameForClients;
+	}
+
+	public void setLocators(String locators) {
+		this.locators = locators;
+	}
+
+	public String getLocators() {
+		return this.locators;
 	}
 
 	public void setLogLevel(String logLevel) {

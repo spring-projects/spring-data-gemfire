@@ -57,6 +57,7 @@ public class LocatorFactoryBean extends AbstractFactoryBeanSupport<Locator> impl
 	public static final int DEFAULT_PORT = 10334;
 
 	public static final String DEFAULT_LOG_LEVEL = "config";
+	private static final String LOCATORS_PROPERTY = "locators";
 	public static final String LOG_LEVEL_PROPERTY = "log-level";
 
 	private Integer port = DEFAULT_PORT;
@@ -75,6 +76,7 @@ public class LocatorFactoryBean extends AbstractFactoryBeanSupport<Locator> impl
 
 	private String bindAddress;
 	private String hostnameForClients;
+	private String locators;
 	private String logLevel;
 	private String name;
 
@@ -105,14 +107,15 @@ public class LocatorFactoryBean extends AbstractFactoryBeanSupport<Locator> impl
 
 			getBindAddress().ifPresent(locatorBuilder::setBindAddress);
 			getHostnameForClients().ifPresent(locatorBuilder::setHostnameForClients);
+			getLocators().ifPresent(locators -> locatorBuilder.set(LOCATORS_PROPERTY, locators));
 			getName().ifPresent(locatorBuilder::setMemberName);
 
 			locatorBuilder.set(LOG_LEVEL_PROPERTY, getLogLevel());
 			locatorBuilder.setPort(getPort());
 
-			locatorBuilder = postProcess(locatorBuilder);
+			LocatorLauncher.Builder processedLocatorBuilder = postProcess(locatorBuilder);
 
-			this.locatorLauncher = postProcess(locatorBuilder.build());
+			this.locatorLauncher = postProcess(processedLocatorBuilder.build());
 
 			LocatorLauncher.LocatorState locatorState = this.locatorLauncher.start();
 
@@ -220,6 +223,16 @@ public class LocatorFactoryBean extends AbstractFactoryBeanSupport<Locator> impl
 
 	public void setLocatorConfigurers(List<LocatorConfigurer> locatorConfigurers) {
 		Optional.ofNullable(locatorConfigurers).ifPresent(this.locatorConfigurers::addAll);
+	}
+
+	public void setLocators(String locators) {
+		this.locators = locators;
+	}
+
+	public Optional<String> getLocators() {
+
+		return Optional.ofNullable(this.locators)
+			.filter(StringUtils::hasText);
 	}
 
 	public void setLogLevel(String logLevel) {
