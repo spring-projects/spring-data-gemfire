@@ -3,6 +3,11 @@ SPRING DATA GEMFIRE CHANGELOG
 https://www.springsource.org/spring-gemfire
 ===========================================
 
+Changes in version 2.1.17.RELEASE (2020-04-28)
+----------------------------------------------
+* SGF-915 - Release 2.1.17 (Lovelace SR17).
+
+
 Changes in version 2.2.6.RELEASE (2020-03-25)
 ---------------------------------------------
 * SGF-918 - Upgrade to Pivotal GemFire 9.8.7.
@@ -1615,6 +1620,7 @@ General
 * GemFire Template for exception translation
 * Declarative transaction management
 * Auto-generation of non-reflection based GemFire instantiators
+
 
 
 
