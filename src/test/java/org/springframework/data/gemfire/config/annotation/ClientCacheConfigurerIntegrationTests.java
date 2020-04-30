@@ -37,7 +37,7 @@ import org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockOb
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * Integration tests for {@link ClientCacheConfigurer}.
+ * Integration Tests for {@link ClientCacheConfigurer}.
  *
  * @author John Blum
  * @see org.junit.Test
