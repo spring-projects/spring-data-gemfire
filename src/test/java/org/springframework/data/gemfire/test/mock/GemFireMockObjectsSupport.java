@@ -125,7 +125,6 @@ import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.lucene.analysis.Analyzer;
 import org.mockito.ArgumentMatchers;
@@ -1424,6 +1423,7 @@ public abstract class GemFireMockObjectsSupport extends MockObjectsSupport {
 		AtomicInteger readTimeout = new AtomicInteger(PoolFactory.DEFAULT_READ_TIMEOUT);
 		AtomicInteger retryAttempts = new AtomicInteger(PoolFactory.DEFAULT_RETRY_ATTEMPTS);
 		AtomicInteger socketBufferSize = new AtomicInteger(PoolFactory.DEFAULT_SOCKET_BUFFER_SIZE);
+		AtomicInteger socketConnectTimeout = new AtomicInteger(PoolFactory.DEFAULT_SOCKET_CONNECT_TIMEOUT);
 		AtomicInteger statisticInterval = new AtomicInteger(PoolFactory.DEFAULT_STATISTIC_INTERVAL);
 		AtomicInteger subscriptionAckInterval = new AtomicInteger(PoolFactory.DEFAULT_SUBSCRIPTION_ACK_INTERVAL);
 		AtomicInteger subscriptionMessageTrackingTimeout = new AtomicInteger(PoolFactory.DEFAULT_SUBSCRIPTION_MESSAGE_TRACKING_TIMEOUT);
@@ -1483,6 +1483,9 @@ public abstract class GemFireMockObjectsSupport extends MockObjectsSupport {
 		when(mockPoolFactory.setSocketBufferSize(anyInt()))
 			.thenAnswer(newSetter(socketBufferSize, mockPoolFactory));
 
+		when(mockPoolFactory.setSocketConnectTimeout(anyInt()))
+			.thenAnswer(newSetter(socketConnectTimeout, mockPoolFactory));
+
 		when(mockPoolFactory.setStatisticInterval(anyInt()))
 			.thenAnswer(newSetter(statisticInterval, mockPoolFactory));
 
@@ -1535,6 +1538,7 @@ public abstract class GemFireMockObjectsSupport extends MockObjectsSupport {
 			when(mockPool.getServerGroup()).thenReturn(serverGroup.get());
 			when(mockPool.getServers()).thenReturn(servers);
 			when(mockPool.getSocketBufferSize()).thenReturn(socketBufferSize.get());
+			when(mockPool.getSocketConnectTimeout()).thenReturn(socketConnectTimeout.get());
 			when(mockPool.getStatisticInterval()).thenReturn(statisticInterval.get());
 			when(mockPool.getSubscriptionAckInterval()).thenReturn(subscriptionAckInterval.get());
 			when(mockPool.getSubscriptionEnabled()).thenReturn(subscriptionEnabled.get());
@@ -1575,8 +1579,8 @@ public abstract class GemFireMockObjectsSupport extends MockObjectsSupport {
 
 		QueryService mockQueryService = mock(QueryService.class);
 
-		Set<CqQuery> cqQueries = new ConcurrentHashSet<>();
-		Set<Index> indexes = new ConcurrentHashSet<>();
+		Set<CqQuery> cqQueries = Collections.synchronizedSet(new HashSet<>());
+		Set<Index> indexes = Collections.synchronizedSet(new HashSet<>());
 
 		try {
 			when(mockQueryService.getCqs()).thenAnswer(invocation -> cqQueries.toArray(new CqQuery[cqQueries.size()]));
@@ -2733,6 +2737,11 @@ public abstract class GemFireMockObjectsSupport extends MockObjectsSupport {
 					mockPoolFactory.setSocketBufferSize(invocation.getArgument(0));
 					return clientCacheFactorySpy;
 				}).when(clientCacheFactorySpy).setPoolSocketBufferSize(anyInt());
+
+				doAnswer(invocation -> {
+					mockPoolFactory.setSocketConnectTimeout(invocation.getArgument(0));
+					return clientCacheFactorySpy;
+				}).when(clientCacheFactorySpy).setPoolSocketConnectTimeout(anyInt());
 
 				doAnswer(invocation -> {
 					mockPoolFactory.setStatisticInterval(invocation.getArgument(0));

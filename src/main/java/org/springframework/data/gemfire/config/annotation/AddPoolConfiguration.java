@@ -162,6 +162,11 @@ public class AddPoolConfiguration extends AbstractAnnotationConfigSupport
 				resolveProperty(poolProperty("socket-buffer-size"),
 					(Integer) enablePoolAttributes.get("socketBufferSize"))));
 
+		poolFactoryBean.addPropertyValue("socketConnectTimeout",
+			resolveProperty(namedPoolProperty(poolName, "socket-connect-timeout"),
+				resolveProperty(poolProperty("socket-connect-timeout"),
+					(Integer) enablePoolAttributes.get("socketConnectTimeout"))));
+
 		poolFactoryBean.addPropertyValue("statisticInterval",
 			resolveProperty(namedPoolProperty(poolName, "statistic-interval"),
 				resolveProperty(poolProperty("statistic-interval"),
