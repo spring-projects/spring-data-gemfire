@@ -14,7 +14,6 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.mapping.annotation;
 
 import java.lang.annotation.Annotation;
@@ -43,7 +42,6 @@ import org.springframework.core.annotation.AliasFor;
 @SuppressWarnings("unused")
 public @interface Region {
 
-	@SuppressWarnings("unchecked")
 	List<Class<? extends Annotation>> REGION_ANNOTATION_TYPES =
 		Arrays.asList(ClientRegion.class, LocalRegion.class, PartitionRegion.class, ReplicateRegion.class, Region.class);
 
