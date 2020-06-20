@@ -13,17 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.config.annotation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
 
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.Region;
 import org.junit.After;
 import org.junit.Test;
+
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Region;
+
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.env.MutablePropertySources;
@@ -34,12 +35,11 @@ import org.springframework.data.gemfire.test.model.Person;
 import org.springframework.mock.env.MockPropertySource;
 
 /**
- * Integration tests for {@link EnableEntityDefinedRegions} and {@link EntityDefinedRegionsConfiguration}.
+ * Integration Tests for {@link EnableEntityDefinedRegions} and {@link EntityDefinedRegionsConfiguration}.
  *
  * @author John Blum
  * @see org.junit.Test
  * @see org.apache.geode.cache.Region
- * @see org.springframework.context.ConfigurableApplicationContext
  * @see org.springframework.data.gemfire.config.annotation.EnableEntityDefinedRegions
  * @see org.springframework.data.gemfire.config.annotation.EntityDefinedRegionsConfiguration
  * @see org.springframework.data.gemfire.test.mock.annotation.EnableGemFireMockObjects
@@ -93,6 +93,6 @@ public class EnableEntityDefinedRegionsIntegrationTests {
 	@ClientCacheApplication
 	@EnableGemFireMockObjects
 	@EnableEntityDefinedRegions
-	static class TestConfiguration {
-	}
+	static class TestConfiguration { }
+
 }

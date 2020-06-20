@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.repository.sample;
 
 import java.util.Calendar;
@@ -45,9 +44,13 @@ public class User implements Comparable<User> {
 	@Id
 	private final String username;
 
-	public User(final String username) {
+	public User(String username) {
 		Assert.hasText(username, "The username is required!");
 		this.username = username;
+	}
+
+	public void setActive(final Boolean active) {
+		this.active = Boolean.TRUE.equals(active);
 	}
 
 	public Boolean getActive() {
@@ -58,24 +61,20 @@ public class User implements Comparable<User> {
 		return Boolean.TRUE.equals(getActive());
 	}
 
-	public void setActive(final Boolean active) {
-		this.active = Boolean.TRUE.equals(active);
+	public void setEmail(final String email) {
+		this.email = email;
 	}
 
 	public String getEmail() {
 		return email;
 	}
 
-	public void setEmail(final String email) {
-		this.email = email;
+	public void setSince(final Calendar since) {
+		this.since = since;
 	}
 
 	public Calendar getSince() {
 		return since;
-	}
-
-	public void setSince(final Calendar since) {
-		this.since = since;
 	}
 
 	public String getUsername() {
@@ -87,8 +86,8 @@ public class User implements Comparable<User> {
 		return getUsername().compareTo(user.getUsername());
 	}
 
-	protected static boolean equalsIgnoreNull(final Object obj1, final Object obj2) {
-		return (obj1 == null ? obj2 == null : obj1.equals(obj2));
+	protected static boolean equalsIgnoreNull(Object obj1, Object obj2) {
+		return obj1 == null ? obj2 == null : obj1.equals(obj2);
 	}
 
 	@Override
@@ -108,8 +107,8 @@ public class User implements Comparable<User> {
 			&& ObjectUtils.nullSafeEquals(this.getEmail(), that.getEmail());
 	}
 
-	protected static int hashCodeIgnoreNull(final Object obj) {
-		return (obj != null ? obj.hashCode() : 0);
+	protected static int hashCodeIgnoreNull(Object obj) {
+		return obj != null ? obj.hashCode() : 0;
 	}
 
 	@Override

@@ -68,6 +68,7 @@ import org.springframework.data.gemfire.mapping.annotation.ClientRegion;
 import org.springframework.data.gemfire.mapping.annotation.LocalRegion;
 import org.springframework.data.gemfire.mapping.annotation.PartitionRegion;
 import org.springframework.data.gemfire.mapping.annotation.ReplicateRegion;
+import org.springframework.data.gemfire.support.CompositeTypeFilter;
 import org.springframework.data.gemfire.util.SpringUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -172,10 +173,16 @@ public class EntityDefinedRegionsConfiguration extends AbstractAnnotationConfigS
 		Set<String> resolvedBasePackages =
 			resolveBasePackages(importingClassMetadata, enableEntityDefinedRegionsAttributes);
 
+		TypeFilter resolvedIncludesTypeFilter =
+			CompositeTypeFilter.composeOr(resolveIncludes(enableEntityDefinedRegionsAttributes));
+
+		TypeFilter resolvedRegionAnnotatedPersistentEntityTypeFilter =
+			CompositeTypeFilter.composeOr(resolveRegionAnnotatedPersistentEntityTypeFilters());
+
 		return GemFireComponentClassTypeScanner.from(resolvedBasePackages).with(resolveBeanClassLoader())
 			.withExcludes(resolveExcludes(enableEntityDefinedRegionsAttributes))
-			.withIncludes(resolveIncludes(enableEntityDefinedRegionsAttributes))
-			.withIncludes(resolveRegionAnnotatedPersistentEntityTypeFilters());
+			.withIncludes(CompositeTypeFilter.composeAnd(resolvedIncludesTypeFilter,
+				resolvedRegionAnnotatedPersistentEntityTypeFilter));
 	}
 
 	protected Set<String> resolveBasePackages(AnnotationMetadata importingClassMetaData,
@@ -208,7 +215,6 @@ public class EntityDefinedRegionsConfiguration extends AbstractAnnotationConfigS
 		return parseFilters(enableEntityDefinedRegionsAttributes.getAnnotationArray("includeFilters"));
 	}
 
-	@SuppressWarnings("unchecked")
 	protected Iterable<TypeFilter> resolveRegionAnnotatedPersistentEntityTypeFilters() {
 
 		return org.springframework.data.gemfire.mapping.annotation.Region.REGION_ANNOTATION_TYPES.stream()
@@ -632,7 +638,7 @@ public class EntityDefinedRegionsConfiguration extends AbstractAnnotationConfigS
 			return resolvePersistentEntity().getRegionAnnotation();
 		}
 
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings({ "rawtypes", "unchecked" })
 		protected Class<?> getRegionKeyConstraint() {
 
 			return Optional.ofNullable(resolvePersistentEntity().getIdProperty())
