@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2020 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 package org.springframework.data.gemfire.config.annotation;
 
@@ -257,21 +256,22 @@ public class EntityDefinedRegionsConfiguration extends AbstractAnnotationConfigS
 						throw newIllegalArgumentException(
 							"Illegal filter type [%s] when 'value' or 'classes' are specified", filterType);
 				}
-
-				for (String pattern : nullSafeGetPatterns(filterAttributes)) {
-					switch (filterType) {
-						case ASPECTJ:
-							typeFilters.add(new AspectJTypeFilter(pattern, resolveBeanClassLoader()));
-							break;
-						case REGEX:
-							typeFilters.add(new RegexPatternTypeFilter(Pattern.compile(pattern)));
-							break;
-						default:
-							throw newIllegalArgumentException(
-								"Illegal filter type [%s] when 'patterns' are specified", filterType);
-					}
-				}
 			});
+
+		stream(nullSafeGetPatterns(filterAttributes)).forEach(pattern -> {
+
+			switch (filterType) {
+				case ASPECTJ:
+					typeFilters.add(new AspectJTypeFilter(pattern, resolveBeanClassLoader()));
+					break;
+				case REGEX:
+					typeFilters.add(new RegexPatternTypeFilter(Pattern.compile(pattern)));
+					break;
+				default:
+					throw newIllegalArgumentException(
+						"Illegal filter type [%s] when 'patterns' are specified", filterType);
+			}
+		});
 
 		return typeFilters;
 	}

@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package org.springframework.data.gemfire.config;
+package org.springframework.data.gemfire.config.annotation;
 
 import static java.util.Arrays.stream;
 import static org.assertj.core.api.Assertions.assertThat;
