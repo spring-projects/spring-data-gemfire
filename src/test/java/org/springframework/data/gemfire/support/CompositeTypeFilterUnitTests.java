@@ -69,6 +69,14 @@ public class CompositeTypeFilterUnitTests {
 	}
 
 	@Test
+	public void ofWillNotWrapExistingCompositeTypeFilter() {
+
+		CompositeTypeFilter mockCompositeTypeFilter = mock(CompositeTypeFilter.class);
+
+		assertThat(CompositeTypeFilter.of(mockCompositeTypeFilter)).isSameAs(mockCompositeTypeFilter);
+	}
+
+	@Test
 	public void ofWrapsExistingTypeFilter() {
 
 		TypeFilter mockTypeFilter = mock(TypeFilter.class);

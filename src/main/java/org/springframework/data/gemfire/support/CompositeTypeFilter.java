@@ -161,7 +161,9 @@ public interface CompositeTypeFilter extends TypeFilter {
 
 		Assert.notNull(typeFilter, "TypeFilter to wrap must not be null");
 
-		return (metadataReader, metadataReaderFactory) -> typeFilter.match(metadataReader, metadataReaderFactory);
+		return typeFilter instanceof CompositeTypeFilter
+			? (CompositeTypeFilter) typeFilter
+			: (metadataReader, metadataReaderFactory) -> typeFilter.match(metadataReader, metadataReaderFactory);
 	}
 
 	/**
