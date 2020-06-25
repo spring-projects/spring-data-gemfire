@@ -183,7 +183,7 @@ have the same definition but different names.
 
 {sdg-name} can only accomplish this by using {data-store-name}'s API, by first removing the existing `Index`
 and then recreating the `Index` with the new name. It is possible that either the remove or subsequent create invocation
-could fail. There is no way to execute both actions atomically and rollback this joint operation if either fails.
+could fail. There is no way to perform both actions atomically and roll back this joint operation if either fails.
 
 However, if it succeeds, then you have the same problem as before with the `ignoreIfExists` option. Any existing OQL
 query statement using query hints that refer to the old `Index` by name must be changed.

@@ -2,7 +2,7 @@
 = {sdg-name} Repositories
 
 {sdg-name} provides support for using the Spring Data Repository abstraction to easily persist entities into
-{data-store-name} along with executing queries. A general introduction to the Repository programming model
+{data-store-name} along with running queries. A general introduction to the Repository programming model
 is provided https://docs.spring.io/spring-data/data-commons/docs/current/reference/html/#repositories[here].
 
 [[gemfire-repositories.spring-configuration-xml]]
@@ -73,7 +73,7 @@ for more details.
 
 The `@EnableGemfireRepositories` annotation also lets you specify the location of named OQL queries, which reside in
 a Java `Properties` file, by using the `namedQueriesLocation` attribute. The property name must match the name
-of a Repository query method and the property value is the OQL query you want executed when the Repository query method
+of a Repository query method and the property value is the OQL query you want to run when the Repository query method
 is called.
 
 The `repositoryImplementationPostfix` attribute can be set to an alternate value (defaults to `Impl`) if your
@@ -92,10 +92,10 @@ Many other aspects of the {sdg-acronym}'s Repository infrastructure extension ma
 https://docs.spring.io/spring-data/gemfire/docs/current/api/org/springframework/data/gemfire/repository/config/EnableGemfireRepositories.html[`@EnableGemfireRepositories`]
 Javadoc for more details on all configuration settings.
 
-[[gemfire-repositories.queries.executing]]
-== Executing OQL Queries
+[[gemfire-repositories.queries.running]]
+== Running OQL Queries
 
-{sdg-name} Repositories enable the definition of query methods to easily execute {data-store-name} OQL queries
+{sdg-name} Repositories enable the definition of query methods to easily run {data-store-name} OQL queries
 against the Region the managed entity maps to, as the following example shows:
 
 .Sample Repository

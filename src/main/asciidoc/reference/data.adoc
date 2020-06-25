@@ -10,7 +10,7 @@ This chapter also covers support for dependency injection of {data-store-name} m
 
 As with many other high-level abstractions provided by Spring, {sdg-name} provides a *template*
 to simplify {data-store-name} data access operations. The class provides several methods containing common Region operations,
-but also provides the capability to *execute* code against native {data-store-name} APIs without having to deal with
+but also provides the capability to *run* code against native {data-store-name} APIs without having to deal with
 {data-store-name} checked exceptions by using a `GemfireCallback`.
 
 The template class requires a {data-store-name} `Region`, and once configured, is thread-safe and is reusable
@@ -42,7 +42,7 @@ template.execute(new GemfireCallback<Iterable<String>>() {
 ----
 
 For accessing the full power of the {data-store-name} query language, a developer can use the `find` and `findUnique`
-methods, which, compared to the `query` method, can execute queries across multiple Regions, execute projections,
+methods, which, compared to the `query` method, can run queries across multiple Regions, run projections,
 and the like.
 
 The `find` method should be used when the query selects multiple items (through `SelectResults`) and the latter,
@@ -80,7 +80,7 @@ transparently across multiple APIs and can be configured either programmatically
 (the most popular choice).
 
 For {data-store-name}, {sdg-name} provides a dedicated, per-cache, `PlatformTransactionManager` that, once declared,
-allows Region operations to be executed atomically through Spring:
+allows Region operations to be run atomically through Spring:
 
 .Enable Transaction Management using XML
 [source,xml]

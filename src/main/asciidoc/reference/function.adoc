@@ -1,15 +1,15 @@
 [[bootstrap:function]]
 = Configuring the Function Service
 
-{sdg-name} provides <<function-annotations,annotation>> support for implementing, registering and executing
+{sdg-name} provides <<function-annotations,annotation>> support for implementing, registering and running
 {data-store-name} Functions.
 
 {sdg-name} also provides XML namespace support for registering {data-store-name}
 {x-data-store-javadoc}/org/apache/geode/cache/execute/Function.html[Functions]
-for remote function execution.
+for remote function processing.
 
 See {data-store-name}'s {x-data-store-docs}/developing/function_exec/chapter_overview.html[documentation]
-for more information on the Function execution framework.
+for more information on the Function processing framework.
 
 {data-store-name} Functions are declared as Spring beans and must implement the `org.apache.geode.cache.execute.Function`
 interface or extend `org.apache.geode.cache.execute.FunctionAdapter`.

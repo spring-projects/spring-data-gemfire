@@ -16,7 +16,7 @@ Maven-aware IDE (such as the https://spring.io/tools/sts[Spring Tool Suite]) or 
 == Hello World
 
 The "`Hello World`" sample application demonstrates the core functionality of the {sdg-name} project.
-It bootstraps {data-store-name}, configures it, executes arbitrary commands against the cache, and shuts it down
+It bootstraps {data-store-name}, configures it, runs arbitrary commands against the cache, and shuts it down
 when the application exits. Multiple instances of the application can be started at the same time
 and work together, sharing data without any user intervention.
 
