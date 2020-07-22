@@ -3,6 +3,12 @@ SPRING DATA GEMFIRE CHANGELOG
 https://www.springsource.org/spring-gemfire
 ===========================================
 
+Changes in version 2.2.9.RELEASE (2020-07-22)
+---------------------------------------------
+* DATAGEODE-352 - EnableEntityDefinedRegions.includeFilters are inappropriately overridden by framework provided include filters.
+* DATAGEODE-349 - Release 2.2.9 (Moore SR9).
+
+
 Changes in version 2.1.19.RELEASE (2020-07-22)
 ----------------------------------------------
 * DATAGEODE-352 - EnableEntityDefinedRegions.includeFilters are inappropriately overridden by framework provided include filters.
@@ -1643,6 +1649,7 @@ General
 * GemFire Template for exception translation
 * Declarative transaction management
 * Auto-generation of non-reflection based GemFire instantiators
+
 
 
 
