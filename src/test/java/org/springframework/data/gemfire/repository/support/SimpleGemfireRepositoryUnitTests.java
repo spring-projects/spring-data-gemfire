@@ -13,12 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.repository.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -28,6 +25,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -44,6 +43,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.DataPolicy;
@@ -51,36 +54,32 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.query.SelectResults;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.repository.Wrapper;
 import org.springframework.data.gemfire.repository.sample.Animal;
 import org.springframework.data.repository.core.EntityInformation;
 
 /**
- * Unit tests for {@link SimpleGemfireRepository}.
+ * Unit Tests for {@link SimpleGemfireRepository}.
  *
  * @author John Blum
- * @see org.junit.Rule
+ * @see java.util.function.Function
+ * @see java.util.stream.Stream
  * @see org.junit.Test
  * @see org.mockito.Mockito
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.Region
  * @see org.springframework.data.gemfire.GemfireTemplate
  * @see org.springframework.data.gemfire.repository.Wrapper
  * @see org.springframework.data.gemfire.repository.support.SimpleGemfireRepository
+ * @see org.springframework.data.repository.core.EntityInformation
  * @since 1.4.5
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({  "rawtypes", "unchecked" })
 public class SimpleGemfireRepositoryUnitTests {
 
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
-
 	protected Map<Long, Animal> asMap(Iterable<Animal> animals) {
+
 		Map<Long, Animal> animalMap = new HashMap<>();
 
 		for (Animal animal : animals) {
@@ -91,14 +90,20 @@ public class SimpleGemfireRepositoryUnitTests {
 	}
 
 	protected Animal newAnimal(String name) {
+
 		Animal animal = new Animal();
+
 		animal.setName(name);
+
 		return animal;
 	}
 
 	protected Animal newAnimal(Long id, String name) {
+
 		Animal animal = newAnimal(name);
+
 		animal.setId(id);
+
 		return animal;
 	}
 
@@ -107,6 +112,7 @@ public class SimpleGemfireRepositoryUnitTests {
 	}
 
 	protected Cache mockCache(String name, boolean transactionExists) {
+
 		Cache mockCache = mock(Cache.class, String.format("%s.MockCache", name));
 
 		CacheTransactionManager mockCacheTransactionManager = mock(CacheTransactionManager.class,
@@ -119,13 +125,15 @@ public class SimpleGemfireRepositoryUnitTests {
 	}
 
 	protected EntityInformation<Animal, Long> mockEntityInformation() {
+
 		EntityInformation<Animal, Long> mockEntityInformation = mock(EntityInformation.class);
 
 		doAnswer(new Answer<Long>() {
+
 			private final AtomicLong idSequence = new AtomicLong(0L);
 
 			@Override
-			public Long answer(InvocationOnMock invocation) throws Throwable {
+			public Long answer(InvocationOnMock invocation) {
 				Animal argument = invocation.getArgument(0);
 				argument.setId(resolveId(argument.getId()));
 				return argument.getId();
@@ -135,6 +143,7 @@ public class SimpleGemfireRepositoryUnitTests {
 			private Long resolveId(Long id) {
 				return (id != null ? id : idSequence.incrementAndGet());
 			}
+
 		}).when(mockEntityInformation).getRequiredId(any(Animal.class));
 
 		return mockEntityInformation;
@@ -145,6 +154,7 @@ public class SimpleGemfireRepositoryUnitTests {
 	}
 
 	protected Region mockRegion(String name) {
+
 		Region mockRegion = mock(Region.class, String.format("%s.MockRegion", name));
 
 		when(mockRegion.getName()).thenReturn(name);
@@ -154,6 +164,7 @@ public class SimpleGemfireRepositoryUnitTests {
 	}
 
 	protected Region mockRegion(String name, Cache mockCache, DataPolicy dataPolicy) {
+
 		Region mockRegion = mockRegion(name);
 
 		when(mockRegion.getRegionService()).thenReturn(mockCache);
@@ -168,25 +179,54 @@ public class SimpleGemfireRepositoryUnitTests {
 	}
 
 	@Test
-	public void constructSimpleGemfireRepositoryWithNullTemplateThrowsIllegalArgumentException() {
-		exception.expect(IllegalArgumentException.class);
-		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("Template must not be null");
+	public void constructsSimpleGemfireRepositorySuccessfully() {
 
-		new SimpleGemfireRepository<>(null, mockEntityInformation());
+		Region mockRegion = mock(Region.class);
+
+		GemfireTemplate template = spy(new GemfireTemplate(mockRegion));
+
+		EntityInformation mockEntityInformation = mock(EntityInformation.class);
+
+		SimpleGemfireRepository repository = new SimpleGemfireRepository(template, mockEntityInformation);
+
+		assertThat(repository).isNotNull();
+
+		verifyNoInteractions(template, mockRegion, mockEntityInformation);
 	}
 
-	@Test
-	public void constructSimpleGemfireRepositoryWithNullEntityInformationThrowsIllegalArgumentException() {
-		exception.expect(IllegalArgumentException.class);
-		exception.expectCause(is(nullValue(Throwable.class)));
-		exception.expectMessage("EntityInformation must not be null");
+	@Test(expected = IllegalArgumentException.class)
+	public void constructSimpleGemfireRepositoryWithNullTemplateThrowsIllegalArgumentException() {
 
-		new SimpleGemfireRepository<>(newGemfireTemplate(mockRegion()), null);
+		try {
+			new SimpleGemfireRepository<>(null, mockEntityInformation());
+		}
+		catch (IllegalArgumentException expected) {
+
+			assertThat(expected).hasMessage("GemfireTemplate must not be null");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void constructSimpleGemfireRepositoryWithNullEntityInformationThrowsIllegalArgumentException() {
+
+		try {
+			new SimpleGemfireRepository<>(newGemfireTemplate(mockRegion()), null);
+		}
+		catch (IllegalArgumentException expected) {
+
+			assertThat(expected).hasMessage("EntityInformation must not be null");
+			assertThat(expected).hasNoCause();
+
+			throw expected;
+		}
 	}
 
 	@Test
 	public void saveEntityIsCorrect() {
+
 		Region<Long, Animal> mockRegion = mockRegion();
 
 		SimpleGemfireRepository<Animal, Long> repository =
@@ -239,21 +279,98 @@ public class SimpleGemfireRepositoryUnitTests {
 
 	@Test
 	public void countReturnsNumberOfRegionEntries() {
-		Region mockRegion = mockRegion("Example");
-		GemfireTemplate template = spy(newGemfireTemplate(mockRegion));
+
 		SelectResults mockSelectResults = mock(SelectResults.class);
+
+		Region mockRegion = mockRegion("Example");
+
+		GemfireTemplate template = spy(newGemfireTemplate(mockRegion));
 
 		doReturn(mockSelectResults).when(template).find(eq("SELECT count(*) FROM /Example"));
 		when(mockSelectResults.iterator()).thenReturn(Collections.singletonList(21).iterator());
 
-		SimpleGemfireRepository<Animal, Long> repository = new SimpleGemfireRepository<>(
-			template, mockEntityInformation());
+		SimpleGemfireRepository<Animal, Long> repository =
+			new SimpleGemfireRepository<>(template, mockEntityInformation());
 
-		assertThat(repository.count()).isEqualTo(21);
+		assertThat(repository).isNotNull();
+		assertThat(repository.count()).isEqualTo(21L);
 
+		verify(template, times(1)).getRegion();
 		verify(mockRegion, times(1)).getFullPath();
 		verify(template, times(1)).find(eq("SELECT count(*) FROM /Example"));
 		verify(mockSelectResults, times(1)).iterator();
+		verifyNoMoreInteractions(mockRegion, mockSelectResults, template);
+	}
+
+	@Test
+	public void countWhenSelectResultsAreNullIsNullSafeAndReturnsZero() {
+
+		Region mockRegion = mockRegion("Example");
+
+		GemfireTemplate template = spy(newGemfireTemplate(mockRegion));
+
+		doReturn(null).when(template).find(eq("SELECT count(*) FROM /Example"));
+
+		SimpleGemfireRepository<Animal, Long> repository =
+			new SimpleGemfireRepository<>(template, mockEntityInformation());
+
+		assertThat(repository).isNotNull();
+		assertThat(repository.count()).isEqualTo(0L);
+
+		verify(template, times(1)).getRegion();
+		verify(mockRegion, times(1)).getFullPath();
+		verify(template, times(1)).find(eq("SELECT count(*) FROM /Example"));
+		verifyNoMoreInteractions(mockRegion, template);
+	}
+
+	@Test
+	public void countWhenSelectResultsIteratorIsNullIsNullSafeAndReturnsZero() {
+
+		SelectResults mockSelectResults = mock(SelectResults.class);
+
+		Region mockRegion = mockRegion("Example");
+
+		GemfireTemplate template = spy(newGemfireTemplate(mockRegion));
+
+		doReturn(mockSelectResults).when(template).find(eq("SELECT count(*) FROM /Example"));
+		doReturn(null).when(mockSelectResults).iterator();
+
+		SimpleGemfireRepository<Animal, Long> repository =
+			new SimpleGemfireRepository<>(template, mockEntityInformation());
+
+		assertThat(repository).isNotNull();
+		assertThat(repository.count()).isEqualTo(0L);
+
+		verify(template, times(1)).getRegion();
+		verify(mockRegion, times(1)).getFullPath();
+		verify(template, times(1)).find(eq("SELECT count(*) FROM /Example"));
+		verify(mockSelectResults, times(1)).iterator();
+		verifyNoMoreInteractions(mockRegion, mockSelectResults, template);
+	}
+
+	@Test
+	public void countWhenSelectResultsIteratorIsEmptyReturnsZero() {
+
+		SelectResults mockSelectResults = mock(SelectResults.class);
+
+		Region mockRegion = mockRegion("Example");
+
+		GemfireTemplate template = spy(newGemfireTemplate(mockRegion));
+
+		doReturn(mockSelectResults).when(template).find(eq("SELECT count(*) FROM /Example"));
+		doReturn(Collections.emptyIterator()).when(mockSelectResults).iterator();
+
+		SimpleGemfireRepository<Animal, Long> repository =
+			new SimpleGemfireRepository<>(template, mockEntityInformation());
+
+		assertThat(repository).isNotNull();
+		assertThat(repository.count()).isEqualTo(0L);
+
+		verify(template, times(1)).getRegion();
+		verify(mockRegion, times(1)).getFullPath();
+		verify(template, times(1)).find(eq("SELECT count(*) FROM /Example"));
+		verify(mockSelectResults, times(1)).iterator();
+		verifyNoMoreInteractions(mockRegion, mockSelectResults, template);
 	}
 
 	@Test

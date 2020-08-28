@@ -17,6 +17,7 @@ package org.springframework.data.gemfire.repository.support;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -60,24 +61,25 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 	private final GemfireTemplate template;
 
 	/**
-	 * Creates a new {@link SimpleGemfireRepository}.
+	 * Constructs a new instance of {@link SimpleGemfireRepository} initialized with the {@link GemfireTemplate}
+	 * and {@link EntityInformation}.
 	 *
-	 * @param template must not be {@literal null}.
-	 * @param entityInformation must not be {@literal null}.
+	 * @param template {@link GemfireTemplate} used to perform basic data access operations and simple OQL queries;
+	 * must not be {@literal null}.
+	 * @param entityInformation {@link EntityInformation} used to describe the entity; must not be {@literal null}.
+	 * @throws IllegalArgumentException if {@link GemfireTemplate} or {@link EntityInformation} is {@literal null}.
+	 * @see org.springframework.data.gemfire.GemfireTemplate
+	 * @see org.springframework.data.repository.core.EntityInformation
 	 */
 	public SimpleGemfireRepository(GemfireTemplate template, EntityInformation<T, ID> entityInformation) {
 
-		Assert.notNull(template, "Template must not be null");
+		Assert.notNull(template, "GemfireTemplate must not be null");
 		Assert.notNull(entityInformation, "EntityInformation must not be null");
 
 		this.template = template;
 		this.entityInformation = entityInformation;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#save(S)
-	 */
 	@Override
 	public <U extends T> U save(U entity) {
 
@@ -88,10 +90,16 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 		return entity;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#save(java.lang.Iterable)
-	 */
+	@Override
+	public T save(Wrapper<T, ID> wrapper) {
+
+		T entity = wrapper.getEntity();
+
+		this.template.put(wrapper.getKey(), entity);
+
+		return entity;
+	}
+
 	@Override
 	public <U extends T> Iterable<U> saveAll(Iterable<U> entities) {
 
@@ -104,55 +112,31 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 		return entitiesToSave.values();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.gemfire.repository.GemfireRepository#save(org.springframework.data.gemfire.repository.Wrapper)
-	 */
-	@Override
-	public T save(Wrapper<T, ID> wrapper) {
-
-		T entity = wrapper.getEntity();
-
-		this.template.put(wrapper.getKey(), entity);
-
-		return entity;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#count()
-	 */
 	@Override
 	public long count() {
 
-		SelectResults<Integer> results =
-			this.template.find(String.format("SELECT count(*) FROM %s", this.template.getRegion().getFullPath()));
+		String countQuery = String.format("SELECT count(*) FROM %s", this.template.getRegion().getFullPath());
 
-		return Long.valueOf(results.iterator().next());
+		SelectResults<Integer> results = this.template.find(countQuery);
+
+		return Optional.ofNullable(results)
+			.map(SelectResults::iterator)
+			.filter(Iterator::hasNext)
+			.map(Iterator::next)
+			.map(Long::valueOf)
+			.orElse(0L);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#existsById(java.lang.Object)
-	 */
 	@Override
 	public boolean existsById(ID id) {
 		return findById(id).isPresent();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#findById(java.lang.Object)
-	 */
 	@Override
 	public Optional<T> findById(ID id) {
 		return Optional.ofNullable(this.template.get(id));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#findAll()
-	 */
 	@Override
 	public Collection<T> findAll() {
 
@@ -162,10 +146,6 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 		return results.asList();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.gemfire.repository.GemfireRepository.sort(:org.springframework.data.domain.Sort)
-	 */
 	@Override
 	public Iterable<T> findAll(Sort sort) {
 
@@ -178,10 +158,6 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 		return selectResults.asList();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#findAllById(java.lang.Iterable)
-	 */
 	@Override
 	public Collection<T> findAllById(Iterable<ID> ids) {
 
@@ -191,80 +167,45 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 			.filter(Objects::nonNull).collect(Collectors.toList());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#deleteById(java.lang.Object)
-	 */
 	@Override
 	public void deleteById(ID id) {
 		this.template.remove(id);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#delete(java.lang.Object)
-	 */
 	@Override
 	public void delete(T entity) {
 		deleteById(this.entityInformation.getRequiredId(entity));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#delete(java.lang.Iterable)
-	 */
 	@Override
 	public void deleteAll(Iterable<? extends T> entities) {
 		entities.forEach(this::delete);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.apache.geode.cache.Region#getAttributes()
-	 * @see org.apache.geode.cache.RegionAttributes#getDataPolicy()
-	 */
 	boolean isPartitioned(Region<?, ?> region) {
 
 		return region != null && region.getAttributes() != null
 			&& isPartitioned(region.getAttributes().getDataPolicy());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.apache.geode.cache.DataPolicy#withPartitioning()
-	 */
 	boolean isPartitioned(DataPolicy dataPolicy) {
 		return dataPolicy != null && dataPolicy.withPartitioning();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.apache.geode.cache.Region#getRegionService()
-	 * @see org.apache.geode.cache.Cache#getCacheTransactionManager()
-	 */
 	boolean isTransactionPresent(Region<?, ?> region) {
 
 		return region.getRegionService() instanceof Cache
 			&& isTransactionPresent(((Cache) region.getRegionService()).getCacheTransactionManager());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.apache.geode.cache.CacheTransactionManager#exists()
-	 */
 	boolean isTransactionPresent(CacheTransactionManager cacheTransactionManager) {
 		return cacheTransactionManager != null && cacheTransactionManager.exists();
 	}
 
-	/* (non-Javadoc) */
 	<K> void  doRegionClear(Region<K, ?> region) {
 		region.removeAll(region.keySet());
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.repository.CrudRepository#deleteAll()
-	 */
 	@Override
 	public void deleteAll() {
 		this.template.execute((GemfireCallback<Void>) region -> {
