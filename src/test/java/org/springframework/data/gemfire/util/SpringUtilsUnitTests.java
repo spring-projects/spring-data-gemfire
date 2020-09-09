@@ -14,7 +14,6 @@
  * limitations under the License.
  *
  */
-
 package org.springframework.data.gemfire.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,12 +25,16 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.data.gemfire.util.ArrayUtils.asArray;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalStateException;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newRuntimeException;
 
+import java.sql.Time;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -39,20 +42,25 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
+import org.springframework.data.gemfire.test.model.Person;
+import org.springframework.data.gemfire.util.SpringUtils.ValueReturningThrowableOperation;
 
 /**
  * Unit tests for {@link SpringUtils}.
  *
  * @author John Blum
+ * @see java.util.function.Function
  * @see org.junit.Test
- * @see org.junit.runner.RunWith
  * @see org.mockito.Mock
  * @see org.mockito.Mockito
  * @see org.mockito.junit.MockitoJUnitRunner
+ * @see org.springframework.beans.factory.BeanFactory
+ * @see org.springframework.beans.factory.config.BeanDefinition
  * @see org.springframework.data.gemfire.util.SpringUtils
  * @since 1.9.0
  */
@@ -164,7 +172,6 @@ public class SpringUtilsUnitTests {
 	}
 
 	@Test
-	@SuppressWarnings("all")
 	public void setBeanDefinitionPropertyReference() {
 
 		BeanDefinition mockBeanDefinition = mock(BeanDefinition.class);
@@ -186,7 +193,6 @@ public class SpringUtilsUnitTests {
 	}
 
 	@Test
-	@SuppressWarnings("all")
 	public void setBeanDefinitionPropertyValue() {
 
 		BeanDefinition mockBeanDefinition = mock(BeanDefinition.class);
@@ -335,6 +341,96 @@ public class SpringUtilsUnitTests {
 	}
 
 	@Test
+	public void nullSafeNameWithType() {
+
+		assertThat(SpringUtils.nullSafeName(Boolean.class)).isEqualTo(Boolean.class.getName());
+		assertThat(SpringUtils.nullSafeName(Integer.class)).isEqualTo(Integer.class.getName());
+		assertThat(SpringUtils.nullSafeName(Double.class)).isEqualTo(Double.class.getName());
+		assertThat(SpringUtils.nullSafeName(String.class)).isEqualTo(String.class.getName());
+		assertThat(SpringUtils.nullSafeName(Time.class)).isEqualTo(Time.class.getName());
+		assertThat(SpringUtils.nullSafeName(Person.class)).isEqualTo(Person.class.getName());
+	}
+
+	@Test
+	public void nullSafeNameWithNull() {
+		assertThat(SpringUtils.nullSafeName(null)).isNull();
+	}
+
+	@Test
+	public void nullSafeSimpleNameWithType() {
+
+		assertThat(SpringUtils.nullSafeSimpleName(Boolean.class)).isEqualTo(Boolean.class.getSimpleName());
+		assertThat(SpringUtils.nullSafeSimpleName(Integer.class)).isEqualTo(Integer.class.getSimpleName());
+		assertThat(SpringUtils.nullSafeSimpleName(Double.class)).isEqualTo(Double.class.getSimpleName());
+		assertThat(SpringUtils.nullSafeSimpleName(String.class)).isEqualTo(String.class.getSimpleName());
+		assertThat(SpringUtils.nullSafeSimpleName(Time.class)).isEqualTo(Time.class.getSimpleName());
+		assertThat(SpringUtils.nullSafeSimpleName(Person.class)).isEqualTo(Person.class.getSimpleName());
+	}
+
+	@Test
+	public void nullSafeSimpleNameWithNull() {
+		assertThat(SpringUtils.nullSafeSimpleName(null)).isNull();
+	}
+
+	@Test
+	public void nullSafeTypeWithObject() {
+		assertThat(SpringUtils.nullSafeType(new Object())).isEqualTo(Object.class);
+	}
+
+	@Test
+	public void nullSafeTypeWithObjectAndDefaultType() {
+		assertThat(SpringUtils.nullSafeType("test", Person.class)).isEqualTo(String.class);
+	}
+
+	@Test
+	public void nullSafeTypeWithNull() {
+		assertThat(SpringUtils.nullSafeType(null)).isNull();
+	}
+
+	@Test
+	public void nullSafeTypeWithNullAndDefaultType() {
+		assertThat(SpringUtils.nullSafeType(null, Person.class)).isEqualTo(Person.class);
+	}
+
+	@Test
+	public void safeDoOperationWithNonThrowingOperation() {
+
+		AtomicReference<Object> operationValue = new AtomicReference<>();
+
+		assertThat(SpringUtils.safeDoOperation(() -> operationValue.set("TEST"))).isTrue();
+		assertThat(operationValue.get()).isEqualTo("TEST");
+	}
+
+	@Test
+	public void safeDoOperationWithThrowingOperation() {
+		assertThat(SpringUtils.safeDoOperation(() -> { throw new RuntimeException("TEST"); })).isFalse();
+	}
+
+	@Test
+	public void safeDoOperationWithNonThrowingOperationAndBackupOperation() {
+
+		AtomicReference<Object> operationValue = new AtomicReference<>();
+
+		Runnable mockRunnable = mock(Runnable.class);
+
+		assertThat(SpringUtils.safeDoOperation(() -> operationValue.set("MOCK"), mockRunnable)).isTrue();
+		assertThat(operationValue.get()).isEqualTo("MOCK");
+
+		verifyNoInteractions(mockRunnable);
+	}
+
+	@Test
+	public void safeDoOperationWithThrowingOperationAndBackupOperation() {
+
+		Runnable mockRunnable = mock(Runnable.class);
+
+		assertThat(SpringUtils.safeDoOperation(() -> { throw new RuntimeException("TEST"); }, mockRunnable)).isFalse();
+
+		verify(mockRunnable, times(1)).run();
+		verifyNoMoreInteractions(mockRunnable);
+	}
+
+	@Test
 	public void safeGetValueReturnsSuppliedValue() {
 		assertThat(SpringUtils.safeGetValue(() -> "test")).isEqualTo("test");
 	}
@@ -353,16 +449,19 @@ public class SpringUtilsUnitTests {
 	@Test
 	public void safeGetValueReturnsSuppliedDefaultValue() {
 
-		Supplier<String> exceptionThrowingSupplier = () -> { throw newRuntimeException("error"); };
+		ValueReturningThrowableOperation<String> exceptionThrowingOperation =
+			() -> { throw newRuntimeException("error"); };
+
 		Supplier<String> defaultValueSupplier = () -> "test";
 
-		assertThat(SpringUtils.safeGetValue(exceptionThrowingSupplier, defaultValueSupplier)).isEqualTo("test");
+		assertThat(SpringUtils.safeGetValue(exceptionThrowingOperation, defaultValueSupplier)).isEqualTo("test");
 	}
 
 	@Test
 	public void safeGetValueHandlesExceptionReturnsValue() {
 
-		Supplier<String> exceptionThrowingSupplier = () -> { throw newRuntimeException("error"); };
+		ValueReturningThrowableOperation<String> exceptionThrowingOperation =
+			() -> { throw newRuntimeException("error"); };
 
 		Function<Throwable, String> exceptionHandler = exception -> {
 
@@ -373,13 +472,14 @@ public class SpringUtilsUnitTests {
 			return "test";
 		};
 
-		assertThat(SpringUtils.safeGetValue(exceptionThrowingSupplier, exceptionHandler)).isEqualTo("test");
+		assertThat(SpringUtils.safeGetValue(exceptionThrowingOperation, exceptionHandler)).isEqualTo("test");
 	}
 
 	@Test(expected = IllegalStateException.class)
 	public void safeGetValueHandlesExceptionAndCanThrowException() {
 
-		Supplier<String> exceptionThrowingSupplier = () -> { throw newRuntimeException("error"); };
+		ValueReturningThrowableOperation<String> exceptionThrowingOperation =
+			() -> { throw newRuntimeException("error"); };
 
 		Function<Throwable, String> exceptionHandler = exception -> {
 
@@ -391,7 +491,7 @@ public class SpringUtilsUnitTests {
 		};
 
 		try {
-			SpringUtils.safeGetValue(exceptionThrowingSupplier, exceptionHandler);
+			SpringUtils.safeGetValue(exceptionThrowingOperation, exceptionHandler);
 		}
 		catch (IllegalStateException expected) {
 
