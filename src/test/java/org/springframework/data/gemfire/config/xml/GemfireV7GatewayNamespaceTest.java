@@ -15,17 +15,15 @@
  */
 package org.springframework.data.gemfire.config.xml;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+
+import org.junit.AfterClass;
+import org.junit.Test;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
@@ -38,9 +36,6 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 
-import org.junit.AfterClass;
-import org.junit.Test;
-
 import org.springframework.data.gemfire.PeerRegionFactoryBean;
 import org.springframework.data.gemfire.RecreatingContextTest;
 import org.springframework.data.gemfire.TestUtils;
@@ -48,20 +43,25 @@ import org.springframework.data.gemfire.test.GemfireTestBeanPostProcessor;
 import org.springframework.data.gemfire.wan.GatewaySenderFactoryBean;
 
 /**
- * This test is only valid for GF 7.0 and above
+ * Integration Tests testing and asserting GemFire 7.0 WAN functionality and configuration.
  *
  * @author David Turanski
  * @author John Blum
+ * @see org.junit.Test
+ * @see org.apache.geode.cache.asyncqueue.AsyncEventQueue
+ * @see org.apache.geode.cache.wan.GatewayReceiver
+ * @see org.apache.geode.cache.wan.GatewaySender
+ * @see org.springframework.data.gemfire.RecreatingContextTest
  */
+@SuppressWarnings("unused")
 public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.data.gemfire.RecreatingContextTest#location()
-	 */
-	@Override
-	protected String location() {
-		return "/org/springframework/data/gemfire/config/xml/gateway-v7-ns.xml";
+	@AfterClass
+	public static void tearDown() {
+
+		for (String name : new File(".").list((file, filename) -> filename.startsWith("BACKUP"))) {
+			new File(name).delete();
+		}
 	}
 
 	@Override
@@ -69,163 +69,166 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 		this.applicationContext.getBeanFactory().addBeanPostProcessor(new GemfireTestBeanPostProcessor());
 	}
 
-	@AfterClass
-	@SuppressWarnings("all")
-	public static void tearDown() {
-
-		for (String name : nullSafeArray(new File(".")
-			.list((file, filename) -> filename.startsWith("BACKUP")), String.class)) {
-
-			new File(name).delete();
-		}
+	@Override
+	protected String location() {
+		return "/org/springframework/data/gemfire/config/xml/gateway-v7-ns.xml";
 	}
 
 	@Test
-	public void testAsyncEventQueue() {
+	public void asyncEventQueueConfigurationIsCorrect() {
 
 		AsyncEventQueue asyncEventQueue =
 			this.applicationContext.getBean("async-event-queue", AsyncEventQueue.class);
 
-		assertNotNull(asyncEventQueue);
-		assertTrue(asyncEventQueue.isBatchConflationEnabled());
-		assertEquals(10, asyncEventQueue.getBatchSize());
-		assertEquals(3, asyncEventQueue.getBatchTimeInterval());
-		assertEquals("diskstore", asyncEventQueue.getDiskStoreName());
-		assertTrue(asyncEventQueue.isDiskSynchronous());
-		assertEquals(50, asyncEventQueue.getMaximumQueueMemory());
-		assertEquals(OrderPolicy.KEY, asyncEventQueue.getOrderPolicy());
-		assertFalse(asyncEventQueue.isParallel());
-		assertTrue(asyncEventQueue.isPersistent());
+		assertThat(asyncEventQueue).isNotNull();
+		assertThat(asyncEventQueue.isBatchConflationEnabled()).isTrue();
+		assertThat(asyncEventQueue.getBatchSize()).isEqualTo(10);
+		assertThat(asyncEventQueue.getBatchTimeInterval()).isEqualTo(3);
+		assertThat(asyncEventQueue.getDiskStoreName()).isEqualTo("diskstore");
+		assertThat(asyncEventQueue.isDiskSynchronous()).isTrue();
+		assertThat(asyncEventQueue.getMaximumQueueMemory()).isEqualTo(50);
+		assertThat(asyncEventQueue.getOrderPolicy()).isEqualTo(OrderPolicy.KEY);
+		assertThat(asyncEventQueue.isParallel()).isFalse();
+		assertThat(asyncEventQueue.isPersistent()).isTrue();
 	}
 
 	@Test
-	public void testGatewaySender() throws Exception {
+	public void gatewaySenderFactoryBeanConfigurationIsCorrect() throws Exception {
 
 		GatewaySenderFactoryBean gatewaySenderFactoryBean =
 			this.applicationContext.getBean("&gateway-sender", GatewaySenderFactoryBean.class);
 
-		assertNotNull(gatewaySenderFactoryBean);
-		assertNotNull(TestUtils.readField("cache", gatewaySenderFactoryBean));
-		assertEquals(2,
-			TestUtils.<Integer>readField("remoteDistributedSystemId", gatewaySenderFactoryBean).longValue());
-		assertEquals(10, TestUtils.<Integer>readField("alertThreshold", gatewaySenderFactoryBean).longValue());
-		assertTrue(Boolean.TRUE.equals(TestUtils.readField("batchConflationEnabled", gatewaySenderFactoryBean)));
-		assertEquals(11, TestUtils.<Integer>readField("batchSize", gatewaySenderFactoryBean).intValue());
-		assertEquals(12, TestUtils.<Integer>readField("dispatcherThreads", gatewaySenderFactoryBean).intValue());
-		assertEquals(false, TestUtils.readField("diskSynchronous", gatewaySenderFactoryBean));
-		assertEquals(true, TestUtils.readField("manualStart", gatewaySenderFactoryBean));
+		assertThat(gatewaySenderFactoryBean).isNotNull();
+		assertThat(gatewaySenderFactoryBean.getCache()).isNotNull();
+		assertThat(gatewaySenderFactoryBean.getRemoteDistributedSystemId()).isEqualTo(2);
+		assertThat(gatewaySenderFactoryBean.getAlertThreshold()).isEqualTo(10);
+		assertThat(gatewaySenderFactoryBean.getBatchConflationEnabled()).isTrue();
+		assertThat(gatewaySenderFactoryBean.getBatchSize()).isEqualTo(11);
+		assertThat(gatewaySenderFactoryBean.getDispatcherThreads()).isEqualTo(12);
+		assertThat(gatewaySenderFactoryBean.getDiskSynchronous()).isFalse();
+		assertThat(gatewaySenderFactoryBean.isManualStart()).isTrue();
 
 		List<GatewayEventFilter> eventFilters = TestUtils.readField("eventFilters", gatewaySenderFactoryBean);
 
-		assertNotNull(eventFilters);
-		assertEquals(2, eventFilters.size());
-		assertTrue(eventFilters.get(0) instanceof TestEventFilter);
+		assertThat(eventFilters).isNotNull();
+		assertThat(eventFilters.size()).isEqualTo(2);
+		assertThat(eventFilters.get(0)).isInstanceOf(TestEventFilter.class);
 
 		List<GatewayTransportFilter> transportFilters = TestUtils
 			.readField("transportFilters", gatewaySenderFactoryBean);
 
-		assertNotNull(transportFilters);
-		assertEquals(2, transportFilters.size());
-		assertTrue(transportFilters.get(0) instanceof TestTransportFilter);
+		assertThat(transportFilters).isNotNull();
+		assertThat(transportFilters.size()).isEqualTo(2);
+		assertThat(transportFilters.get(0)).isInstanceOf(TestTransportFilter.class);
 	}
 
 	@Test
 	@SuppressWarnings("rawtypes")
-	public void testInnerGatewaySender() throws Exception {
+	public void nestedGatewaySenderConfigurationIsCorrect() throws Exception {
 
-		Region<?, ?> region = this.applicationContext.getBean("region-inner-gateway-sender", Region.class);
+		Region<?, ?> region = this.applicationContext.getBean("region-with-nested-gateway-sender", Region.class);
 
-		assertNotNull(region.getAttributes().getGatewaySenderIds());
-		assertEquals(2, region.getAttributes().getGatewaySenderIds().size());
+		assertThat(region).isNotNull();
+		assertThat(region.getAttributes()).isNotNull();
+		assertThat(region.getAttributes().getGatewaySenderIds()).isNotNull();
+		assertThat(region.getAttributes().getGatewaySenderIds()).hasSize(2);
 
-		PeerRegionFactoryBean regionFactoryBean =
-			this.applicationContext.getBean("&region-inner-gateway-sender", PeerRegionFactoryBean.class);
+		PeerRegionFactoryBean regionFactoryBean = applicationContext.getBean("&region-with-nested-gateway-sender", PeerRegionFactoryBean.class);
 
-		Object[] gatewaySenders = TestUtils.readField("gatewaySenders", regionFactoryBean);
+		List<GatewaySender> gatewaySenders = TestUtils.readField("gatewaySenders", regionFactoryBean);
 
-		assertNotNull(gatewaySenders);
-		assertEquals(2, gatewaySenders.length);
+		assertThat(gatewaySenders).isNotNull();
+		assertThat(gatewaySenders).hasSize(2);
 
-		GatewaySender gatewaySender = (GatewaySender) gatewaySenders[0];
+		GatewaySender gatewaySender = gatewaySenders.get(0);
 
-		assertNotNull(gatewaySender);
-		assertEquals(1, gatewaySender.getRemoteDSId());
-		assertEquals(false, gatewaySender.isManualStart());
-		assertEquals(true, gatewaySender.isRunning());
-		assertEquals(10, gatewaySender.getAlertThreshold());
-		assertEquals(11, gatewaySender.getBatchSize());
-		assertEquals(3000, gatewaySender.getBatchTimeInterval());
-		assertEquals(2, gatewaySender.getDispatcherThreads());
-		assertEquals("diskstore", gatewaySender.getDiskStoreName());
-		assertEquals(true, gatewaySender.isDiskSynchronous());
-		assertTrue(gatewaySender.isBatchConflationEnabled());
-		assertEquals(50, gatewaySender.getMaximumQueueMemory());
-		assertEquals(OrderPolicy.THREAD, gatewaySender.getOrderPolicy());
-		assertTrue(gatewaySender.isPersistenceEnabled());
-		assertFalse(gatewaySender.isParallel());
-		assertEquals(16536, gatewaySender.getSocketBufferSize());
-		assertEquals(3000, gatewaySender.getSocketReadTimeout());
+		assertThat(gatewaySender).isNotNull();
+		assertThat(gatewaySender.getRemoteDSId()).isEqualTo(1);
+		assertThat(gatewaySender.isManualStart()).isFalse();
+		assertThat(gatewaySender.isRunning()).isTrue();
+		assertThat(gatewaySender.getAlertThreshold()).isEqualTo(10);
+		assertThat(gatewaySender.getBatchSize()).isEqualTo(11);
+		assertThat(gatewaySender.getBatchTimeInterval()).isEqualTo(3000);
+		assertThat(gatewaySender.getDispatcherThreads()).isEqualTo(2);
+		assertThat(gatewaySender.getDiskStoreName()).isEqualTo("diskstore");
+		assertThat(gatewaySender.isDiskSynchronous()).isEqualTo(true);
+		assertThat(gatewaySender.isBatchConflationEnabled()).isTrue();
+		assertThat(gatewaySender.getMaximumQueueMemory()).isEqualTo(50);
+		assertThat(gatewaySender.getOrderPolicy()).isEqualTo(OrderPolicy.THREAD);
+		assertThat(gatewaySender.isPersistenceEnabled()).isTrue();
+		assertThat(gatewaySender.isParallel()).isFalse();
+		assertThat(gatewaySender.getSocketBufferSize()).isEqualTo(16536);
+		assertThat(gatewaySender.getSocketReadTimeout()).isEqualTo(3000);
 
 		List<GatewayEventFilter> eventFilters = gatewaySender.getGatewayEventFilters();
 
-		assertNotNull(eventFilters);
-		assertEquals(1, eventFilters.size());
-		assertTrue(eventFilters.get(0) instanceof TestEventFilter);
+		assertThat(eventFilters).isNotNull();
+		assertThat(eventFilters).hasSize(1);
+		assertThat(eventFilters.get(0)).isInstanceOf(TestEventFilter.class);
 
 		List<GatewayTransportFilter> transportFilters = gatewaySender.getGatewayTransportFilters();
 
-		assertNotNull(transportFilters);
-		assertEquals(1, transportFilters.size());
-		assertTrue(transportFilters.get(0) instanceof TestTransportFilter);
+		assertThat(transportFilters).isNotNull();
+		assertThat(transportFilters).hasSize(1);
+		assertThat(transportFilters.get(0)).isInstanceOf(TestTransportFilter.class);
 	}
 
 	@Test
-	public void testGatewaySenderWithEventTransportFilterRefs() throws Exception {
+	public void gatewaySenderWithEventTransportFilterRefsConfigurationIsCorrect() throws Exception {
 
 		GatewaySenderFactoryBean gatewaySenderFactoryBean =
 			this.applicationContext.getBean("&gateway-sender-with-event-transport-filter-refs",
 				GatewaySenderFactoryBean.class);
 
-		assertNotNull(gatewaySenderFactoryBean);
-		assertNotNull(TestUtils.readField("cache", gatewaySenderFactoryBean));
-		assertEquals(3,
-			TestUtils.<Integer>readField("remoteDistributedSystemId", gatewaySenderFactoryBean).intValue());
-		assertTrue(Boolean.TRUE.equals(TestUtils.readField("batchConflationEnabled", gatewaySenderFactoryBean)));
-		assertEquals(50, TestUtils.<Integer>readField("batchSize", gatewaySenderFactoryBean).intValue());
-		assertEquals(10, TestUtils.<Integer>readField("dispatcherThreads", gatewaySenderFactoryBean).intValue());
-		assertEquals(true, TestUtils.readField("manualStart", gatewaySenderFactoryBean));
+		assertThat(gatewaySenderFactoryBean).isNotNull();
+		assertThat(gatewaySenderFactoryBean.getCache()).isNotNull();
+		assertThat(gatewaySenderFactoryBean.getRemoteDistributedSystemId()).isEqualTo(3);
+		assertThat(gatewaySenderFactoryBean.getBatchConflationEnabled()).isTrue();
+		assertThat(gatewaySenderFactoryBean.getBatchSize()).isEqualTo(50);
+		assertThat(gatewaySenderFactoryBean.getDispatcherThreads()).isEqualTo(10);
+		assertThat(gatewaySenderFactoryBean.isManualStart()).isTrue();
 
 		List<GatewayEventFilter> eventFilters = TestUtils.readField("eventFilters", gatewaySenderFactoryBean);
 
-		assertNotNull(eventFilters);
-		assertEquals(1, eventFilters.size());
-		assertTrue(eventFilters.get(0) instanceof TestEventFilter);
-		assertSame(applicationContext.getBean("event-filter"), eventFilters.get(0));
+		assertThat(eventFilters).isNotNull();
+		assertThat(eventFilters).hasSize(1);
+		assertThat(eventFilters.get(0)).isInstanceOf(TestEventFilter.class);
+		assertThat(eventFilters.get(0)).isSameAs(applicationContext.getBean("event-filter"));
 
-		List<GatewayTransportFilter> transportFilters = TestUtils
-			.readField("transportFilters", gatewaySenderFactoryBean);
+		List<GatewayTransportFilter> transportFilters =
+			TestUtils.readField("transportFilters", gatewaySenderFactoryBean);
 
-		assertNotNull(transportFilters);
-		assertEquals(1, transportFilters.size());
-		assertTrue(transportFilters.get(0) instanceof TestTransportFilter);
-		assertSame(applicationContext.getBean("transport-filter"), transportFilters.get(0));
+		assertThat(transportFilters).isNotNull();
+		assertThat(transportFilters).hasSize(1);
+		assertThat(transportFilters.get(0)).isInstanceOf(TestTransportFilter.class);
+		assertThat(transportFilters.get(0)).isSameAs(applicationContext.getBean("transport-filter"));
 	}
 
 	@Test
-	public void testGatewayReceiver() {
+	public void gatewayReceiverConfigurationIsCorrect() {
 
 		GatewayReceiver gatewayReceiver =
 			this.applicationContext.getBean("gateway-receiver", GatewayReceiver.class);
 
-		assertNotNull(gatewayReceiver);
-		assertEquals("192.168.0.1", gatewayReceiver.getBindAddress());
-		assertEquals(12345, gatewayReceiver.getStartPort());
-		assertEquals(23456, gatewayReceiver.getEndPort());
-		assertEquals(3000, gatewayReceiver.getMaximumTimeBetweenPings());
-		assertEquals(16536, gatewayReceiver.getSocketBufferSize());
+		assertThat(gatewayReceiver).isNotNull();
+		assertThat(gatewayReceiver.getBindAddress()).isEqualTo("192.168.0.1");
+		assertThat(gatewayReceiver.getStartPort()).isEqualTo(12345);
+		assertThat(gatewayReceiver.getEndPort()).isEqualTo(23456);
+		assertThat(gatewayReceiver.getMaximumTimeBetweenPings()).isEqualTo(3000);
+		assertThat(gatewayReceiver.getSocketBufferSize()).isEqualTo(16536);
 	}
 
-	@SuppressWarnings("rawtypes")
+	public static class TestAsyncEventListener implements AsyncEventListener {
+
+		@Override
+		public void close() { }
+
+		@Override
+		public boolean processEvents(List<AsyncEvent> events) {
+			return false;
+		}
+	}
+
 	public static class TestEventFilter implements GatewayEventFilter {
 
 		@Override
@@ -233,16 +236,15 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 		}
 
 		@Override
-		public void afterAcknowledgement(GatewayQueueEvent arg0) {
-		}
+		public void afterAcknowledgement(GatewayQueueEvent event) { }
 
 		@Override
-		public boolean beforeEnqueue(GatewayQueueEvent arg0) {
+		public boolean beforeEnqueue(GatewayQueueEvent event) {
 			return false;
 		}
 
 		@Override
-		public boolean beforeTransmit(GatewayQueueEvent arg0) {
+		public boolean beforeTransmit(GatewayQueueEvent event) {
 			return false;
 		}
 	}
@@ -254,26 +256,13 @@ public class GemfireV7GatewayNamespaceTest extends RecreatingContextTest {
 		}
 
 		@Override
-		public InputStream getInputStream(InputStream arg0) {
+		public InputStream getInputStream(InputStream in) {
 			return null;
 		}
 
 		@Override
-		public OutputStream getOutputStream(OutputStream arg0) {
+		public OutputStream getOutputStream(OutputStream out) {
 			return null;
-		}
-	}
-
-	@SuppressWarnings("rawtypes")
-	public static class TestAsyncEventListener implements AsyncEventListener {
-
-		@Override
-		public void close() {
-		}
-
-		@Override
-		public boolean processEvents(List<AsyncEvent> arg0) {
-			return false;
 		}
 	}
 }

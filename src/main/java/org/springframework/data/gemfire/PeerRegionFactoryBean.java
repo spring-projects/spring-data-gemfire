@@ -15,12 +15,12 @@
  */
 package org.springframework.data.gemfire;
 
-import static java.util.Arrays.stream;
-import static org.springframework.data.gemfire.util.ArrayUtils.nullSafeArray;
 import static org.springframework.data.gemfire.util.RuntimeExceptionFactory.newIllegalArgumentException;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -48,7 +48,6 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.compression.Compressor;
-import org.apache.geode.internal.cache.UserSpecifiedRegionAttributes;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
@@ -57,19 +56,22 @@ import org.springframework.core.io.Resource;
 import org.springframework.data.gemfire.client.ClientRegionFactoryBean;
 import org.springframework.data.gemfire.eviction.EvictingRegionFactoryBean;
 import org.springframework.data.gemfire.expiration.ExpiringRegionFactoryBean;
+import org.springframework.data.gemfire.util.ArrayUtils;
 import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.data.gemfire.util.RegionUtils;
+import org.springframework.data.gemfire.util.SpringUtils;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
- * Abstract Spring {@link FactoryBean} base class extended by other SDG {@link FactoryBean FactoryBeans} used to
- * construct, configure and initialize peer {@link Region Regions}.
+ * Spring {@link FactoryBean} and abstract base class extended by other SDG {@link FactoryBean FactoryBeans}
+ * used to construct, configure and initialize {@literal peer} {@link Region Regions}.
  *
- * This {@link FactoryBean} allows for very easy and flexible creation of peer {@link Region}.
- * For client {@link Region Regions}, however, see the {@link ClientRegionFactoryBean}.
+ * This {@link FactoryBean} allows for very easy and flexible creation of {@literal peer} {@link Region Regions}.
+ * For {@literal client} {@link Region Regions}, see the {@link ClientRegionFactoryBean}.
  *
  * @author Costin Leau
  * @author David Turanski
@@ -78,8 +80,11 @@ import org.springframework.util.StringUtils;
  * @see org.apache.geode.cache.CacheListener
  * @see org.apache.geode.cache.CacheLoader
  * @see org.apache.geode.cache.CacheWriter
+ * @see org.apache.geode.cache.CustomExpiry
  * @see org.apache.geode.cache.DataPolicy
+ * @see org.apache.geode.cache.DiskStore
  * @see org.apache.geode.cache.EvictionAttributes
+ * @see org.apache.geode.cache.ExpirationAttributes
  * @see org.apache.geode.cache.GemFireCache
  * @see org.apache.geode.cache.PartitionAttributes
  * @see org.apache.geode.cache.Region
@@ -88,10 +93,15 @@ import org.springframework.util.StringUtils;
  * @see org.apache.geode.cache.RegionShortcut
  * @see org.apache.geode.cache.Scope
  * @see org.apache.geode.cache.asyncqueue.AsyncEventQueue
+ * @see org.apache.geode.cache.wan.GatewaySender
+ * @see org.apache.geode.compression.Compressor
  * @see org.springframework.beans.factory.DisposableBean
  * @see org.springframework.context.SmartLifecycle
+ * @see org.springframework.data.gemfire.ConfigurableRegionFactoryBean
  * @see org.springframework.data.gemfire.ResolvableRegionFactoryBean
  * @see org.springframework.data.gemfire.client.ClientRegionFactoryBean
+ * @see org.springframework.data.gemfire.eviction.EvictingRegionFactoryBean
+ * @see org.springframework.data.gemfire.expiration.ExpiringRegionFactoryBean
  * @see org.springframework.data.gemfire.config.annotation.RegionConfigurer
  */
 @SuppressWarnings("unused")
@@ -105,8 +115,6 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 	private Boolean offHeap;
 	private Boolean persistent;
 	private Boolean statisticsEnabled;
-
-	private AsyncEventQueue[] asyncEventQueues;
 
 	private CacheListener<K, V>[] cacheListeners;
 
@@ -131,7 +139,10 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 	private ExpirationAttributes regionIdleTimeout;
 	private ExpirationAttributes regionTimeToLive;
 
-	private GatewaySender[] gatewaySenders;
+	private List<AsyncEventQueue> asyncEventQueues = new ArrayList<>();
+	private List<GatewaySender> gatewaySenders = new ArrayList<>();
+	private List<String> asyncEventQueueIds = new ArrayList<>();
+	private List<String> gatewaySenderIds = new ArrayList<>();
 
 	private RegionAttributes<K, V> attributes;
 
@@ -142,9 +153,6 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 	private Scope scope;
 
 	private String diskStoreName;
-
-	private String[] asyncEventQueueIds;
-	private String[] gatewaySenderIds;
 
 	/**
 	 * Creates a new {@link Region} with the given {@link String name}.
@@ -168,33 +176,38 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 
 		Region<K, V> region = newRegion(regionFactory, getParent(), regionName);
 
-		return enableAsLockGrantor(region);
-	}
-
-	private Region<K, V> enableAsLockGrantor(Region<K, V> region) {
-
-		Optional.ofNullable(region)
-			.filter(it -> it.getAttributes().isLockGrantor())
-			.ifPresent(Region::becomeLockGrantor);
+		region = becomeLockGrantor(region);
 
 		return region;
 	}
 
+	private Region<K, V> becomeLockGrantor(Region<K, V> region) {
+
+		if (isLockGrantor(region)) {
+			region.becomeLockGrantor();
+		}
+
+		return region;
+	}
+
+	private boolean isLockGrantor(@Nullable Region<K, V> region) {
+		return region != null && region.getAttributes() != null && region.getAttributes().isLockGrantor();
+	}
+
 	private Region<K, V> newRegion(RegionFactory<K, V> regionFactory, Region<?, ?> parentRegion, String regionName) {
 
-		return Optional.ofNullable(parentRegion)
-			.map(parent -> {
+		if (parentRegion != null) {
 
-				logInfo("Creating Subregion [%1$s] with parent Region [%2$s]", regionName, parent.getName());
+			logInfo("Creating Subregion [%1$s] with parent Region [%2$s]", regionName, parentRegion.getName());
 
-				return regionFactory.createSubregion(parent, regionName);
-			})
-			.orElseGet(() -> {
+			return regionFactory.createSubregion(parentRegion, regionName);
+		}
+		else {
 
-				logInfo("Created Region [%s]", regionName);
+			logInfo("Created Region [%s]", regionName);
 
-				return regionFactory.create(regionName);
-			});
+			return regionFactory.create(regionName);
+		}
 	}
 
 	private Cache resolveCache(GemFireCache gemfireCache) {
@@ -262,7 +275,8 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 
 		getConfiguredAsyncEventQueueIds().forEach(regionFactory::addAsyncEventQueueId);
 
-		stream(nullSafeArray(this.cacheListeners, CacheListener.class)).forEach(regionFactory::addCacheListener);
+		Arrays.stream(ArrayUtils.nullSafeArray(this.cacheListeners, CacheListener.class))
+			.forEach(regionFactory::addCacheListener);
 
 		Optional.ofNullable(this.cacheLoader).ifPresent(regionFactory::setCacheLoader);
 
@@ -322,11 +336,12 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 
 		Set<String> asyncEventQueueIds = new HashSet<>();
 
-		Arrays.stream(nullSafeArray(this.asyncEventQueues, AsyncEventQueue.class))
+		CollectionUtils.nullSafeList(this.asyncEventQueues).stream()
+			.filter(Objects::nonNull)
 			.map(AsyncEventQueue::getId)
 			.collect(Collectors.toCollection(() -> asyncEventQueueIds));
 
-		Arrays.stream(nullSafeArray(this.asyncEventQueueIds, String.class))
+		CollectionUtils.nullSafeList(this.asyncEventQueueIds).stream()
 			.filter(StringUtils::hasText)
 			.map(String::trim)
 			.collect(Collectors.toCollection(() -> asyncEventQueueIds));
@@ -338,11 +353,12 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 
 		Set<String> gatewaySenderIds = new HashSet<>();
 
-		Arrays.stream(nullSafeArray(this.gatewaySenders, GatewaySender.class))
+		CollectionUtils.nullSafeList(this.gatewaySenders).stream()
+			.filter(Objects::nonNull)
 			.map(GatewaySender::getId)
 			.collect(Collectors.toCollection(() -> gatewaySenderIds));
 
-		Arrays.stream(nullSafeArray(this.gatewaySenderIds, String.class))
+		CollectionUtils.nullSafeList(this.gatewaySenderIds).stream()
 			.filter(StringUtils::hasText)
 			.map(String::trim)
 			.collect(Collectors.toCollection(() -> gatewaySenderIds));
@@ -351,8 +367,6 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 	}
 
 	/*
-	 * (non-Javadoc)
-	 *
 	 * This method is not considered part of the PeerRegionFactoryBean API and is strictly used for testing purposes!
 	 *
 	 * NOTE: Cannot pass RegionAttributes.class as the "targetType" in the second invocation of getFieldValue(..)
@@ -365,7 +379,7 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 	 * @see org.apache.geode.cache.RegionAttributes#getDataPolicy
 	 * @see org.apache.geode.cache.DataPolicy
 	 */
-	@SuppressWarnings({ "deprecation", "unchecked" })
+	@SuppressWarnings({ "deprecation", "rawtypes", "unchecked" })
 	DataPolicy getDataPolicy(RegionFactory regionFactory, RegionShortcut regionShortcut) {
 
 		return getFieldValue(regionFactory, "attrsFactory", AttributesFactory.class)
@@ -430,7 +444,7 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 			regionFactory.setEntryIdleTimeout(regionAttributes.getEntryIdleTimeout());
 			regionFactory.setEntryTimeToLive(regionAttributes.getEntryTimeToLive());
 
-			// NOTE: EvictionAttributes are created by certain RegionShortcuts; need the null check!
+			// NOTE: EvictionAttributes are created by certain RegionShortcuts; null check needed!
 			if (isUserSpecifiedEvictionAttributes(regionAttributes)) {
 				regionFactory.setEvictionAttributes(regionAttributes.getEvictionAttributes());
 			}
@@ -471,6 +485,7 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 	 * @see org.apache.geode.cache.RegionAttributes
 	 * @see org.apache.geode.cache.RegionFactory
 	 */
+	@SuppressWarnings("rawtypes")
 	protected <K, V> void mergePartitionAttributes(RegionFactory<K, V> regionFactory,
 			RegionAttributes<K, V> regionAttributes) {
 
@@ -510,35 +525,40 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 
 		allow &= getDataPolicy().withPersistence()
 			|| (getAttributes() != null && getAttributes().getEvictionAttributes() != null
-				&& EvictionAction.OVERFLOW_TO_DISK.equals(attributes.getEvictionAttributes().getAction()));
+				&& EvictionAction.OVERFLOW_TO_DISK.equals(this.attributes.getEvictionAttributes().getAction()));
 
 		return allow;
 	}
 
 	/*
-	 * (non-Javadoc)
-	 *
 	 * This method is not part of the PeerRegionFactoryBean API and is strictly used for testing purposes!
 	 *
+<<<<<<< HEAD
 	 * NOTE unfortunately, must resort to using a Pivotal GemFire internal class, ugh!
 	 *
+=======
+>>>>>>> f7643fe4a... DATAGEODE-368 - Add API to attach additional AsyncEventQueues and GatewaySenders to peer Regions.
 	 * @see org.apache.geode.internal.cache.UserSpecifiedRegionAttributes#hasEvictionAttributes
 	 */
+	boolean isUserSpecifiedEvictionAttributes(RegionAttributes<?, ?> regionAttributes) {
 
-	boolean isUserSpecifiedEvictionAttributes(final RegionAttributes regionAttributes) {
+		SpringUtils.ValueReturningThrowableOperation<Boolean> hasEvictionAttributes = () ->
+			Optional.ofNullable(regionAttributes)
+				.map(Object::getClass)
+				.map(type -> ReflectionUtils.findMethod(type, "hasEvictionAttributes"))
+				.map(method -> ReflectionUtils.invokeMethod(method, regionAttributes))
+				.map(Boolean.TRUE::equals)
+				.orElse(false);
 
-		return regionAttributes instanceof UserSpecifiedRegionAttributes
-			&& ((UserSpecifiedRegionAttributes) regionAttributes).hasEvictionAttributes();
+		return SpringUtils.safeGetValue(hasEvictionAttributes, false);
 	}
 
 	/*
-	 * (non-Javadoc)
-	 *
 	 * This method is not part of the PeerRegionFactoryBean API and is strictly used for testing purposes!
 	 *
 	 * @see org.apache.geode.cache.AttributesFactory#validateAttributes(:RegionAttributes)
 	 */
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings({ "deprecation", "rawtypes" })
 	void validateRegionAttributes(RegionAttributes regionAttributes) {
 		org.apache.geode.cache.AttributesFactory.validateAttributes(regionAttributes);
 	}
@@ -631,6 +651,7 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
 	private DataPolicy getDataPolicy(RegionAttributes regionAttributes, DataPolicy defaultDataPolicy) {
 
 		return Optional.ofNullable(regionAttributes)
@@ -639,7 +660,7 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 	}
 
 	/**
-	 * Closes and destroys the {@link Region}.
+	 * Closes and destroys this {@link Region}.
 	 *
 	 * @throws Exception if {@code destroy()} fails.
 	 * @see org.springframework.beans.factory.DisposableBean
@@ -662,25 +683,82 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 	}
 
 	/**
-	 * Configures an array of {@link AsyncEventQueue AsyncEventQueues} for this {@link Region} used to perform
-	 * asynchronous data access operations, e.g. {@literal asynchronous write-behind}.
+	 * Configures an array of {@link AsyncEventQueue AsyncEventQueues} for this {@link Region}, which are used
+	 * to perform asynchronous data access operations, e.g. {@literal asynchronous, write-behind operations}.
 	 *
-	 * @param asyncEventQueues array of {@link AsyncEventQueue AsyncEventQueues} used by this {@link Region}
-	 * to perform asynchronous data access operations.
+	 * This method clears any existing, registered {@link AsyncEventQueue AsyncEventQueues} (AEQ) already associated
+	 * with this {@link Region}. Use {@link #addAsyncEventQueues(AsyncEventQueue[])}
+	 * or {@link #addAsyncEventQueueIds(String[])} to append to the existing AEQs already registered instead.
+	 *
+	 * @param asyncEventQueues array of {@link AsyncEventQueue AsyncEventQueues} registered with and used by
+	 * this {@link Region} to perform asynchronous data access operations.
 	 * @see org.apache.geode.cache.asyncqueue.AsyncEventQueue
+	 * @see #addAsyncEventQueues(AsyncEventQueue[])
+	 * @see #addAsyncEventQueueIds(String[])
+	 * @see #setAsyncEventQueueIds(String[])
 	 */
-	public void setAsyncEventQueues(AsyncEventQueue[] asyncEventQueues) {
-		this.asyncEventQueues = asyncEventQueues;
+	public void setAsyncEventQueues(@NonNull AsyncEventQueue[] asyncEventQueues) {
+		this.asyncEventQueues.clear();
+		addAsyncEventQueues(asyncEventQueues);
 	}
 
-	public void setAsyncEventQueueIds(String[] asyncEventQueueIds) {
-		this.asyncEventQueueIds = asyncEventQueueIds;
+	/**
+	 * Configures an array of {@link AsyncEventQueue AsyncEventQueues} (AEQ) for this {@link Region}
+	 * by {@link String AEQ ID}.
+	 *
+	 * This method clears any existing, registered {@link AsyncEventQueue AsyncEventQueues} (AEQ) already associated
+	 * with this {@link Region} by {@literal AEQ ID}. Use {@link #addAsyncEventQueues(AsyncEventQueue[])}
+	 * or {@link #addAsyncEventQueueIds(String[])} to append to the existing AEQs already registered instead.
+	 *
+	 * or {@link #addAsyncEventQueueIds(String[])} to append to the existing AEQs already registered instead.
+	 * @param asyncEventQueueIds array of {@link String Strings} specifying {@link String AEQ IDs} to be registered
+	 * with this {@link Region}.
+	 * @see #addAsyncEventQueues(AsyncEventQueue[])
+	 * @see #setAsyncEventQueues(AsyncEventQueue[])
+	 * @see #setAsyncEventQueueIds(String[])
+	 */
+	public void setAsyncEventQueueIds(@NonNull String[] asyncEventQueueIds) {
+		this.asyncEventQueueIds.clear();
+		addAsyncEventQueueIds(asyncEventQueueIds);
+	}
+
+	/**
+	 * Registers the array of {@link AsyncEventQueue AsyncEventQueues} (AEQ) with this {@link Region} by appending to
+	 * the already existing, registered AEQs for this {@link Region}.
+	 *
+	 * @param asyncEventQueues array of {@link AsyncEventQueue AsyncEventQueues} to register with this {@link Region}.
+	 * @see #addAsyncEventQueueIds(String[])
+	 * @see #setAsyncEventQueues(AsyncEventQueue[])
+	 * @see #setAsyncEventQueueIds(String[])
+	 */
+	public void addAsyncEventQueues(@NonNull AsyncEventQueue[] asyncEventQueues) {
+
+		Arrays.stream(ArrayUtils.nullSafeArray(asyncEventQueues, AsyncEventQueue.class))
+			.filter(Objects::nonNull)
+			.forEach(this.asyncEventQueues::add);
+	}
+
+	/**
+	 * Registers the array of {@link AsyncEventQueue AsyncEventQueues} (AEQ) with this {@link Region}
+	 * by {@link String ID} by appending to the already existing, registered AEQs for this {@link Region}.
+	 *
+	 * @param asyncEventQueueIds array of {@link AsyncEventQueue AsyncEventQueue} {@link String IDs} to register with
+	 * this {@link Region}.
+	 * @see #addAsyncEventQueues(AsyncEventQueue[])
+	 * @see #setAsyncEventQueues(AsyncEventQueue[])
+	 * @see #setAsyncEventQueueIds(String[])
+	 */
+	public void addAsyncEventQueueIds(@NonNull String[] asyncEventQueueIds) {
+
+		Arrays.stream(ArrayUtils.nullSafeArray(asyncEventQueueIds, String.class))
+			.filter(StringUtils::hasText)
+			.forEach(this.asyncEventQueueIds::add);
 	}
 
 	/**
 	 * Sets the {@link RegionAttributes} used to configure this {@link Region}.
 	 *
-	 * Specifying {@link RegionAttributes} allows maximum control in specifying various {@link Region} settings.
+	 * Specifying {@link RegionAttributes} allows full control in configuring various {@link Region} settings.
 	 * Used only when the {@link Region} is created and not when the {@link Region} is looked up.
 	 *
 	 * @param attributes {@link RegionAttributes} used to configure this {@link Region}.
@@ -697,7 +775,10 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 	 * @see org.apache.geode.cache.RegionAttributes
 	 */
 	public RegionAttributes<K, V> getAttributes() {
-		return Optional.ofNullable(getRegion()).map(Region::getAttributes).orElse(this.attributes);
+
+		return Optional.ofNullable(getRegion())
+			.map(Region::getAttributes)
+			.orElse(this.attributes);
 	}
 
 	/**
@@ -841,24 +922,83 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 
 	/**
 	 * Configures the {@link GatewaySender GatewaySenders} used to send data and events from this {@link Region}
-	 * to a corresponding {@link Region} in a remote cluster/site.
+	 * to a matching {@link Region} in a remote cluster.
+	 *
+	 * This method clears all existing, registered {@link GatewaySender GatewaySenders} already associated with
+	 * this {@link Region}. Use {@link #addGatewaySenders(GatewaySender[])}
+	 * or {@link #addGatewaySendersIds(String[])} to append to the existing, registered
+	 * {@link GatewaySender GatewaySenders} for this {@link Region}.
 	 *
 	 * @param gatewaySenders {@link GatewaySender GatewaySenders} used to send data and events from this {@link Region}
-	 * to a corresponding {@link Region} in a remote cluster/site.
+	 * to a matching {@link Region} in a remote cluster.
 	 * @see org.apache.geode.cache.wan.GatewaySender
+	 * @see #addGatewaySenders(GatewaySender[])
+	 * @see #addGatewaySendersIds(String[])
+	 * @see #setGatewaySenderIds(String[])
 	 */
-	public void setGatewaySenders(GatewaySender[] gatewaySenders) {
-		this.gatewaySenders = gatewaySenders;
-	}
-
-	public void setGatewaySenderIds(String[] gatewaySenderIds) {
-		this.gatewaySenderIds = gatewaySenderIds;
+	public void setGatewaySenders(@NonNull GatewaySender[] gatewaySenders) {
+		this.gatewaySenders.clear();
+		addGatewaySenders(gatewaySenders);
 	}
 
 	/**
-	 * Configures whether to enable this {@link Region} with the ability to store data in {@literal off-heap memory}.
+	 * Configures the {@link GatewaySender GatewaySenders} by {@link String ID} used to send data and events from
+	 * this {@link Region} to a matching {@link Region} in a remote cluster.
 	 *
-	 * @param offHeap {@link Boolean} value indicating whether to enable {@literal off-heap memory}
+	 * This method clears all existing, registered {@link GatewaySender GatewaySenders} already associated with
+	 * this {@link Region}. Use {@link #addGatewaySenders(GatewaySender[])}
+	 * or {@link #addGatewaySendersIds(String[])} to append to the existing, registered
+	 * {@link GatewaySender GatewaySenders} for this {@link Region}.
+	 *
+	 * @param gatewaySenderIds {@link String} array containing {@link GatewaySender} {@link String IDs} to register
+	 * with this {@link Region}.
+	 * @see #addGatewaySenders(GatewaySender[])
+	 * @see #addGatewaySendersIds(String[])
+	 * @see #setGatewaySenders(GatewaySender[])
+	 */
+	public void setGatewaySenderIds(@NonNull String[] gatewaySenderIds) {
+		this.gatewaySenderIds.clear();
+		addGatewaySendersIds(gatewaySenderIds);
+	}
+
+	/**
+	 * Registers the array of {@link GatewaySender GatewaySenders} with this {@link Region} by appending to the already
+	 * existing, registered {@link GatewaySender GatewaySenders} for this {@link Region}.
+	 *
+	 * @param gatewaySenders array of {@link GatewaySender GatewaySenders} to register with this {@link Region}.
+	 * @see org.apache.geode.cache.wan.GatewaySender
+	 * @see #addGatewaySendersIds(String[])
+	 * @see #setGatewaySenders(GatewaySender[])
+	 * @see #setGatewaySenderIds(String[])
+	 */
+	public void addGatewaySenders(@NonNull GatewaySender[] gatewaySenders) {
+
+		Arrays.stream(ArrayUtils.nullSafeArray(gatewaySenders, GatewaySender.class))
+			.filter(Objects::nonNull)
+			.forEach(this.gatewaySenders::add);
+	}
+
+	/**
+	 * Registers the array of {@link GatewaySender} {@link String IDs} with this {@link Region} by appending to
+	 * the already existing, registered {@link GatewaySender GatewaySenders} for this {@link Region}.
+	 *
+	 * @param gatewaySenderIds array of {@link GatewaySender} {@link String IDs} to register with this {@link Region}.
+	 * @see org.apache.geode.cache.wan.GatewaySender
+	 * @see #addGatewaySenders(GatewaySender[])
+	 * @see #setGatewaySenders(GatewaySender[])
+	 * @see #setGatewaySenderIds(String[])
+	 */
+	public void addGatewaySendersIds(@NonNull String[] gatewaySenderIds) {
+
+		Arrays.stream(ArrayUtils.nullSafeArray(gatewaySenderIds, String.class))
+			.filter(StringUtils::hasText)
+			.forEach(this.gatewaySenderIds::add);
+	}
+
+	/**
+	 * Configures this {@link Region} with the capability to store data in {@literal off-heap memory}.
+	 *
+	 * @param offHeap {@link Boolean} value indicating whether to enable the use of {@literal off-heap memory}
 	 * for this {@link Region}.
 	 * @see org.apache.geode.cache.RegionFactory#setOffHeap(boolean)
 	 */
@@ -869,20 +1009,21 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 	/**
 	 * Returns a {@link Boolean} value indicating whether {@literal off-heap memory} was enabled for this {@link Region}.
 	 *
-	 * {@literal Off-heap memory} will be enabled if this method returns a {@literal non-null} {@link Boolean} value
-	 * evaluating to {@literal true}.
+	 * {@literal Off-heap memory} will be enabled for this {@link Region} if this method returns a {@literal non-null},
+	 * {@link Boolean} value evaluating to {@literal true}.
 	 *
-	 * @return a {@link Boolean} value indicating whether {@literal off-heap memory} is enabled for this {@link Region}.
+	 * @return a {@link Boolean} value indicating whether {@literal off-heap memory} use is enabled for
+	 * this {@link Region}.
 	 */
 	public Boolean getOffHeap() {
 		return this.offHeap;
 	}
 
 	/**
-	 * Returns a boolean value indicating whether {@literal off-heap memory} has been enabled for this {@link Region}.
+	 * Returns a boolean value indicating whether {@literal off-heap memory} use was enabled for this {@link Region}.
 	 *
-	 * @return a {@literal boolean} value indicating whether {@literal off-heap memory} has been enabled
-	 * for this {@link Region}.
+	 * @return a {@literal boolean} value indicating whether {@literal off-heap memory} use was enabled for
+	 * this {@link Region}.
 	 * @see #getOffHeap()
 	 */
 	public boolean isOffHeap() {
@@ -1008,9 +1149,9 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 	@SuppressWarnings("all")
 	public void start() {
 
-		if (!ObjectUtils.isEmpty(this.gatewaySenders)) {
+		if (!this.gatewaySenders.isEmpty()) {
 			synchronized(this.gatewaySenders) {
-				Arrays.stream(this.gatewaySenders)
+				this.gatewaySenders.stream()
 					.filter(Objects::nonNull)
 					.filter(gatewaySender -> !gatewaySender.isManualStart())
 					.filter(gatewaySender -> !gatewaySender.isRunning())
@@ -1031,11 +1172,9 @@ public abstract class PeerRegionFactoryBean<K, V> extends ConfigurableRegionFact
 	@SuppressWarnings("all")
 	public void stop() {
 
-		if (!ObjectUtils.isEmpty(this.gatewaySenders)) {
+		if (!this.gatewaySenders.isEmpty()) {
 			synchronized (this.gatewaySenders) {
-				for (GatewaySender gatewaySender : this.gatewaySenders) {
-					gatewaySender.stop();
-				}
+				this.gatewaySenders.forEach(GatewaySender::stop);
 			}
 		}
 
