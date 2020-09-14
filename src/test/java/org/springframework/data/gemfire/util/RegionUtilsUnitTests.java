@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,6 +27,7 @@ import org.junit.Test;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionService;
+import org.apache.geode.internal.cache.LocalRegion;
 
 /**
  * Unit tests for {@link RegionUtils}.
@@ -163,5 +163,21 @@ public class RegionUtilsUnitTests {
 		assertThat(RegionUtils.isCloseable(mockRegion)).isFalse();
 
 		verify(mockRegion, times(1)).getRegionService();
+	}
+
+	@Test
+	@SuppressWarnings("all")
+	public void nullRegionIsNotLocal() {
+		assertThat(RegionUtils.isLocal(null)).isFalse();
+	}
+
+	@Test
+	public void localRegionIsLocal() {
+		assertThat(RegionUtils.isLocal(mock(LocalRegion.class))).isTrue();
+	}
+
+	@Test
+	public void nonLocalRegionIsNotLocal() {
+		assertThat(RegionUtils.isLocal(mock(Region.class))).isFalse();
 	}
 }

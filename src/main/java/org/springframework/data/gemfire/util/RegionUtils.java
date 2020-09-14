@@ -21,6 +21,7 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.internal.cache.LocalRegion;
 
 import org.springframework.data.gemfire.client.ClientRegionShortcutWrapper;
 import org.springframework.lang.NonNull;
@@ -135,6 +136,18 @@ public abstract class RegionUtils extends CacheUtils {
 			.map(Region::getRegionService)
 			.filter(regionService -> !regionService.isClosed())
 			.isPresent();
+	}
+
+	/**
+	 * Determines whether the given {@link Region} is a non-distributed, {@literal local} {@link Region}.
+	 *
+	 * @param region {@link Region} to evaluate.
+	 * @return a boolean value indicating whether the given {@link Region} is a non-distributed,
+	 * {@literal local} {@link Region}.
+	 * @see org.apache.geode.cache.Region
+	 */
+	public static boolean isLocal(@Nullable Region<?, ?> region) {
+		return region instanceof LocalRegion;
 	}
 
 	@Nullable

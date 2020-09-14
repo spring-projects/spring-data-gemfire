@@ -25,8 +25,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -191,7 +191,7 @@ public class SimpleGemfireRepositoryUnitTests {
 
 		assertThat(repository).isNotNull();
 
-		verifyNoInteractions(template, mockRegion, mockEntityInformation);
+		verifyZeroInteractions(template, mockRegion, mockEntityInformation);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -225,7 +225,9 @@ public class SimpleGemfireRepositoryUnitTests {
 	}
 
 	@Test
-	public void saveEntityIsCorrect() {
+	public void saveEntitySuccessfully() {
+
+		Animal cat = newAnimal(1L, "cat");
 
 		Region<Long, Animal> mockRegion = mockRegion();
 
@@ -274,7 +276,7 @@ public class SimpleGemfireRepositoryUnitTests {
 
 		assertThat(repository.save(dogWrapper)).isEqualTo(dog);
 
-		verify(mockRegion, times(1)).put(eq(dog.getId()), eq(dog));
+		verifyZeroInteractions(mockRegion);
 	}
 
 	@Test
@@ -490,7 +492,60 @@ public class SimpleGemfireRepositoryUnitTests {
 	}
 
 	@Test
-	public void deleteByIdIsCorrect() {
+	public void findAllByIdWithNullIterableIsNullSafe() {
+
+		Region<Long, Animal> mockRegion = mockRegion();
+
+		SimpleGemfireRepository<Animal, Long> repository =
+			new SimpleGemfireRepository(newGemfireTemplate(mockRegion), mockEntityInformation());
+
+		Iterable<Animal> animals = repository.findAllById(null);
+
+		assertThat(animals).isNotNull();
+		assertThat(animals).isEmpty();
+
+		verifyZeroInteractions(mockRegion);
+	}
+
+	@Test
+	public void findByIdSuccessfully() {
+
+		Animal dog = newAnimal(1L, "dog");
+
+		Region<Long, Animal> mockRegion = mockRegion();
+
+		doAnswer(invocation -> dog.getId().equals(invocation.getArgument(0)) ? dog : null)
+			.when(mockRegion).get(any(Long.class));
+
+		SimpleGemfireRepository<Animal, Long> repository =
+			new SimpleGemfireRepository<>(newGemfireTemplate(mockRegion), mockEntityInformation());
+
+		assertThat(repository.findById(1L).orElse(null)).isEqualTo(dog);
+		assertThat(repository.findById(2L).isPresent()).isFalse();
+		assertThat(repository.findById(10L).isPresent()).isFalse();
+
+		verify(mockRegion, times(1)).get(eq(1L));
+		verify(mockRegion, times(1)).get(eq(2L));
+		verify(mockRegion, times(1)).get(eq(10L));
+		verifyNoMoreInteractions(mockRegion);
+	}
+
+	@Test
+	public void findByIdWithNullIdIsNullSafe() {
+
+		Region mockRegion = mockRegion();
+
+		SimpleGemfireRepository repository =
+			new SimpleGemfireRepository(newGemfireTemplate(mockRegion), mockEntityInformation());
+
+		assertThat(repository.findById(null).isPresent()).isFalse();
+
+		verifyZeroInteractions(mockRegion);
+	}
+
+	@Test
+	public void deleteByIdSuccessfully() {
+
 		Region<Long, Animal> mockRegion = mockRegion();
 
 		SimpleGemfireRepository<Animal, Long> repository =
