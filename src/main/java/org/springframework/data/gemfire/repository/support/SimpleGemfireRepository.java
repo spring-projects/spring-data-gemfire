@@ -15,7 +15,7 @@
  */
 package org.springframework.data.gemfire.repository.support;
 
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -37,22 +37,31 @@ import org.springframework.data.gemfire.repository.GemfireRepository;
 import org.springframework.data.gemfire.repository.Wrapper;
 import org.springframework.data.gemfire.repository.query.QueryString;
 import org.springframework.data.gemfire.util.CollectionUtils;
+import org.springframework.data.gemfire.util.SpringUtils;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.data.util.Streamable;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
- * Basic Repository implementation for GemFire.
+ * Simple, basic {@link CrudRepository} implementation for Apache Geode.
  *
  * @author Oliver Gierke
  * @author David Turanski
  * @author John Blum
- * @see java.io.Serializable
+ * @see org.apache.geode.cache.Cache
+ * @see org.apache.geode.cache.CacheTransactionManager
+ * @see org.apache.geode.cache.Region
  * @see org.springframework.data.gemfire.GemfireTemplate
  * @see org.springframework.data.gemfire.repository.GemfireRepository
- * @see org.apache.geode.cache.Cache
- * @see org.apache.geode.cache.Region
+ * @see org.springframework.data.repository.CrudRepository
+ * @see org.springframework.data.repository.core.EntityInformation
  */
 public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> {
 
@@ -60,18 +69,21 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 
 	private final GemfireTemplate template;
 
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+
 	/**
 	 * Constructs a new instance of {@link SimpleGemfireRepository} initialized with the {@link GemfireTemplate}
 	 * and {@link EntityInformation}.
 	 *
 	 * @param template {@link GemfireTemplate} used to perform basic data access operations and simple OQL queries;
 	 * must not be {@literal null}.
-	 * @param entityInformation {@link EntityInformation} used to describe the entity; must not be {@literal null}.
+	 * @param entityInformation {@link EntityInformation} that describes the entity; must not be {@literal null}.
 	 * @throws IllegalArgumentException if {@link GemfireTemplate} or {@link EntityInformation} is {@literal null}.
 	 * @see org.springframework.data.gemfire.GemfireTemplate
 	 * @see org.springframework.data.repository.core.EntityInformation
 	 */
-	public SimpleGemfireRepository(GemfireTemplate template, EntityInformation<T, ID> entityInformation) {
+	public SimpleGemfireRepository(@NonNull GemfireTemplate template,
+			@NonNull EntityInformation<T, ID> entityInformation) {
 
 		Assert.notNull(template, "GemfireTemplate must not be null");
 		Assert.notNull(entityInformation, "EntityInformation must not be null");
@@ -80,44 +92,110 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 		this.entityInformation = entityInformation;
 	}
 
+	/**
+	 * Returns a reference to the {@link EntityInformation} type describing the entity.
+	 *
+	 * @return a reference to the {@link EntityInformation} type describing the entity.
+	 * @see org.springframework.data.repository.core.EntityInformation
+	 */
+	public @NonNull EntityInformation<T, ID> getEntityInformation() {
+		return this.entityInformation;
+	}
+
+	/**
+	 * Returns a reference to the SLF4J {@link Logger} used to log the operations of this {@link GemfireRepository}.
+	 *
+	 * @return a reference to the SLF4J {@link Logger} used to log the operations of this {@link GemfireRepository}.
+	 * @see org.slf4j.Logger
+	 */
+	public @NonNull Logger getLogger() {
+		return this.logger;
+	}
+
+	/**
+	 * Gets the {@link Region} to which this {@link GemfireRepository} performs all data access operations.
+	 *
+	 * @return a reference to the {@link Region} on which this {@link GemfireRepository} operates.
+	 * @see org.apache.geode.cache.Region
+	 * @see #getTemplate()
+	 */
+	public @NonNull Region<ID, T> getRegion() {
+		return getTemplate().getRegion();
+	}
+
+	/**
+	 * Returns a reference to the {@link GemfireTemplate} used by this {@link GemfireRepository} to perform basic
+	 * CRUD data access operations and simple OQL queries.
+	 *
+	 * @return a reference to the {@link GemfireTemplate} used by this {@link GemfireRepository}.
+	 * @see org.springframework.data.gemfire.GemfireTemplate
+	 */
+	public @NonNull GemfireTemplate getTemplate() {
+		return this.template;
+	}
+
 	@Override
-	public <U extends T> U save(U entity) {
+	public <U extends T> U save(@NonNull U entity) {
 
-		ID id = this.entityInformation.getRequiredId(entity);
+		ID id = getEntityInformation().getRequiredId(entity);
 
-		this.template.put(id, entity);
+		// CREATE/UPDATE entity in Region
+		T existingValue = getTemplate().put(id, entity);
+
+		if (getLogger().isDebugEnabled()) {
+			getLogger().debug("Overwrote existing value [{}] for ID [{}]", existingValue, id);
+		}
 
 		return entity;
 	}
 
 	@Override
-	public T save(Wrapper<T, ID> wrapper) {
+	public T save(@NonNull Wrapper<T, ID> wrapper) {
 
 		T entity = wrapper.getEntity();
 
-		this.template.put(wrapper.getKey(), entity);
+		// CREATE/UPDATE entity in Region
+		T existingValue = getTemplate().put(wrapper.getKey(), entity);
+
+		if (getLogger().isDebugEnabled()) {
+			getLogger().debug("Overwrote existing value [{}] for ID [{}]", existingValue, wrapper.getKey());
+		}
 
 		return entity;
 	}
 
 	@Override
-	public <U extends T> Iterable<U> saveAll(Iterable<U> entities) {
+	public <U extends T> Iterable<U> saveAll(@NonNull Iterable<U> entities) {
+
+		EntityInformation<T, ID> entityInformation = getEntityInformation();
 
 		Map<ID, U> entitiesToSave = new HashMap<>();
 
-		entities.forEach(entity -> entitiesToSave.put(this.entityInformation.getRequiredId(entity), entity));
+		Streamable.of(CollectionUtils.nullSafeIterable(entities)).stream()
+			.filter(Objects::nonNull)
+			.forEach(entity -> entitiesToSave.put(entityInformation.getRequiredId(entity), entity));
 
-		this.template.putAll(entitiesToSave);
+		if (!entitiesToSave.isEmpty()) {
+			getTemplate().putAll(entitiesToSave);
+		}
 
 		return entitiesToSave.values();
 	}
 
+	/**
+	 * Counts the number of entities stored in the {@link Region}.
+	 *
+	 * This method executes a {@literal SELECT count(*) FROM /Region} OQL query.
+	 *
+	 * @return a count of the number of entities stored in the {@link Region}.
+	 */
 	@Override
 	public long count() {
 
-		String countQuery = String.format("SELECT count(*) FROM %s", this.template.getRegion().getFullPath());
+		String regionPath = getRegion().getFullPath();
+		String countQuery = String.format("SELECT count(*) FROM %s", regionPath);
 
-		SelectResults<Integer> results = this.template.find(countQuery);
+		SelectResults<Integer> results = getTemplate().find(countQuery);
 
 		return Optional.ofNullable(results)
 			.map(SelectResults::iterator)
@@ -127,64 +205,104 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 			.orElse(0L);
 	}
 
+	/**
+	 * Determines whether an entity with the given ID is stored in the {@link Region}.
+	 *
+	 * @param id {@link Long} value identifying the entity.
+	 * @return a boolean value indicating whether an entity with the given ID is stored in the {@link Region}.
+	 * @see #findById(Object)
+	 */
 	@Override
 	public boolean existsById(ID id) {
 		return findById(id).isPresent();
 	}
 
 	@Override
-	public Optional<T> findById(ID id) {
-		return Optional.ofNullable(this.template.get(id));
+	public @NonNull Iterable<T> findAll() {
+
+		String regionPath = getRegion().getFullPath();
+		String query = String.format("SELECT * FROM %s", regionPath);
+
+		SelectResults<T> selectResults = getTemplate().find(query);
+
+		return toList(selectResults);
 	}
 
 	@Override
-	public Collection<T> findAll() {
-
-		SelectResults<T> results =
-			this.template.find(String.format("SELECT * FROM %s", this.template.getRegion().getFullPath()));
-
-		return results.asList();
-	}
-
-	@Override
-	public Iterable<T> findAll(Sort sort) {
+	public @NonNull Iterable<T> findAll(@NonNull Sort sort) {
 
 		QueryString query = QueryString.of("SELECT * FROM /RegionPlaceholder")
-			.fromRegion(this.entityInformation.getJavaType(), this.template.getRegion())
+			.fromRegion(getEntityInformation().getJavaType(), getRegion())
 			.orderBy(sort);
 
-		SelectResults<T> selectResults = this.template.find(query.toString());
+		SelectResults<T> selectResults = getTemplate().find(query.toString());
 
-		return selectResults.asList();
+		return toList(selectResults);
 	}
 
 	@Override
-	public Collection<T> findAllById(Iterable<ID> ids) {
+	public @NonNull Iterable<T> findAllById(@NonNull Iterable<ID> ids) {
 
-		List<ID> keys = Streamable.of(ids).stream().collect(StreamUtils.toUnmodifiableList());
+		List<ID> keys = Streamable.of(CollectionUtils.nullSafeIterable(ids)).stream()
+			.filter(Objects::nonNull)
+			.collect(StreamUtils.toUnmodifiableList());
 
-		return CollectionUtils.<ID, T>nullSafeMap(this.template.getAll(keys)).values().stream()
-			.filter(Objects::nonNull).collect(Collectors.toList());
+		Map<ID, T> keysValues = !keys.isEmpty()
+			? getTemplate().getAll(keys)
+			: Collections.emptyMap();
+
+		List<T> values = CollectionUtils.nullSafeMap(keysValues).values().stream()
+			.filter(Objects::nonNull)
+			.collect(Collectors.toList());
+
+		return values;
 	}
 
 	@Override
-	public void deleteById(ID id) {
-		this.template.remove(id);
+	public Optional<T> findById(@NonNull ID id) {
+
+		T value = id != null
+			? getTemplate().get(id)
+			: null;
+
+		return Optional.ofNullable(value);
 	}
 
 	@Override
-	public void delete(T entity) {
-		deleteById(this.entityInformation.getRequiredId(entity));
+	public void delete(@NonNull T entity) {
+		deleteById(getEntityInformation().getRequiredId(entity));
 	}
 
 	@Override
-	public void deleteAll(Iterable<? extends T> entities) {
-		entities.forEach(this::delete);
+	public void deleteAll() {
+
+		getTemplate().execute((GemfireCallback<Void>) region -> {
+
+			if (isPartitioned(region) || isTransactionPresent(region)) {
+				doRegionClear(region);
+			}
+			else {
+				SpringUtils.safeDoOperation(() -> region.clear(), () -> doRegionClear(region));
+			}
+
+			return null;
+		});
+	}
+
+	@Override
+	public void deleteAll(@NonNull Iterable<? extends T> entities) {
+		CollectionUtils.nullSafeIterable(entities).forEach(this::delete);
+	}
+
+	@Override
+	public void deleteById(@NonNull ID id) {
+		getTemplate().remove(id);
 	}
 
 	boolean isPartitioned(Region<?, ?> region) {
 
-		return region != null && region.getAttributes() != null
+		return region != null
+			&& region.getAttributes() != null
 			&& isPartitioned(region.getAttributes().getDataPolicy());
 	}
 
@@ -206,23 +324,10 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 		region.removeAll(region.keySet());
 	}
 
-	@Override
-	public void deleteAll() {
-		this.template.execute((GemfireCallback<Void>) region -> {
+	@NonNull List<T> toList(@Nullable SelectResults<T> selectResults) {
 
-			if (isPartitioned(region) || isTransactionPresent(region)) {
-				doRegionClear(region);
-			}
-			else {
-				try {
-					region.clear();
-				}
-				catch (UnsupportedOperationException ignore) {
-					doRegionClear(region);
-				}
-			}
-
-			return null;
-		});
+		return selectResults != null
+			? CollectionUtils.nullSafeList(selectResults.asList())
+			: Collections.emptyList();
 	}
 }

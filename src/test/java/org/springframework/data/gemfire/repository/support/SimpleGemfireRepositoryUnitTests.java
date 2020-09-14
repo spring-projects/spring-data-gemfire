@@ -17,6 +17,8 @@ package org.springframework.data.gemfire.repository.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
@@ -35,6 +37,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -54,10 +57,14 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.query.SelectResults;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.gemfire.repository.Wrapper;
 import org.springframework.data.gemfire.repository.sample.Animal;
+import org.springframework.data.gemfire.repository.sample.Identifiable;
 import org.springframework.data.repository.core.EntityInformation;
+
+import org.slf4j.Logger;
 
 /**
  * Unit Tests for {@link SimpleGemfireRepository}.
@@ -75,10 +82,12 @@ import org.springframework.data.repository.core.EntityInformation;
  * @see org.springframework.data.repository.core.EntityInformation
  * @since 1.4.5
  */
-@SuppressWarnings({  "rawtypes", "unchecked" })
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class SimpleGemfireRepositoryUnitTests {
 
-	protected Map<Long, Animal> asMap(Iterable<Animal> animals) {
+	private final AtomicLong idSequence = new AtomicLong(0L);
+
+	private Map<Long, Animal> asMap(Iterable<Animal> animals) {
 
 		Map<Long, Animal> animalMap = new HashMap<>();
 
@@ -89,16 +98,17 @@ public class SimpleGemfireRepositoryUnitTests {
 		return animalMap;
 	}
 
-	protected Animal newAnimal(String name) {
+	private Animal newAnimal(String name) {
 
 		Animal animal = new Animal();
 
+		animal.setId(this.idSequence.incrementAndGet());
 		animal.setName(name);
 
 		return animal;
 	}
 
-	protected Animal newAnimal(Long id, String name) {
+	private Animal newAnimal(Long id, String name) {
 
 		Animal animal = newAnimal(name);
 
@@ -107,11 +117,15 @@ public class SimpleGemfireRepositoryUnitTests {
 		return animal;
 	}
 
-	protected GemfireTemplate newGemfireTemplate(Region<?, ?> region) {
+	private GemfireTemplate newGemfireTemplate(Region<?, ?> region) {
 		return new GemfireTemplate(region);
 	}
 
-	protected Cache mockCache(String name, boolean transactionExists) {
+	private <ID, T extends Identifiable<ID>> Wrapper<T, ID> newWrapper(T entity) {
+		return new Wrapper<>(entity, entity.getId());
+	}
+
+	private Cache mockCache(String name, boolean transactionExists) {
 
 		Cache mockCache = mock(Cache.class, String.format("%s.MockCache", name));
 
@@ -124,7 +138,7 @@ public class SimpleGemfireRepositoryUnitTests {
 		return mockCache;
 	}
 
-	protected EntityInformation<Animal, Long> mockEntityInformation() {
+	private EntityInformation<Animal, Long> mockEntityInformation() {
 
 		EntityInformation<Animal, Long> mockEntityInformation = mock(EntityInformation.class);
 
@@ -149,11 +163,11 @@ public class SimpleGemfireRepositoryUnitTests {
 		return mockEntityInformation;
 	}
 
-	protected Region mockRegion() {
+	private Region mockRegion() {
 		return mockRegion("MockRegion");
 	}
 
-	protected Region mockRegion(String name) {
+	private Region mockRegion(String name) {
 
 		Region mockRegion = mock(Region.class, String.format("%s.MockRegion", name));
 
@@ -163,7 +177,7 @@ public class SimpleGemfireRepositoryUnitTests {
 		return mockRegion;
 	}
 
-	protected Region mockRegion(String name, Cache mockCache, DataPolicy dataPolicy) {
+	private Region mockRegion(String name, Cache mockCache, DataPolicy dataPolicy) {
 
 		Region mockRegion = mockRegion(name);
 
@@ -179,17 +193,20 @@ public class SimpleGemfireRepositoryUnitTests {
 	}
 
 	@Test
-	public void constructsSimpleGemfireRepositorySuccessfully() {
+	public void constructSimpleGemfireRepositorySuccessfully() {
 
-		Region mockRegion = mock(Region.class);
+		Region mockRegion = mockRegion();
 
-		GemfireTemplate template = spy(new GemfireTemplate(mockRegion));
+		GemfireTemplate template = spy(newGemfireTemplate(mockRegion));
 
-		EntityInformation mockEntityInformation = mock(EntityInformation.class);
+		EntityInformation mockEntityInformation = mockEntityInformation();
 
 		SimpleGemfireRepository repository = new SimpleGemfireRepository(template, mockEntityInformation);
 
 		assertThat(repository).isNotNull();
+		assertThat(repository.getEntityInformation()).isEqualTo(mockEntityInformation);
+		assertThat(repository.getLogger()).isNotNull();
+		assertThat(repository.getTemplate()).isEqualTo(template);
 
 		verifyNoInteractions(template, mockRegion, mockEntityInformation);
 	}
@@ -225,29 +242,63 @@ public class SimpleGemfireRepositoryUnitTests {
 	}
 
 	@Test
-	public void saveEntityIsCorrect() {
+	public void getRegionFromTemplate() {
+
+		Region<Long, Animal> mockRegion = mockRegion();
+
+		GemfireTemplate template = spy(newGemfireTemplate(mockRegion));
+
+		EntityInformation<Animal, Long> mockEntityInformation = mockEntityInformation();
+
+		SimpleGemfireRepository<Animal, Long> repository =
+			new SimpleGemfireRepository<>(template, mockEntityInformation);
+
+		assertThat(repository).isNotNull();
+		assertThat(repository.getTemplate()).isEqualTo(template);
+		assertThat(repository.getRegion()).isEqualTo(mockRegion);
+
+		verify(template, times(1)).getRegion();
+		verifyNoInteractions(mockRegion, mockEntityInformation);
+		verifyNoMoreInteractions(template);
+	}
+
+	@Test
+	public void saveEntitySuccessfully() {
+
+		Animal cat = newAnimal(1L, "cat");
+
+		Logger mockLogger = mock(Logger.class);
 
 		Region<Long, Animal> mockRegion = mockRegion();
 
 		SimpleGemfireRepository<Animal, Long> repository =
-			new SimpleGemfireRepository<>(newGemfireTemplate(mockRegion), mockEntityInformation());
+			spy(new SimpleGemfireRepository<>(newGemfireTemplate(mockRegion), mockEntityInformation()));
 
-		Animal dog = repository.save(newAnimal("dog"));
+		doReturn(mockLogger).when(repository).getLogger();
+		doReturn(true).when(mockLogger).isDebugEnabled();
+		doReturn(cat).when(mockRegion).put(anyLong(), any());
+
+		Animal dog = repository.save(newAnimal(1L, "dog"));
 
 		assertThat(dog).isNotNull();
 		assertThat(dog.getId().longValue()).isEqualTo(1L);
 		assertThat(dog.getName()).isEqualTo("dog");
 
+		verify(mockLogger, times(1)).isDebugEnabled();
+		verify(mockLogger, times(1))
+			.debug(eq("Overwrote existing value [{}] for ID [{}]"), eq(cat), eq(1L));
 		verify(mockRegion, times(1)).put(eq(1L), eq(dog));
+		verifyNoMoreInteractions(mockLogger, mockRegion);
 	}
 
 	@Test
-	public void saveEntitiesIsCorrect() {
+	public void saveEntitiesSuccessfully() {
+
 		List<Animal> animals = new ArrayList<>(3);
 
-		animals.add(newAnimal("bird"));
-		animals.add(newAnimal("cat"));
-		animals.add(newAnimal("dog"));
+		animals.add(newAnimal(1L, "bird"));
+		animals.add(newAnimal(2L, "cat"));
+		animals.add(newAnimal(3L, "dog"));
 
 		Region<Long, Animal> mockRegion = mockRegion();
 
@@ -257,24 +308,82 @@ public class SimpleGemfireRepositoryUnitTests {
 		Iterable<Animal> savedAnimals = repository.saveAll(animals);
 
 		assertThat(savedAnimals).isNotNull();
+		assertThat(savedAnimals).isNotSameAs(animals);
+		assertThat(savedAnimals).containsAll(animals);
 
 		verify(mockRegion, times(1)).putAll(eq(asMap(savedAnimals)));
+		verifyNoMoreInteractions(mockRegion);
 	}
 
 	@Test
-	public void saveWrapperIsCorrect() {
-		Animal dog = newAnimal(1L, "dog");
+	public void saveWrapperSuccessfully() {
 
-		Wrapper dogWrapper = new Wrapper(dog, dog.getId());
+		Animal dog = newAnimal(2L, "dog");
+
+		Logger mockLogger = mock(Logger.class);
+
+		Region<Long, Animal> mockRegion = mockRegion();
+
+		SimpleGemfireRepository<Animal, Long> repository =
+			spy(new SimpleGemfireRepository<>(newGemfireTemplate(mockRegion), mockEntityInformation()));
+
+		doReturn(mockLogger).when(repository).getLogger();
+		doReturn(true).when(mockLogger).isDebugEnabled();
+		doReturn(dog).when(mockRegion).put(anyLong(), any());
+
+		Animal cat = repository.save(newWrapper(newAnimal(2L, "cat")));
+
+		assertThat(cat).isNotNull();
+		assertThat(cat.getId()).isEqualTo(2L);
+		assertThat(cat.getName()).isEqualTo("cat");
+
+		verify(mockLogger, times(1)).isDebugEnabled();
+		verify(mockLogger, times(1))
+			.debug(eq("Overwrote existing value [{}] for ID [{}]"), eq(dog), eq(2L));
+		verify(mockRegion, times(1)).put(eq(2L), eq(cat));
+		verifyNoMoreInteractions(mockLogger, mockRegion);
+	}
+
+	@Test
+	public void saveAllEntitiesWithIterableContainingNullEntitiesIsNullSafe() {
+
+		List<Animal> animals = new ArrayList<>();
+
+		animals.add(newAnimal(1L, "cat"));
+		animals.add(null);
+		animals.add(newAnimal(2L, "dog"));
 
 		Region<Long, Animal> mockRegion = mockRegion();
 
 		SimpleGemfireRepository<Animal, Long> repository =
 			new SimpleGemfireRepository<>(newGemfireTemplate(mockRegion), mockEntityInformation());
 
-		assertThat(repository.save(dogWrapper)).isEqualTo(dog);
+		Iterable<Animal> savedAnimals = repository.saveAll(animals);
 
-		verify(mockRegion, times(1)).put(eq(dog.getId()), eq(dog));
+		assertThat(savedAnimals).isNotNull();
+		assertThat(savedAnimals).isNotSameAs(animals);
+		assertThat(savedAnimals).hasSize(2);
+		assertThat(savedAnimals).containsAll(Arrays.asList(animals.get(0), animals.get(2)));
+
+		verify(mockRegion, times(1))
+			.putAll(eq(asMap(Arrays.asList(animals.get(0), animals.get(2)))));
+		verifyNoMoreInteractions(mockRegion);
+	}
+
+	@Test
+	public void saveAllEntitiesWithNullIterableIsNullSafe() {
+
+		Region<Long, Animal> mockRegion = mock(Region.class);
+
+		SimpleGemfireRepository<Animal, Long> repository =
+			new SimpleGemfireRepository<>(newGemfireTemplate(mockRegion), mockEntityInformation());
+
+		Iterable<?> iterable = repository.saveAll(null);
+
+		assertThat(iterable).isNotNull();
+		assertThat(iterable).isEmpty();
+
+		verifyNoInteractions(mockRegion);
 	}
 
 	@Test
@@ -287,7 +396,7 @@ public class SimpleGemfireRepositoryUnitTests {
 		GemfireTemplate template = spy(newGemfireTemplate(mockRegion));
 
 		doReturn(mockSelectResults).when(template).find(eq("SELECT count(*) FROM /Example"));
-		when(mockSelectResults.iterator()).thenReturn(Collections.singletonList(21).iterator());
+		doReturn(Collections.singletonList(21).iterator()).when(mockSelectResults).iterator();
 
 		SimpleGemfireRepository<Animal, Long> repository =
 			new SimpleGemfireRepository<>(template, mockEntityInformation());
@@ -309,7 +418,7 @@ public class SimpleGemfireRepositoryUnitTests {
 
 		GemfireTemplate template = spy(newGemfireTemplate(mockRegion));
 
-		doReturn(null).when(template).find(eq("SELECT count(*) FROM /Example"));
+		doReturn(null).when(template).find(anyString());
 
 		SimpleGemfireRepository<Animal, Long> repository =
 			new SimpleGemfireRepository<>(template, mockEntityInformation());
@@ -332,7 +441,7 @@ public class SimpleGemfireRepositoryUnitTests {
 
 		GemfireTemplate template = spy(newGemfireTemplate(mockRegion));
 
-		doReturn(mockSelectResults).when(template).find(eq("SELECT count(*) FROM /Example"));
+		doReturn(mockSelectResults).when(template).find(anyString());
 		doReturn(null).when(mockSelectResults).iterator();
 
 		SimpleGemfireRepository<Animal, Long> repository =
@@ -357,7 +466,7 @@ public class SimpleGemfireRepositoryUnitTests {
 
 		GemfireTemplate template = spy(newGemfireTemplate(mockRegion));
 
-		doReturn(mockSelectResults).when(template).find(eq("SELECT count(*) FROM /Example"));
+		doReturn(mockSelectResults).when(template).find(anyString());
 		doReturn(Collections.emptyIterator()).when(mockSelectResults).iterator();
 
 		SimpleGemfireRepository<Animal, Long> repository =
@@ -374,123 +483,263 @@ public class SimpleGemfireRepositoryUnitTests {
 	}
 
 	@Test
-	public void existsIsCorrect() {
+	public void countWhenSelectResultsIteratorContainsNullIsNullSafeReturnsZero() {
+
+		SelectResults mockSelectResults = mock(SelectResults.class);
+
+		Region mockRegion = mockRegion("Example");
+
+		Iterator mockIterator = mock(Iterator.class);
+
+		GemfireTemplate template = spy(newGemfireTemplate(mockRegion));
+
+		doReturn(mockSelectResults).when(template).find(anyString());
+		doReturn(mockIterator).when(mockSelectResults).iterator();
+		doReturn(true).when(mockIterator).hasNext();
+		doReturn(null).when(mockIterator).next();
+
+		SimpleGemfireRepository<Animal, Long> repository =
+			new SimpleGemfireRepository<>(template, mockEntityInformation());
+
+		assertThat(repository).isNotNull();
+		assertThat(repository.count()).isEqualTo(0L);
+
+		verify(template, times(1)).getRegion();
+		verify(mockRegion, times(1)).getFullPath();
+		verify(template, times(1)).find(eq("SELECT count(*) FROM /Example"));
+		verify(mockSelectResults, times(1)).iterator();
+		verify(mockIterator, times(1)).hasNext();
+		verify(mockIterator, times(1)).next();
+		verifyNoMoreInteractions(mockIterator, mockRegion, mockSelectResults, template);
+	}
+
+	@Test
+	public void existsByIdCallsFindById() {
+
 		Animal dog = newAnimal(1L, "dog");
 
 		Region<Long, Animal> mockRegion = mockRegion();
 
-		when(mockRegion.get(any(Long.class))).then(
-			invocation -> (dog.getId().equals(invocation.getArguments()[0]) ? dog : null));
+		doAnswer(invocation -> dog.getId().equals(invocation.getArgument(0)) ? dog : null)
+			.when(mockRegion).get(anyLong());
 
 		SimpleGemfireRepository<Animal, Long> repository =
-			new SimpleGemfireRepository<>(newGemfireTemplate(mockRegion), mockEntityInformation());
+			spy(new SimpleGemfireRepository<>(newGemfireTemplate(mockRegion), mockEntityInformation()));
 
 		assertThat(repository.existsById(1L)).isTrue();
+		assertThat(repository.existsById(2L)).isFalse();
 		assertThat(repository.existsById(10L)).isFalse();
+
+		verify(repository, times(1)).findById(eq(1L));
+		verify(mockRegion, times(1)).get(eq(1L));
+		verify(repository, times(1)).findById(eq(2L));
+		verify(mockRegion, times(1)).get(eq(2L));
+		verify(repository, times(1)).findById(eq(10L));
+		verify(mockRegion, times(1)).get(eq(10L));
+		verifyNoMoreInteractions(mockRegion);
 	}
 
 	@Test
-	public void findOneIsCorrect() {
-		Animal dog = newAnimal(1L, "dog");
+	public void findAllSuccessfully() {
+
+		GemfireTemplate mockTemplate = mock(GemfireTemplate.class);
+
+		List<Object> results = Arrays.asList("test", "mock", "fake");
+
+		Region mockRegion = mockRegion("Example");
+
+		SelectResults mockSelectResults = mock(SelectResults.class);
+
+		doReturn(mockRegion).when(mockTemplate).getRegion();
+		doReturn(mockSelectResults).when(mockTemplate).find(anyString());
+		doReturn(results).when(mockSelectResults).asList();
+
+		SimpleGemfireRepository repository = new SimpleGemfireRepository(mockTemplate, mockEntityInformation());
+
+		Iterable<Object> returnValue = repository.findAll();
+
+		assertThat(returnValue).isNotNull();
+		assertThat(returnValue).containsAll(results);
+
+		verify(mockTemplate, times(1)).getRegion();
+		verify(mockRegion, times(1)).getFullPath();
+		verify(mockTemplate, times(1)).find(eq("SELECT * FROM /Example"));
+		verify(mockSelectResults, times(1)).asList();
+		verifyNoMoreInteractions(mockRegion, mockSelectResults, mockTemplate);
+	}
+
+	@Test
+	public void findAllOrderedBySortSuccessfully() {
+
+		GemfireTemplate mockTemplate = mock(GemfireTemplate.class);
+
+		List<Object> results = Arrays.asList("test", "mock", "fake");
+
+		Region mockRegion = mockRegion("Example");
+
+		SelectResults mockSelectResults = mock(SelectResults.class);
+
+		doReturn(mockRegion).when(mockTemplate).getRegion();
+		doReturn(mockSelectResults).when(mockTemplate).find(anyString());
+		doReturn(results).when(mockSelectResults).asList();
+
+		SimpleGemfireRepository repository = new SimpleGemfireRepository(mockTemplate, mockEntityInformation());
+
+		Iterable<Object> returnValue = repository.findAll(Sort.by(Sort.Order.asc("name"), Sort.Order.desc("birthDate")));
+
+		assertThat(returnValue).isNotNull();
+		assertThat(returnValue).containsAll(results);
+
+		verify(mockTemplate, times(1)).getRegion();
+		verify(mockRegion, times(1)).getFullPath();
+		verify(mockTemplate, times(1))
+			.find(eq("SELECT DISTINCT * FROM /Example ORDER BY name ASC, birthDate DESC"));
+		verify(mockSelectResults, times(1)).asList();
+		verifyNoMoreInteractions(mockRegion, mockSelectResults, mockTemplate);
+	}
+
+	@Test
+	public void findAllByIdSuccessfully() {
+
+		Map<Long, Animal> animals = Stream.of(
+			newAnimal(1L, "bird"),
+			newAnimal(2L, "cat"),
+			newAnimal(3L, "dog")
+		).collect(Collectors.toMap(Animal::getId, Function.identity()));
 
 		Region<Long, Animal> mockRegion = mockRegion();
 
-		when(mockRegion.get(any(Long.class))).then(
-			invocation -> (dog.getId().equals(invocation.getArguments()[0]) ? dog : null));
+		doAnswer(invocation -> {
+
+			Collection<Long> keys = invocation.getArgument(0);
+
+			return animals.values().stream()
+				.filter((animal -> keys.contains(animal.getId())))
+				.collect(Collectors.toMap(Animal::getId, Function.identity()));
+
+		}).when(mockRegion).getAll(any(Collection.class));
 
 		SimpleGemfireRepository<Animal, Long> repository =
 			new SimpleGemfireRepository<>(newGemfireTemplate(mockRegion), mockEntityInformation());
 
-		assertThat(repository.findById(1L).orElse(null)).isEqualTo(dog);
-		assertThat(repository.findById(10L).isPresent()).isFalse();
-	}
-
-	@Test
-	public void findAllIsCorrect() {
-		Map<Long, Animal> animals =
-			Stream.of(newAnimal(1L, "bird"), newAnimal(2L, "cat"), newAnimal(3L, "dog"))
-				.collect(Collectors.toMap(Animal::getId, Function.identity()));
-
-		Region<Long, Animal> mockRegion = mockRegion();
-
-		when(mockRegion.getAll(any(Collection.class))).then(invocation -> {
-			Collection<Long> keys = invocation.getArgument(0);
-
-			return animals.values().stream().filter((animal -> keys.contains(animal.getId())))
-				.collect(Collectors.toMap(Animal::getId, Function.identity()));
-		});
-
-		SimpleGemfireRepository<Animal, Long> repository = new SimpleGemfireRepository<>(
-			newGemfireTemplate(mockRegion), mockEntityInformation());
-
-		Collection<Animal> animalsFound = repository.findAllById(Arrays.asList(1L, 3L));
+		Iterable<Animal> animalsFound = repository.findAllById(Arrays.asList(1L, 3L));
 
 		assertThat(animalsFound).isNotNull();
 		assertThat(animalsFound).hasSize(2);
 		assertThat(animalsFound).contains(animals.get(1L), animals.get(3L));
 
 		verify(mockRegion, times(1)).getAll(eq(Arrays.asList(1L, 3L)));
+		verifyNoMoreInteractions(mockRegion);
 	}
 
 	@Test
-	public void findAllWithIdsReturnsNoMatches() {
+	public void findAllByIdReturnsNoMatches() {
+
 		Region<Long, Animal> mockRegion = mockRegion();
 
-		when(mockRegion.getAll(any(Collection.class))).then(invocation -> {
-			Collection<Long> keys = invocation.getArgument(0);
-			Map<Long, Animal> result = new HashMap<>(keys.size());
-
-			for (Long key : keys) {
-				result.put(key, null);
-			}
-
-			return result;
-		});
+		doReturn(Collections.emptyMap()).when(mockRegion).getAll(any(Collection.class));
 
 		SimpleGemfireRepository<Animal, Long> repository =
 			new SimpleGemfireRepository<>(newGemfireTemplate(mockRegion), mockEntityInformation());
 
-		Collection<Animal> animalsFound = repository.findAllById(Arrays.asList(1L, 2L, 3L));
+		Iterable<Animal> animalsFound = repository.findAllById(Arrays.asList(1L, null, 2L, null, 3L));
 
 		assertThat(animalsFound).isNotNull();
 		assertThat(animalsFound).isEmpty();
 
 		verify(mockRegion, times(1)).getAll(eq(Arrays.asList(1L, 2L, 3L)));
+		verifyNoMoreInteractions(mockRegion);
 	}
 
 	@Test
-	public void findAllWithIdsReturnsPartialMatches() {
-		Map<Long, Animal> animals =
-			Stream.of(newAnimal(1L, "bird"), newAnimal(2L, "cat"), newAnimal(3L, "dog"))
-				.collect(Collectors.toMap(Animal::getId, Function.identity()));
+	public void findAllByIdReturnsPartialMatches() {
+
+		Map<Long, Animal> animals = Stream.of(
+			newAnimal(1L, "bird"),
+			newAnimal(2L, "cat"),
+			newAnimal(3L, "dog")
+		).collect(Collectors.toMap(Animal::getId, Function.identity()));
 
 		Region<Long, Animal> mockRegion = mockRegion();
 
-		when(mockRegion.getAll(any(Collection.class))).then(invocation -> {
+		doAnswer(invocation -> {
+
 			Collection<Long> keys = invocation.getArgument(0);
-			Map<Long, Animal> result = new HashMap<>(keys.size());
 
-			for (Long key : keys) {
-				result.put(key, animals.get(key));
-			}
+			return keys.stream()
+				.filter(animals::containsKey)
+				.collect(Collectors.toMap(Function.identity(), animals::get));
 
-			return result;
-		});
+		}).when(mockRegion).getAll(any(Collection.class));
 
 		SimpleGemfireRepository<Animal, Long> repository =
 			new SimpleGemfireRepository<>(newGemfireTemplate(mockRegion), mockEntityInformation());
 
-		Collection<Animal> animalsFound = repository.findAllById(Arrays.asList(0L, 1L, 2L, 4L));
+		Iterable<Animal> animalsFound = repository.findAllById(Arrays.asList(null, 0L, null, 1L, 2L, 4L, null));
 
 		assertThat(animalsFound).isNotNull();
 		assertThat(animalsFound).hasSize(2);
 		assertThat(animalsFound).contains(animals.get(1L), animals.get(2L));
 
 		verify(mockRegion, times(1)).getAll(eq(Arrays.asList(0L, 1L, 2L, 4L)));
+		verifyNoMoreInteractions(mockRegion);
 	}
 
 	@Test
-	public void deleteByIdIsCorrect() {
+	public void findAllByIdWithNullIterableIsNullSafe() {
+
+		Region<Long, Animal> mockRegion = mockRegion();
+
+		SimpleGemfireRepository<Animal, Long> repository =
+			new SimpleGemfireRepository(newGemfireTemplate(mockRegion), mockEntityInformation());
+
+		Iterable<Animal> animals = repository.findAllById(null);
+
+		assertThat(animals).isNotNull();
+		assertThat(animals).isEmpty();
+
+		verifyNoInteractions(mockRegion);
+	}
+
+	@Test
+	public void findByIdSuccessfully() {
+
+		Animal dog = newAnimal(1L, "dog");
+
+		Region<Long, Animal> mockRegion = mockRegion();
+
+		doAnswer(invocation -> dog.getId().equals(invocation.getArgument(0)) ? dog : null)
+			.when(mockRegion).get(any(Long.class));
+
+		SimpleGemfireRepository<Animal, Long> repository =
+			new SimpleGemfireRepository<>(newGemfireTemplate(mockRegion), mockEntityInformation());
+
+		assertThat(repository.findById(1L).orElse(null)).isEqualTo(dog);
+		assertThat(repository.findById(2L).isPresent()).isFalse();
+		assertThat(repository.findById(10L).isPresent()).isFalse();
+
+		verify(mockRegion, times(1)).get(eq(1L));
+		verify(mockRegion, times(1)).get(eq(2L));
+		verify(mockRegion, times(1)).get(eq(10L));
+		verifyNoMoreInteractions(mockRegion);
+	}
+
+	@Test
+	public void findByIdWithNullIdIsNullSafe() {
+
+		Region mockRegion = mockRegion();
+
+		SimpleGemfireRepository repository =
+			new SimpleGemfireRepository(newGemfireTemplate(mockRegion), mockEntityInformation());
+
+		assertThat(repository.findById(null).isPresent()).isFalse();
+
+		verifyNoInteractions(mockRegion);
+	}
+
+	@Test
+	public void deleteByIdSuccessfully() {
+
 		Region<Long, Animal> mockRegion = mockRegion();
 
 		SimpleGemfireRepository<Animal, Long> repository =
@@ -499,37 +748,47 @@ public class SimpleGemfireRepositoryUnitTests {
 		repository.deleteById(1L);
 
 		verify(mockRegion, times(1)).remove(eq(1L));
+		verifyNoMoreInteractions(mockRegion);
 	}
 
 	@Test
-	public void deleteEntityIsCorrect() {
+	public void deleteEntitySuccessfully() {
+
 		Region<Long, Animal> mockRegion = mockRegion();
 
 		SimpleGemfireRepository<Animal, Long> repository =
-			new SimpleGemfireRepository<>(newGemfireTemplate(mockRegion), mockEntityInformation());
+			spy(new SimpleGemfireRepository<>(newGemfireTemplate(mockRegion), mockEntityInformation()));
 
 		repository.delete(newAnimal(1L, "dog"));
 
+		verify(repository, times(1)).deleteById(eq(1L));
 		verify(mockRegion, times(1)).remove(eq(1L));
+		verifyNoMoreInteractions(mockRegion);
 	}
 
 	@Test
-	public void deleteEntitiesIsCorrect() {
+	public void deleteEntitiesSuccessfully() {
+
 		Region<Long, Animal> mockRegion = mockRegion();
 
 		SimpleGemfireRepository<Animal, Long> repository =
 			new SimpleGemfireRepository<>(newGemfireTemplate(mockRegion), mockEntityInformation());
 
-		repository.deleteAll(Arrays.asList(newAnimal(1L, "bird"), newAnimal(2L, "cat"),
-			newAnimal(3L, "dog")));
+		repository.deleteAll(Arrays.asList(
+			newAnimal(1L, "bird"),
+			newAnimal(2L, "cat"),
+			newAnimal(3L, "dog")
+		));
 
 		verify(mockRegion, times(1)).remove(eq(1L));
 		verify(mockRegion, times(1)).remove(eq(2L));
 		verify(mockRegion, times(1)).remove(eq(3L));
+		verifyNoMoreInteractions(mockRegion);
 	}
 
 	@Test
 	public void deleteAllWithClear() {
+
 		Cache mockCache = mockCache("MockCache", false);
 
 		Region<Long, Animal> mockRegion = mockRegion("MockRegion", mockCache, DataPolicy.REPLICATE);
@@ -547,6 +806,7 @@ public class SimpleGemfireRepositoryUnitTests {
 
 	@Test
 	public void deleteAllWithKeysWhenClearThrowsException() {
+
 		Cache mockCache = mockCache("MockCache", false);
 
 		Region<Long, Animal> mockRegion = mockRegion("MockRegion", mockCache, DataPolicy.PERSISTENT_REPLICATE);
@@ -570,6 +830,7 @@ public class SimpleGemfireRepositoryUnitTests {
 
 	@Test
 	public void deleteAllWithKeysWhenPartitionRegion() {
+
 		Cache mockCache = mockCache("MockCache", false);
 
 		Region<Long, Animal> mockRegion = mockRegion("MockRegion", mockCache, DataPolicy.PERSISTENT_PARTITION);
@@ -592,6 +853,7 @@ public class SimpleGemfireRepositoryUnitTests {
 
 	@Test
 	public void deleteAllWithKeysWhenTransactionPresent() {
+
 		Cache mockCache = mockCache("MockCache", true);
 
 		Region<Long, Animal> mockRegion = mockRegion("MockRegion", mockCache, DataPolicy.REPLICATE);

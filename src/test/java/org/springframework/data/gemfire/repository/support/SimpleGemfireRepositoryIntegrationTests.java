@@ -13,26 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.repository.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 
 import javax.annotation.Resource;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -48,11 +46,16 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * Integration tests for {@link SimpleGemfireRepository}.
+ * Integration Tests for {@link SimpleGemfireRepository}.
  *
  * @author Oliver Gierke
  * @author John Blum
  * @see org.junit.Test
+ * @see org.apache.geode.cache.GemFireCache
+ * @see org.apache.geode.cache.Region
+ * @see org.springframework.data.gemfire.GemfireTemplate
+ * @see org.springframework.data.gemfire.LocalRegionFactoryBean
+ * @see org.springframework.data.gemfire.config.annotation.PeerCacheApplication
  * @see org.springframework.data.gemfire.repository.support.SimpleGemfireRepository
  * @see org.springframework.test.context.ContextConfiguration
  * @see org.springframework.test.context.junit4.SpringRunner
@@ -113,17 +116,17 @@ public class SimpleGemfireRepositoryIntegrationTests {
 		this.template.put(carter.getId(), carter);
 		this.template.put(leroi.getId(), leroi);
 
-		Collection<Person> result = this.repository.findAllById(Arrays.asList(carter.getId(), leroi.getId()));
+		Iterable<Person> result = this.repository.findAllById(Arrays.asList(carter.getId(), leroi.getId()));
 
 		assertThat(result).isNotNull();
-		assertThat(result.size()).isEqualTo(2);
+		assertThat(result).hasSize(2);
 		assertThat(result).containsAll(Arrays.asList(carter, leroi));
 	}
 
 	@Test
 	public void findAllWithIdsReturnsNoMatches() {
 
-		Collection<Person> results = this.repository.findAllById(Arrays.asList(1L, 2L));
+		Iterable<Person> results = this.repository.findAllById(Arrays.asList(1L, 2L));
 
 		assertThat(results).isNotNull();
 		assertThat(results).isEmpty();
@@ -139,7 +142,7 @@ public class SimpleGemfireRepositoryIntegrationTests {
 		this.template.put(kurt.getId(), kurt);
 		this.template.put(eddie.getId(), eddie);
 
-		Collection<Person> results = this.repository.findAllById(Arrays.asList(0L, 1L, 2L, 4L));
+		Iterable<Person> results = this.repository.findAllById(Arrays.asList(0L, 1L, 2L, 4L));
 
 		assertThat(results).isNotNull();
 		assertThat(results).hasSize(2);

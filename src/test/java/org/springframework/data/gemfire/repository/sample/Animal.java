@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.springframework.data.gemfire.repository.sample;
 
 import org.springframework.data.annotation.Id;
@@ -23,7 +22,7 @@ import org.springframework.util.ObjectUtils;
  * @author Stuart Williams
  * @author John Blum
  */
-public class Animal {
+public class Animal implements Identifiable<Long> {
 
 	@Id
 	private Long id;
@@ -31,7 +30,7 @@ public class Animal {
 	private String name;
 
 	public Long getId() {
-		return id;
+		return this.id;
 	}
 
 	public void setId(Long id) {
@@ -39,7 +38,7 @@ public class Animal {
 	}
 
 	public String getName() {
-		return name;
+		return this.name;
 	}
 
 	public void setName(String name) {
@@ -48,7 +47,8 @@ public class Animal {
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (obj == this) {
+
+		if (this == obj) {
 			return true;
 		}
 
@@ -64,15 +64,18 @@ public class Animal {
 
 	@Override
 	public int hashCode() {
+
 		int hashValue = 17;
+
 		hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(getId());
 		hashValue = 37 * hashValue + ObjectUtils.nullSafeHashCode(getName());
+
 		return hashValue;
 	}
 
 	@Override
 	public String toString() {
-		return String.format("{ @type = %1$s, id = %2$d, name = %3$s }", getClass().getSimpleName(), getId(), getName());
+		return String.format("{ @type = %1$s, id = %2$d, name = %3$s }",
+			getClass().getSimpleName(), getId(), getName());
 	}
-
 }
