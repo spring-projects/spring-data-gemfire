@@ -27,8 +27,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -208,7 +208,7 @@ public class SimpleGemfireRepositoryUnitTests {
 		assertThat(repository.getLogger()).isNotNull();
 		assertThat(repository.getTemplate()).isEqualTo(template);
 
-		verifyNoInteractions(template, mockRegion, mockEntityInformation);
+		verifyZeroInteractions(template, mockRegion, mockEntityInformation);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -258,7 +258,7 @@ public class SimpleGemfireRepositoryUnitTests {
 		assertThat(repository.getRegion()).isEqualTo(mockRegion);
 
 		verify(template, times(1)).getRegion();
-		verifyNoInteractions(mockRegion, mockEntityInformation);
+		verifyZeroInteractions(mockRegion, mockEntityInformation);
 		verifyNoMoreInteractions(template);
 	}
 
@@ -383,7 +383,7 @@ public class SimpleGemfireRepositoryUnitTests {
 		assertThat(iterable).isNotNull();
 		assertThat(iterable).isEmpty();
 
-		verifyNoInteractions(mockRegion);
+		verifyZeroInteractions(mockRegion);
 	}
 
 	@Test
@@ -698,7 +698,7 @@ public class SimpleGemfireRepositoryUnitTests {
 		assertThat(animals).isNotNull();
 		assertThat(animals).isEmpty();
 
-		verifyNoInteractions(mockRegion);
+		verifyZeroInteractions(mockRegion);
 	}
 
 	@Test
@@ -734,7 +734,7 @@ public class SimpleGemfireRepositoryUnitTests {
 
 		assertThat(repository.findById(null).isPresent()).isFalse();
 
-		verifyNoInteractions(mockRegion);
+		verifyZeroInteractions(mockRegion);
 	}
 
 	@Test

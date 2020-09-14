@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionService;
+import org.apache.geode.internal.cache.LocalRegion;
 
 import org.junit.Test;
 
@@ -163,5 +164,21 @@ public class RegionUtilsUnitTests {
 		assertThat(RegionUtils.isCloseable(mockRegion)).isFalse();
 
 		verify(mockRegion, times(1)).getRegionService();
+	}
+
+	@Test
+	@SuppressWarnings("all")
+	public void nullRegionIsNotLocal() {
+		assertThat(RegionUtils.isLocal(null)).isFalse();
+	}
+
+	@Test
+	public void localRegionIsLocal() {
+		assertThat(RegionUtils.isLocal(mock(LocalRegion.class))).isTrue();
+	}
+
+	@Test
+	public void nonLocalRegionIsNotLocal() {
+		assertThat(RegionUtils.isLocal(mock(Region.class))).isFalse();
 	}
 }
