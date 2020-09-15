@@ -16,6 +16,7 @@
 package org.springframework.data.gemfire.repository.support;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -29,6 +30,7 @@ import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.SelectResults;
+
 import org.springframework.data.domain.Sort;
 import org.springframework.data.gemfire.GemfireCallback;
 import org.springframework.data.gemfire.GemfireTemplate;
@@ -39,6 +41,8 @@ import org.springframework.data.gemfire.util.CollectionUtils;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.util.StreamUtils;
 import org.springframework.data.util.Streamable;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -132,17 +136,14 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 	}
 
 	@Override
-	public Optional<T> findById(ID id) {
-		return Optional.ofNullable(this.template.get(id));
-	}
+	public Iterable<T> findAll() {
 
-	@Override
-	public Collection<T> findAll() {
+		String regionPath = this.template.getRegion().getFullPath();
+		String query = String.format("SELECT * FROM %s", regionPath);
 
-		SelectResults<T> results =
-			this.template.find(String.format("SELECT * FROM %s", this.template.getRegion().getFullPath()));
+		SelectResults<T> selectResults = this.template.find(query);
 
-		return results.asList();
+		return toList(selectResults);
 	}
 
 	@Override
@@ -160,20 +161,60 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 	@Override
 	public Collection<T> findAllById(Iterable<ID> ids) {
 
-		List<ID> keys = Streamable.of(ids).stream().collect(StreamUtils.toUnmodifiableList());
+		List<ID> keys = Streamable.of(CollectionUtils.nullSafeIterable(ids)).stream()
+			.filter(Objects::nonNull)
+			.collect(StreamUtils.toUnmodifiableList());
 
-		return CollectionUtils.<ID, T>nullSafeMap(this.template.getAll(keys)).values().stream()
-			.filter(Objects::nonNull).collect(Collectors.toList());
+		Map<ID, T> keysValues = !keys.isEmpty()
+			? this.template.getAll(keys)
+			: Collections.emptyMap();
+
+		List<T> values = CollectionUtils.nullSafeMap(keysValues).values().stream()
+			.filter(Objects::nonNull)
+			.collect(Collectors.toList());
+
+		return values;
 	}
 
 	@Override
-	public void deleteById(ID id) {
-		this.template.remove(id);
+	public Optional<T> findById(ID id) {
+
+		T value = id != null
+			? this.template.get(id)
+			: null;
+
+		return Optional.ofNullable(value);
 	}
 
 	@Override
 	public void delete(T entity) {
 		deleteById(this.entityInformation.getRequiredId(entity));
+	}
+
+	@Override
+	public void deleteAll() {
+
+		this.template.execute((GemfireCallback<Void>) region -> {
+
+			if (isPartitioned(region) || isTransactionPresent(region)) {
+				doRegionClear(region);
+			}
+			else {
+				try {
+					region.clear();
+				}
+				catch (UnsupportedOperationException ignore) {
+					doRegionClear(region);
+				}
+			}
+
+			return null;
+		});
+	}
+
+	@Override
+	public void deleteById(ID id) {
+		this.template.remove(id);
 	}
 
 	@Override
@@ -205,23 +246,10 @@ public class SimpleGemfireRepository<T, ID> implements GemfireRepository<T, ID> 
 		region.removeAll(region.keySet());
 	}
 
-	@Override
-	public void deleteAll() {
-		this.template.execute((GemfireCallback<Void>) region -> {
+	@NonNull List<T> toList(@Nullable SelectResults<T> selectResults) {
 
-			if (isPartitioned(region) || isTransactionPresent(region)) {
-				doRegionClear(region);
-			}
-			else {
-				try {
-					region.clear();
-				}
-				catch (UnsupportedOperationException ignore) {
-					doRegionClear(region);
-				}
-			}
-
-			return null;
-		});
+		return selectResults != null
+			? CollectionUtils.nullSafeList(selectResults.asList())
+			: Collections.emptyList();
 	}
 }

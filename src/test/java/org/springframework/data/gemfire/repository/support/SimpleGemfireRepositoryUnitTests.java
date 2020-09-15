@@ -276,7 +276,8 @@ public class SimpleGemfireRepositoryUnitTests {
 
 		assertThat(repository.save(dogWrapper)).isEqualTo(dog);
 
-		verifyZeroInteractions(mockRegion);
+		verify(mockRegion, times(1)).put(eq(1L), eq(dog));
+		verifyNoMoreInteractions(mockRegion);
 	}
 
 	@Test
