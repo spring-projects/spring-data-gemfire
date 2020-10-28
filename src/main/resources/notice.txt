@@ -1,4 +1,4 @@
-Spring Data Gemfire 2.2.10 (Moore SR10)
+Spring Data Gemfire 2.2.11 (Moore SR11)
    == NOTICE file corresponding to section 4 d of the Apache License,  ==
    == Version 2.0, for the Spring Framework distribution.              ==
    ======================================================================
@@ -19,6 +19,7 @@ Spring Data Gemfire 2.2.10 (Moore SR10)
    not be used to endorse or promote products derived from this
    software without prior written permission. For written permission,
    please contact enquiries@springsource.com.
+
 
 
 
