@@ -3,6 +3,12 @@ SPRING DATA GEMFIRE CHANGELOG
 https://www.springsource.org/spring-gemfire
 ===========================================
 
+Changes in version 2.2.11.RELEASE (2020-10-28)
+----------------------------------------------
+* DATAGEODE-369 - Release 2.2.11 (Moore SR11).
+* DATAGEODE-368 - Add API to attach additional AsyncEventQueues and GatewaySenders to peer Regions.
+
+
 Changes in version 2.1.21.RELEASE (2020-10-28)
 ----------------------------------------------
 * DATAGEODE-377 - Release 2.1.21 (Lovelace SR21).
@@ -1664,6 +1670,7 @@ General
 * GemFire Template for exception translation
 * Declarative transaction management
 * Auto-generation of non-reflection based GemFire instantiators
+
 
 
 
