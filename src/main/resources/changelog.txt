@@ -3,6 +3,10 @@ SPRING DATA GEMFIRE CHANGELOG
 https://www.springsource.org/spring-gemfire
 ===========================================
 
+Changes in version 2.2.13.RELEASE (2021-02-17)
+----------------------------------------------
+
+
 Changes in version 2.2.12.RELEASE (2020-12-09)
 ----------------------------------------------
 * DATAGEODE-383 - Upgrade to VMware Tanzu GemFire 9.8.10.
@@ -1676,6 +1680,7 @@ General
 * GemFire Template for exception translation
 * Declarative transaction management
 * Auto-generation of non-reflection based GemFire instantiators
+
 
 
 
