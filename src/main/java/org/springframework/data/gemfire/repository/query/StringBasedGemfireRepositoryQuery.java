@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2020 the original author or authors.
+ * Copyright 2012-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.apache.geode.cache.query.SelectResults;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.data.gemfire.GemfireTemplate;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
@@ -166,8 +167,10 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 		query = isUserDefinedQuery() ? query
 			: query.fromRegion(queryMethod.getEntityInformation().getJavaType(), getTemplate().getRegion());
 
+		Parameters<?, ?> queryMethodParameters = queryMethod.getParameters();
+
 		ParametersParameterAccessor parameterAccessor =
-			new ParametersParameterAccessor(queryMethod.getParameters(), arguments);
+			new ParametersParameterAccessor(queryMethodParameters, arguments);
 
 		for (Integer index : query.getInParameterIndexes()) {
 			query = query.bindIn(toCollection(parameterAccessor.getBindableValue(index - 1)));
@@ -226,7 +229,7 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 	Collection<?> toCollection(Object source) {
 
 		if (source instanceof SelectResults) {
-			return ((SelectResults) source).asList();
+			return ((SelectResults<?>) source).asList();
 		}
 
 		if (source instanceof Collection) {
@@ -240,6 +243,7 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 		return source.getClass().isArray() ? CollectionUtils.arrayToList(source) : Collections.singletonList(source);
 	}
 
+	@SuppressWarnings("rawtypes")
 	enum ProvidedQueryPostProcessors implements QueryPostProcessor<Repository, String> {
 
 		HINT {
@@ -283,7 +287,7 @@ public class StringBasedGemfireRepositoryQuery extends GemfireRepositoryQuery {
 			@Override
 			public String postProcess(QueryMethod queryMethod, String query, Object... arguments) {
 
-				if (queryMethod instanceof  GemfireQueryMethod) {
+				if (queryMethod instanceof GemfireQueryMethod) {
 
 					GemfireQueryMethod gemfireQueryMethod = (GemfireQueryMethod) queryMethod;
 

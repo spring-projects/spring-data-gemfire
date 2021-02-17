@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2020 the original author or authors.
+ * Copyright 2012-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 
 package org.springframework.data.gemfire.repository.query;
 
-import static org.springframework.data.gemfire.util.CollectionUtils.nullSafeIsEmpty;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -28,6 +26,8 @@ import org.apache.geode.cache.Region;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.data.gemfire.repository.query.support.OqlKeyword;
+import org.springframework.data.gemfire.util.CollectionUtils;
+import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -59,9 +59,10 @@ public class QueryString {
 	private static final String TRACE_OQL_TEMPLATE = "<TRACE> %1$s";
 
 	// OQL Query Regular Expression Patterns
-	private static final String IN_PATTERN = "(?<=IN (SET|LIST) )\\$\\d";
-	private static final String IN_PARAMETER_PATTERN = "(?<=IN (SET|LIST) \\$)\\d";
-	private static final String REGION_PATTERN = "\\/(\\/?\\w)+";
+	protected static final String IN_PATTERN = "(?<=IN (SET|LIST) )\\$\\d";
+	protected static final String IN_PARAMETER_PATTERN = "(?<=IN (SET|LIST) \\$)\\d";
+	protected static final String IN_VALUES_TEMPLATE = "(%s)";
+	protected static final String REGION_PATTERN = "\\/(\\/?\\w)+";
 
 	private static final String COUNT_QUERY = "count(*)";
 	private static final String STAR_QUERY = "*";
@@ -193,17 +194,28 @@ public class QueryString {
 	}
 
 	/**
-	 * Binds the given {@link Collection} of values into the {@literal IN} parameters of the OQL Query by expanding
-	 * the given values into a comma-separated {@link String}.
+	 * Binds the given {@link Collection} of values into the first {@literal IN} parameter of the OQL Query
+	 * ({@link String}) by expanding the given values into a comma-separated list.
 	 *
-	 * @param values the values to bind, returns the {@link QueryString} as is if {@literal null} is given.
-	 * @return a Query String having "in" parameters bound with values.
+	 * @param values {@link Collection} of values to bind; must not be {@literal null} or {@literal empty}.
+	 * @return a new {@link QueryString} having {@literal IN} parameter bound with values
+	 * or returns this {@link QueryString} if the {@link Collection} of values is {@literal null} or {@literal empty}.
+	 * @see java.util.Collection
 	 */
-	public QueryString bindIn(Collection<?> values) {
+	public @NonNull QueryString bindIn(@NonNull Collection<?> values) {
 
-		if (!nullSafeIsEmpty(values)) {
-			return QueryString.of(this.query.replaceFirst(IN_PATTERN, String.format("(%s)",
-				StringUtils.collectionToDelimitedString(values, ", ", "'", "'"))));
+		if (!CollectionUtils.nullSafeIsEmpty(values)) {
+
+			boolean isNumeric = values.stream().anyMatch(Number.class::isInstance);
+
+			String delimiter = ", ";
+			String prefix = isNumeric ? "" : "'";
+			String suffix = prefix;
+
+			String query = this.query.replaceFirst(IN_PATTERN, String.format(IN_VALUES_TEMPLATE,
+				StringUtils.collectionToDelimitedString(values, delimiter, prefix, suffix)));
+
+			return QueryString.of(query);
 		}
 
 		return this;
