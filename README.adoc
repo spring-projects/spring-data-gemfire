@@ -1,6 +1,6 @@
 image:https://spring.io/badges/spring-data-gemfire/ga.svg[Spring Data GemFire,link=https://projects.spring.io/spring-data-gemfire#quick-start] image:https://spring.io/badges/spring-data-gemfire/snapshot.svg[Spring Data GemFire,link=https://projects.spring.io/spring-data-gemfire#quick-start]
 
-= Spring Data for Pivotal GemFire image:https://jenkins.spring.io/buildStatus/icon?job=spring-data-gemfire%2Fmaster&subject=Build[link=https://jenkins.spring.io/view/SpringData/job/spring-data-gemfire/] https://gitter.im/spring-projects/spring-data[image:https://badges.gitter.im/spring-projects/spring-data.svg[Gitter]]
+= Spring Data for Pivotal GemFire image:https://jenkins.spring.io/buildStatus/icon?job=spring-data-gemfire%2Fmain&subject=Build[link=https://jenkins.spring.io/view/SpringData/job/spring-data-gemfire/] https://gitter.im/spring-projects/spring-data[image:https://badges.gitter.im/spring-projects/spring-data.svg[Gitter]]
 
 The primary goal of the Spring Data for Pivotal GemFire project is to make it easier to build highly scalable _Spring_ powered applications using https://pivotal.io/pivotal-gemfire[Pivotal GemFire] as the underlying distributed, in-memory data management platform.
 

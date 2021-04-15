@@ -3,7 +3,7 @@ pipeline {
 
 	triggers {
 		pollSCM 'H/10 * * * *'
-		upstream(upstreamProjects: "spring-data-commons/master", threshold: hudson.model.Result.SUCCESS)
+		upstream(upstreamProjects: "spring-data-commons/main", threshold: hudson.model.Result.SUCCESS)
 	}
 
 	options {
@@ -15,7 +15,7 @@ pipeline {
 		stage("Test") {
 			when {
 				anyOf {
-					branch 'master'
+					branch 'main'
 					not { triggeredBy 'UpstreamCause' }
 				}
 			}
@@ -39,7 +39,7 @@ pipeline {
 		stage('Release to artifactory') {
 			when {
 				anyOf {
-					branch 'master'
+					branch 'main'
 					not { triggeredBy 'UpstreamCause' }
 				}
 			}
@@ -70,7 +70,7 @@ pipeline {
 		}
 		stage('Publish documentation') {
 			when {
-				branch 'master'
+				branch 'main'
 			}
 			agent {
 				docker {

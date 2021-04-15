@@ -1,6 +1,6 @@
 = Continuous Integration
 
-image:https://jenkins.spring.io/buildStatus/icon?job=spring-data-gemfire%2Fmaster&subject=Moore%20(master)[link=https://jenkins.spring.io/view/SpringData/job/spring-data-gemfire/]
+image:https://jenkins.spring.io/buildStatus/icon?job=spring-data-gemfire%2Fmain&subject=Moore%20(main)[link=https://jenkins.spring.io/view/SpringData/job/spring-data-gemfire/]
 image:https://jenkins.spring.io/buildStatus/icon?job=spring-data-gemfire%2F2.1.x&subject=Lovelace%20(2.1.x)[link=https://jenkins.spring.io/view/SpringData/job/spring-data-gemfire/]
 image:https://jenkins.spring.io/buildStatus/icon?job=spring-data-gemfire%2F1.9.x&subject=Ingalls%20(1.9.x)[link=https://jenkins.spring.io/view/SpringData/job/spring-data-gemfire/]
 
