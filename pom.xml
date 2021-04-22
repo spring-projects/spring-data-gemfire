@@ -20,7 +20,7 @@
 		<java-module-name>spring.data.gemfire</java-module-name>
 		<source.level>1.8</source.level>
 		<antlr.version>2.7.7</antlr.version>
-		<apache-shiro.version>1.4.1</apache-shiro.version>
+		<apache-shiro.version>1.7.0</apache-shiro.version>
 		<cache-api.version>1.1.1</cache-api.version>
 		<gemfire.version>9.9.1</gemfire.version>
 		<google-code-findbugs.version>2.0.2</google-code-findbugs.version>
