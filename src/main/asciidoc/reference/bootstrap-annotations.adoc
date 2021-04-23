@@ -812,8 +812,10 @@ or associated properties, as follows:
 ----
 @SpringBootApplication
 @ClientCacheApplication
-@EnableLogging(logLevel="info", logFile="/absolute/file/system/path/to/application.log)
-public class ClientApplication { .. }
+@EnableLogging(logLevel="info", logFile="/absolute/file/system/path/to/application.log")
+public class ClientApplication {
+  ..
+}
 ----
 
 While the `logLevel` attribute can be specified with all the cache-based application annotations
@@ -1657,18 +1659,7 @@ and used instead of configuration properties to customize a `DiskStore` at runti
 @EnableDiskStore(name = "OrdersDiskStore", autoCompact = true, compactionThreshold = 70,
     maxOplogSize = 512, diskDirectories = @DiskDiretory(location = "/absolute/path/to/order/disk/files"))
 class ServerApplication {
-
-  @Bean
-  DiskStoreConfigurer ordersDiskStoreDiretoryConfigurer(
-          @Value("${orders.disk.store.location}") String location) {
-
-      return (beanName, diskStoreFactoryBean) -> {
-
-          if ("OrdersDiskStore".equals(beanName) {
-              diskStoreFactoryBean.setDiskDirs(Collections.singletonList(new DiskDir(location));
-          }
-      }
-  }
+  . . .
 }
 ----
 
@@ -1684,11 +1675,11 @@ More details on {data-store-name} Region persistence and overflow (using DiskSto
 There is not much use in storing data in Regions unless the data can be accessed.
 
 In addition to `Region.get(key)` operations, particularly when the key is known in advance, data is commonly retrieved
-by executing queries on the Regions that contain the data. With {data-store-name}, queries are written by using
+by running queries on the Regions that contain the data. With {data-store-name}, queries are written by using
 the Object Query Language (OQL), and the specific data set that a client wishes to access is expressed
 in the query's predicate (for example, `SELECT * FROM /Books b WHERE b.author.name = 'Jon Doe'`).
 
-Generally, querying without indexes is inefficient. When executing queries without an index, {data-store-name}
+Generally, querying without indexes is inefficient. When running queries without an index, {data-store-name}
 performs the equivalent of a full table scan.
 
 Indexes are created and maintained for fields on objects used in query predicates to match the data of interest, as
@@ -1829,7 +1820,7 @@ Lucene queries by using the familiar Spring template design pattern.
 
 Finally, we close this section with a few extra tips to keep in mind when using indexes:
 
-* While OQL indexes are not required to execute OQL Queries, Lucene Indexes are required to execute Lucene
+* While OQL indexes are not required to run OQL Queries, Lucene Indexes are required to run Lucene
 text-based searches.
 * OQL indexes are not persisted to disk. They are only maintained in memory.  So, when an {data-store-name}
 node is restarted, the index must be rebuilt.
@@ -1899,7 +1890,7 @@ class PublisherPrintApplication {
 
     @ContinuousQuery(name = "DemandExceedsSupply", query =
        "SELECT book.* FROM /Books book, /Inventory inventory
-        WHERE book.title = 'How to crush it in the Book business like Amazon"
+        WHERE book.title = 'How to crush it in the Book business like Amazon'
         AND inventory.isbn = book.isbn
         AND inventory.available < (
             SELECT sum(order.lineItems.quantity)

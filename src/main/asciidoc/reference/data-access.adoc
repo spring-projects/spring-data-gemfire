@@ -3,8 +3,7 @@
 
 In addition to the core XML namespace (`gfe`), {sdg-name} provides a data access XML namespace (`gfe-data`),
 which is primarily intended to simplify the development of {data-store-name} client applications. This namespace
-currently contains support for {data-store-name} <<gemfire-repositories, Repositories>> and Function
-<<function-execution, execution>>, as well as a `<datasource>` tag that offers a convenient way to connect to
+currently contains support for {data-store-name} <<gemfire-repositories, Repositories>> and <<running-functions,running Functions>>, as well as a `<datasource>` tag that offers a convenient way to connect to
 a {data-store-name} cluster.
 
 [[data-access:datasource]]

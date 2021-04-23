@@ -86,7 +86,7 @@ and <<bootstrap:region:common:regions-subregions-lookups-caution>>
 * Removed all default values specified in {sdg-name} XML namespace Region-type elements
 to rely on {data-store-name} defaults instead.
 * Added convenience to automatically create `DiskStore` directory locations.
-* SDG annotated Function implementations can now be executed from `Gfsh`.
+* SDG annotated Function implementations can now be run from `Gfsh`.
 * Enabled {data-store-name} `GatewayReceivers` to be started manually.
 * Added support for Auto Region Lookups. See <<bootstrap:region:auto-lookup>>
 * Added support for Region Templates. See <<bootstrap:region:common:region-templates>>

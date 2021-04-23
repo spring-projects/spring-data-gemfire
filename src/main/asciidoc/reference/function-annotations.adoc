@@ -1,27 +1,27 @@
 [[function-annotations]]
-= Annotation Support for Function Execution
+= Annotation Support for Functions
 
 {sdg-name} includes annotation support to simplify working with {data-store-name}
-{x-data-store-docs}/developing/function_exec/chapter_overview.html[Function execution].
+{x-data-store-docs}/developing/function_exec/chapter_overview.html[running Functions].
 
 Under the hood, the {data-store-name} API provides classes to implement and register {data-store-name}
 {x-data-store-javadoc}/org/apache/geode/cache/execute/Function.html[Functions] that are deployed on {data-store-name}
 servers, which may then be invoked by other peer member applications or remotely from cache clients.
 
-Functions can execute in parallel, distributed among multiple {data-store-name} servers in the cluster, aggregating the
+Functions can run in parallel, distributed among multiple {data-store-name} servers in the cluster, aggregating the
 results using the map-reduce pattern and sent back to the caller. Functions can also be targeted to run on a single
-server or Region. The {data-store-name} API supports remote execution of Functions targeted by using various predefined
-scopes: on Region, on members (in groups), on servers, and others. The implementation and execution of remote Functions,
+server or Region. The {data-store-name} API supports remotely running Functions targeted by using various predefined
+scopes: on Region, on members (in groups), on servers, and others. The implementation and running of remote Functions,
 as with any RPC protocol, requires some boilerplate code.
 
-{sdg-name}, true to Spring's core value proposition, aims to hide the mechanics of remote Function execution and let you
+{sdg-name}, true to Spring's core value proposition, aims to hide the mechanics of remotely running Functions and to let you
 focus on core POJO programming and business logic. To this end, {sdg-name} introduces annotations to declaratively
 register the public methods of a POJO class as {data-store-name} Functions along with the ability to invoke registered
 Functions (including remotely) by using annotated interfaces.
 
-== Implementation Versus Execution
+== Implementation Versus Running
 
-There are two separate concerns to address: implementation and execution.
+There are two separate concerns to address: implementation and running.
 
 The first is Function implementation (server-side), which must interact with the
 {x-data-store-javadoc}/org/apache/geode/cache/execute/FunctionContext.html[`FunctionContext`]
@@ -40,7 +40,7 @@ Region, server, servers, member, or members. If the Function produces a result, 
 to aggregate and acquire the execution results. In certain cases, a custom `ResultCollector` implementation
 is required and may be registered with the `Execution`.
 
-NOTE: 'Client' and 'Server' are used here in the context of Function execution, which may have a different meaning
+NOTE: 'Client' and 'Server' are used here in the context of running Functions, which may have a different meaning
 than client and server in {data-store-name}'s client-server topology. While it is common for an application using
 a `ClientCache` instance to invoke a Function on one or more {data-store-name} servers in a cluster, it is also
 possible to execute Functions in a peer-to-peer (P2P) configuration, where the application is a member of the cluster
@@ -52,14 +52,14 @@ of being a peer member of the cluster.
 
 Using {data-store-name} APIs, the `FunctionContext` provides a runtime invocation context that includes the client's
 calling arguments and a `ResultSender` implementation to send results back to the client. Additionally, if the Function
-is executed on a Region, the `FunctionContext` is actually an instance of `RegionFunctionContext`, which provides
+is run on a Region, the `FunctionContext` is actually an instance of `RegionFunctionContext`, which provides
 additional information, such as the target Region on which the Function was invoked, any filter (a set of specific keys)
 associated with the `Execution`, and so on. If the Region is a `PARTITION` Region, the Function should use
 the `PartitionRegionHelper` to extract the local data set.
 
 By using Spring, you can write a simple POJO and use the Spring container to bind one or more of your POJO's
 public methods to a Function. The signature for a POJO method intended to be used as a Function must generally conform
-to the client's execution arguments. However, in the case of a Region execution, the Region data may also be provided
+to the client's run-time arguments. However, in the case of running on a Region, the Region data may also be provided
 (presumably the data is held in the local partition if the Region is a `PARTITION` Region).
 
 Additionally, the Function may require the filter that was applied, if any. This suggests that the client and server
@@ -145,7 +145,7 @@ as shown in the `functionWithContext` method shown previously. Presumably, the i
 the `ResultSender` directly to send results to the caller.
 
 Finally, the `GemfireFunction` annotation supports the `requiredPermissions` attribute, which specifies the permissions
-required to execute the Function.  By default, all Functions require the `DATA:WRITE` permission.  The attribute
+required to run the Function.  By default, all Functions require the `DATA:WRITE` permission.  The attribute
 accepts an array of Strings allowing you to modify the permissions as required by your application and/or Function UC.
 Each resource permission is expected to be in the following format: `<RESOURCE>:<OPERATION>:[Target]:[Key]`.
 
@@ -189,22 +189,22 @@ The following example activates annotation processing by annotating a Java confi
 class ApplicationConfiguration { ... }
 ----
 
-[[function-execution]]
-== Executing a Function
+[[using-a-function]]
+== Using a Function
 
-A process that invokes a remote Function needs to provide the Function's ID, calling arguments, the execution target
+A process that invokes a remote Function needs to provide the Function's ID, calling arguments, the target
 (`onRegion`, `onServers`, `onServer`, `onMember`, or `onMembers`) and (optionally) a filter set. By using {sdg-name},
 all you need do is define an interface supported by annotations. Spring creates a dynamic proxy for the interface,
 which uses the `FunctionService` to create an `Execution`, invoke the `Execution`, and (if necessary) coerce
 the results to the defined return type. This technique is similar to the way {sdg-name}'s Repository extension works.
 Thus, some of the configuration and concepts should be familiar.
 
-Generally, a single interface definition maps to multiple Function executions, one corresponding to each method
+Generally, a single interface definition maps to multiple Functions, one corresponding to each method
 defined in the interface.
 
-=== Annotations for Function Execution
+=== Annotations for Running Functions
 
-To support client-side Function execution, the following {sdg-acronym} Function annotations are provided: `@OnRegion`,
+To support running client-side Functions, the following {sdg-acronym} Function annotations are provided: `@OnRegion`,
 `@OnServer`, `@OnServers`, `@OnMember`, and `@OnMembers`.  These annotations correspond to the `Execution`
 implementations provided by {data-store-name}'s
 {x-data-store-javadoc}/org/apache/geode/cache/execute/FunctionService.html[`FunctionService`] class.
@@ -214,7 +214,7 @@ whose value is the name of a Spring bean implementing the
 {x-data-store-javadoc}/org/apache/geode/cache/execute/ResultCollector.html[`ResultCollector`] interface
 to use for the execution.
 
-CAUTION: The proxy interface binds all declared methods to the same execution configuration. Although it is expected
+CAUTION: The proxy interface binds all declared methods to the same configuration. Although it is expected
 that single method interfaces are common, all methods in the interface are backed by the same proxy instance
 and therefore all share the same configuration.
 
@@ -238,8 +238,8 @@ to bind this invocation to a different Function ID.
 
 === Enabling Annotation Processing
 
-The client-side uses Spring's classpath component scanning capability to discover annotated interfaces. To enable
-Function execution annotation processing in XML, insert the following element in your XML configuration:
+The client-side uses Spring's classpath component scanning capability to discover annotated interfaces. To
+use Function annotation processing in XML, insert the following element in your XML configuration:
 
 [source,xml]
 ----
@@ -257,10 +257,10 @@ Optionally, you can annotate your Java configuration class as follows:
 @EnableGemfireFunctionExecutions(basePackages = "org.example.myapp.gemfire.functions")
 ----
 
-[[function-execution-programmatic]]
-== Programmatic Function Execution
+[[using-functions-programmatically]]
+== Using Functions Programmatically
 
-Using the Function execution annotated interface defined in the previous section, simply auto-wire your interface
+Using the Function annotated interface defined in the previous section, you can auto-wire your interface
 into an application bean that will invoke the Function:
 
 [source,java]
@@ -277,7 +277,7 @@ public class MyApplication {
 }
 ----
 
-Alternately, you can use a Function execution template directly. In the following example,
+Alternately, you can use a Function template directly. In the following example,
 the `GemfireOnRegionFunctionTemplate` creates an `onRegion` Function `Execution`:
 
 .Using the `GemfireOnRegionFunctionTemplate`
@@ -296,8 +296,8 @@ containing the result and attempts to coerce that value into the requested type.
 that returns the `List` as is. The first parameter is the Function ID. The filter argument is optional. The remaining
 arguments are a variable argument `List`.
 
-[[function-execution-pdx]]
-== Function Execution with PDX
+[[using-functions-with-pdx]]
+== Using Functions with PDX
 
 When using {sdg-name}'s Function annotation support combined with {data-store-name}'s
 {x-data-store-docs}/developing/data_serialization/gemfire_pdx_serialization.html[PDX Serialization],
@@ -320,9 +320,9 @@ public class OrderFunctions {
 
 NOTE: The `Integer` typed `count` parameter is arbitrary, as is the separation of the `Order` class
 and the `OrderSource` enum, which might be logical to combine. However, the arguments were setup this way
-to demonstrate the problem with Function executions in the context of PDX.
+to demonstrate the problem with running Functions in the context of PDX.
 
-Your `Order` class and `OrderSource` enum might be defined as follows:
+Your `Order` class and `OrderSource` enumeration might be defined as follows:
 
 [source,java]
 ----
@@ -345,7 +345,7 @@ public enum OrderSource {
 }
 ----
 
-Of course, you can define a Function `Execution` interface to call the 'process' {data-store-name} server Function,
+You can define a Function `Execution` interface to call the 'process' {data-store-name} server Function,
 as follows:
 
 [source,java]

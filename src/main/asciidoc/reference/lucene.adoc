@@ -296,7 +296,7 @@ Finally, {sdg-name} provides annotation configuration support for `LuceneIndexes
 
 Eventually, the {sdg-acronym} Lucene support will finds its way into the Repository infrastructure extension for
 {data-store-name} so that Lucene queries can be expressed as methods on an application `Repository` interface,
-in much the same way as the <<gemfire-repositories.queries.executing,OQL support>> works today.
+in much the same way as the <<gemfire-repositories.queries.running,OQL support>> works today.
 
 However, in the meantime, if you want to conveniently express `LuceneIndexes`, you can do so directly on
 your application domain objects, as the following example shows:
