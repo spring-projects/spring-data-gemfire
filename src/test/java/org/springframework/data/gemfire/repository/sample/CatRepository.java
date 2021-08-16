@@ -19,11 +19,13 @@ package org.springframework.data.gemfire.repository.sample;
 import org.springframework.data.gemfire.mapping.annotation.Region;
 import org.springframework.data.gemfire.repository.GemfireRepository;
 import org.springframework.data.gemfire.repository.Query;
+import org.springframework.stereotype.Repository;
 
 /**
  * @author Stuart Williams
  * @author John Blum
  */
+@Repository
 @Region("Cats")
 public interface CatRepository extends GemfireRepository<Animal, Long> {
 
