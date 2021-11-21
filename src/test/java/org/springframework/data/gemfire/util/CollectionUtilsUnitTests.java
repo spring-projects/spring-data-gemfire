@@ -206,7 +206,8 @@ public class CollectionUtilsUnitTests {
 
 		assertThat(iterable).isNotNull();
 		//assertThat(iterable).containsExactly(1, 2, 3);
-		assertThat(StreamSupport.stream(iterable.spliterator(), false).collect(Collectors.toSet()))
+		LinkedHashSet<Object> set = StreamSupport.stream(iterable.spliterator(), false).collect(Collectors.toCollection(LinkedHashSet::new));
+		assertThat(set)
 			.containsExactly(1, 2, 3);
 
 		verify(mockEnumeration, times(4)).hasMoreElements();
