@@ -27,8 +27,10 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import com.fasterxml.jackson.databind.SerializationConfig;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.SelectResults;
 
@@ -78,7 +80,8 @@ public class JSONRegionAdviceIntegrationTests {
 	private static String toJson(Object bean) {
 
 		try {
-			return new ObjectMapper().writeValueAsString(bean);
+			ObjectMapper mapper = new ObjectMapper().configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+			return mapper.writeValueAsString(bean);
 		}
 		catch (JsonProcessingException cause) {
 			throw newIllegalArgumentException(cause, "Failed to convert object (%1$s) into JSON", bean);
