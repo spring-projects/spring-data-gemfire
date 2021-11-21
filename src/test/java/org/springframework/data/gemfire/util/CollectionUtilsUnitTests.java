@@ -22,17 +22,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -268,7 +258,7 @@ public class CollectionUtilsUnitTests {
 
 		assertThat(iterable).isNotNull();
 
-		Set<Object> set = new HashSet<>();
+		Set<Object> set = new LinkedHashSet<>();
 
 		iterable.forEach(set::add);
 
