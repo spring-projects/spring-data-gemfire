@@ -84,7 +84,10 @@ public class SnapshotServiceFactoryBeanIntegrationTest {
 				cacheSnapshotZip.getName().replaceAll("\\.", "-"));
 
 			assertThat(cacheSnapshotZipDirectory.isDirectory(), is(true));
-			assertThat(cacheSnapshotZipDirectory.listFiles(FileSystemUtils.FileOnlyFilter.INSTANCE),
+			File[] expectedSnapshots = cacheSnapshotZipDirectory.listFiles(FileSystemUtils.FileOnlyFilter.INSTANCE);
+			Arrays.sort(expectedSnapshots, (f1, f2) -> (f1.compareTo(f2)));
+			Arrays.sort(actualSnapshots, (f1, f2) -> (f1.compareTo(f2)));
+			assertThat(expectedSnapshots,
 				is(equalTo(actualSnapshots)));
 		}
 		finally {
