@@ -71,7 +71,8 @@ public class EnableSslConfigurationDefaultContextIntegrationTests {
 
 		assertThat(gemfireProperties).isNotNull();
 		assertThat(gemfireProperties.getProperty("ssl-ciphers")).isEqualTo("FISH Scream SEAL SNOW");
-		assertThat(gemfireProperties.getProperty("ssl-enabled-components")).isEqualTo("server,gateway");
+		assertThat(gemfireProperties.getProperty("ssl-enabled-components").equals("server,gateway")
+				|| gemfireProperties.getProperty("ssl-enabled-components").equals("gateway,server")).isTrue();
 		assertThat(gemfireProperties.getProperty("ssl-default-alias")).isEqualTo("TestCert");
 		assertThat(gemfireProperties.getProperty("ssl-gateway-alias")).isEqualTo("WanCert");
 		assertThat(gemfireProperties.getProperty("ssl-keystore")).isEqualTo("/path/to/keystore.jks");
