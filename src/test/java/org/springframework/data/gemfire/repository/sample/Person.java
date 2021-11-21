@@ -19,6 +19,7 @@ import java.io.Serializable;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.annotation.Transient;
@@ -34,6 +35,7 @@ import org.springframework.util.ObjectUtils;
  */
 @Region("simple")
 @JsonIgnoreProperties("name")
+@JsonPropertyOrder({"address", "firstname", "id", "lastname"})
 public class Person implements Serializable {
 
 	private static final long serialVersionUID = 508843183613325255L;
